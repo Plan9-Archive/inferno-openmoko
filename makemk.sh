@@ -8,9 +8,9 @@
 
 # change these defines as appropriate here or in mkconfig
 # ROOT should be the root of the Inferno tree
-ROOT=/usr/inferno
-SYSTARG=FreeBSD
-OBJTYPE=386
+ROOT=/home/inferno
+SYSTARG=Linux
+OBJTYPE=arm
 SYSTYPE=posix
 
 # if you have already changed mkconfig from the distribution, we'll use the definitions from that

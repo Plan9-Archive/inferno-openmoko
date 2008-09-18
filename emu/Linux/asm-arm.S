@@ -23,10 +23,10 @@ executeonnewstack:
         ldr     r2, [fp, #-16] /* get tos */
         mov     sp, r2         /* set new stack */
         mov     lr, pc
-        blx     r1             /* call tramp*/
+        mov     pc, r1         /* call tramp*/
 
         /* if we return here, tramp didn't do it's job */
-        swi     SYS_exit
+        swi     0x900001
         ldmea   fp, {fp, sp, pc}
         .size   executeonnewstack, .-executeonnewstack
 
@@ -50,7 +50,7 @@ unlockandexit:
         sub     sp, sp, #4
         mov     r1, #0
         str     r1, [r0]
-        swi     SYS_exit
+        swi     0x900001
         ldmea   fp, {fp, sp, pc}
         .size   unlockandexit, .-unlockandexit
 
@@ -126,6 +126,7 @@ _tas:
 	@ link register save eliminated.
 	@ lr needed for prologue
 	mov	r3, #1
-	swp	r0, r3, [r0]
+	swp     r3, r3, [r0] 
+	mov     r0, r3 
 	mov	pc, lr
 	.size	_tas, .-_tas

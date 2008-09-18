@@ -329,6 +329,27 @@ flushmemscreen(Rectangle r)
 			wp += dx;
 		}
 	}
+	else if(displaydepth == 16 && xscreendepth == 16){
+		u32int v, w;
+		u16int *dp, *wp, *edp;
+	
+		dx = Xsize - width;
+		dp = (unsigned short *)(gscreendata + (r.min.y * Xsize + r.min.x) * 2);
+		wp = (unsigned short *)(xscreendata + (r.min.y * Xsize + r.min.x) * 2);
+		edp = (unsigned short *)(gscreendata + (r.max.y * Xsize + r.max.x) * 2);
+		while (dp < edp) {
+			const unsigned int *lp = dp + width;
+
+			while (dp < lp){
+				v = *dp++;
+				w = v; //infernortox11[(v>>16)&0xff]<<16|infernogtox11[(v>>8)&0xff]<<8|infernobtox11[(v>>0)&0xff]<<0;
+				*wp++ = w;
+			}
+
+			dp += dx;
+			wp += dx;
+		}
+	}
 	else if(displaydepth == 8){
 		if(xscreendepth == 24 || xscreendepth == 32) {
 			u32int *wp;
