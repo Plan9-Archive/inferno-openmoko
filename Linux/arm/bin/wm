@@ -3,4 +3,4 @@
 PATH="$HOME/Linux/arm/bin:$PATH"
 export DISPLAY=:0.0
 
-emu -g 476x444 wm/wm
+emu -g 480x640 wm/wm
