@@ -215,10 +215,17 @@ static void drawPointer ( int x, int y )
       		aStart [ j ] &= thePointer [ i * aDepth * thePointerWidth + j ];
 }
 
+// my keyboard has winkeys
+enum {
+	LWin=No,
+	RWin=No,
+	Menu=No,
+};
+
 //KEY_RESERVED..KEY_COMPOSE
 const Rune kbtab[] = 
 {
-[0x00]	No,		0x1b,	'1',	'2',	'3',	'4',	'5',	'6',
+[0x00]	No,	0x1b,	'1',	'2',	'3',	'4',	'5',	'6',
 [0x08]	'7',	'8',	'9',	'0',	'-',	'=',	'\b',	'\t',
 [0x10]	'q',	'w',	'e',	'r',	't',	'y',	'u',	'i',
 [0x18]	'o',	'p',	'[',	']',	'\n',	LCtrl,	'a',	's',
@@ -228,17 +235,17 @@ const Rune kbtab[] =
 [0x38]	Latin,	' ',	Caps,	KF|1,	KF|2,	KF|3,	KF|4,	KF|5,
 [0x40]	KF|6,	KF|7,	KF|8,	KF|9,	KF|10,	Num,	Scroll,	'7',
 [0x48]	'8',	'9',	'-',	'4',	'5',	'6',	'+',	'1',
-[0x50]	'2',	'3',	'0',	'.',	No,		No,		No,		KF|11,
-[0x58]	KF|12,	No,		No,		No,		No,		No,		No,		No,
-[0x60]	'\n',	RCtrl,	'/',	Print,	Latin,	No,		Home,	Up,
+[0x50]	'2',	'3',	'0',	'.',	No,	No,	No,	KF|11,
+[0x58]	KF|12,	No,	No,	No,	No,	No,	No,	No,
+[0x60]	'\n',	RCtrl,	'/',	Print,	Latin,	No,	Home,	Up,
 [0x68]	Pgup,	Left,	Right,	End,	Down,	Pgdown,	Ins,	Del,
-[0x70]	No,		No,		No,		No,		No,		No,		No,		Break,
-[0x78]	No,		No,		No,		No,		No,		No/*LWin*/,	No/*RWin*/,	No/*Menu*/,
+[0x70]	No,	No,	No,	No,	No,	No,	No,	Break,
+[0x78]	No,	No,	No,	No,	No,	LWin,	RWin,	Menu,
 };
 
 const Rune kbtabshift[] =
 {
-[0x00]	No,		0x1b,	'!',	'@',	'#',	'$',	'%',	'^',
+[0x00]	No,	0x1b,	'!',	'@',	'#',	'$',	'%',	'^',
 [0x08]	'&',	'*',	'(',	')',	'_',	'+',	'\b',	'\t',
 [0x10]	'Q',	'W',	'E',	'R',	'T',	'Y',	'U',	'I',
 [0x18]	'O',	'P',	'{',	'}',	'\n',	LCtrl,	'A',	'S',
@@ -248,12 +255,12 @@ const Rune kbtabshift[] =
 [0x38]	Latin,	' ',	Caps,	KF|1,	KF|2,	KF|3,	KF|4,	KF|5,
 [0x40]	KF|6,	KF|7,	KF|8,	KF|9,	KF|10,	Num,	Scroll,	'7',
 [0x48]	'8',	'9',	'-',	'4',	'5',	'6',	'+',	'1',
-[0x50]	'2',	'3',	'0',	'.',	No,		No,		No,		KF|11,
-[0x58]	KF|12,	No,		No,		No,		No,		No,		No,		No,
-[0x60]	'\n',	RCtrl,	'/',	Print,	Latin,	No,		Home,	Up,
+[0x50]	'2',	'3',	'0',	'.',	No,	No,	No,	KF|11,
+[0x58]	KF|12,	No,	No,	No,	No,	No,	No,	No,
+[0x60]	'\n',	RCtrl,	'/',	Print,	Latin,	No,	Home,	Up,
 [0x68]	Pgup,	Left,	Right,	End,	Down,	Pgdown,	Ins,	Del,
-[0x70]	No,		No,		No,		No,		No,		No,		No,		Break,
-[0x78]	No,		No,		No,		No,		No,		No/*LWin*/,	No/*RWin*/,	No/*Menu*/,
+[0x70]	No,	No,	No,	No,	No,	No,	No,	Break,
+[0x78]	No,	No,	No,	No,	No,	LWin,	RWin,	Menu,
 };
 
 
@@ -305,40 +312,40 @@ static void pointerProc( int* phandle )
 						if(0<=ev.code && ev.code<(sizeof(kbtab)/sizeof(*kbtab)))
 						{
 							Rune c = (shift?kbtabshift:kbtab)[ev.code];
-						    if(caps && c<='z' && c>='a')
-        						c += 'A' - 'a';
-      						if(ev.value==0 /*keyup*/)
+						    	if(caps && c<='z' && c>='a')
+	        						c += 'A' - 'a';
+	      						if(ev.value==0 /*keyup*/)
 							{
-        						switch(c)
+        							switch(c)
 								{
 								case Latin: alt=0;	break;
-        						case Shift: shift=0;break;
-        						case LCtrl:
-        						case RCtrl: ctl=0;	break;
-        						}
-      						}
+	        						case Shift: shift=0;	break;
+	        						case LCtrl:
+	        						case RCtrl: ctl=0;	break;
+	        						}
+      							}
 							else if(ev.value==1)
 							{
-	                          	/*
-	                           	*  normal character
-	                           	*/
+				                          	/*
+				                           	*  normal character
+				                           	*/
 								if(c==No)
 								{
-	      						}
+	      							}
 								else if(!(c & Spec))
 								{
-	        						if(ctl)
-	          							c &= 0x1f;
-							       	gkbdputc(gkbdq, c);
+		        						if(ctl)
+		          							c &= 0x1f;
+								       	gkbdputc(gkbdq, c);
 								} else switch(c)
 								{
-        						case Caps: caps ^= 1; break;
-        						case Num:  num ^= 1;  break;
-        						case Shift:shift = 1; break;
-						    	case Latin:alt = 1;   break;
-        						case LCtrl:
-        						case RCtrl:ctl = 1;	  break;
-        						case Del:  if(ctl&&alt) cleanexit(0); /*pass*/
+        							case Caps: caps ^= 1; break;
+        							case Num:  num ^= 1;  break;
+        							case Shift:shift = 1; break;
+						    		case Latin:alt = 1;   break;
+        							case LCtrl:
+        							case RCtrl:ctl = 1;	break;
+        							case Del:  if(ctl&&alt) cleanexit(0); /*pass*/
 								default:
 									gkbdputc(gkbdq, c);
 								}
@@ -385,11 +392,11 @@ static void touchscreen_init(void)
 	char sz[18] = "/dev/input/event?";
 	for(i=0; i<sizeof(fds)/sizeof(*fds); i++)
 	{
-		if(i==0 /* Neo1973 Buttons 		*/
+		if(i==0 /* Neo1973 Buttons 	*/
 		|| i==1 /* s3c2410 TouchScreen 	*/
-		/* i==2 /* lis302-1 (top) 		*/
+		/* i==2 /* lis302-1 (top) 	*/
 		/* i==3 /* lis302-2 (bottom) 	*/
-		/* i==4 /* GTA02 PMU events	 	*/
+		/* i==4 /* GTA02 PMU events	*/
 		|| i==5 /* usb keyboard or mouse*/
 		|| i==6 /* usb keyboard or mouse*/
 		)
