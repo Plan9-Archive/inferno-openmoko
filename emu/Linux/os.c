@@ -264,7 +264,7 @@ termset(void)
 static void
 termrestore(void)
 {
-#if defined (FRAMEBUFFER_SUPPORT)
+#ifdef OPENMOKO
 	framebuffer_deinit ();
 #endif
 	tcsetattr(0, TCSANOW, &tinit);

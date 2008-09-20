@@ -3,6 +3,11 @@
  */
 
 static char *sysdev[] = {
+#ifdef OPENMOKO
+        "/dev/ttySAC0",
+        "/dev/ttySAC1",
+        "/dev/ttySAC2",
+#else
         "/dev/ttyS0",
         "/dev/ttyS1",
         "/dev/ttyS2",
@@ -11,6 +16,7 @@ static char *sysdev[] = {
         "/dev/ttyS5",
         "/dev/ttyS6",
         "/dev/ttyS7",
+#endif
 };
 
 #include <sys/ioctl.h>
