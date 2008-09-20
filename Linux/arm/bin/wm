@@ -1,6 +1,19 @@
 #!/bin/sh
 
+ROOT="$HOME"
+EMUBIN=$ROOT/Linux/arm/bin
 PATH="$HOME/Linux/arm/bin:$PATH"
-export DISPLAY=:0.0
+ME=`whoami`
+#export DISPLAY=:0.0
 
-emu -g 480x640 wm/wm
+exec "$EMUBIN/emu" -g 480x640 -r "$ROOT" "$@" /dis/sh.dis -c "{
+	load std
+	or {ftest -e /net/cs} {ndb/cs}
+	or {ftest -e /net/dns} {ndb/dns}
+	wm/wm &
+	svc/styx
+	svc/rstyx
+	bind -c '#U*' /n/local
+	cd /usr/$ME
+	sh -i
+}"
