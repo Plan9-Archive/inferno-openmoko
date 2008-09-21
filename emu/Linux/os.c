@@ -188,6 +188,23 @@ trapSEGV(int signo)
 	disfault(nil, "Segmentation violation");
 }
 
+#ifdef LINUX_ARM
+static void
+actSEGV(int signo, struct siginfo* si, struct sigcontext* sc)
+{
+	USED(signo);
+	print("R0  %08uX    R1  %08uX    R2  %08uX    R3  %08uX\n", sc->arm_r0, sc->arm_r1, sc->arm_r2, sc->arm_r3 );
+	print("R4  %08uX    R5  %08uX    R6  %08uX    R7  %08uX\n", sc->arm_r4, sc->arm_r5, sc->arm_r6, sc->arm_r7 );
+	print("R8  %08uX    R9  %08uX    R10 %08uX    FP  %08uX\n", sc->arm_r8, sc->arm_r9, sc->arm_r10,sc->arm_fp );
+	print("IP  %08uX    SP  %08uX    LR  %08uX    PC  %08uX\n", sc->arm_ip, sc->arm_sp, sc->arm_lr, sc->arm_pc );
+	print("CPSR%08uX\n", sc->arm_cpsr );
+	print("AT  %08uX\n", sc->fault_address );
+	das(((int*)sc->fault_address)-4, 16);
+
+	disfault(nil, "Segmentation violation");
+}
+#endif
+
 #include <fpuctl.h>
 static void
 trapFPE(int signo)
@@ -354,10 +371,18 @@ libinit(char *imod)
 		sigaction(SIGBUS, &act, nil);
 		act.sa_handler = trapILL;
 		sigaction(SIGILL, &act, nil);
+#ifndef LINUX_ARM
 		act.sa_handler = trapSEGV;
 		sigaction(SIGSEGV, &act, nil);
+#endif
 		act.sa_handler = trapFPE;
 		sigaction(SIGFPE, &act, nil);
+#ifdef LINUX_ARM
+		act.sa_handler = trapSEGV;
+		act.sa_flags = SA_SIGINFO;
+		act.sa_sigaction = actSEGV;
+		sigaction(SIGSEGV, &act, nil);
+#endif
 	}
 
 	p = newproc();
