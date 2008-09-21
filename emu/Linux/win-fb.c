@@ -329,7 +329,7 @@ static void pointerProc( int* phandle )
 				                          	/*
 				                           	*  normal character
 				                           	*/
-								if(c==No)
+								if(c==(Rune)No)
 								{
 	      							}
 								else if(!(c & Spec))

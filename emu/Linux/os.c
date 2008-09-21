@@ -124,7 +124,11 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 
 	if(flags & KPX11){
 		p->kstack = nil;	/* never freed; also up not defined */
+#if defined(LINUX_ARM) && defined(__GNUC__)
+		tos = (char*)mallocz(X11STACK, 0) + X11STACK - 2*sizeof(void*);
+#else
 		tos = (char*)mallocz(X11STACK, 0) + X11STACK - sizeof(void*);
+#endif
 	}else
 		p->kstack = stackalloc(p, &tos);
 
@@ -520,7 +524,11 @@ stackalloc(Proc *p, void **tos)
 	rv = stacklist.free;
 	stacklist.free = *(void **)rv;
 	unlock(&stacklist.l);
+#if defined(LINUX_ARM) && defined(__GNUC__)
+	*tos = rv + KSTACK - 2*sizeof(void *);
+#else
 	*tos = rv + KSTACK - sizeof(void *);
+#endif
 	*(Proc **)rv = p;
 	return rv;
 }
