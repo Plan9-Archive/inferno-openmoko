@@ -399,6 +399,9 @@ static void touchscreen_init(void)
 		/* i==4 /* GTA02 PMU events	*/
 		|| i==5 /* usb keyboard or mouse*/
 		|| i==6 /* usb keyboard or mouse*/
+		|| i==7 /* usb keyboard or mouse*/
+		|| i==8 /* usb keyboard or mouse*/
+		|| i==9 /* usb keyboard or mouse*/
 		)
 		{
 			sz[16]='0'+i;
