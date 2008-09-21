@@ -83,7 +83,6 @@ TkOption textopts[] =
 };
 
 #define CNTL(c) ((c)&0x1f)
-#define DEL 0x7f
 
 static TkEbind tktbinds[] = {
 	{TkButton1P,		"%W tkTextButton1 %X %Y"},
@@ -105,7 +104,7 @@ static TkEbind tktbinds[] = {
 	{TkKey|CNTL('f'),	"%W tkTextSetCursor insert+1c"},
 	{TkKey|Right,		"%W tkTextSetCursor insert+1c"},
 	{TkKey|CNTL('h'),	"%W tkTextDelIns -c"},
-	{TkKey|DEL,		"%W tkTextDelIns +c"},
+	{TkKey|Del,		"%W tkTextDelIns +c"},
 	{TkKey|CNTL('k'),	"%W delete insert {insert lineend}"},
 	{TkKey|CNTL('n'),	"%W tkTextSetCursor {insert+1l}"},
 	{TkKey|Down,		"%W tkTextSetCursor {insert+1l}"},

@@ -21,7 +21,6 @@
 #define	O(t, e)		((long)(&((t*)0)->e))
 
 #define CNTL(c) ((c)&0x1f)
-#define DEL 0x7f
 
 /* Layout constants */
 enum {
@@ -59,7 +58,7 @@ TkEbind b[] =
 	{TkKey|CNTL('k'),	"%W delete insert end;%W see insert"},
 	{TkKey|CNTL('u'),	"%W delete 0 end;%W see insert"},
 	{TkKey|CNTL('w'),	"%W delete sel.first sel.last; %W tkEntryBW;%W see insert"},
-	{TkKey|DEL,		"%W tkEntryBS 1;%W see insert"},
+	{TkKey|Del,		"%W tkEntryBS 1;%W see insert"},
 	{TkKey|CNTL('\\'),	"%W selection clear"},
 	{TkKey|CNTL('/'),	"%W selection range 0 end"},
 	{TkKey|Left,	"%W icursor insert-1;%W selection clear;%W selection from insert;%W see insert"},
