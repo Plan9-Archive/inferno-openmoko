@@ -312,44 +312,45 @@ static void pointerProc( int* phandle )
 						if(0<=ev.code && ev.code<(sizeof(kbtab)/sizeof(*kbtab)))
 						{
 							Rune c = (shift?kbtabshift:kbtab)[ev.code];
-						    	if(caps && c<='z' && c>='a')
-	        						c += 'A' - 'a';
-	      						if(ev.value==0 /*keyup*/)
+							if(c!=(Rune)No)
 							{
-        							switch(c)
+							    	if(caps && c<='z' && c>='a')
+		        						c += 'A' - 'a';
+	      							if(ev.value==0 /*keyup*/)
 								{
-								case Latin: alt=0;	break;
-	        						case Shift: shift=0;	break;
-	        						case LCtrl:
-	        						case RCtrl: ctl=0;	break;
-	        						}
-      							}
-							else if(ev.value==1)
-							{
-				                          	/*
-				                           	*  normal character
-				                           	*/
-								if(c==(Rune)No)
+	        							switch(c)
+									{
+									case Latin: alt=0;	break;
+	        							case Shift: shift=0;	break;
+	        							case LCtrl:
+	        							case RCtrl: ctl=0;	break;
+	        							}
+      								}
+								else if(ev.value==1 || ev.value==2/*autorepeat*/)
 								{
-	      							}
-								else if(!(c & Spec))
-								{
-		        						if(ctl)
-		          							c &= 0x1f;
-								       	gkbdputc(gkbdq, c);
-								} else switch(c)
-								{
-        							case Caps: caps ^= 1; break;
-        							case Num:  num ^= 1;  break;
-        							case Shift:shift = 1; break;
-						    		case Latin:alt = 1;   break;
-        							case LCtrl:
-        							case RCtrl:ctl = 1;	break;
-        							case Del:  if(ctl&&alt) cleanexit(0); /*pass*/
-								default:
-									gkbdputc(gkbdq, c);
+				                        	  	/*
+				                	           	*  normal character
+				        	                   	*/
+									if(!(c & Spec))
+									{
+			        						if(ctl)
+			          							c &= 0x1f;
+									       	gkbdputc(gkbdq, c);
+									} else switch(c)
+									{
+        								case Caps: if(ev.value==1)caps ^= 1; break;
+        								case Num:  if(ev.value==1)num ^= 1;  break;
+        								case Shift:shift = 1; break;
+							    		case Latin:alt = 1;   break;
+        								case LCtrl:
+        								case RCtrl:ctl = 1;	break;
+	        							case Ins:
+	        							case Del:  if(ctl&&alt) cleanexit(0); /*pass*/
+									default:
+										gkbdputc(gkbdq, c);
+									}
 								}
-							}
+	      						}
 						}
 						break;
 					}
