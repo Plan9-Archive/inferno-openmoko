@@ -236,7 +236,7 @@ Prog.stack(p: self ref Prog): (array of ref Exp, string)
 		e[nf] = ref Exp("unknown fn",
 				hex(buf[s+0:s+8]), 
 				hex(buf[s+9:s+17]),
-				mkmod(hex(buf[s+18:s+26]), hex(buf[s+27:s+35]), buf[36] != byte '0', string buf[s+38:t]),
+				mkmod(hex(buf[s+18:s+26]), hex(buf[s+27:s+35]), buf[s+36] != byte '0', string buf[s+38:t]),
 				p,
 				nil);
 		nf++;
