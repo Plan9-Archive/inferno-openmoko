@@ -13,21 +13,22 @@ String	snil;			/* String known to be zero length */
 #define Dtmp	*((WORD*)(R.FP+(NREG+2)*IBY2WD))
 
 #define OP(fn)	void fn(void)
-#define B(r)	*((BYTE*)(R.r))
-#define W(r)	*((WORD*)(R.r))
-#define UW(r)	*((UWORD*)(R.r))
-#define F(r)	*((REAL*)(R.r))
-#define V(r)	*((LONG*)(R.r))	
-#define UV(r)	*((ULONG*)(R.r))	
-#define	S(r)	*((String**)(R.r))
-#define	A(r)	*((Array**)(R.r))
-#define	L(r)	*((List**)(R.r))
-#define P(r)	*((WORD**)(R.r))
-#define C(r)	*((Channel**)(R.r))
-#define T(r)	*((void**)(R.r))
+#define B(r)	(*((BYTE*)(R.r)))
+#define W(r)	(*((WORD*)(R.r)))
+#define UW(r)	(*((UWORD*)(R.r)))
+#define F(r)	(*((REAL*)(R.r)))
+#define V(r)	(*((LONG*)(R.r)))
+#define UV(r)	(*((ULONG*)(R.r)))
+#define	S(r)	(*((String**)(R.r)))
+#define	A(r)	(*((Array**)(R.r)))
+#define	Alen(r)	(A(r)==H?0:A(r)->len)
+#define	L(r)	(*((List**)(R.r)))
+#define P(r)	(*((WORD**)(R.r)))
+#define C(r)	(*((Channel**)(R.r)))
+#define T(r)	(*((void**)(R.r)))
 #define JMP(r)	R.PC = *(Inst**)(R.r)
-#define SH(r)	*((SHORT*)(R.r))
-#define SR(r)	*((SREAL*)(R.r))
+#define SH(r)	(*((SHORT*)(R.r)))
+#define SR(r)	(*((SREAL*)(R.r)))
 
 OP(runt) {}
 OP(negf) { F(d) = -F(s); }
@@ -1665,10 +1666,10 @@ opinit(void)
 
 #ifdef DEBUGVM
 // print op operand state before executing
-void statebefore(char* o, int n, uchar op)
+void statebefore(char* o, int n, uchar op, Inst* modprog)
 {
 #define CURM (R.M->m->name)
-#define I(r) (*(Inst**)R.r - R.M->m->prog)
+#define I(r) (*(Inst**)R.r - modprog)
 
 	o[0] = '\0';
 	switch(op)
@@ -1705,43 +1706,43 @@ void statebefore(char* o, int n, uchar op)
 	case IMOVF: 	snprint(o,n,"%f", F(s)); break;
 	case ICVTRF:	snprint(o,n,"%f", SR(s)); break;
 	case ICVTAC:
-	case ILENA: 	snprint(o,n,"Array@%p", A(s)); break;
+	case ILENA: 	snprint(o,n,"Array[%d]@%p", Alen(s), A(s)); break;
 	case ILEA:	snprint(o,n,"%p", R.s); break;
 	case IALT:	/* tbd: show structure bihing the pointer */
 	case INBALT:	/* tbd: show structure bihing the pointer */
 	case IRAISE:    /* tbd: show structure bihing the pointer */
 	case IMOVP: 	snprint(o,n,"%p", T(s)); break;
 	case IFRAME:	snprint(o,n,"Type_%s_%d", CURM, (Type*)T(s)); break;
-	case IBEQB:	snprint(o,n,"if(%d == %d) jmp %s_%d", B(m), B(s), CURM, I(d)); break;  // diadic and triadic
-	case IBNEB:	snprint(o,n,"if(%d != %d) jmp %s_%d", B(m), B(s), CURM, I(d)); break; 
-	case IBLTB:	snprint(o,n,"if(%d <  %d) jmp %s_%d", B(m), B(s), CURM, I(d)); break; 
-	case IBLEB:	snprint(o,n,"if(%d <= %d) jmp %s_%d", B(m), B(s), CURM, I(d)); break; 
-	case IBGTB:	snprint(o,n,"if(%d >  %d) jmp %s_%d", B(m), B(s), CURM, I(d)); break; 
-	case IBGEB:	snprint(o,n,"if(%d >= %d) jmp %s_%d", B(m), B(s), CURM, I(d)); break; 
-	case IBEQW:	snprint(o,n,"if(%d == %d) jmp %s_%d", W(m), W(s), CURM, I(d)); break; 
-	case IBNEW:	snprint(o,n,"if(%d != %d) jmp %s_%d", W(m), W(s), CURM, I(d)); break; 
-	case IBLTW:	snprint(o,n,"if(%d <  %d) jmp %s_%d", W(m), W(s), CURM, I(d)); break; 
-	case IBLEW:	snprint(o,n,"if(%d <= %d) jmp %s_%d", W(m), W(s), CURM, I(d)); break; 
-	case IBGTW:	snprint(o,n,"if(%d >  %d) jmp %s_%d", W(m), W(s), CURM, I(d)); break; 
-	case IBGEW:	snprint(o,n,"if(%d >= %d) jmp %s_%d", W(m), W(s), CURM, I(d)); break; 
-	case IBEQL:	snprint(o,n,"if(0x%llX == 0x%llX) jmp %s_%d", V(m), V(s), CURM, I(d)); break; 
-	case IBNEL:	snprint(o,n,"if(0x%llX != 0x%llX) jmp %s_%d", V(m), V(s), CURM, I(d)); break; 
-	case IBLTL:	snprint(o,n,"if(0x%llX <  0x%llX) jmp %s_%d", V(m), V(s), CURM, I(d)); break; 
-	case IBLEL:	snprint(o,n,"if(0x%llX <= 0x%llX) jmp %s_%d", V(m), V(s), CURM, I(d)); break; 
-	case IBGTL:	snprint(o,n,"if(0x%llX >  0x%llX) jmp %s_%d", V(m), V(s), CURM, I(d)); break; 
-	case IBGEL:	snprint(o,n,"if(0x%llX >= 0x%llX) jmp %s_%d", V(m), V(s), CURM, I(d)); break; 
-	case IBEQF:	snprint(o,n,"if(%d == %d) jmp %s_%d", F(m), F(s), CURM, I(d)); break; 
-	case IBNEF:	snprint(o,n,"if(%d != %d) jmp %s_%d", F(m), F(s), CURM, I(d)); break; 
-	case IBLTF:	snprint(o,n,"if(%d <  %d) jmp %s_%d", F(m), F(s), CURM, I(d)); break; 
-	case IBLEF:	snprint(o,n,"if(%d <= %d) jmp %s_%d", F(m), F(s), CURM, I(d)); break;
-	case IBGTF:	snprint(o,n,"if(%d >  %d) jmp %s_%d", F(m), F(s), CURM, I(d)); break;
-	case IBGEF:	snprint(o,n,"if(%d >= %d) jmp %s_%d", F(m), F(s), CURM, I(d)); break;
-	case IBEQC:	snprint(o,n,"if(\"%s\" == \"%s\") jmp %s_%d", string2c(S(m)), string2c(S(s)), CURM, I(d)); break; 
-	case IBNEC:	snprint(o,n,"if(\"%s\" != \"%s\") jmp %s_%d", string2c(S(m)), string2c(S(s)), CURM, I(d)); break; 
-	case IBLTC:	snprint(o,n,"if(\"%s\" <  \"%s\") jmp %s_%d", string2c(S(m)), string2c(S(s)), CURM, I(d)); break; 
-	case IBLEC:	snprint(o,n,"if(\"%s\" <= \"%s\") jmp %s_%d", string2c(S(m)), string2c(S(s)), CURM, I(d)); break; 
-	case IBGTC:	snprint(o,n,"if(\"%s\" >  \"%s\") jmp %s_%d", string2c(S(m)), string2c(S(s)), CURM, I(d)); break; 
-	case IBGEC:	snprint(o,n,"if(\"%s\" >= \"%s\") jmp %s_%d", string2c(S(m)), string2c(S(s)), CURM, I(d)); break; 
+	case IBEQB:	snprint(o,n,"if(%d == %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break;  // diadic and triadic
+	case IBNEB:	snprint(o,n,"if(%d != %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break; 
+	case IBLTB:	snprint(o,n,"if(%d <  %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break; 
+	case IBLEB:	snprint(o,n,"if(%d <= %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break; 
+	case IBGTB:	snprint(o,n,"if(%d >  %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break; 
+	case IBGEB:	snprint(o,n,"if(%d >= %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break; 
+	case IBEQW:	snprint(o,n,"if(%d == %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break; 
+	case IBNEW:	snprint(o,n,"if(%d != %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break; 
+	case IBLTW:	snprint(o,n,"if(%d <  %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break; 
+	case IBLEW:	snprint(o,n,"if(%d <= %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break; 
+	case IBGTW:	snprint(o,n,"if(%d >  %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break; 
+	case IBGEW:	snprint(o,n,"if(%d >= %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break; 
+	case IBEQL:	snprint(o,n,"if(0x%llX == 0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break; 
+	case IBNEL:	snprint(o,n,"if(0x%llX != 0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break; 
+	case IBLTL:	snprint(o,n,"if(0x%llX <  0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break; 
+	case IBLEL:	snprint(o,n,"if(0x%llX <= 0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break; 
+	case IBGTL:	snprint(o,n,"if(0x%llX >  0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break; 
+	case IBGEL:	snprint(o,n,"if(0x%llX >= 0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break; 
+	case IBEQF:	snprint(o,n,"if(%f == %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break; 
+	case IBNEF:	snprint(o,n,"if(%f != %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break; 
+	case IBLTF:	snprint(o,n,"if(%f <  %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break; 
+	case IBLEF:	snprint(o,n,"if(%f <= %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break;
+	case IBGTF:	snprint(o,n,"if(%f >  %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break;
+	case IBGEF:	snprint(o,n,"if(%f >= %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break;
+	case IBEQC:	snprint(o,n,"if(\"%s\" == \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break; 
+	case IBNEC:	snprint(o,n,"if(\"%s\" != \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break; 
+	case IBLTC:	snprint(o,n,"if(\"%s\" <  \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break; 
+	case IBLEC:	snprint(o,n,"if(\"%s\" <= \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break; 
+	case IBGTC:	snprint(o,n,"if(\"%s\" >  \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break; 
+	case IBGEC:	snprint(o,n,"if(\"%s\" >= \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break; 
 	case IADDB:	snprint(o,n,"%d + %d", B(m), B(s)); break;
 	case IADDW:	snprint(o,n,"%d + %d", W(m), W(s)); break;
 	case IADDL:	snprint(o,n,"0x%llX + 0x%llX", V(m), V(s)); break;
@@ -1768,9 +1769,9 @@ void statebefore(char* o, int n, uchar op)
 	case IXORB:	snprint(o,n,"%d ^ %d", B(m), B(s)); break;
 	case IXORW:	snprint(o,n,"%d ^ %d", W(m), W(s)); break;
 	case IXORL:	snprint(o,n,"0x%llX ^ 0x%llX", V(m), V(s)); break;
-	case IMODB:	snprint(o,n,"%d % %d", B(m), B(s)); break;
-	case IMODW:	snprint(o,n,"%d % %d", W(m), W(s)); break;
-	case IMODL:	snprint(o,n,"0x%llX % 0x%llX", V(m), V(s)); break;
+	case IMODB:	snprint(o,n,"%d %% %d", B(m), B(s)); break;
+	case IMODW:	snprint(o,n,"%d %% %d", W(m), W(s)); break;
+	case IMODL:	snprint(o,n,"0x%llX %% 0x%llX", V(m), V(s)); break;
 	case ISHLB:	snprint(o,n,"%d << %d", B(m), W(s)); break;
 	case ISHLW:	snprint(o,n,"%d << %d", W(m), W(s)); break;
 	case ISHLL:	snprint(o,n,"0x%llX << %d", V(m), W(s)); break;
@@ -1797,20 +1798,20 @@ void statebefore(char* o, int n, uchar op)
 	case IINDB:
 	case IINDW:
 	case IINDL:
-	case IINDX:	snprint(o,n,"Array@%p [%d]", A(s), W(d)); break;
+	case IINDX:	snprint(o,n,"Array[%d]@%p [%d]", Alen(s), A(s), W(d)); break;
 	case IINDC:     snprint(o,n,"\"%s\" [%d]", string2c(S(s)), W(m)); break;
 	case IINSC:	snprint(o,n,"\"%s\" [%d] = %d", string2c(S(d)), W(m), W(s)); break;
-	case ISLICEA: 	snprint(o,n,"Array@%p [%d:%d]", A(d), W(s), W(m)); break;
+	case ISLICEA: 	snprint(o,n,"Array[%d]@%p [%d:%d]", Alen(d), A(d), W(s), W(m)); break;
 	case ISLICEC: 	snprint(o,n,"\"%s\" [%d:%d]", string2c(S(d)), W(s), W(m)); break;
-	case ISLICELA: 	snprint(o,n,"Array@%p [%d:] = Array@%p", A(d), W(m), A(s)); break;
+	case ISLICELA: 	snprint(o,n,"Array[%d]@%p [%d:] = Array[%d]@%p", Alen(d), A(d), W(m), Alen(s), A(s)); break;
 	case IMSPAWN:
 	case IMCALL:	snprint(o,n,"%s.%d Frame@%p", ((Modlink*)T(d))->m->name, W(m), (Frame*)T(s)); break;
 	case IMFRAME:	snprint(o,n,"%s.%d", ((Modlink*)T(s))->m->name, W(m)); break;
 	case ISPAWN:
-	case ICALL: 	snprint(o,n,"%s_%d Frame@%p", CURM, I(d), (Frame*)T(s)); break;
-	case IJMP: 	snprint(o,n,"%s_%d", CURM, I(d)); break;
-	case IGOTO:	snprint(o,n,"%s_%d", CURM, (WORD*)((WORD)R.d + (W(s) * IBY2WD))); break;
-	case IMOVPC:	snprint(o,n,"%s_%d", CURM, I(s)); break;
+	case ICALL: 	snprint(o,n,"%s_%uX Frame@%p", CURM, I(d), (Frame*)T(s)); break;
+	case IJMP: 	snprint(o,n,"%s_%uX", CURM, I(d)); break;
+	case IGOTO:	snprint(o,n,"%s_%uX", CURM, (WORD*)((WORD)R.d + (W(s) * IBY2WD))); break;
+	case IMOVPC:	snprint(o,n,"%s_%uX", CURM, I(s)); break;
 	case INEW:
 	case INEWZ:	snprint(o,n,"%d", W(s)); break;
 	case IMNEWZ:	snprint(o,n,"Type_%s_%d", ((Modlink*)T(s))->m->name, W(m)); break;
@@ -1863,7 +1864,7 @@ void stateafter(char* o, int n, uchar op)
 	case IINDL:	snprint(o,n," => 0x%llx", V(m)); break;
 	case IINDX:	snprint(o,n," => %p", T(m)); break;
 	case ILOAD:	// module
-	case ISELF:	snprint(o,n," => Module(%s)", ((Modlink*)T(d))->m->name); break;
+	case ISELF:	snprint(o,n," => Module(%s)", T(d)==H?"nil":((Modlink*)T(d))->m->name); break;
 	case INEW:	// pointer
 	case INEWZ:
 	case IMNEWZ:
@@ -1885,7 +1886,7 @@ void stateafter(char* o, int n, uchar op)
 	case INEWA:	// array
 	case INEWAZ:
 	case ICVTCA:
-	case ISLICEA: 	snprint(o,n," => Array@%p", A(d)); break;
+	case ISLICEA: 	snprint(o,n," => Array[%d]@%p", Alen(d), A(d)); break;
 	case INEWCB:    // channel
 	case INEWCW:    
 	case INEWCF:    
@@ -2009,9 +2010,12 @@ xec(Prog *p)
 		op = R.PC->op;
 #ifdef DEBUGVM
 		char sz[100], sz2[200]; 
-		snprint(sz, sizeof(sz), "%s_%d:", CURM, R.PC - R.M->m->prog );
-		statebefore(sz2, sizeof(sz2), op);
-		print("%-16s\t%-40D\t%s", sz, R.PC, sz2);
+		snprint(sz, sizeof(sz), "%s_%uX:", CURM, R.PC - R.M->m->prog );
+		statebefore(sz2, sizeof(sz2), op, R.M->m->prog);
+		print("%-16s", sz);
+		print("\t%02ux %02ux %04ux %08ux %08ux", R.PC->op, R.PC->add, R.PC->reg, R.PC->s.imm, R.PC->d.imm);
+		print("\t%-40D", R.PC);
+		print("\t%s", sz2);
 #endif
 		R.PC++;
 		optab[op]();
