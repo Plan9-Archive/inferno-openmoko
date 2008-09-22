@@ -4,6 +4,10 @@
 #include "raise.h"
 #include "pool.h"
 
+#ifndef CHECK_STACK_ALIGN
+#define CHECK_STACK_ALIGN
+#endif
+
 //#define DEBUGVM
 
 REG	R;			/* Virtual Machine registers */
@@ -30,95 +34,96 @@ String	snil;			/* String known to be zero length */
 #define SH(r)	(*((SHORT*)(R.r)))
 #define SR(r)	(*((SREAL*)(R.r)))
 
-OP(runt) {}
-OP(negf) { F(d) = -F(s); }
-OP(jmp)  { JMP(d); }
-OP(movpc){ T(d) = &R.M->prog[W(s)]; }
-OP(movm) { memmove(R.d, R.s, W(m)); }
-OP(lea)  { W(d) = (WORD)R.s; }
-OP(movb) { B(d) = B(s); }
-OP(movw) { W(d) = W(s); }
-OP(movf) { F(d) = F(s); }
-OP(movl) { V(d) = V(s); }
-OP(cvtbw){ W(d) = B(s); }
-OP(cvtwb){ B(d) = W(s); }
-OP(cvtrf){ F(d) = SR(s); }
-OP(cvtfr){ SR(d) = F(s); }
-OP(cvtws){ SH(d) = W(s); }
-OP(cvtsw){ W(d) = SH(s); }
-OP(cvtwf){ F(d) = W(s); }
-OP(addb) { B(d) = B(m) + B(s); }
-OP(addw) { W(d) = W(m) + W(s); }
-OP(addl) { V(d) = V(m) + V(s); }
-OP(addf) { F(d) = F(m) + F(s); }
-OP(subb) { B(d) = B(m) - B(s); }
-OP(subw) { W(d) = W(m) - W(s); }
-OP(subl) { V(d) = V(m) - V(s); }
-OP(subf) { F(d) = F(m) - F(s); }
-OP(divb) { B(d) = B(m) / B(s); }
-OP(divw) { W(d) = W(m) / W(s); }
-OP(divl) { V(d) = V(m) / V(s); }
-OP(divf) { F(d) = F(m) / F(s); }
-OP(modb) { B(d) = B(m) % B(s); }
-OP(modw) { W(d) = W(m) % W(s); }
-OP(modl) { V(d) = V(m) % V(s); }
-OP(mulb) { B(d) = B(m) * B(s); }
-OP(mulw) { W(d) = W(m) * W(s); }
-OP(mull) { V(d) = V(m) * V(s); }
-OP(mulf) { F(d) = F(m) * F(s); }
-OP(andb) { B(d) = B(m) & B(s); }
-OP(andw) { W(d) = W(m) & W(s); }
-OP(andl) { V(d) = V(m) & V(s); }
-OP(xorb) { B(d) = B(m) ^ B(s); }
-OP(xorw) { W(d) = W(m) ^ W(s); }
-OP(xorl) { V(d) = V(m) ^ V(s); }
-OP(orb)  { B(d) = B(m) | B(s); }
-OP(orw)  { W(d) = W(m) | W(s); }
-OP(orl)  { V(d) = V(m) | V(s); }
-OP(shlb) { B(d) = B(m) << W(s); }
-OP(shlw) { W(d) = W(m) << W(s); }
-OP(shll) { V(d) = V(m) << W(s); }
-OP(shrb) { B(d) = B(m) >> W(s); }
-OP(shrw) { W(d) = W(m) >> W(s); }
-OP(shrl) { V(d) = V(m) >> W(s); }
-OP(lsrw) { W(d) = UW(m) >> W(s); }
-OP(lsrl) { V(d) = UV(m) >> W(s); }
-OP(beqb) { if(B(s) == B(m)) JMP(d); }
-OP(bneb) { if(B(s) != B(m)) JMP(d); }
-OP(bltb) { if(B(s) <  B(m)) JMP(d); }
-OP(bleb) { if(B(s) <= B(m)) JMP(d); }
-OP(bgtb) { if(B(s) >  B(m)) JMP(d); }
-OP(bgeb) { if(B(s) >= B(m)) JMP(d); }
-OP(beqw) { if(W(s) == W(m)) JMP(d); }
-OP(bnew) { if(W(s) != W(m)) JMP(d); }
-OP(bltw) { if(W(s) <  W(m)) JMP(d); }
-OP(blew) { if(W(s) <= W(m)) JMP(d); }
-OP(bgtw) { if(W(s) >  W(m)) JMP(d); }
-OP(bgew) { if(W(s) >= W(m)) JMP(d); }
-OP(beql) { if(V(s) == V(m)) JMP(d); }
-OP(bnel) { if(V(s) != V(m)) JMP(d); }
-OP(bltl) { if(V(s) <  V(m)) JMP(d); }
-OP(blel) { if(V(s) <= V(m)) JMP(d); }
-OP(bgtl) { if(V(s) >  V(m)) JMP(d); }
-OP(bgel) { if(V(s) >= V(m)) JMP(d); }
-OP(beqf) { if(F(s) == F(m)) JMP(d); }
-OP(bnef) { if(F(s) != F(m)) JMP(d); }
-OP(bltf) { if(F(s) <  F(m)) JMP(d); }
-OP(blef) { if(F(s) <= F(m)) JMP(d); }
-OP(bgtf) { if(F(s) >  F(m)) JMP(d); }
-OP(bgef) { if(F(s) >= F(m)) JMP(d); }
-OP(beqc) { if(stringcmp(S(s), S(m)) == 0) JMP(d); }
-OP(bnec) { if(stringcmp(S(s), S(m)) != 0) JMP(d); }
-OP(bltc) { if(stringcmp(S(s), S(m)) <  0) JMP(d); }
-OP(blec) { if(stringcmp(S(s), S(m)) <= 0) JMP(d); }
-OP(bgtc) { if(stringcmp(S(s), S(m)) >  0) JMP(d); }
-OP(bgec) { if(stringcmp(S(s), S(m)) >= 0) JMP(d); }
-OP(iexit){ error(""); }
-OP(cvtwl){ V(d) = W(s); }
-OP(cvtlw){ W(d) = V(s); }
-OP(cvtlf){ F(d) = V(s); }
+OP(runt) { CHECK_STACK_ALIGN(); }
+OP(negf) { CHECK_STACK_ALIGN(); F(d) = -F(s); }
+OP(jmp)  { CHECK_STACK_ALIGN(); JMP(d); }
+OP(movpc){ CHECK_STACK_ALIGN(); T(d) = &R.M->prog[W(s)]; }
+OP(movm) { CHECK_STACK_ALIGN(); memmove(R.d, R.s, W(m)); }
+OP(lea)  { CHECK_STACK_ALIGN(); W(d) = (WORD)R.s; }
+OP(movb) { CHECK_STACK_ALIGN(); B(d) = B(s); }
+OP(movw) { CHECK_STACK_ALIGN(); W(d) = W(s); }
+OP(movf) { CHECK_STACK_ALIGN(); F(d) = F(s); }
+OP(movl) { CHECK_STACK_ALIGN(); V(d) = V(s); }
+OP(cvtbw){ CHECK_STACK_ALIGN(); W(d) = B(s); }
+OP(cvtwb){ CHECK_STACK_ALIGN(); B(d) = W(s); }
+OP(cvtrf){ CHECK_STACK_ALIGN(); F(d) = SR(s); }
+OP(cvtfr){ CHECK_STACK_ALIGN(); SR(d) = F(s); }
+OP(cvtws){ CHECK_STACK_ALIGN(); SH(d) = W(s); }
+OP(cvtsw){ CHECK_STACK_ALIGN(); W(d) = SH(s); }
+OP(cvtwf){ CHECK_STACK_ALIGN(); F(d) = W(s); }
+OP(addb) { CHECK_STACK_ALIGN(); B(d) = B(m) + B(s); }
+OP(addw) { CHECK_STACK_ALIGN(); W(d) = W(m) + W(s); }
+OP(addl) { CHECK_STACK_ALIGN(); V(d) = V(m) + V(s); }
+OP(addf) { CHECK_STACK_ALIGN(); F(d) = F(m) + F(s); }
+OP(subb) { CHECK_STACK_ALIGN(); B(d) = B(m) - B(s); }
+OP(subw) { CHECK_STACK_ALIGN(); W(d) = W(m) - W(s); }
+OP(subl) { CHECK_STACK_ALIGN(); V(d) = V(m) - V(s); }
+OP(subf) { CHECK_STACK_ALIGN(); F(d) = F(m) - F(s); }
+OP(divb) { CHECK_STACK_ALIGN(); B(d) = B(m) / B(s); }
+OP(divw) { CHECK_STACK_ALIGN(); W(d) = W(m) / W(s); }
+OP(divl) { CHECK_STACK_ALIGN(); V(d) = V(m) / V(s); }
+OP(divf) { CHECK_STACK_ALIGN(); F(d) = F(m) / F(s); }
+OP(modb) { CHECK_STACK_ALIGN(); B(d) = B(m) % B(s); }
+OP(modw) { CHECK_STACK_ALIGN(); W(d) = W(m) % W(s); }
+OP(modl) { CHECK_STACK_ALIGN(); V(d) = V(m) % V(s); }
+OP(mulb) { CHECK_STACK_ALIGN(); B(d) = B(m) * B(s); }
+OP(mulw) { CHECK_STACK_ALIGN(); W(d) = W(m) * W(s); }
+OP(mull) { CHECK_STACK_ALIGN(); V(d) = V(m) * V(s); }
+OP(mulf) { CHECK_STACK_ALIGN(); F(d) = F(m) * F(s); }
+OP(andb) { CHECK_STACK_ALIGN(); B(d) = B(m) & B(s); }
+OP(andw) { CHECK_STACK_ALIGN(); W(d) = W(m) & W(s); }
+OP(andl) { CHECK_STACK_ALIGN(); V(d) = V(m) & V(s); }
+OP(xorb) { CHECK_STACK_ALIGN(); B(d) = B(m) ^ B(s); }
+OP(xorw) { CHECK_STACK_ALIGN(); W(d) = W(m) ^ W(s); }
+OP(xorl) { CHECK_STACK_ALIGN(); V(d) = V(m) ^ V(s); }
+OP(orb)  { CHECK_STACK_ALIGN(); B(d) = B(m) | B(s); }
+OP(orw)  { CHECK_STACK_ALIGN(); W(d) = W(m) | W(s); }
+OP(orl)  { CHECK_STACK_ALIGN(); V(d) = V(m) | V(s); }
+OP(shlb) { CHECK_STACK_ALIGN(); B(d) = B(m) << W(s); }
+OP(shlw) { CHECK_STACK_ALIGN(); W(d) = W(m) << W(s); }
+OP(shll) { CHECK_STACK_ALIGN(); V(d) = V(m) << W(s); }
+OP(shrb) { CHECK_STACK_ALIGN(); B(d) = B(m) >> W(s); }
+OP(shrw) { CHECK_STACK_ALIGN(); W(d) = W(m) >> W(s); }
+OP(shrl) { CHECK_STACK_ALIGN(); V(d) = V(m) >> W(s); }
+OP(lsrw) { CHECK_STACK_ALIGN(); W(d) = UW(m) >> W(s); }
+OP(lsrl) { CHECK_STACK_ALIGN(); V(d) = UV(m) >> W(s); }
+OP(beqb) { CHECK_STACK_ALIGN(); if(B(s) == B(m)) JMP(d); }
+OP(bneb) { CHECK_STACK_ALIGN(); if(B(s) != B(m)) JMP(d); }
+OP(bltb) { CHECK_STACK_ALIGN(); if(B(s) <  B(m)) JMP(d); }
+OP(bleb) { CHECK_STACK_ALIGN(); if(B(s) <= B(m)) JMP(d); }
+OP(bgtb) { CHECK_STACK_ALIGN(); if(B(s) >  B(m)) JMP(d); }
+OP(bgeb) { CHECK_STACK_ALIGN(); if(B(s) >= B(m)) JMP(d); }
+OP(beqw) { CHECK_STACK_ALIGN(); if(W(s) == W(m)) JMP(d); }
+OP(bnew) { CHECK_STACK_ALIGN(); if(W(s) != W(m)) JMP(d); }
+OP(bltw) { CHECK_STACK_ALIGN(); if(W(s) <  W(m)) JMP(d); }
+OP(blew) { CHECK_STACK_ALIGN(); if(W(s) <= W(m)) JMP(d); }
+OP(bgtw) { CHECK_STACK_ALIGN(); if(W(s) >  W(m)) JMP(d); }
+OP(bgew) { CHECK_STACK_ALIGN(); if(W(s) >= W(m)) JMP(d); }
+OP(beql) { CHECK_STACK_ALIGN(); if(V(s) == V(m)) JMP(d); }
+OP(bnel) { CHECK_STACK_ALIGN(); if(V(s) != V(m)) JMP(d); }
+OP(bltl) { CHECK_STACK_ALIGN(); if(V(s) <  V(m)) JMP(d); }
+OP(blel) { CHECK_STACK_ALIGN(); if(V(s) <= V(m)) JMP(d); }
+OP(bgtl) { CHECK_STACK_ALIGN(); if(V(s) >  V(m)) JMP(d); }
+OP(bgel) { CHECK_STACK_ALIGN(); if(V(s) >= V(m)) JMP(d); }
+OP(beqf) { CHECK_STACK_ALIGN(); if(F(s) == F(m)) JMP(d); }
+OP(bnef) { CHECK_STACK_ALIGN(); if(F(s) != F(m)) JMP(d); }
+OP(bltf) { CHECK_STACK_ALIGN(); if(F(s) <  F(m)) JMP(d); }
+OP(blef) { CHECK_STACK_ALIGN(); if(F(s) <= F(m)) JMP(d); }
+OP(bgtf) { CHECK_STACK_ALIGN(); if(F(s) >  F(m)) JMP(d); }
+OP(bgef) { CHECK_STACK_ALIGN(); if(F(s) >= F(m)) JMP(d); }
+OP(beqc) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) == 0) JMP(d); }
+OP(bnec) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) != 0) JMP(d); }
+OP(bltc) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) <  0) JMP(d); }
+OP(blec) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) <= 0) JMP(d); }
+OP(bgtc) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) >  0) JMP(d); }
+OP(bgec) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) >= 0) JMP(d); }
+OP(iexit){ CHECK_STACK_ALIGN(); error(""); }
+OP(cvtwl){ CHECK_STACK_ALIGN(); V(d) = W(s); }
+OP(cvtlw){ CHECK_STACK_ALIGN(); W(d) = V(s); }
+OP(cvtlf){ CHECK_STACK_ALIGN(); F(d) = V(s); }
 OP(cvtfl)
 {
+	CHECK_STACK_ALIGN(); 
 	REAL f;
 
 	f = F(s);
@@ -126,6 +131,7 @@ OP(cvtfl)
 }
 OP(cvtfw)
 {
+	CHECK_STACK_ALIGN(); 
 	REAL f;
 
 	f = F(s);
@@ -133,6 +139,7 @@ OP(cvtfw)
 }
 OP(cvtcl)
 {
+	CHECK_STACK_ALIGN(); 
 	String *s;
 
 	s = S(s);
@@ -143,6 +150,7 @@ OP(cvtcl)
 }
 OP(iexpw)
 {
+	CHECK_STACK_ALIGN(); 
 	int inv;
 	WORD x, n, r;
 
@@ -167,6 +175,7 @@ OP(iexpw)
 }
 OP(iexpl)
 {
+	CHECK_STACK_ALIGN(); 
 	int inv;
 	WORD n;
 	LONG x, r;
@@ -192,6 +201,7 @@ OP(iexpl)
 }
 OP(iexpf)
 {
+	CHECK_STACK_ALIGN(); 
 	int inv;
 	WORD n;
 	REAL x, r;
@@ -217,6 +227,7 @@ OP(iexpf)
 }
 OP(indx)
 {
+	CHECK_STACK_ALIGN(); 
 	ulong i;
 	Array *a;
 
@@ -228,6 +239,7 @@ OP(indx)
 }
 OP(indw)
 {
+	CHECK_STACK_ALIGN(); 
 	ulong i;
 	Array *a;
 
@@ -239,6 +251,7 @@ OP(indw)
 }
 OP(indf)
 {
+	CHECK_STACK_ALIGN(); 
 	ulong i;
 	Array *a;
 
@@ -250,6 +263,7 @@ OP(indf)
 }
 OP(indl)
 {
+	CHECK_STACK_ALIGN(); 
 	ulong i;
 	Array *a;
 
@@ -261,6 +275,7 @@ OP(indl)
 }
 OP(indb)
 {
+	CHECK_STACK_ALIGN(); 
 	ulong i;
 	Array *a;
 
@@ -272,6 +287,7 @@ OP(indb)
 }
 OP(movp)
 {
+	CHECK_STACK_ALIGN(); 
 	Heap *h;
 	WORD *dv, *sv;
 
@@ -287,6 +303,7 @@ OP(movp)
 }
 OP(movmp)
 {
+	CHECK_STACK_ALIGN(); 
 	Type *t;
 
 	t = R.M->type[W(m)];
@@ -298,6 +315,7 @@ OP(movmp)
 }
 OP(new)
 {
+	CHECK_STACK_ALIGN(); 
 	Heap *h;
 	WORD **wp, *t;
 
@@ -309,6 +327,7 @@ OP(new)
 }
 OP(newz)
 {
+	CHECK_STACK_ALIGN(); 
 	Heap *h;
 	WORD **wp, *t;
 
@@ -320,6 +339,7 @@ OP(newz)
 }
 OP(mnewz)
 {
+	CHECK_STACK_ALIGN(); 
 	Heap *h;
 	WORD **wp, *t;
 	Modlink *ml;
@@ -335,6 +355,7 @@ OP(mnewz)
 }
 OP(frame)
 {
+	CHECK_STACK_ALIGN(); 
 	Type *t;
 	Frame *f;
 	uchar *nsp;
@@ -357,6 +378,7 @@ OP(frame)
 }
 OP(mframe)
 {
+	CHECK_STACK_ALIGN(); 
 	Type *t;
 	Frame *f;
 	uchar *nsp;
@@ -401,6 +423,7 @@ acheck(int tsz, int sz)
 }
 OP(newa)
 {
+	CHECK_STACK_ALIGN(); 
 	int sz;
 	Type *t;
 	Heap *h;
@@ -426,6 +449,7 @@ OP(newa)
 }
 OP(newaz)
 {
+	CHECK_STACK_ALIGN(); 
 	int sz;
 	Type *t;
 	Heap *h;
@@ -453,6 +477,7 @@ OP(newaz)
 Channel*
 cnewc(Type *t, void (*mover)(void), int len)
 {
+	CHECK_STACK_ALIGN(); 
 	Heap *h;
 	Channel *c;
 
@@ -482,6 +507,7 @@ cnewc(Type *t, void (*mover)(void), int len)
 Channel*
 newc(Type *t, void (*mover)(void))
 {
+	CHECK_STACK_ALIGN(); 
 	Channel **cp, *oldc;
 	WORD len;
 
@@ -497,13 +523,14 @@ newc(Type *t, void (*mover)(void))
 	destroy(oldc);
 	return *cp;
 }
-OP(newcl)  { newc(&Tlong, movl);  }
-OP(newcb)  { newc(&Tbyte, movb);  }
-OP(newcw)  { newc(&Tword, movw);  }
-OP(newcf)  { newc(&Treal, movf);  }
-OP(newcp)  { newc(&Tptr, movp);  }
+OP(newcl)  { CHECK_STACK_ALIGN(); newc(&Tlong, movl);  }
+OP(newcb)  { CHECK_STACK_ALIGN(); newc(&Tbyte, movb);  }
+OP(newcw)  { CHECK_STACK_ALIGN(); newc(&Tword, movw);  }
+OP(newcf)  { CHECK_STACK_ALIGN(); newc(&Treal, movf);  }
+OP(newcp)  { CHECK_STACK_ALIGN(); newc(&Tptr, movp);  }
 OP(newcm)
 {
+	CHECK_STACK_ALIGN();
 	Channel *c;
 	Type *t;
 
@@ -517,10 +544,12 @@ OP(newcm)
 }
 OP(newcmp)
 {
+	CHECK_STACK_ALIGN();
 	newc(R.M->type[W(s)], movtmp);
 }
 OP(icase)
 {
+	CHECK_STACK_ALIGN();
 	WORD v, *t, *l, d, n, n2;
 
 	v = W(s);
@@ -551,6 +580,7 @@ OP(icase)
 }
 OP(casel)
 {
+	CHECK_STACK_ALIGN();
 	WORD *t, *l, d, n, n2;
 	LONG v;
 
@@ -582,6 +612,7 @@ OP(casel)
 }
 OP(casec)
 {
+	CHECK_STACK_ALIGN();
 	WORD *l, *t, *e, n, n2, r;
 	String *sl, *sh, *sv;
 	
@@ -641,6 +672,7 @@ found:
 }
 OP(igoto)
 {
+	CHECK_STACK_ALIGN();
 	WORD *t;
 
 	t = (WORD*)((WORD)R.d + (W(s) * IBY2WD));
@@ -652,6 +684,7 @@ OP(igoto)
 }
 OP(call)
 {
+	CHECK_STACK_ALIGN();
 	Frame *f;
 
 	f = T(s);
@@ -662,6 +695,7 @@ OP(call)
 }
 OP(spawn)
 {
+	CHECK_STACK_ALIGN();
 	Prog *p;
 
 	p = newprog(currun(), R.M);
@@ -671,6 +705,7 @@ OP(spawn)
 }
 OP(mspawn)
 {
+	CHECK_STACK_ALIGN();
 	Prog *p;
 	Modlink *ml;
 	int o;
@@ -691,6 +726,7 @@ OP(mspawn)
 }
 OP(ret)
 {
+	CHECK_STACK_ALIGN();
 	Frame *f;
 	Modlink *m;
 
@@ -721,6 +757,7 @@ OP(ret)
 }
 OP(iload)
 {
+	CHECK_STACK_ALIGN();
 	char *n;
 	Import *ldt;
 	Module *m;
@@ -755,6 +792,7 @@ OP(iload)
 }
 OP(mcall)
 {
+	CHECK_STACK_ALIGN();
 	Heap *h;
 	Prog *p;
 	Frame *f;
@@ -805,6 +843,7 @@ OP(mcall)
 }
 OP(lena)
 {
+	CHECK_STACK_ALIGN();
 	WORD l;
 	Array *a;
 
@@ -816,6 +855,7 @@ OP(lena)
 }
 OP(lenl)
 {
+	CHECK_STACK_ALIGN();
 	WORD l;
 	List *a;
 
@@ -941,6 +981,7 @@ cqdelp(Progq **q, Prog *p)
 }	
 OP(isend)
 {
+	CHECK_STACK_ALIGN();
 	Channel *c;
  	Prog *p;
 
@@ -976,6 +1017,7 @@ OP(isend)
 }
 OP(irecv)
 {
+	CHECK_STACK_ALIGN();
 	Channel *c;
 	Prog *p;
 
@@ -1065,6 +1107,7 @@ cons(ulong size, List **lp)
 }
 OP(consb)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = cons(IBY2WD, R.d);
@@ -1072,6 +1115,7 @@ OP(consb)
 }
 OP(consw)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = cons(IBY2WD, R.d);
@@ -1079,6 +1123,7 @@ OP(consw)
 }
 OP(consl)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = cons(IBY2LG, R.d);
@@ -1086,6 +1131,7 @@ OP(consl)
 }
 OP(consp)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 	Heap *h;
 	WORD *sv;
@@ -1103,6 +1149,7 @@ OP(consp)
 }
 OP(consf)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = cons(sizeof(REAL), R.d);
@@ -1110,6 +1157,7 @@ OP(consf)
 }
 OP(consm)
 {
+	CHECK_STACK_ALIGN();
 	int v;
 	List *l;
 
@@ -1119,6 +1167,7 @@ OP(consm)
 }
 OP(consmp)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 	Type *t;
 
@@ -1131,6 +1180,7 @@ OP(consmp)
 }
 OP(headb)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = L(s);
@@ -1138,6 +1188,7 @@ OP(headb)
 }
 OP(headw)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = L(s);
@@ -1145,6 +1196,7 @@ OP(headw)
 }
 OP(headl)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = L(s);
@@ -1152,6 +1204,7 @@ OP(headl)
 }
 OP(headp)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = L(s);
@@ -1160,6 +1213,7 @@ OP(headp)
 }
 OP(headf)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = L(s);
@@ -1167,6 +1221,7 @@ OP(headf)
 }
 OP(headm)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = L(s);
@@ -1174,6 +1229,7 @@ OP(headm)
 }
 OP(headmp)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = L(s);
@@ -1182,6 +1238,7 @@ OP(headmp)
 }
 OP(tail)
 {
+	CHECK_STACK_ALIGN();
 	List *l;
 
 	l = L(s);
@@ -1190,6 +1247,7 @@ OP(tail)
 }
 OP(slicea)
 {
+	CHECK_STACK_ALIGN();
 	Type *t;
 	Heap *h;
 	Array *at, *ss, *ds;
@@ -1234,6 +1292,7 @@ OP(slicea)
 }
 OP(slicela)
 {
+	CHECK_STACK_ALIGN();
 	Type *t;
 	int l, dl;
 	Array *ss, *ds;
@@ -1283,15 +1342,18 @@ OP(slicela)
 }
 OP(alt)
 {
+	CHECK_STACK_ALIGN();
 	R.t = 0;
 	xecalt(1);
 }
 OP(nbalt)
 {
+	CHECK_STACK_ALIGN();
 	xecalt(0);
 }
 OP(tcmp)
 {
+	CHECK_STACK_ALIGN();
 	void *s, *d;
 
 	s = T(s);
@@ -1305,10 +1367,12 @@ OP(eclr)
 }
 OP(badop)
 {
+	CHECK_STACK_ALIGN();
 	error(exOp);
 }
 OP(iraise)
 {
+	CHECK_STACK_ALIGN();
 	void *v;
 	Heap *h;
 	Prog *p;
@@ -1327,6 +1391,7 @@ OP(iraise)
 }
 OP(mulx)
 {
+	CHECK_STACK_ALIGN();
 	WORD p;
 	LONG r;
 
@@ -1340,6 +1405,7 @@ OP(mulx)
 }
 OP(divx)
 {
+	CHECK_STACK_ALIGN();
 	WORD p;
 	LONG s;
 
@@ -1354,6 +1420,7 @@ OP(divx)
 }
 OP(cvtxx)
 {
+	CHECK_STACK_ALIGN();
 	WORD p;
 	LONG r;
 
@@ -1367,6 +1434,7 @@ OP(cvtxx)
 }
 OP(mulx0)
 {
+	CHECK_STACK_ALIGN();
 	WORD x, y, p, a;
 	LONG r;
 
@@ -1388,6 +1456,7 @@ OP(mulx0)
 }
 OP(divx0)
 {
+	CHECK_STACK_ALIGN();
 	WORD x, y, p, b;
 	LONG s;
 
@@ -1409,6 +1478,7 @@ OP(divx0)
 }
 OP(cvtxx0)
 {
+	CHECK_STACK_ALIGN();
 	WORD x, p, a;
 	LONG r;
 
@@ -1429,6 +1499,7 @@ OP(cvtxx0)
 }
 OP(mulx1)
 {
+	CHECK_STACK_ALIGN();
 	WORD x, y, p, a, v;
 	int vnz, wnz;
 	LONG w, r;
@@ -1467,6 +1538,7 @@ OP(mulx1)
 }
 OP(divx1)
 {
+	CHECK_STACK_ALIGN();
 	WORD x, y, p, b, v;
 	int vnz, wnz;
 	LONG w, s;
@@ -1503,6 +1575,7 @@ OP(divx1)
 }
 OP(cvtxx1)
 {
+	CHECK_STACK_ALIGN();
 	WORD x, p, a, v;
 	int vnz, wnz;
 	LONG w, r;
@@ -1540,6 +1613,7 @@ OP(cvtxx1)
 /*
 OP(cvtxx)
 {
+	CHECK_STACK_ALIGN();
 	REAL v;
 
 	v = (REAL)W(s)*F(m);
@@ -1549,6 +1623,7 @@ OP(cvtxx)
 */
 OP(cvtfx)
 {
+	CHECK_STACK_ALIGN();
 	REAL v;
 
 	v = F(s)*F(m);
@@ -1557,11 +1632,13 @@ OP(cvtfx)
 }
 OP(cvtxf)
 {
+	CHECK_STACK_ALIGN();
 	F(d) = (REAL)W(s)*F(m);
 }
 
 OP(self)
 {
+	CHECK_STACK_ALIGN();
 	Modlink *ml, **mp, *t;
 
 	ml = R.M;
@@ -1575,6 +1652,7 @@ OP(self)
 void
 destroystack(REG *reg)
 {
+	CHECK_STACK_ALIGN();
 	Type *t;
 	Frame *f, *fp;
 	Modlink *m;
@@ -1612,6 +1690,7 @@ destroystack(REG *reg)
 Prog*
 isave(void)
 {
+	CHECK_STACK_ALIGN();
 	Prog *p;
 
 	p = delrun(Prelease);
@@ -1622,6 +1701,7 @@ isave(void)
 void
 irestore(Prog *p)
 {
+	CHECK_STACK_ALIGN();
 	R = p->R;
 	R.IC = 1;
 }
@@ -1629,6 +1709,7 @@ irestore(Prog *p)
 void
 movtmp(void)		/* Used by send & receive */
 {
+	CHECK_STACK_ALIGN();
 	Type *t;
 
 	t = (Type*)W(m);
@@ -1712,7 +1793,7 @@ void statebefore(char* o, int n, uchar op, Inst* modprog)
 	case INBALT:	/* tbd: show structure bihing the pointer */
 	case IRAISE:    /* tbd: show structure bihing the pointer */
 	case IMOVP: 	snprint(o,n,"%p", T(s)); break;
-	case IFRAME:	snprint(o,n,"Type_%s_%d", CURM, (Type*)T(s)); break;
+	case IFRAME:	snprint(o,n,"Type_%s_%d", CURM, W(s)); break;
 	case IBEQB:	snprint(o,n,"if(%d == %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break;  // diadic and triadic
 	case IBNEB:	snprint(o,n,"if(%d != %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break; 
 	case IBLTB:	snprint(o,n,"if(%d <  %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break; 
@@ -1816,14 +1897,14 @@ void statebefore(char* o, int n, uchar op, Inst* modprog)
 	case INEWZ:	snprint(o,n,"%d", W(s)); break;
 	case IMNEWZ:	snprint(o,n,"Type_%s_%d", ((Modlink*)T(s))->m->name, W(m)); break;
 	case INEWA:	
-	case INEWAZ:	snprint(o,n,"Type_%s_%d [%d]", CURM, (Type*)T(s), W(m)); break;
+	case INEWAZ:	snprint(o,n,"Type_%s_%d [%d]", CURM, W(m), W(s)); break;
 	case INEWCB:	// new channel
 	case INEWCW:
 	case INEWCF:
 	case INEWCP:
 	case INEWCL:    
 	case INEWCM: 	snprint(o,n,"[%d]", W(s)); break;
-	case INEWCMP:	snprint(o,n,"Type_%s_%d", CURM, (Type*)T(s)); break;
+	case INEWCMP:	snprint(o,n,"Type_%s_%d", CURM, W(s)); break;
 	case ISEND:	snprint(o,n,"Channel@%p <-= %p", C(d), T(s)); break;
 	case IRECV:	snprint(o,n,"Channel@%p", C(s)); break;
 	case ICONSB:	snprint(o,n,"%d :: List@%p", B(s), L(d)); break;	// list
@@ -1843,7 +1924,7 @@ void statebefore(char* o, int n, uchar op, Inst* modprog)
 	case IHEADMP:   snprint(o,n,"List@%p", L(s)); break;
 	case IHEADM:	snprint(o,n,"List@%p [%d]", L(s), W(m)); break;
 	case IMOVM:	snprint(o,n,"memmove(%p, %p, %d)", R.d, R.s, W(m)); break;
-	case IMOVMP:	snprint(o,n,"Type_%s_%d@%p = Type_%s_%d@%p", CURM, (Type*)T(s), R.d, CURM, (Type*)T(s), R.s); break;
+	case IMOVMP:	snprint(o,n,"Type_%s_%d@%p", CURM, W(m), R.s); break;
 	case ITCMP:	snprint(o,n,"%p %p", T(m), T(s)); break;
 	case ILOAD:	snprint(o,n,"\"%s\" %d", string2c(S(s)), W(m)); break;
 	case ICASE:	snprint(o,n,"%d %p", W(s), T(d)); break;               /* tbd: show structure bihing the pointer */
@@ -1858,6 +1939,11 @@ void stateafter(char* o, int n, uchar op)
 	o[0] = '\0';
 	switch(op)
 	{
+//	case IRET: {
+//	Frame*f = (Frame*)R.FP;
+//	snprint(o,n," => %s_%uX", (f&&f->mr&&f->mr->m)?f->mr->m->name:"", f?f->lr:-1 /*- f->mr->m->prog*/);
+//	}
+//	break;
 	case IINDF:	snprint(o,n," => %f", F(m)); break; // result in middle 
 	case IINDB:     snprint(o,n," => %d", B(m)); break;
 	case IINDW:     snprint(o,n," => %d", W(m)); break;
@@ -1869,6 +1955,7 @@ void stateafter(char* o, int n, uchar op)
 	case INEWZ:
 	case IMNEWZ:
 	case IMOVP:
+	case IMOVMP:	
 	case ILEA:
 	case IHEADP:
 	case IHEADMP:   
@@ -2004,8 +2091,9 @@ xec(Prog *p)
 // print("%lux %lux %lux %lux %lux\n", (ulong)&R, R.xpc, R.FP, R.MP, R.PC);
 
 	if(R.M->compiled)
+	{
 		comvec();
-	else do {
+	} else do {
 		dec[R.PC->add]();
 		op = R.PC->op;
 #ifdef DEBUGVM

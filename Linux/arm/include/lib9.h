@@ -461,6 +461,13 @@ static __inline ulong getcallerpc(void* dummy) {
 	return lr;
 }
 
+// stack alignment needs to be checked inside functions called from jitted code
+#if defined(__GNUC__) && defined(LINUX_ARM)
+#define CHECK_STACK_ALIGN() { long long b; if( ((uintptr)&b)&~7 !=0 ) { panic("stack misalign in %s", __FUNCTION__); } }
+#else
+#error
+#endif
+
 /*
  *	Extensions for emu kernel emulation
  */
