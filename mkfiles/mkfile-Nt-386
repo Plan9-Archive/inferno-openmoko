@@ -5,11 +5,11 @@ CPUS=		386
 O=		obj
 OS=		obj
 
-AR=		LIB
+AR=		lib.exe
 ARFLAGS=	-nologo
 ARPREFIX=	-out:
 
-AS=		ml
+AS=		ml.exe
 ASFLAGS=	-c\
 		-nologo\
 		-coff\
@@ -18,12 +18,12 @@ ASFLAGS=	-c\
 		-DQUIET\
 		-Di386\
 
-CC=		cl
+CC=		cl.exe
 CFLAGS=		-c\
 		-nologo\
 		-W3\
 		-Zi\
-		-Yd\
+		-GAFy -GS- -Ox -Oi-\
 		-MT\
 		-D_WIN32_WINNT=0x0400\
 		-I$ROOT/Nt/386/include\
@@ -31,11 +31,11 @@ CFLAGS=		-c\
 		$XCFLAGS\
 
 ANSICPP=
-LD=		link
-LDFLAGS=	$LDEBUG -nologo -incremental:no -map
+LD=		link.exe
+LDFLAGS=	$LDEBUG -nologo -incremental:no -map -force:multiple
 # LDFLAGS=	-nologo -incremental:no -debug
 
 SYSLIBS=	binmode.obj
 
-YACC=		iyacc
+YACC=		iyacc.exe
 YFLAGS=		-d

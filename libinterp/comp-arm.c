@@ -4,7 +4,7 @@
 #include "raise.h"
 
 #ifndef CHECK_STACK_ALIGN
-#define CHECK_STACK_ALIGN
+#define CHECK_STACK_ALIGN()
 #endif
 //#define DEBUGVM
 /*

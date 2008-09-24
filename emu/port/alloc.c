@@ -397,7 +397,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 		poolfree(p, B2D(q));		/* for backward merge */
 		return poolalloc(p, osize);
 	}
-	
+
 	t->magic = MAGIC_E;		/* Make a leader */
 	t->size = ldr;
 	t->csize = ns+ldr;
@@ -429,6 +429,9 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 	return B2D(t);
 }
 
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc()
+#endif
 void *
 poolalloc(Pool *p, ulong asize)
 {
@@ -475,6 +478,10 @@ poolfree(Pool *p, void *v)
 	pooladd(p, b);
 	unlock(&p->l);
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
+
 
 void *
 poolrealloc(Pool *p, void *v, ulong size)
@@ -588,6 +595,9 @@ poolread(char *va, int count, ulong offset)
 	return n;
 }
 
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc()
+#endif
 void*
 smalloc(size_t size)
 {
@@ -644,7 +654,7 @@ malloc(size_t size)
 		}
 		memset(v, 0, size);
 		MM(0, getcallerpc(&size), (ulong)v, size);
-	} else 
+	} else
 		print("malloc failed from %lux\n", getcallerpc(&size));
 	return v;
 }
@@ -665,7 +675,7 @@ mallocz(ulong size, int clr)
 		if(clr)
 			memset(v, 0, size);
 		MM(0, getcallerpc(&size), (ulong)v, size);
-	} else 
+	} else
 		print("mallocz failed from %lux\n", getcallerpc(&size));
 	return v;
 }
@@ -704,10 +714,13 @@ realloc(void *v, size_t size)
 		setrealloctag(nv, getcallerpc(&v));
 		if(v == nil)
 			setmalloctag(v, getcallerpc(&v));
-	} else 
+	} else
 		print("realloc failed from %lux\n", getcallerpc(&v));
 	return nv;
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
 
 void
 setmalloctag(void *v, ulong pc)
@@ -860,12 +873,19 @@ poolcompact(Pool *pool)
 	return compacted;
 }
 
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc()
+#endif
 static void
 _poolfault(void *v, char *msg, ulong c)
 {
 	auditmemloc(msg, v);
 	panic("%s %lux (from %lux/%lux)", msg, v, getcallerpc(&v), c);
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
+
 
 static void
 dumpvl(char *msg, ulong *v, int n)

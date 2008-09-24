@@ -544,6 +544,10 @@ logfsrealloc(void *p, ulong size)
 }
 
 #ifdef LEAKHUNT
+
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc()
+#endif
 void *
 logfsrealloc(void *p, ulong size)
 {
@@ -555,6 +559,10 @@ nandfsrealloc(void *p, ulong size)
 {
 	return _realloc(p, size, getcallerpc(&p));
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
+
 #else
 void *
 nandfsrealloc(void *p, ulong size)
@@ -563,6 +571,9 @@ nandfsrealloc(void *p, ulong size)
 }
 #endif
 
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc()
+#endif
 void
 logfsfreemem(void *p)
 {
@@ -580,6 +591,9 @@ nandfsfreemem(void *p)
 #endif
 	free(p);
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
 
 static Devlogfs *
 devlogfsconfig(char *name, char *device)

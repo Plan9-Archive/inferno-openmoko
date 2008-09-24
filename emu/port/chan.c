@@ -58,6 +58,9 @@ incref(Ref *r)
 	return x;
 }
 
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc()
+#endif
 int
 decref(Ref *r)
 {
@@ -66,11 +69,14 @@ decref(Ref *r)
 	lock(&r->lk);
 	x = --r->ref;
 	unlock(&r->lk);
-	if(x < 0) 
+	if(x < 0)
 		panic("decref, pc=0x%lux", getcallerpc(&r));
 
 	return x;
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
 
 /*
  * Rather than strncpy, which zeros the rest of the buffer, kstrcpy
@@ -291,6 +297,9 @@ chanfree(Chan *c)
 	unlock(&chanalloc.l);
 }
 
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc()
+#endif
 void
 cclose(Chan *c)
 {
@@ -310,6 +319,9 @@ cclose(Chan *c)
 
 	chanfree(c);
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
 
 /*
  * Make sure we have the only copy of c.  (Copy on write.)
@@ -415,7 +427,7 @@ if(old->umh)
 	 * work.  The check of mount->mflag catches things like
 	 *	mount fd /root
 	 *	bind -c /root /
-	 * 
+	 *
 	 * This is far more complicated than it should be, but I don't
 	 * see an easier way at the moment.		-rsc
 	 */
@@ -508,7 +520,7 @@ cunmount(Chan *mnt, Chan *mounted)
 		print("cunmount newp extra umh %p has %p\n", mnt, mnt->umh);
 
 	/*
-	 * It _can_ happen that mounted->umh is non-nil, 
+	 * It _can_ happen that mounted->umh is non-nil,
 	 * because mounted is the result of namec(Aopen)
 	 * (see sysfile.c:/^sysunmount).
 	 * If we open a union directory, it will have a umh.
@@ -933,7 +945,7 @@ parsename(char *name, Elemlist *e)
 			break;
 		}
 		growparse(e);
-		
+
 		e->elems[e->nelems++] = name;
 		slash = utfrune(name, '/');
 		if(slash == nil){
@@ -1008,7 +1020,7 @@ namec(char *aname, int amode, int omode, ulong perm)
 		c = up->env->pgrp->slash;
 		incref(&c->r);
 		break;
-	
+
 	case '#':
 		nomount = 1;
 		up->genbuf[0] = '\0';
@@ -1210,11 +1222,11 @@ if(c->umh != nil){
 		 * The semantics of the create(2) system call are that if the
 		 * file exists and can be written, it is to be opened with truncation.
 		 * On the other hand, the create(5) message fails if the file exists.
-		 * If we get two create(2) calls happening simultaneously, 
-		 * they might both get here and send create(5) messages, but only 
+		 * If we get two create(2) calls happening simultaneously,
+		 * they might both get here and send create(5) messages, but only
 		 * one of the messages will succeed.  To provide the expected create(2)
 		 * semantics, the call with the failed message needs to try the above
-		 * walk again, opening for truncation.  This correctly solves the 
+		 * walk again, opening for truncation.  This correctly solves the
 		 * create/create race, in the sense that any observable outcome can
 		 * be explained as one happening before the other.
 		 * The create/create race is quite common.  For example, it happens
@@ -1224,7 +1236,7 @@ if(c->umh != nil){
 		 * The implementation still admits a create/create/remove race:
 		 * (A) walk to file, fails
 		 * (B) walk to file, fails
-		 * (A) create file, succeeds, returns 
+		 * (A) create file, succeeds, returns
 		 * (B) create file, fails
 		 * (A) remove file, succeeds, returns
 		 * (B) walk to file, return failure.
@@ -1388,7 +1400,7 @@ isdir(Chan *c)
  * The mount list is deleted when we cunmount.
  * The RWlock ensures that nothing is using the mount list at that time.
  *
- * It is okay to replace c->mh with whatever you want as 
+ * It is okay to replace c->mh with whatever you want as
  * long as you are sure you have a unique reference to it.
  *
  * This comment might belong somewhere else.

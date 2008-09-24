@@ -24,6 +24,9 @@ newproc(void)
 	return p;
 }
 
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc()
+#endif
 void
 Sleep(Rendez *r, int (*f)(void*), void *arg)
 {
@@ -59,6 +62,9 @@ Sleep(Rendez *r, int (*f)(void*), void *arg)
 	}
 	unlock(&up->rlock);
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
 
 int
 Wakeup(Rendez *r)
@@ -79,7 +85,7 @@ void
 swiproc(Proc *p, int interp)
 {
 	Rendez *r;
-	
+
 	if(p == nil)
 		return;
 
@@ -112,7 +118,7 @@ swiproc(Proc *p, int interp)
 		p->intwait = 1;
 		unlock(&p->sysio);
 		oshostintr(p);
-		return;	
+		return;
 	}
 	unlock(&p->sysio);
 }

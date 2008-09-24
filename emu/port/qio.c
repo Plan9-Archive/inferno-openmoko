@@ -65,7 +65,7 @@ freeb(Block *b)
 		return;
 
 	/*
-	 * drivers which perform non cache coherent DMA manage their own buffer 
+	 * drivers which perform non cache coherent DMA manage their own buffer
 	 * pool of uncached buffers and provide their own free routine.
 	 */
 	if(b->free) {
@@ -83,7 +83,7 @@ freeb(Block *b)
 	free(b);
 }
 
-/* 
+/*
  *  free a list of blocks
  */
 void
@@ -103,6 +103,9 @@ ulong padblockoverhead;
 /*
  *  pad a block to the front (or the back if size is negative)
  */
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc()
+#endif
 Block*
 padblock(Block *bp, int size)
 {
@@ -144,6 +147,9 @@ padblock(Block *bp, int size)
 	}
 	return nbp;
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
 
 /*
  *  return count of bytes in a string of blocks
@@ -435,7 +441,7 @@ allocb(int size)
 		exhausted("allocb");
 	return b;
 }
-	
+
 
 /*
  *  get next block from a queue, return null if nothing there
@@ -1287,6 +1293,9 @@ qbwrite(Queue *q, Block *b)
 /*
  *  write to a queue.  only Maxatomic bytes at a time is atomic.
  */
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc()
+#endif
 int
 qwrite(Queue *q, void *vp, int len)
 {
@@ -1317,6 +1326,9 @@ qwrite(Queue *q, void *vp, int len)
 
 	return len;
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
 
 /*
  *  used by print() to write to a queue.  Since we may be splhi or not in
