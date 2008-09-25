@@ -68,9 +68,9 @@ typedef struct Hashchain
 		/* constants and flags */
 char	*man =		"mrxtdpq";
 char	*opt =		"uvnbailo";
-char	artemp[] =	"/tmp/vXXXXX";
-char	movtemp[] =	"/tmp/v1XXXXX";
-char	tailtemp[] =	"/tmp/v2XXXXX";
+char	artemp[] =	"/tmp/vXXXXXX";
+char	movtemp[] =	"/tmp/v1XXXXXX";
+char	tailtemp[] =	"/tmp/v2XXXXXX";
 char	symdef[] =	"__.SYMDEF";
 
 int	aflag;				/* command line flags */
@@ -85,7 +85,7 @@ int	allobj = 1;			/* set when all members are object files of the same type */
 int	symdefsize;			/* size of symdef file */
 int	dupfound;			/* flag for duplicate symbol */
 Hashchain	*hash[NHASH];		/* hash table of text symbols */
-	
+
 #define	ARNAMESIZE	sizeof(astart->tail->hdr.name)
 
 char	poname[ARNAMESIZE+1];		/* name of pivot member */

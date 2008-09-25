@@ -346,7 +346,7 @@ catchnotes()
 char*
 maketmp(void)
 {
-	static char temp[] = "mkargXXX.XXX";
+	static char temp[] = "mkargXXXXXX";
 
 	mktemp(temp);
 	return temp;
