@@ -62,8 +62,21 @@ varmatch(char *name, char **s)
 	Word *w;
 	Symtab *sym;
 	char *cp;
-	
+
 	sym = symlook(name, S_VAR, 0);
+#if defined(CASE_INSENSITIVE_ENVIRONMENT)
+	if(!sym){
+		char* namel = strdup(name);
+		strlwr(namel);
+		sym = symlook(namel, S_LOWCASED, 0);
+		if(sym)
+		{
+			/*print("(try to resolve '%s' instead)", sym->value);*/
+			sym = symlook(sym->value, S_VAR, 0);
+		}
+		free(namel);
+	}
+#endif
 	if(sym){
 			/* check for at least one non-NULL value */
 		for (w = (Word*)sym->value; w; w = w->next)
@@ -111,7 +124,7 @@ expandvar(char **s)
 	}
 	*end = 0;
 	*s = end+1;
-	
+
 	sym = symlook(buf->start, S_VAR, 0);
 	if(sym == 0 || sym->value == 0)
 		w = newword(buf->start);
@@ -177,7 +190,7 @@ subsub(Word *v, char *s, char *end)
 				while(w->next)
 					w = w->next;
 			}
-			if(PERCENT(*cp) && nmid > 0){	
+			if(PERCENT(*cp) && nmid > 0){
 				if(w){
 					bufcpy(buf, w->s, strlen(w->s));
 					bufcpy(buf, enda, nmid);
@@ -209,7 +222,7 @@ subsub(Word *v, char *s, char *end)
 		}
 		if(w == 0)
 			h = w = newword(v->s);
-	
+
 		if(head == 0)
 			head = h;
 		else

@@ -89,6 +89,21 @@ char *cp;
 dumpw("tail", tail);
 cp = wtos(tail, ' '); print("assign %s to %s\n", head->s, cp); free(cp);
 */
+#if defined(CASE_INSENSITIVE_ENVIRONMENT)
+				/* new variable prevents one set from environment from being exported
+				 * for example 'PATH' will hide 'Path' or 'path'
+                                 */
+				Symtab* sym;
+				char* namel = strdup(head->s);
+				strlwr(namel);
+				sym = symlook(namel, S_LOWCASED, 0);
+				if(sym && 0!=strcmp(head->s, sym->value))
+				{
+					/*print("hide '%s' '%s' '%s'\n", head->s, sym->name, sym->value);*/
+		  			symlook(sym->value, S_NOEXPORT, (void *)"");
+				}
+				free(namel);
+#endif
 				setvar(head->s, (void *) tail);
 				symlook(head->s, S_WESET, (void *)"");
 			}

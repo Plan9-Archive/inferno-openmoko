@@ -45,6 +45,13 @@ readenv(void)
 		s = strdup(*p);
 		setvar(s, (void *)w);
 		symlook(s, S_EXPORTED, (void *)"")->value = "";
+#if defined(CASE_INSENSITIVE_ENVIRONMENT)
+		{
+		char *sup = strdup(s);
+		strlwr(sup);
+		symlook(sup, S_LOWCASED, s);
+		}
+#endif
 	}
 }
 
@@ -63,7 +70,7 @@ exportenv(Envy *e)
 		else
 			v = "";
 		buf = Realloc(buf, n+strlen(e->name)+1+strlen(v)+1);
-		
+
 		n += sprint(buf+n, "%s=%s", e->name, v);
 		n++;	/* skip over null */
 		if(e->values)
@@ -151,7 +158,7 @@ void
 childadd(HANDLE h, int pid)
 {
 	int i;
-	
+
 	for(i=0; i<Nchild; i++) {
 		if(child[i].handle == 0) {
 			child[i].handle = h;
@@ -290,7 +297,7 @@ writecmd(LPVOID a)
 		if(WriteFile(arg->handle, cmd, p-cmd, &n, 0) == FALSE)
 			break;
 		cmd += n;
-	}	
+	}
 
 	free(arg->cmd);
 	CloseHandle(arg->handle);
@@ -310,7 +317,7 @@ pipecmd(char *cmd, Envy *e, int *fd)
 			perror("pipe");
 			Exit();
 		}
-	} else 
+	} else
 		pipeout = GetStdHandle(STD_OUTPUT_HANDLE);
 
 
@@ -348,7 +355,7 @@ maketmp(void)
 Dir*
 mkdirstat(char *name)
 {
-	int c, n, ret;
+	int c, n;
 	Dir *buf;
 
 	n = strlen(name)-1;

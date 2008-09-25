@@ -24,6 +24,30 @@ symlook(char *sym, int space, void *install)
 	long h;
 	char *p;
 	Symtab *s;
+#if 0
+	static char*spacename[] = {
+	"S_VAR",	/* variable -> value */
+	"S_TARGET",	/* target -> rule */
+	"S_TIME",	/* file -> time */
+	"S_PID",	/* pid -> products */
+	"S_NODE",	/* target name -> node */
+	"S_AGG",	/* aggregate -> time */
+	"S_BITCH",	/* bitched about aggregate not there */
+	"S_NOEXPORT",	/* var -> noexport */
+	"S_OVERRIDE",	/* can't override */
+	"S_OUTOFDATE",	/* n1\377n2 -> 2(outofdate) or 1(not outofdate) */
+	"S_MAKEFILE",	/* target -> node */
+	"S_MAKEVAR",	/* dumpable mk variable */
+	"S_EXPORTED",	/* var -> current exported value */
+	"S_WESET",	/* variable; we set in the mkfile */
+	"S_INTERNAL",	/* an internal mk variable (e.g., stem, target) */
+#if defined(CASE_INSENSITIVE_ENVIRONMENT)
+	"S_LOWCASED",	/* low-cased windows env var name */
+#endif
+	};
+
+	print("symlook(%s, %s, %x)\n", sym, spacename[space], install);
+#endif
 
 	for(p = sym, h = space; *p; h += *p++)
 		h *= HASHMUL;
