@@ -99,7 +99,7 @@ cp = wtos(tail, ' '); print("assign %s to %s\n", head->s, cp); free(cp);
 				sym = symlook(namel, S_LOWCASED, 0);
 				if(sym && 0!=strcmp(head->s, sym->value))
 				{
-					/*print("hide '%s' '%s' '%s'\n", head->s, sym->name, sym->value);*/
+					/*print("XXX: hide '%s' '%s' '%s'\n", head->s, sym->name, sym->value);*/
 		  			symlook(sym->value, S_NOEXPORT, (void *)"");
 				}
 				free(namel);

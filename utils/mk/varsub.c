@@ -71,7 +71,7 @@ varmatch(char *name, char **s)
 		sym = symlook(namel, S_LOWCASED, 0);
 		if(sym)
 		{
-			/*print("(try to resolve '%s' instead)", sym->value);*/
+			/*print("XXX: try to resolve '%s' instead", sym->value);*/
 			sym = symlook(sym->value, S_VAR, 0);
 		}
 		free(namel);

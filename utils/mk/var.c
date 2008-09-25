@@ -12,6 +12,10 @@ print1(Symtab *s)
 {
 	Word *w;
 
+	if(symlook(s->name, S_NOEXPORT, 0))
+	{
+		Bprint(&bout, "#");
+	}
 	Bprint(&bout, "\t%s=", s->name);
 	for (w = (Word *) s->value; w; w = w->next)
 		Bprint(&bout, "'%s'", w->s);
