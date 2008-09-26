@@ -122,6 +122,9 @@ poolsetsize(char *s, int size)
 	return 0;
 }
 
+#if defined(_MSC_VER)
+#pragma optimize("y", off) // for getcallerpc() in D2B
+#endif
 void
 poolimmutable(void *v)
 {
@@ -140,6 +143,9 @@ poolmutable(void *v)
 	b->magic = MAGIC_A;
 	((Heap*)v)->color = mutator;
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
 
 char*
 poolname(Pool *p)
@@ -478,9 +484,6 @@ poolfree(Pool *p, void *v)
 	pooladd(p, b);
 	unlock(&p->l);
 }
-#if defined(_MSC_VER)
-#pragma optimize("y", on)
-#endif
 
 
 void *
@@ -527,6 +530,9 @@ poolmsize(Pool *p, void *v)
 	unlock(&p->l);
 	return size;
 }
+#if defined(_MSC_VER)
+#pragma optimize("y", on)
+#endif
 
 static ulong
 poolmax(Pool *p)
