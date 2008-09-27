@@ -1,29 +1,25 @@
-#define Unknown win_Unknown
-#define UNICODE
+#define ARM
 #include	<windows.h>
-#include <winbase.h>
-#include	<winsock.h>
-#undef Unknown
+#include	<winsock2.h>
+//#include	<stdio.h>
 #include	"dat.h"
 #include	"fns.h"
 #include	"error.h"
-#include	"ieplugin.h"
 
-extern int	SYS_SLEEP = 2;
-extern int SOCK_SELECT = 3;
+int	SYS_SLEEP = 2;
+int SOCK_SELECT = 3;
 #define	MAXSLEEPERS	1500
 
-extern Plugin*	plugin;
-extern void	newiop();
-extern int		sendiop();
+extern	int	cflag;
 
-DWORD		PlatformId;
-static char*	path;
-static HANDLE	kbdh = INVALID_HANDLE_VALUE;
-static HANDLE	conh = INVALID_HANDLE_VALUE;
-static int		sleepers;
-
-static ulong erendezvous(void*, ulong);
+DWORD	PlatformId;
+DWORD	consolestate;
+//static	char*	path;
+static	HANDLE	kbdh = INVALID_HANDLE_VALUE;
+static	HANDLE	conh = INVALID_HANDLE_VALUE;
+static	HANDLE	errh = INVALID_HANDLE_VALUE;
+static	int	donetermset = 0;
+static	int sleepers = 0;
 
 	wchar_t	*widen(char *s);
 	char		*narrowen(wchar_t *ws);
@@ -34,11 +30,36 @@ static ulong erendezvous(void*, ulong);
 	char*	runestoutf(char*, Rune*, int);
 	int		runescmp(Rune*, Rune*);
 
-__declspec(thread)       Proc    *up;
+//__declspec(thread)       Proc    *up;
+DWORD			tlsi_up;
+Proc* getup()
+{
+	return (Proc*)TlsGetValue(tlsi_up);
+}
+void setup(Proc*v)
+{
+	TlsSetValue(tlsi_up, v);
+}
+
+// some stubs
+//char* getenv(const char* p)
+//{
+//	return 0;
+//}
+int getpid(void)
+{
+        return GetCurrentProcessId();
+}
+void abort(void)
+{
+	ExitProcess(1);
+}
 
 HANDLE	ntfd2h(int);
 int	nth2fd(HANDLE);
+void	termrestore(void);
 char *hosttype = "Nt";
+char *cputype = "386";
 
 static void
 pfree(Proc *p)
@@ -66,21 +87,33 @@ pfree(Proc *p)
 	}
 	free(e->user);
 	free(p->prog);
+	CloseHandle((HANDLE)p->os);
 	free(p);
 }
 
 void
 osblock(void)
 {
-	erendezvous(up, 0);
+	DWORD dw;
+
+//	o("WaitForSingleObject(0x%x)\n", up->os);
+	dw = WaitForSingleObject((HANDLE)up->os, INFINITE);
+	if(dw != WAIT_OBJECT_0)
+	{
+		fprint(2, "WaitForSingleObject(0x%x)=%d gle=%d\n", up->os, dw, GetLastError());
+		panic("osblock failed");
+	}
 }
 
 void
 osready(Proc *p)
 {
-	erendezvous(p, 0);
+	if(SetEvent((HANDLE)p->os) == FALSE)
+	{
+		fprint(2, "SetEvent(0x%x)=false gle=%d\n", up->os, GetLastError());
+		panic("osready failed");
+	}
 }
-
 
 void
 pexit(char *msg, int t)
@@ -107,6 +140,7 @@ tramp(LPVOID p)
 	// install our own exception handler
 	// replacing all others installed on this thread
 	DWORD handler = (DWORD)Exhandler;
+/*
 	_asm {
 		mov eax,handler
 		push eax
@@ -114,15 +148,15 @@ tramp(LPVOID p)
 		push eax
 		mov fs:[0],esp
 	}
-
-	up = p;
+*/
+	fprint(2, "tramp p=%x nerr=%x\n", p, ((Proc*)p)->nerr);
+	setup(p);
+	fprint(2, "tramp up=%x nerr=%x\n", up, up->nerr);
 	up->func(up->arg);
 	pexit("", 0);
-	// should never get here but tidy up anyway
-	_asm {
-		mov fs:[0],-1
-		add esp, 8
-	}
+	/* not reached */
+	for(;;)
+		panic("tramp");
 	return 0;
 }
 
@@ -138,6 +172,12 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 	p = newproc();
 	if(p == nil){
 		print("out of kernel processes\n");
+		return -1;
+	}
+	p->os = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if(p->os == NULL){
+		pfree(p);
+		print("can't allocate os event\n");
 		return -1;
 	}
 
@@ -179,17 +219,17 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 	p->pid = (int)CreateThread(0, 16384, tramp, p, 0, &h);
 	if(p->pid == 0){
 		pfree(p);
-		print("ran out of  kernel processes\n");
+		print("ran out of kernel processes\n");
 		return -1;
 	}
 	return p->pid;
 }
 
-#if(_WIN32_WINNT >= 0x0400)
-void APIENTRY sleepintr(DWORD param)
-{
-}
-#endif
+//#if(_WIN32_WINNT >= 0x0400)
+//void APIENTRY sleepintr(DWORD param)
+//{
+//}
+//#endif
 
 void
 oshostintr(Proc *p)
@@ -197,11 +237,11 @@ oshostintr(Proc *p)
 	if (p->syscall == SOCK_SELECT)
 		return;
 	p->intwait = 0;
-#if(_WIN32_WINNT >= 0x0400)
-	if(p->syscall == SYS_SLEEP) {
-		QueueUserAPC(sleepintr, (HANDLE) p->pid, (DWORD) p->pid);
-	}
-#endif
+//#if(_WIN32_WINNT >= 0x0400)
+//	if(p->syscall == SYS_SLEEP) {
+//		QueueUserAPC(sleepintr, (HANDLE) p->pid, (DWORD) p->pid);
+//	}
+//#endif
 }
 
 void
@@ -217,11 +257,21 @@ readkbd(void)
 	DWORD r;
 	char buf[1];
 
-	if(ReadFile(plugin->conin, buf, sizeof(buf), &r, 0) == FALSE)
-		panic("keyboard fail");
+	if(ReadFile(kbdh, buf, sizeof(buf), &r, 0) == FALSE)
+	{
+		o("keyboard fail"); // stdin absence is not a big deal
+		for(;;)sleep(10000000);
+		//panic("keyboard fail");
+	}
+
 	if (r == 0)
 		panic("keyboard EOF");
 
+	if (buf[0] == 0x03) {
+		// INTR (CTRL+C)
+		termrestore();
+		ExitProcess(0);
+	}
 	if(buf[0] == '\r')
 		buf[0] = '\n';
 	return buf[0];
@@ -230,9 +280,8 @@ readkbd(void)
 void
 cleanexit(int x)
 {
-	newiop();
-	IOP.op = Iquit;
-	sendiop();
+	//sleep(2);		/* give user a chance to see message */
+	termrestore();
 	ExitProcess(x);
 }
 
@@ -279,8 +328,10 @@ struct Ereg {
 void
 dumpex()
 {
+/*
 	Ereg *er;
 	int i;
+
 	_asm { mov eax,fs:[0] };
 	_asm { mov [er],eax };
 
@@ -290,7 +341,8 @@ dumpex()
 		i++;
 	er = er->prev;
 	}
-	print("EXCEPTION CHAIN LENGTH = %d\n", i);
+*/
+	print("EXCEPTION CHAIN LENGTH = %d\n", /*i*/0);
 }
 
 LONG
@@ -334,12 +386,50 @@ TrapHandler(LPEXCEPTION_POINTERS ureg)
 	case EXCEPTION_FLT_STACK_CHECK:
 	case EXCEPTION_FLT_UNDERFLOW:
 		/* clear exception flags and register stack */
+/*
 		_asm { fnclex };
 		ureg->ContextRecord->FloatSave.StatusWord = 0x0000;
 		ureg->ContextRecord->FloatSave.TagWord = 0xffff;
+*/
+		;
 	}
+/*
 	ureg->ContextRecord->Eip = (DWORD)dodisfault;
+*/
 	return EXCEPTION_CONTINUE_EXECUTION;
+}
+
+static void
+termset(void)
+{
+	DWORD flag;
+
+	if(donetermset)
+		return;
+	donetermset = 1;
+	conh = _fileno(stdout);
+	kbdh = _fileno(stdin);
+	errh = _fileno(stderr);
+
+	if(errh == INVALID_HANDLE_VALUE)
+		errh = conh;
+/*
+	// The following will fail if kbdh not from console (e.g. a pipe)
+	// in which case we don't care
+	GetConsoleMode(kbdh, &consolestate);
+	flag = consolestate;
+	flag = flag & ~(ENABLE_PROCESSED_INPUT|ENABLE_LINE_INPUT|ENABLE_ECHO_INPUT);
+	SetConsoleMode(kbdh, flag);
+*/
+}
+
+void
+termrestore(void)
+{
+/*
+	if(kbdh != INVALID_HANDLE_VALUE)
+		SetConsoleMode(kbdh, consolestate);
+*/
 }
 
 static	int	rebootok = 0;	/* is shutdown -r supported? */
@@ -348,19 +438,21 @@ void
 osreboot(char *file, char **argv)
 {
 	if(rebootok){
-		execvp(file, argv);
-		panic("reboot failure");
-	}else
-		error("reboot option not supported on this system");
+		termrestore();
+		/*execvp(file, argv);*/
+		panic("reboot failure, not implemented yet");
+	}
 }
 
 void
 libinit(char *imod)
 {
 	WSADATA wasdat;
-//	DWORD lasterror, namelen;
+	DWORD lasterror, namelen;
 	OSVERSIONINFO os;
-//	char sys[64];
+	char sys[64], uname[64];
+	wchar_t wuname[64];
+	char *uns;
 
 	os.dwOSVersionInfoSize = sizeof(os);
 	if(!GetVersionEx(&os))
@@ -371,6 +463,7 @@ libinit(char *imod)
 	} else {
 		rebootok = 0;
 	}
+	termset();
 
 	if((int)INVALID_HANDLE_VALUE != -1 || sizeof(HANDLE) != sizeof(int))
 		panic("invalid handle value or size");
@@ -378,127 +471,65 @@ libinit(char *imod)
 	if(WSAStartup(MAKEWORD(1, 1), &wasdat) != 0)
 		panic("no winsock.dll");
 
-//	gethostname(sys, sizeof(sys));
-//	kstrdup(&ossysname, sys);
-	kstrdup(&ossysname, "plugin");
-
+	gethostname(sys, sizeof(sys));
+	kstrdup(&ossysname, sys);
 //	if(sflag == 0)
 //		SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)TrapHandler);
 
-	path = getenv("PATH");
-	if(path == nil)
-		path = ".";
+//	path = getenv("PATH");
+//	if(path == nil)
+//		path = ".";
 
-	up = newproc();
+    	if ((tlsi_up = TlsAlloc()) == -1)
+		panic("TlsAlloc failed");
+
+
+	setup( newproc());
 	if(up == nil)
 		panic("cannot create kernel process");
 
-	kstrdup(&eve, "system");
+	strcpy(uname, "inferno");
+	namelen = sizeof(wuname);
+	if(GetUserNameExW(0, wuname, &namelen) != TRUE) {
+		lasterror = GetLastError();
+		if(PlatformId == VER_PLATFORM_WIN32_NT || lasterror != ERROR_NOT_LOGGED_ON)
+			print("cannot GetUserName: %d\n", lasterror);
+	}else{
+		uns = narrowen(wuname);
+		snprint(uname, sizeof(uname), "%s", uns);
+		free(uns);
+	}
+	kstrdup(&eve, uname);
+
 	emuinit(imod);
-}
-
-enum
-{
-	NHLOG	= 7,
-	NHASH	= (1<<NHLOG)
-};
-
-typedef struct Tag Tag;
-struct Tag
-{
-	void*	tag;
-	ulong	val;
-	HANDLE	pid;
-	Tag*	next;
-};
-
-static	Tag*	ht[NHASH];
-static	Tag*	ft;
-static	Lock	hlock;
-static	int	nsema;
-
-ulong
-erendezvous(void *tag, ulong value)
-{
-	int h;
-	ulong rval;
-	Tag *t, **l, *f;
-
-
-	h = (ulong)tag & (NHASH-1);
-
-	lock(&hlock);
-	l = &ht[h];
-	for(t = ht[h]; t; t = t->next) {
-		if(t->tag == tag) {
-			rval = t->val;
-			t->val = value;
-			t->tag = 0;
-			unlock(&hlock);
-			if(SetEvent(t->pid) == FALSE)
-				panic("Release failed\n");
-			return rval;
-		}
-	}
-
-	t = ft;
-	if(t == 0) {
-		t = malloc(sizeof(Tag));
-		if(t == nil)
-			panic("rendezvous: no memory");
-		t->pid = CreateEvent(0, 0, 0, 0);
-	}
-	else
-		ft = t->next;
-
-	t->tag = tag;
-	t->val = value;
-	t->next = *l;
-	*l = t;
-	unlock(&hlock);
-
-	if(WaitForSingleObject(t->pid, INFINITE) != WAIT_OBJECT_0)
-		panic("WaitForSingleObject failed\n");
-
-	lock(&hlock);
-	rval = t->val;
-	for(f = *l; f; f = f->next) {
-		if(f == t) {
-			*l = f->next;
-			break;
-		}
-		l = &f->next;
-	}
-	t->next = ft;
-	ft = t;
-	unlock(&hlock);
-
-	return rval;
 }
 
 void
 FPsave(void *fptr)
 {
+/*
 	_asm {
 		mov	eax, fptr
 		fstenv	[eax]
 	}
+*/
 }
 
 void
 FPrestore(void *fptr)
 {
+/*
 	_asm {
 		mov	eax, fptr
 		fldenv	[eax]
 	}
+*/
 }
-
+/*
 ulong
 umult(ulong a, ulong b, ulong *high)
 {
 	ulong lo, hi;
-
 	_asm {
 		mov	eax, a
 		mov	ecx, b
@@ -509,12 +540,14 @@ umult(ulong a, ulong b, ulong *high)
 	*high = hi;
 	return lo;
 }
+*/
 
 int
 close(int fd)
 {
-	if(fd != -1)
-		CloseHandle(ntfd2h(fd));
+	if(fd == -1)
+		return 0;
+	CloseHandle(ntfd2h(fd));
 	return 0;
 }
 
@@ -529,12 +562,24 @@ read(int fd, void *buf, uint n)
 int
 write(int fd, void *buf, uint n)
 {
+	HANDLE h;
 	if(fd == 1 || fd == 2){
-		int w;
-		if (plugin->conout == NULL)
-			return n;
-		if (!WriteFile(plugin->conout, buf, n, &w, NULL) || n != w)
-			abort();
+#if 1
+		wchar_t sw[1024]; // avoid using malloc here for malloc itself can produce debug trace
+		_snwprintf(sw, 1024, L"%.*S", n, buf);
+		OutputDebugStringW(sw);
+#endif
+		if(!donetermset)
+			termset();
+
+		if(fd == 1)
+			h = conh;
+		else
+			h = errh;
+		if(h == INVALID_HANDLE_VALUE)
+			return -1;
+		if(!WriteFile(h, buf, n, &n, NULL))
+			return -1;
 		return n;
 	}
 	if(!WriteFile(ntfd2h(fd), buf, n, &n, NULL))
@@ -567,7 +612,9 @@ oslopri(void)
 }
 
 /* Resolve system header name conflict */
+/* Sleep = NTSleep = */
 #undef Sleep
+/* Sleep = WinAPI Sleep */
 void
 sleep(int secs)
 {
@@ -581,11 +628,14 @@ sbrk(int size)
 
 	brk = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 	if(brk == 0)
+	{
+		o("sbrk(0x%uX)=%p\n", size, brk);
 		return (void*)-1;
+	}
 
 	return brk;
 }
-
+/*
 ulong
 getcallerpc(void *arg)
 {
@@ -596,28 +646,7 @@ getcallerpc(void *arg)
 		mov dword ptr cpc, eax
 	}
 	return cpc;
-}
-
-/*
-ulong
-getpc(void *arg, ulong *narg)
-{
-	ulong *a = arg, *fp, pc;
-
-	if(a == nil){
-		*narg = 0;
-		return 0;
-	}
-	fp = a-2;
-	pc = fp[1];
-	fp = *(ulong**)fp;
-	if(fp == nil)
-		*narg = 0;
-	else
-		*narg = (ulong)(fp+2);
-	return pc;
-}
-*/
+}*/
 
 /*
  * Return an abitrary millisecond clock time
@@ -720,9 +749,7 @@ osnsec(void)
 int
 osmillisleep(ulong milsec)
 {
-	up->syscall = 1;
-	SleepEx(milsec, FALSE);
-	up->syscall = 0;
+	Sleep(milsec/*, FALSE*/);
 	return 0;
 }
 
@@ -733,7 +760,7 @@ limbosleep(ulong milsec)
 		return -1;
 	sleepers++;
 	up->syscall = SYS_SLEEP;
-	SleepEx(milsec, TRUE);
+	Sleep(milsec/*, TRUE*/); // achtung!, here was alertable SleepEx
 	up->syscall = 0;
 	sleepers--;
 	return 0;
@@ -800,6 +827,10 @@ link(char *path, char *next)
 int
 segflush(void *a, ulong n)
 {
+	//o("segflush\n");
+	//CacheRangeFlush(a, n, CACHE_SYNC_ALL);
+	//CacheSync(CACHE_SYNC_INSTRUCTIONS);
+	FlushInstructionCache(GetCurrentProcess(), a, n);
 	return 0;
 }
 

@@ -1,0 +1,4 @@
+#
+#	System dependent objects for Ce model systems
+#
+SYSFILES=lalloc.$O

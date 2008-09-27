@@ -1,5 +1,7 @@
 TARGFILES=\
 	$IMPORTFILES\
+	create.$O\
+	seek.$O\
 	dirstat-Nt.$O\
 	errstr-Nt.$O\
 	getuser-Nt.$O\

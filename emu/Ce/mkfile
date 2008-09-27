@@ -1,15 +1,13 @@
-SYSTARG=Nt
-OBJTYPE=386
+SYSTARG=Ce
+OBJTYPE=arm
 #uncomment following line for full Microsoft debug symbols
 #LDEBUG=-debug -debugtype:cv -pdb:none
 <../../mkconfig
-SYSTARG=Nt
-OBJTYPE=386
 
 #Configurable parameters
 
 CONF=emu			#default configuration
-CONFLIST=emu ie
+CONFLIST=emu
 CLEANCONFLIST=
 
 INSTALLDIR=$ROOT/$SYSTARG/$OBJTYPE/bin	#path of directory where kernel is installed
@@ -22,17 +20,23 @@ OSX=os
 
 <| $SHELLNAME ../port/mkdevlist $CONF	#sets $IP, $DEVS, $PORT, $LIBS
 
+%.res:	%.rc
+	$RESC $RESCFLAGS $stem.rc
+
 OBJ=\
+	asm-$OBJTYPE.$O\
 	$OSX.$O\
 	$CONF.root.$O\
 	lock.$O\
 	$DEVS\
 	$PORT\
+	ce.res\
 
 HFILES=\
 
 CFLAGS='-DROOT="'$ROOT'"' -DEMU -I. -I../port -I$ROOT/$SYSTARG/$OBJTYPE/include -I$ROOT/include -I$ROOT/libinterp $CTHREADFLAGS $CFLAGS $EMUOPTIONS
-SYSLIBS=	$SYSLIBS wsock32.lib user32.lib gdi32.lib advapi32.lib winmm.lib mpr.lib
+SYSLIBS=	$SYSLIBS ws2.lib
+#wsock32.lib user32.lib gdi32.lib advapi32.lib winmm.lib mpr.lib
 KERNDATE=`{$NDATE}
 
 default:V:	i$CONF.exe

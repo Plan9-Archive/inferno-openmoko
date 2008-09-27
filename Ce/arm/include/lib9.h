@@ -1,16 +1,16 @@
 #define _POSIX_SOURCE
 #include <stdlib.h>
 #include <stdarg.h>
-#include <errno.h>
+//#include <errno.h>
 #include <string.h>
 #include "math.h"
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <setjmp.h>
 #include <float.h>
 #include <time.h>
-#include <process.h>
-#include <io.h>
-#include <direct.h>
+//#include <process.h>
+//#include <io.h>
+//#include <direct.h>
 
 #define	getwd	infgetwd
 
@@ -37,6 +37,11 @@ typedef struct Proc Proc;
  * 4996 `deprecated' functions: they often suggest non-portable replacements
  */
 #pragma warning( disable : 4305 4244 4102 4761 4018 4245 4244 4068 4090 4554 4146 4996)
+
+
+//#if defined(_MSC_VER)
+#define NORETURN __declspec(noreturn)
+//#endif
 
 #define	nil		((void*)0)
 
@@ -131,8 +136,8 @@ extern	void	free(void*);
 extern	ulong	msize(void*);
 extern	void*	calloc(size_t, size_t);
 extern	void*	realloc(void*, size_t);
-extern	void		setmalloctag(void*, ulong);
-extern	void		setrealloctag(void*, ulong);
+extern	void	setmalloctag(void*, ulong);
+extern	void	setrealloctag(void*, ulong);
 extern	ulong	getmalloctag(void*);
 extern	ulong	getrealloctag(void*);
 extern	void*	malloctopoolblock(void*);
@@ -229,6 +234,7 @@ extern	int	(*doquote)(int);
 /*
  * random number
  */
+extern	int	nrand(int);
 extern	ulong	truerand(void);
 extern	ulong	ntruerand(ulong);
 
@@ -264,7 +270,8 @@ extern	vlong	osnsec(void);
 /*
  * one-of-a-kind
  */
-extern	void	_assert(char*, ...);
+
+NORETURN extern	void	_assert(char*, ...);
 extern	double	charstod(int(*)(void*), void*);
 extern	char*	cleanname(char*);
 extern	ulong	getcallerpc(void*);
@@ -458,8 +465,79 @@ extern char *argv0;
 /*
  *	Extensions for Inferno to basic libc.h
  */
+#define O_RDONLY       0x0000  /* open for reading only */
+#define O_WRONLY       0x0001  /* open for writing only */
+#define O_RDWR         0x0002  /* open for reading and writing */
+#define O_APPEND       0x0008  /* writes done at eof */
 
-extern	void	setbinmode(void);
+#define O_CREAT        0x0100  /* create and open file */
+#define O_TRUNC        0x0200  /* open and truncate */
+//#define O_EXCL         0x0400  /* open only if file doesn't already exist */
+int open(const char * _Filename, int _OpenFlag, ...);
+int close(int fildes);
+int chdir(const char * _Path);
+int mkdir(const char * _Path);
+int rmdir(const char * _Path);
+int access(const char *path, int mode);
+long lseek(int _FileHandle, long _Offset, int _Origin);
+int read(int _FileHandle, void * _DstBuf, unsigned int _MaxCharCount);
+int write(int _Filehandle, const void * _Buf, unsigned int _MaxCharCount);
+ struct stat {
+        int/*_dev_t*/     st_dev;
+        int/*_ino_t*/     st_ino;
+        unsigned short st_mode;
+        short      st_nlink;
+        short      st_uid;
+        short      st_gid;
+        int/*_dev_t*/     st_rdev;
+        int/*_off_t*/     st_size;
+        time_t st_atime;
+        time_t st_mtime;
+        time_t st_ctime;
+        } ;
+#define _S_IFMT         0xF000          /* file type mask */
+#define _S_IFDIR        0x4000          /* directory */
+#define _S_IFCHR        0x2000          /* character special */
+#define _S_IFIFO        0x1000          /* pipe */
+#define _S_IFREG        0x8000          /* regular */
+#define _S_IREAD        0x0100          /* read permission, owner */
+#define _S_IWRITE       0x0080          /* write permission, owner */
+#define _S_IEXEC        0x0040          /* execute/search permission, owner */
+#define S_IFMT   _S_IFMT
+#define S_IFDIR  _S_IFDIR
+#define S_IFCHR  _S_IFCHR
+#define S_IFREG  _S_IFREG
+#define S_IREAD  _S_IREAD
+#define S_IWRITE _S_IWRITE
+#define S_IEXEC  _S_IEXEC
+int fstat(int _Desc, struct stat * _Stat);
+int stat(const char * _Filename, struct stat * _Stat);
+
+#define memccpy _memccpy
+//inline char * getenv(const char * name) { return 0; }
+//char * getenv(const char * name);
+#define getenv(name) (0)
+int getpid(void);
+NORETURN void abort(void);
+
+/* need the inline because the link register is not saved in a known location */
+//static __forceinline /*__declspec(naked)*/ ulong getcallerpc(void* dummy) {
+//	/*__asm { mov r0, lr }*/
+//	return 0;
+//}
+#if 0
+#pragma warning(disable: 4716)
+__forceinline /*__declspec(naked)*/ ulong getcallerpc(void* dummy)
+{
+	return 0xDEADBEEF;
+	/*__emit(0xE1A0000E);*/
+}
+#pragma warning(default: 4716)
+#endif
+#define getcallerpc(x) ((ulong)__FUNCTION__)
+
+extern	int	segflush(void*, ulong);
+//extern	void	setbinmode(void);
 extern	void*	sbrk(int);
 
 /*
@@ -489,12 +567,14 @@ struct FPU
 };
 
 extern	void		sleep(int);
+#define Sleep	NTsleep
 
 /* Set up private thread space */
-extern	__declspec(thread) Proc*	up;
-#define Sleep	NTsleep
+Proc*	getup();
+#define up (getup())
 
 typedef jmp_buf osjmpbuf;
 #define	ossetjmp(buf)	setjmp(buf)
+
 
 #endif

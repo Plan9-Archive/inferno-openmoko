@@ -48,9 +48,14 @@ struct
 } table = {
 	3,
 	{
-		{ "main",  0, 	32*1024*1024, 31,  512*1024, 0, 31*1024*1024 },
-		{ "heap",  1, 	32*1024*1024, 31,  512*1024, 0, 31*1024*1024 },
+		// name pnum         maxsize  quanta        chunk monitor ressize
+		{ "main",  0, 	32*1024*1024,	  31,    512*1024, 0, 31*1024*1024 },
+		{ "heap",  1, 	32*1024*1024,	  31,    512*1024, 0, 31*1024*1024 },
+#if defined(LINUX_ARM) || defined(_WIN32_WCE)
+		{ "image", 2,   32*1024*1024+256, 31,    512*1024, 1, 31*1024*1024 },
+#else
 		{ "image", 2,   32*1024*1024+256, 31, 4*1024*1024, 1, 31*1024*1024 },
+#endif
 	}
 };
 
@@ -75,10 +80,14 @@ enum {
 
 /* tracing */
 enum {
-	Npadlong	= 2,
+	Npadlong	= 3,
 	MallocOffset = 0,
-	ReallocOffset = 1
+	ReallocOffset = 1,
+	MagicOffset = 2,
 };
+
+static void setmagictag(void *v, ulong pc);
+static ulong getmagictag(void *v);
 
 enum {
 	Monitor = 1
@@ -292,7 +301,10 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 	int osize, size;
 
 	if(asize >= 1024*1024*1024)	/* for sanity and to avoid overflow */
+	{
+		o("dopoolalloc(%d)=0\n", asize);
 		return nil;
+	}
 	size = asize;
 	osize = size;
 	size = (size + BHDRSIZE + p->quanta) & ~(p->quanta);
@@ -381,6 +393,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 	p->nbrk++;
 	t = (Bhdr *)sbrk(alloc);
 	if(t == (void*)-1) {
+		o("sbrk(%d) failed\n", alloc); // todo: try to sbrk less ?
 		p->nbrk--;
 		unlock(&p->l);
 		return nil;
@@ -442,10 +455,15 @@ void *
 poolalloc(Pool *p, ulong asize)
 {
 	Prog *prog;
+	void *ptr;
 
 	if(p->cursize > p->ressize && (prog = currun()) != nil && prog->flags&Prestricted)
-		return nil;
-	return dopoolalloc(p, asize, getcallerpc(&p));
+		ptr = nil;
+	else
+		ptr = dopoolalloc(p, asize, getcallerpc(&p));
+	if(nil==ptr)
+		o("poolalloc(%s,0x%ux)=0\n", p->name, asize);
+	return ptr;
 }
 
 void
@@ -619,6 +637,7 @@ smalloc(size_t size)
 		osmillisleep(100);
 		osleave();
 	}
+	setmagictag(v, 'SMAL');
 	setmalloctag(v, getcallerpc(&size));
 	setrealloctag(v, 0);
 	return v;
@@ -634,6 +653,7 @@ kmalloc(size_t size)
 		ML(v, size, getcallerpc(&size));
 		if(Npadlong){
 			v = (ulong*)v+Npadlong;
+			setmagictag(v, 'KMAL');
 			setmalloctag(v, getcallerpc(&size));
 			setrealloctag(v, 0);
 		}
@@ -655,6 +675,7 @@ malloc(size_t size)
 		ML(v, size, getcallerpc(&size));
 		if(Npadlong){
 			v = (ulong*)v+Npadlong;
+			setmagictag(v, 'MALL');
 			setmalloctag(v, getcallerpc(&size));
 			setrealloctag(v, 0);
 		}
@@ -662,6 +683,7 @@ malloc(size_t size)
 		MM(0, getcallerpc(&size), (ulong)v, size);
 	} else
 		print("malloc failed from %lux\n", getcallerpc(&size));
+	//o("malloc(%d)=%p\n", size, v);
 	return v;
 }
 
@@ -675,6 +697,7 @@ mallocz(ulong size, int clr)
 		ML(v, size, getcallerpc(&size));
 		if(Npadlong){
 			v = (ulong*)v+Npadlong;
+			setmagictag(v, 'MALZ');
 			setmalloctag(v, getcallerpc(&size));
 			setrealloctag(v, 0);
 		}
@@ -683,6 +706,7 @@ mallocz(ulong size, int clr)
 		MM(0, getcallerpc(&size), (ulong)v, size);
 	} else
 		print("mallocz failed from %lux\n", getcallerpc(&size));
+	//o("mallocz(%d,%d)=%p\n", size, clr, v);
 	return v;
 }
 
@@ -691,7 +715,18 @@ free(void *v)
 {
 	Bhdr *b;
 
+
 	if(v != nil) {
+		ulong mt = getmagictag(v);
+		//o("free(%p) %x '%c%c%c%c'\n", v, mt, mt>>24, mt>>16, mt>>8, mt );
+		if(!(mt=='SMAL' || mt=='KMAL' || mt=='MALL' || mt=='MALZ' || mt=='REAL'))
+		{
+			panic("invalid free"); // set bp here
+		}
+		setmagictag(v, 'XXXX');
+		setmalloctag(v, 'XXXX');
+		setrealloctag(v, 'XXXX');
+
 		if(Npadlong)
 			v = (ulong*)v-Npadlong;
 		D2B(b, v);
@@ -717,11 +752,13 @@ realloc(void *v, size_t size)
 	ML(nv, size, getcallerpc(&v));
 	if(nv != nil) {
 		nv = (ulong*)nv+Npadlong;
+		setmagictag(nv, 'REAL');
 		setrealloctag(nv, getcallerpc(&v));
 		if(v == nil)
-			setmalloctag(v, getcallerpc(&v));
+			setmalloctag(nv, getcallerpc(&v));
 	} else
 		print("realloc failed from %lux\n", getcallerpc(&v));
+	//o("realloc(%d,%d)=%p\n", v, size, nv);
 	return nv;
 }
 #if defined(_MSC_VER)
@@ -745,9 +782,9 @@ ulong
 getmalloctag(void *v)
 {
 	USED(v);
-	if(Npadlong <= MallocOffset)
-		return ~0;
-	return ((ulong*)v)[-Npadlong+MallocOffset];
+	if(Npadlong <= MallocOffset || v == nil)
+		return ((ulong*)v)[-Npadlong+MallocOffset];
+	return ~0;
 }
 
 void
@@ -767,9 +804,31 @@ ulong
 getrealloctag(void *v)
 {
 	USED(v);
-	if(Npadlong <= ReallocOffset)
-		return ((ulong*)v)[-Npadlong+ReallocOffset];
-	return ~0;
+	if(Npadlong <= ReallocOffset || v == nil)
+		return ~0;
+	return ((ulong*)v)[-Npadlong+ReallocOffset];
+}
+
+void
+setmagictag(void *v, ulong pc)
+{
+	ulong *u;
+
+	USED(v);
+	USED(pc);
+	if(Npadlong <= MagicOffset || v == nil)
+		return;
+	u = v;
+	u[-Npadlong+MagicOffset] = pc;
+}
+
+ulong
+getmagictag(void *v)
+{
+	USED(v);
+	if(Npadlong <= MagicOffset || v == nil)
+		return ~0;
+	return ((ulong*)v)[-Npadlong+MagicOffset];
 }
 
 ulong

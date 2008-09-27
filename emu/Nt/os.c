@@ -116,7 +116,7 @@ tramp(LPVOID p)
 		push eax
 		mov fs:[0],esp
 	}
-		
+
 	up = p;
 	up->func(up->arg);
 	pexit("", 0);
@@ -146,7 +146,7 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 		print("can't allocate os event\n");
 		return -1;
 	}
-		
+
 	if(flags & KPDUPPG) {
 		pg = up->env->pgrp;
 		incref(&pg->r);
@@ -183,7 +183,7 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 	unlock(&procs.l);
 
 	p->pid = (int)CreateThread(0, 16384, tramp, p, 0, &h);
-	if(p->pid <= 0){
+	if(p->pid == 0){
 		pfree(p);
 		print("ran out of  kernel processes\n");
 		return -1;
@@ -241,7 +241,6 @@ readkbd(void)
 void
 cleanexit(int x)
 {
-	sleep(2);		/* give user a chance to see message */
 	termrestore();
 	ExitProcess(x);
 }
@@ -436,7 +435,7 @@ libinit(char *imod)
 	strcpy(uname, "inferno");
 	namelen = sizeof(wuname);
 	if(GetUserName(wuname, &namelen) != TRUE) {
-		lasterror = GetLastError();	
+		lasterror = GetLastError();
 		if(PlatformId == VER_PLATFORM_WIN32_NT || lasterror != ERROR_NOT_LOGGED_ON)
 			print("cannot GetUserName: %d\n", lasterror);
 	}else{
@@ -560,7 +559,7 @@ sbrk(int size)
 {
 	void *brk;
 
-	brk = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE); 	
+	brk = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 	if(brk == 0)
 		return (void*)-1;
 
@@ -699,7 +698,7 @@ limbosleep(ulong milsec)
 
 void
 osyield(void)
-{	
+{
 	sleep(0);
 }
 

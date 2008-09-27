@@ -70,10 +70,10 @@ geom(char *val)
 {
 	char *p;
 	int x, y;
-	if (val == '\0' || (*val < '0' || *val > '9')) 
+	if (val == '\0' || (*val < '0' || *val > '9'))
 		return 0;
 	x = strtoul(val, &p, 0);
-	if(x >= 64) 
+	if(x >= 64)
 		Xsize = x;
 	if (*p++ != 'x' || !isnum(p))
 		return 0;
@@ -234,6 +234,10 @@ main(int argc, char *argv[])
 	char *enva[20];
 	int envc;
 
+	//char* argv[] = {"\\inferno\\Ce\\arm\\bin\\emu.exe", "-g", "450x600", /*"-c1",*/ "wm/wm", 0};
+	//char* argv[] = {"\\inferno\\Ce\\arm\\bin\\emu.exe", 0};
+	//int argc = (sizeof(argv)/sizeof(*argv))-1;
+
 	quotefmtinstall();
 	savestartup(argc, argv);
 	/* set default root now, so either $EMU or -r can override it later */
@@ -316,24 +320,32 @@ emuinit(void *imod)
 	kproc("main", disinit, imod, KPDUPFDG|KPDUPPG|KPDUPENVG);
 
 	for(;;)
-		ospause(); 
+		ospause();
+}
+
+void
+errorv(char *fmt, va_list arg)
+{
+	char buf[PRINTSIZE];
+
+	vseprint(buf, buf+sizeof(buf), fmt, arg);
+	error(buf);
 }
 
 void
 errorf(char *fmt, ...)
 {
 	va_list arg;
-	char buf[PRINTSIZE];
 
 	va_start(arg, fmt);
-	vseprint(buf, buf+sizeof(buf), fmt, arg);
+	errorv(fmt, arg);
 	va_end(arg);
-	error(buf);
 }
 
 void
 error(char *err)
 {
+	o("error '%s'\n",err);
 	if(err != up->env->errstr && up->env->errstr != nil)
 		kstrcpy(up->env->errstr, err, ERRMAX);
 //	ossetjmp(up->estack[NERR-1]);
@@ -355,6 +367,7 @@ exhausted(char *resource)
 void
 nexterror(void)
 {
+	//assert(0<up->nerr && up->nerr<=NERR-1);
 	oslongjmp(nil, up->estack[--up->nerr], 1);
 }
 
@@ -363,6 +376,7 @@ nexterror(void)
 void*
 waserr(void)
 {
+	//assert(0<=up->nerr && up->nerr<NERR-1);
 	up->nerr++;
 	return up->estack[up->nerr-1];
 }
@@ -370,6 +384,7 @@ waserr(void)
 void
 poperr(void)
 {
+	//assert(0<up->nerr && up->nerr<=NERR-1);
 	up->nerr--;
 }
 
@@ -399,7 +414,7 @@ int
 iprint(char *fmt, ...)
 {
 
-	int n;	
+	int n;
 	va_list va;
 	char buf[1024];
 
@@ -412,9 +427,13 @@ iprint(char *fmt, ...)
 }
 
 void
-_assert(char *fmt)
+_assert(char *fmt, ...)
 {
-	panic("assert failed: %s", fmt);
+	va_list arg;
+  	va_start(arg, fmt);
+	vfprint(2, fmt, arg);
+  	va_end(arg);
+	abort();
 }
 
 /*
@@ -433,8 +452,20 @@ sysfatal(char *fmt, ...)
 }
 
 void
-oserror(void)
+_oserror(void)
 {
 	oserrstr(up->env->errstr, ERRMAX);
 	error(up->env->errstr);
 }
+/*
+void
+oserrorf(char* fmt, ...)
+{
+	va_list arg;
+  	va_start(arg, fmt);
+	vfprint(2, fmt, arg);
+  	va_end(arg);
+
+	oserrstr(up->env->errstr, ERRMAX);
+	error(up->env->errstr);
+}*/

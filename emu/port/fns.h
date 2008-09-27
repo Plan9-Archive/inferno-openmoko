@@ -1,3 +1,6 @@
+#if !defined(NORETURN)
+#define NORETURN
+#endif
 ulong	FPcontrol(ulong,ulong);
 ulong	FPstatus(ulong,ulong);
 void		FPsave(void*);
@@ -65,6 +68,7 @@ int		emptystr(char*);
 void		emuinit(void*);
 int		eqchan(Chan*, Chan*, int);
 int		eqqid(Qid, Qid);
+//#define error(x) {o("%s:%d %s", __FILE__, __LINE__, __FUNCTION__); _error(x);}
 void		error(char*);
 void		errorf(char*, ...);
 #pragma varargck argpos errorf 1
@@ -76,7 +80,7 @@ int		findmount(Chan**, Mhead**, int, int, Qid);
 void		freeb(Block*);
 void		freeblist(Block*);
 void		freeskey(Signerkey*);
-ulong	getcallerpc(void*);
+/*ulong	getcallerpc(void*);*/
 ulong	getFPcontrol(void);
 ulong	getFPstatus(void);
 void		gkbdputc(Queue*, int);
@@ -123,7 +127,8 @@ void*		oscmd(char**, int, char*, int*);
 int		oscmdwait(void*, char*, int);
 int		oscmdkill(void*);
 void		oscmdfree(void*);
-void		oserror(void);
+#define oserror() {o("%s:%d %s", __FILE__, __LINE__, __FUNCTION__);_oserror();}
+void		_oserror(void);
 void		oserrstr(char*, uint);
 void		oslongjmp(void*, osjmpbuf, int);
 long		osmillisec(void);
@@ -133,7 +138,7 @@ int		limbosleep(ulong);
 vlong	osusectime(void);
 Block*	packblock(Block*);
 Block*	padblock(Block*, int);
-void		panic(char*, ...);
+NORETURN void 	panic(char*, ...);
 Cmdbuf*		parsecmd(char*, int);
 void		pexit(char*, int);
 void		pgrpcpy(Pgrp*, Pgrp*);
@@ -198,7 +203,7 @@ void		validstat(uchar*, int);
 void		validwstatname(char*);
 void		vmachine(void*);
 int		walk(Chan**, char**, int, int, int*);
-void		cleanexit(int);
+NORETURN void 	cleanexit(int);
 void		oshostintr(Proc*);
 void		osenter(void);
 void		osleave(void);

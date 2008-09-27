@@ -174,7 +174,10 @@ devwalk(Chan *c, Chan *nc, char **name, int nname, Dirtab *tab, int ntab, Devgen
 			case -1:
 			Notfound:
 				if(j == 0)
+				{
+					//o("%s:%d %s '%s'\n", __FILE__, __LINE__, __FUNCTION__, n);
 					error(Enonexist);
+				}
 				kstrcpy(up->env->errstr, Enonexist, ERRMAX);
 				goto Done;
 			case 0:
@@ -235,6 +238,7 @@ devstat(Chan *c, uchar *db, int n, Dirtab *tab, int ntab, Devgen *gen)
 				up->text, up->env->user,
 				devtab[c->type]->dc, c->qid.path);
 
+			o("%s:%d %s", __FILE__, __LINE__, __FUNCTION__);
 			error(Enonexist);
 		case 0:
 			break;

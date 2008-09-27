@@ -1,0 +1,70 @@
+TARGMODEL=	Ce
+TARGSHTYPE=	rc
+CPUS=		arm
+
+VSINSTALLDIR=	'C:\Program Files\Microsoft Visual Studio 8'
+PATH=		$VSINSTALLDIR/Common7/IDE;$VSINSTALLDIR\VC\ce\bin\x86_arm;$VSINSTALLDIR\VC\bin;$PATH
+INCLUDE=	$VSINSTALLDIR\SmartDevices\SDK\PocketPC2003\Include
+LIB=		$VSINSTALLDIR\VC\CE\BIN\x86_arm;$VSINSTALLDIR\SmartDevices\SDK\PocketPC2003\Lib\armv4;$VSINSTALLDIR\VC\ce\lib\armv4
+
+O=		obj
+OS=		obj
+
+AR=		lib.exe
+ARFLAGS=	-nologo -machine:arm
+ARPREFIX=	-out:
+
+AS=		armasm.exe
+ASFLAGS=	-CPU ARM8\
+		-32
+
+RESC=		rc.exe
+RESCFLAGS=
+
+
+CC=		cl.exe
+CFLAGS=		-c\
+		-nologo\
+		-W3\
+		-Zi\
+ 		-GFy -GS- -O2 -Oi-\
+		-QRarch4\
+		-MT\
+		-DUNICODE -DARMV4 -DUNDER_CE=0x420 -D_WIN32_WCE=0x420\
+		-I$ROOT/Ce/arm/include\
+		-I$ROOT/include\
+		$XCFLAGS
+
+ANSICPP=
+LD=		link.exe
+LDFLAGS=	$LDEBUG -nologo -incremental:no -map  -machine:arm -entry:mainWCRTStartup -subsystem:windowsce,4.20 -debug
+
+#  corelibc.lib -nodefaultlib
+# -force:multiple corelibc.lib
+# -nodefaultlib coredll.lib corelibc.lib secchk.lib
+SYSLIBS=-nodefaultlib libcmtd.lib coredll.lib corelibc.lib secchk.lib
+
+YACC=		iyacc.exe
+YFLAGS=		-d
+
+# do not build tools for target platform, use host's
+EMUDIRS=\
+	lib9\
+	libbio\
+	libmp\
+	libsec\
+	libmath\
+# 	utils/iyacc\
+#	limbo\
+	libinterp\
+	libdraw\
+	libprefab\
+	libtk\
+	libfreetype\
+	libmemdraw\
+	libmemlayer\
+	libdynld\
+#	asm\
+#	utils/data2c\
+#	utils/ndate\
+	emu\

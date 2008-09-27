@@ -26,7 +26,6 @@ IMPORTFILES=\
 	cistrncmp.$O\
 	cistrstr.$O\
 	cleanname.$O\
-	create.$O\
 	dirwstat.$O\
 	dofmt.$O\
 	dorfmt.$O\
@@ -51,7 +50,6 @@ IMPORTFILES=\
 	runesmprint.$O\
 	runesnprint.$O\
 	runevseprint.$O\
-	seek.$O\
 	seprint.$O\
 	smprint.$O\
 	snprint.$O\

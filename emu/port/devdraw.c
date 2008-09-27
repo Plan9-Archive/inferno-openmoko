@@ -766,7 +766,7 @@ drawclientop(Client *cl)
 	cl->op = SoverD;
 	return op;
 }
-	
+
 int
 drawhasclients(void)
 {
@@ -1019,8 +1019,6 @@ drawclose(Chan *c)
 long
 drawread(Chan *c, void *a, long n, vlong off)
 {
-	int index, m;
-	ulong red, green, blue;
 	Client *cl;
 	uchar *p;
 	Refresh *r;
@@ -1063,6 +1061,10 @@ drawread(Chan *c, void *a, long n, vlong off)
 
 	case Qcolormap:
 #ifdef COLORMAP
+		{
+		int index, m;
+		ulong red, green, blue;
+
 		p = malloc(4*12*256+1);
 		if(p == 0)
 			error(Enomem);
@@ -1073,6 +1075,7 @@ drawread(Chan *c, void *a, long n, vlong off)
 		}
 		n = readstr(offset, a, n, (char*)p);
 		free(p);
+		}
 #else
 		n = 0;
 #endif
@@ -1141,9 +1144,7 @@ drawwakeall(void)
 static long
 drawwrite(Chan *c, void *a, long n, vlong off)
 {
-	char buf[128], *fields[4], *q;
 	Client *cl;
-	int i, m, red, green, blue, x;
 	ulong offset = off;
 
 	USED(offset);
@@ -1165,6 +1166,10 @@ drawwrite(Chan *c, void *a, long n, vlong off)
 
 	case Qcolormap:
 #ifdef COLORMAP
+		{
+		char buf[128], *fields[4], *q;
+		int i, m, red, green, blue, x;
+
 		m = n;
 		n = 0;
 		while(m > 0){
@@ -1196,6 +1201,7 @@ drawwrite(Chan *c, void *a, long n, vlong off)
 			blue |= blue<<8;
 			blue |= blue<<16;
 			setcolor(i, red, green, blue);
+		}
 		}
 #else
 		n = 0;
@@ -1243,6 +1249,7 @@ drawcoord(uchar *p, uchar *maxp, int oldx, int *newx)
 static void
 printmesg(char *fmt, uchar *a, int plsprnt)
 {
+/* was unreacheable
 	char buf[256];
 	char *p, *q;
 	int s;
@@ -1288,6 +1295,7 @@ printmesg(char *fmt, uchar *a, int plsprnt)
 	*q++ = '\n';
 	*q = 0;
 	iprint("%.*s", (int)(q-buf), buf);
+*/
 }
 
 void
