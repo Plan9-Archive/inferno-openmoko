@@ -110,6 +110,7 @@ screeninit(void)
 	}
 
 	gscreen = allocmemimage(Rect(0,0,dx,dy), fmt);
+	assert(gscreen!=nil);
 	dataProviderRef = CGDataProviderCreateWithData(0, gscreen->data->bdata,
 						dx * dy * 4, 0);
 	fullScreenImage = CGImageCreate(dx, dy, 8, 32, dx * 4,
@@ -433,7 +434,7 @@ MainWindowEventHandler(EventHandlerCallRef nextHandler, EventRef event, void *us
 
 		GetEventParameter(event, kEventParamMouseLocation, typeQDPoint,
 							0, sizeof mousePos, 0, &mousePos);
-		
+
 		switch(kind) {
 		case kEventMouseWheelMoved:
 		{
@@ -562,12 +563,12 @@ flushmemscreen(Rectangle r)
 
 	if(rbounds.size.width <= 0 || rbounds.size.height <= 0)
 		return;
-		
+
 	QDBeginCGContext(GetWindowPort(theWindow), &context);
-	
+
 	// The sub-image is relative to our whole screen image.
 	CGImageRef subimg = CGImageCreateWithImageInRect(fullScreenImage, rbounds);
-	
+
 	// Drawing the sub-image is relative to the window.
 	rbounds.origin.y = winRect.bottom - winRect.top - r.min.y - rbounds.size.height;
 	CGContextDrawImage(context, rbounds, subimg);
@@ -579,7 +580,7 @@ flushmemscreen(Rectangle r)
 
 uchar*
 attachscreen(Rectangle *r, ulong *chan, int *depth, int *width, int *softscreen)
-{	
+{
 	if(!triedscreen) {
 		triedscreen = 1;
 		screeninit();	/* TO DO: call this elsewhere? */

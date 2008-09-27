@@ -40,7 +40,7 @@ typedef struct Proc Proc;
 
 
 //#if defined(_MSC_VER)
-#define NORETURN __declspec(noreturn)
+#define NORETURN __declspec(noreturn) void
 //#endif
 
 #define	nil		((void*)0)
@@ -271,7 +271,7 @@ extern	vlong	osnsec(void);
  * one-of-a-kind
  */
 
-NORETURN extern	void	_assert(char*, ...);
+extern	NORETURN _assert(char*, ...);
 extern	double	charstod(int(*)(void*), void*);
 extern	char*	cleanname(char*);
 extern	ulong	getcallerpc(void*);
@@ -518,7 +518,7 @@ int stat(const char * _Filename, struct stat * _Stat);
 //char * getenv(const char * name);
 #define getenv(name) (0)
 int getpid(void);
-NORETURN void abort(void);
+NORETURN abort(void);
 
 /* need the inline because the link register is not saved in a known location */
 //static __forceinline /*__declspec(naked)*/ ulong getcallerpc(void* dummy) {

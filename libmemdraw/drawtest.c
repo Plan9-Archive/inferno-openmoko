@@ -56,7 +56,7 @@ rdb(void)
 int
 iprint(char *fmt, ...)
 {
-	int n;	
+	int n;
 	va_list va;
 	char buf[1024];
 
@@ -115,7 +115,7 @@ main(int argc, char *argv[])
 	mtmp = allocmemimage(Rect(0, 0, Xrange, Yrange), strtochan(mchan));
 	ones = allocmemimage(Rect(0, 0, Xrange, Yrange), strtochan(mchan));
 //	print("chan %lux %lux %lux %lux %lux %lux\n", dst->chan, src->chan, mask->chan, stmp->chan, mtmp->chan, ones->chan);
-	if(dst==0 || src==0 || mask==0 || mtmp==0 || ones==0) {
+	if(dst==0 || src==0 || mask==0 || stmp==0 || mtmp==0 || ones==0) {
 	Alloc:
 		fprint(2, "dtest: allocation failed: %r\n");
 		exits("alloc");
@@ -363,7 +363,7 @@ fill(Memimage *img, uchar *ucbits)
 		}
 		img->data->bdata = data;
 	}
-		
+
 }
 
 /*
@@ -392,7 +392,7 @@ verifyonemask(void)
 	drawonepixel(dst, dp, src, sp, mask, mp);
 	memmove(mask->data->bdata, maskbits, mask->width*sizeof(ulong)*Yrange);
 	memmove(savedstbits, dst->data->bdata, dst->width*sizeof(ulong)*Yrange);
-	
+
 	memmove(dst->data->bdata, dstbits, dst->width*sizeof(ulong)*Yrange);
 	memimagedraw(dst, Rect(dp.x, dp.y, dp.x+1, dp.y+1), src, sp, mask, mp, SoverD);
 	memmove(mask->data->bdata, maskbits, mask->width*sizeof(ulong)*Yrange);
@@ -607,7 +607,7 @@ replicate(Memimage *i, Memimage *tmp)
 		else
 			r.max.y = r.min.y+3 + nrand(Yrange-(r.min.y+3));
 	}
-	assert(r.min.x >= 0);	
+	assert(r.min.x >= 0);
 	assert(r.max.x <= Xrange);
 	assert(r.min.y >= 0);
 	assert(r.max.y <= Yrange);
@@ -872,7 +872,7 @@ getmask(Memimage *img, Point pt)
 #define DBG if(0)
 /*
  * Write a pixel to img at point pt.
- * 
+ *
  * We do this by reading a 32-bit little endian
  * value from p and then writing it back
  * after tweaking the appropriate bits.  Because
@@ -897,7 +897,7 @@ DBG print("v %.8lux...", v);
 		/*
 		 * Sub-byte greyscale pixels.  We need to skip the leftmost pt.x%npack pixels,
 		 * which is equivalent to skipping the rightmost npack - pt.x%npack - 1 pixels.
-		 */	
+		 */
 		npack = 8/bpp;
 		sh = bpp*(npack - pt.x%npack - 1);
 		bits = RGB2K(r,g,b);
@@ -960,7 +960,7 @@ DBG print("v %.8lux\n", v);
 	p[0] = v;
 	p[1] = v>>8;
 	p[2] = v>>16;
-	p[3] = v>>24;	
+	p[3] = v>>24;
 }
 #undef DBG
 
