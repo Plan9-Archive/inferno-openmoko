@@ -129,6 +129,7 @@ int		oscmdkill(void*);
 void		oscmdfree(void*);
 #define oserror() {o("%s:%d %s", __FILE__, __LINE__, __FUNCTION__);_oserror();}
 NORETURN	_oserror(void);
+void 		o(char* fmt, ...);
 void		oserrstr(char*, uint);
 NORETURN	oslongjmp(void*, osjmpbuf, int);
 long		osmillisec(void);

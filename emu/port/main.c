@@ -345,7 +345,7 @@ errorf(char *fmt, ...)
 void
 error(char *err)
 {
-	o("error '%s'\n",err);
+//	o("error '%s'\n",err);
 	if(err != up->env->errstr && up->env->errstr != nil)
 		kstrcpy(up->env->errstr, err, ERRMAX);
 //	ossetjmp(up->estack[NERR-1]);
@@ -434,6 +434,18 @@ _assert(char *fmt, ...)
 	vfprint(2, fmt, arg);
   	va_end(arg);
 	abort();
+}
+
+/*
+ * debugging
+ */
+// o==fprint(2,
+void o(char* fmt, ...)
+{
+	va_list arg;
+  	va_start(arg, fmt);
+	vfprint(2, fmt, arg);
+  	va_end(arg);
 }
 
 /*
