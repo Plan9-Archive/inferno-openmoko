@@ -296,7 +296,7 @@ fsopen(Chan *c, int mode)
 static void
 fscreate(Chan *c, char *name, int mode, ulong perm)
 {
-	int fd, m, o;
+	int fd, m, oo;
 	struct stat stbuf;
 	Cname *n;
 
@@ -334,11 +334,11 @@ fscreate(Chan *c, char *name, int mode, ulong perm)
 		if(FS(c)->dir == nil)
 			oserror();
 	} else {
-		o = (O_CREAT | O_EXCL) | (mode&3);
+		oo = (O_CREAT | O_EXCL) | (mode&3);
 		if(mode & OTRUNC)
-			o |= O_TRUNC;
+			oo |= O_TRUNC;
 		perm &= ~0666 | (FS(c)->mode & 0666);
-		fd = open(n->s, o, perm);
+		fd = open(n->s, oo, perm);
 		if(fd < 0)
 			oserror();
 		fchmod(fd, perm);
