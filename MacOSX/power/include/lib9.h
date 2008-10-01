@@ -269,7 +269,7 @@ extern	vlong	osnsec(void);
 /*
  * one-of-a-kind
  */
-extern	void	_assert(char*);
+extern	void	_assert(char*, ...);
 extern	double	charstod(int(*)(void*), void*);
 extern	char*	cleanname(char*);
 extern	double	frexp(double, int*);

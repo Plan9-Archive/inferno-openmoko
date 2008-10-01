@@ -251,11 +251,11 @@ struct Tm {
 };
 extern	vlong	osnsec(void);
 #define	nsec	osnsec
-	
+
 /*
  * one-of-a-kind
  */
-extern	void	_assert(char*);
+extern	void	_assert(char*, ...);
 extern	double	charstod(int(*)(void*), void*);
 extern	char*	cleanname(char*);
 extern	double	frexp(double, int*);

@@ -235,11 +235,11 @@ struct Tm {
 	char	zone[4];
 	int	tzoff;
 };
-	
+
 /*
  * one-of-a-kind
  */
-extern	void	_assert(char*);
+extern	void	_assert(char*, ...);
 extern	double	charstod(int(*)(void*), void*);
 extern	char*	cleanname(char*);
 extern	ulong	getcallerpc(void*);

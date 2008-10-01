@@ -247,11 +247,11 @@ struct Tm {
 };
 extern	vlong	osnsec(void);
 #define	nsec	osnsec
-	
+
 /*
  * one-of-a-kind
  */
-extern	void	_assert(char*);
+extern	void	_assert(char*, ...);
 extern	double	charstod(int(*)(void*), void*);
 extern	char*	cleanname(char*);
 //extern	ulong	getcallerpc(void*);
@@ -455,9 +455,9 @@ extern char *argv0;
 /* need the inline because the link register is not saved in a known location */
 static __inline ulong getcallerpc(void* dummy) {
 	ulong lr;
- 	__asm__(	"mov	%0, %%lr;" 
- 			: "=r" (lr) 
- 	); 
+ 	__asm__(	"mov	%0, %%lr;"
+ 			: "=r" (lr)
+ 	);
 	return lr;
 }
 
@@ -491,9 +491,9 @@ struct FPU
 
 static __inline Proc *getup(void) {
 	Proc* p;
- 	__asm__(	"mov	%0, %%sp;" 
- 			: "=r" (p) 
- 	); 
+ 	__asm__(	"mov	%0, %%sp;"
+ 			: "=r" (p)
+ 	);
         return *(Proc **)((unsigned long)p & ~(KSTACK - 1));
 };
 

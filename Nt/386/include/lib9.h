@@ -229,6 +229,7 @@ extern	int	(*doquote)(int);
 /*
  * random number
  */
+extern	int	nrand(int);
 extern	ulong	truerand(void);
 extern	ulong	ntruerand(ulong);
 
@@ -461,6 +462,7 @@ extern char *argv0;
 
 extern	void	setbinmode(void);
 extern	void*	sbrk(int);
+extern	int	segflush(void*, ulong);
 
 /*
  * debugging
