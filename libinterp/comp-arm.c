@@ -214,8 +214,8 @@ enum
 #define CCALL(C,o)				gen(BRAW((C), ((ulong)(o)-(ulong)code-8)>>2)|(1<<24))
 #define CALLMAC(C,o)			gen(BRAW((C), (IA(macro, o)-(ulong)code-8)>>2)|(1<<24))
 #define RELPC(pc)			(ulong)(base+(pc))
-#define RETURN				DPI(AL, Add, RLINK, R15, 0, 0)				
-#define CRETURN(C)				DPI(C, Add, RLINK, R15, 0, 0)				
+#define RETURN				DPI(AL, Add, RLINK, R15, 0, 0)
+#define CRETURN(C)				DPI(C, Add, RLINK, R15, 0, 0)
 #define PATCH(ptr)			*ptr |= (((ulong)code-(ulong)(ptr)-8)>>2) & 0x00ffffff
 
 
@@ -231,7 +231,7 @@ enum
 
 /* assumes H==-1 */
 #define CMPH(C, r)		CMNI(C, r, 0, 0, 1)
-#define NOTNIL(r)	(CMPH(AL, (r)), CCALL(EQ, bounds))
+#define NOTNIL(r)	(CMPH(AL, (r)), CCALL(EQ, nilref))
 
 /* array bounds checking */
 #define BCK(r, rb)	(CMP(AL, rb, 0, 0, r), CCALL(LS, bounds))
@@ -259,7 +259,9 @@ static	void	macmfra(void);
 static	void	macrelq(void);
 static	void movmem(Inst*);
 static	void mid(Inst*, int, int);
+static  void nilref(void);
 extern	void	das(ulong*, int);
+
 
 #define T(r)	*((void**)(R.r))
 
@@ -292,7 +294,7 @@ typedef struct Con Con;
 struct Con
 {
 	int	ptr;
-	Const	table[NCON];	
+	Const	table[NCON];
 };
 static Con rcon;
 
@@ -449,7 +451,7 @@ ccon(int cc, ulong o, int r, int opt)
 		u = o & ~0xff;
 		if(u == 0) {
 			DPI(cc, Mov, 0, r, 0, o);
-			return;		
+			return;
 		}
 		if(u == ~0xff) {
 			DPI(cc, Mvn, 0, r, 0, ~o);
@@ -680,7 +682,7 @@ literal(ulong imm, int roff)
 		return;
 
 	*litpool = imm;
-	litpool++;	
+	litpool++;
 }
 
 static void
@@ -704,6 +706,12 @@ bounds(int r0, int r1, int r2, int r3)
 #endif
 	/* mem(Stw, O(REG,FP), RREG, RFP); */
 	error(exBounds);
+}
+
+static void
+nilref(void)
+{
+	error(exNilref);
 }
 
 static void
@@ -932,7 +940,7 @@ cbraf(Inst *i, int r)
 		if(pass){print("%D\n", i); das(s, code-s);}
 	}else
 		punt(i, SRCOP|THREOP|DBRAN|NEWPC|WRTPC, optab[i->op]);
-}	
+}
 
 static void
 comcase(Inst *i, int w)
@@ -949,7 +957,7 @@ comcase(Inst *i, int w)
 	t = (WORD*)(mod->origmp+i->d.ind+4);
 	l = t[-1];
 
-	/* have to take care not to relocate the same table twice - 
+	/* have to take care not to relocate the same table twice -
 	 * the limbo compiler can duplicate a case instruction
 	 * during its folding phase
 	 */
@@ -1080,6 +1088,7 @@ movloop(Inst *i, int s)
 
 	b = (s==1);
 	opwst(i, Lea, RA2);
+        NOTNIL(RA2);
 	LDxP(AL, RA1, RA0, s, b);
 	STxP(AL, RA2, RA0, s, b);
 	DPI(AL, Sub, RA3, RA3, 0, 1) | SBIT;
@@ -1156,7 +1165,7 @@ before(void)
 	CHECK_STACK_ALIGN();
 
 	//void statebefore(char* o, int n, uchar op)
-	char sz[100], sz2[200]; 
+	char sz[100], sz2[200];
 	Step*step = *(Step**)R.t;
 	Inst*i = &step->i;
 
@@ -1181,7 +1190,7 @@ after(void)
 
 	CHECK_STACK_ALIGN();
 
-	char sz2[200]; 
+	char sz2[200];
 	Step*step = *(Step**)R.t;
 	Inst*i = &step->i;
 
@@ -1372,6 +1381,7 @@ comp(Inst *i)
 */
 	case IMOVM:
 		opwld(i, Lea, RA1);
+		NOTNIL(RA1);
 		movmem(i);
 		break;
 	case IFRAME:
@@ -1478,7 +1488,7 @@ comp(Inst *i)
 		break;
 	case IBEQW:
 		cbra(i, EQ);
-		break;		
+		break;
 	case IBNEW:
 		cbra(i, NE);
 		break;
@@ -1664,11 +1674,11 @@ comp(Inst *i)
 		break;
 #else
 	// a yet unknown bug here
-	case IINDL: 
+	case IINDL:
 	case IINDF: r = 3; goto iind;
 	case IINDW: r = 2; goto iind;
 	case IINDB: r = 0;
-	iind:	
+	iind:
 		opwld(i, Ldw, RA0);			/* a */
 		NOTNIL(RA0);
 		mem(Ldw, O(Array, data), RA0, RA0);

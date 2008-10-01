@@ -159,6 +159,12 @@ bounds(void)
 }
 
 static void
+nilref(void)
+{
+	error(exNilref);
+}
+
+static void
 rdestroy(void)
 {
 	destroy(R.s);
@@ -375,7 +381,7 @@ literal(ulong imm, int roff)
 		return;
 
 	*litpool = imm;
-	litpool++;	
+	litpool++;
 }
 
 static void
@@ -684,7 +690,7 @@ comcase(Inst *i, int w)
 	t = (WORD*)(mod->origmp+i->d.ind+4);
 	l = t[-1];
 
-	/* have to take care not to relocate the same table twice - 
+	/* have to take care not to relocate the same table twice -
 	 * the limbo compiler can duplicate a case instruction
 	 * during its folding phase
 	 */
@@ -1033,8 +1039,8 @@ comp(Inst *i)
 		opwst(i, 0xdf, 7);
 		break;
 	case IHEADM:
-		opwld(i, Oldw, RAX);
-		modrm(Olea, OA(List, data), RAX, RAX);
+  		opwld(i, Oldw, RAX);
+  		modrm(Olea, OA(List, data), RAX, RAX);
 		goto movm;
 	case IMOVM:
 		opwld(i, Olea, RAX);
@@ -1043,6 +1049,19 @@ comp(Inst *i)
 		mid(i, Oldw, RCX);
 		genb(OxchgAX+RSI);
 		gen2(Oxchg, (3<<6)|(RDI<<3)|RBX);
+
+		//genb(0x83);genb(0xFE);genb(0xFF); /* cmp         esi,-001 */
+		//gen2(0x75, 5);		    /* JNE */
+		//bra((ulong)nilref, Ocall);
+		genw(0x0FFFFE83);
+		bra((ulong)nilref, 0x84);
+
+		//genb(0x83);genb(0xFF);genb(0xFF); /* cmp         edi,-001 */
+		//gen2(0x75, 5);		    /* JNE */
+		//bra((ulong)nilref, Ocall);
+		genw(0x0FFFFF83);
+		bra((ulong)nilref, 0x84);
+
 		genb(Ocld);
 		gen2(Orep, Omovsb);
 		genb(OxchgAX+RSI);
@@ -1972,4 +1991,3 @@ bad:
 	free(base);
 	return 0;
 }
-
