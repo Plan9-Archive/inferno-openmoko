@@ -73,7 +73,7 @@ ConfigFile.flush(me: self ref ConfigFile): string
 {
 	if(me.readonly)
 		return "file is read only";
-	if((fd := sys->create(me.file,Sys->OWRITE,0644)) == nil)
+	if((fd := sys->create(me.file,Sys->OWRITE,8r644)) == nil)
 		return sys->sprint("%r");
 	if((f := bufio->fopen(fd,Sys->OWRITE)) == nil)
 		return sys->sprint("%r");
