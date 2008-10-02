@@ -91,32 +91,14 @@ pexit(char *msg, int t)
 	ExitThread(0);
 }
 
-LONG TrapHandler(LPEXCEPTION_POINTERS ureg);
-
-__cdecl
-Exhandler(EXCEPTION_RECORD *rec, void *frame, CONTEXT *context, void *dcon)
-{
-	EXCEPTION_POINTERS ep;
-	ep.ExceptionRecord = rec;
-	ep.ContextRecord = context;
-	TrapHandler(&ep);
-	return ExceptionContinueExecution;
-}
+LONG WINAPI TrapHandler(LPEXCEPTION_POINTERS ureg);
 
 DWORD WINAPI
 tramp(LPVOID p)
 {
-	// install our own exception handler
-	// replacing all others installed on this thread
-	DWORD handler = (DWORD)Exhandler;
-	_asm {
-		mov eax,handler
-		push eax
-		mov eax,-1
-		push eax
-		mov fs:[0],esp
-	}
-
+#if(_WIN32_WINNT >= 0x0400)
+	SetUnhandledExceptionFilter(&TrapHandler); /* Win2000+, does not work on NT4 */
+#endif
 	up = p;
 	up->func(up->arg);
 	pexit("", 0);
@@ -279,40 +261,17 @@ dodisfault(void)
 	disfault(nil, up->env->errstr);
 }
 
-typedef struct Ereg Ereg;
-struct Ereg {
-	Ereg *prev;
-	FARPROC handler;
-};
-
-void
-dumpex()
-{
-	Ereg *er;
-	int i;
-	_asm { mov eax,fs:[0] };
-	_asm { mov [er],eax };
-
-	i = 0;
-	while ((unsigned)er != ~0) {
-		print("handler %ux\n", er->handler);
-		i++;
-	er = er->prev;
-	}
-	print("EXCEPTION CHAIN LENGTH = %d\n", i);
-}
-
-LONG
+LONG WINAPI
 TrapHandler(LPEXCEPTION_POINTERS ureg)
 {
 	int i;
 	char *name;
 	DWORD code;
-	// WORD pc;
+	DWORD pc;
 	char buf[ERRMAX];
 
 	code = ureg->ExceptionRecord->ExceptionCode;
-	// pc = ureg->ContextRecord->Eip;
+	pc = ureg->ContextRecord->Eip;
 
 	name = nil;
 	for(i = 0; i < nelem(ecodes); i++) {
@@ -326,12 +285,12 @@ TrapHandler(LPEXCEPTION_POINTERS ureg)
 		snprint(buf, sizeof(buf), "Unrecognized Machine Trap (%.8lux)\n", code);
 		name = buf;
 	}
-/*
+
 	if(pc != 0) {
 		snprint(buf, sizeof(buf), "%s: pc=0x%lux", name, pc);
 		name = buf;
 	}
-*/
+
 	/* YUCK! */
 	strncpy(up->env->errstr, name, ERRMAX);
 	switch (code) {
