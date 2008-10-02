@@ -1,6 +1,6 @@
 <../mkconfig
 
-LIB=libkeyring.a
+LIBNAME=libkeyring.a
 
 OFILES=\
 	dsaalg.$O\

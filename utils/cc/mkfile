@@ -1,6 +1,6 @@
 <../../mkconfig
 
-LIB=libcc.a
+LIBNAME=libcc.a
 
 OFILES=\
 	acid.$O\
@@ -19,10 +19,10 @@ OFILES=\
 	sub.$O\
 	y.tab.$O\
 	machcap.$O\
- 
+
 HFILES=cc.h\
 	y.tab.h\
- 
+
 YFILES=cc.y\
 
 <$ROOT/mkfiles/mksyslib-$SHELLTYPE

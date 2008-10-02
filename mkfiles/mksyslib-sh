@@ -2,7 +2,7 @@
 #	Rules for updating a library with sh
 #
 LIBDIR=$ROOT/$OBJDIR/lib
-LIBRARY=$LIBDIR/$LIB
+LIBRARY=$LIBDIR/$LIBNAME
 LIBOBJ=${OFILES:%=$LIBRARY(%)}
 
 default:V:	all
@@ -15,7 +15,7 @@ installall:V:
 		mk $MKFLAGS install
 	done
 
-clean:V:	clean-std	
+clean:V:	clean-std
 
 nuke:V:		nuke-std
 

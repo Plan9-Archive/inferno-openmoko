@@ -1,6 +1,6 @@
 <../../mkconfig
 
-LIB=libstyx.a
+LIBNAME=libstyx.a
 
 OFILES=\
 	styxserver.$O\

@@ -1,6 +1,6 @@
 <../mkconfig
 
-LIB=libmemlayer.a
+LIBNAME=libmemlayer.a
 
 COMMONFILES=\
 	draw.$O\

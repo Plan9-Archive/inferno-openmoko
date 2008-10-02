@@ -1,6 +1,6 @@
 <../mkconfig
 
-LIB=lib9.a
+LIBNAME=lib9.a
 
 #
 # files used by all models

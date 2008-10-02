@@ -1,6 +1,6 @@
 <../mkconfig
 
-LIB=libkern.a
+LIBNAME=libkern.a
 
 COMMONFILES=\
 	abort.$O\

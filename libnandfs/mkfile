@@ -1,6 +1,6 @@
 <../mkconfig
 
-LIB=libnandfs.a
+LIBNAME=libnandfs.a
 
 OFILES=	\
 		calcformat.$O\
@@ -30,4 +30,3 @@ HFILES=\
 	local.h
 
 <$ROOT/mkfiles/mksyslib-$SHELLTYPE
-

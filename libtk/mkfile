@@ -1,6 +1,6 @@
 <../mkconfig
 
-LIB=libtk.a
+LIBNAME=libtk.a
 
 OFILES=\
 	ebind.$O\

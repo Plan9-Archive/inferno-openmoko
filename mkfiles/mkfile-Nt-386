@@ -7,7 +7,7 @@ VCBIN=		$VSINSTALLDIR/VC/BIN
 PATH=		$VSINSTALLDIR/Common7/IDE;$VSINSTALLDIR/VC/BIN;$PATH
 INCLUDE=	$VSINSTALLDIR/VC/ATLMFC/INCLUDE;$VSINSTALLDIR/VC/INCLUDE;$VSINSTALLDIR/VC/PlatformSDK/include;$INCLUDE
 LIB=		$VSINSTALLDIR/VC/ATLMFC/LIB;$VSINSTALLDIR/VC/LIB;$VSINSTALLDIR/VC/PlatformSDK/lib;$VSINSTALLDIR/SDK/v2.0/lib;$LIB
-LIBPATH=	$VSINSTALLDIR/VC/ATLMFC/LIB
+LIBPATH=	$VSINSTALLDIR/VC/ATLMFC/LIB;$VSINSTALLDIR/VC/LIB;$VSINSTALLDIR/VC/PlatformSDK/lib;$VSINSTALLDIR/SDK/v2.0/lib;$LIBPATH
 
 
 O=		obj
@@ -31,16 +31,17 @@ CFLAGS=		-c\
 		-nologo\
 		-W3\
  		-Zi\
-		-GAFy -GS- -Ox -Oi-\
+ 		-GAFy -GS- -Ox -Oi-\
 		-MT\
 		-D_WIN32_WINNT=0x0400\
 		-I$ROOT/Nt/386/include\
 		-I$ROOT/include\
 		$XCFLAGS\
 
+
 ANSICPP=
 LD=		link.exe
-LDFLAGS=	$LDEBUG -nologo -incremental:no -map -force:multiple
+LDFLAGS=	$LDEBUG -nologo -incremental:no -map -force:multiple -debug
 # LDFLAGS=	-nologo -incremental:no -debug
 
 SYSLIBS=	binmode.obj

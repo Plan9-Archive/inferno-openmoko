@@ -2,7 +2,7 @@
 #	Rules for updating a library with rc
 #
 LIBDIR=$ROOT/$OBJDIR/lib
-LIBRARY=$LIBDIR/$LIB
+LIBRARY=$LIBDIR/$LIBNAME
 LIBOBJ=${OFILES:%=$LIBRARY(%)}
 
 default:V:	all
@@ -13,7 +13,7 @@ installall:V:
 	for(objtype in $CPUS)
 		mk $MKFLAGS install
 
-clean:V: clean-std	
+clean:V: clean-std
 
 nuke:V:	nuke-std
 

@@ -1,6 +1,6 @@
 <../../mkconfig
 
-LIB=libmp.a
+LIBNAME=libmp.a
 FILES=\
 	mpaux\
 	mpfmt\

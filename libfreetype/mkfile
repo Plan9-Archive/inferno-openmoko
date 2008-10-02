@@ -1,6 +1,6 @@
 <../mkconfig
 
-LIB=libfreetype.a
+LIBNAME=libfreetype.a
 
 OFILES=\
 	freetype.$O\

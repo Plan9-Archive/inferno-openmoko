@@ -2,7 +2,7 @@ objtype=amd64
 OBJTYPE=$objtype
 <../../mkconfig
 
-LIB=libmp.a
+LIBNAME=libmp.a
 SFILES=\
 	mpvecadd.s\
 	mpvecdigmuladd.s\

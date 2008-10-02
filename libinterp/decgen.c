@@ -20,8 +20,15 @@ main(void)
 	print("#include \"lib9.h\"\n");
 	print("#include \"isa.h\"\n");
 	print("#include \"interp.h\"\n\n");
+	print("#include \"raise.h\"\n\n");
 
-	print("#define DIND(reg, xxx) (uchar*)((*(ulong*)(R.reg+R.PC->xxx.i.f))+R.PC->xxx.i.s)\n");
+	/*print("#define DIND(reg, xxx) (uchar*)((*(ulong*)(R.reg+R.PC->xxx.i.f))+R.PC->xxx.i.s)\n");*/
+
+	print("#define DIND(target, reg, xxx){\\\n");
+	print(" ulong ul = *(ulong*)(R.reg+R.PC->xxx.i.f);\\\n");
+	print(" if((ulong)H==ul) {error(exNilref);}\\\n");
+	print(" R.target = (uchar*)(ul+R.PC->xxx.i.s);\\\n");
+	print("}\n");
 
 	for(i = 0; i < 256; i++)
 		decgen(i);
@@ -56,7 +63,7 @@ decgen(int addr)
 			print("R.s = (uchar*)R.s + R.PC->s.i.s\n");
 		}
 		else
-			print("\tR.s = DIND(MP, s);\n");
+			print("\tDIND(s, MP, s);\n");
 		break;
 	case AFP|AIND:
 		if(SOFTMMU) {
@@ -65,7 +72,7 @@ decgen(int addr)
 			print("R.s = (uchar*)R.s + R.PC->s.i.s\n");
 		}
 		else
-			print("\tR.s = DIND(FP, s);\n");
+			print("\tDIND(s, FP, s);\n");
 		break;
 	}
 	nodst = 0;
@@ -89,7 +96,7 @@ decgen(int addr)
 			print("R.d = (uchar*)R.d + R.PC->d.i.s\n");
 		}
 		else
-			print("\tR.d = DIND(MP, d);\n");
+			print("\tDIND(d, MP, d);\n");
 		break;
 	case AFP|AIND:
 		if(SOFTMMU) {
@@ -98,7 +105,7 @@ decgen(int addr)
 			print("R.d = (uchar*)R.d + R.PC->d.i.s\n");
 		}
 		else
-			print("\tR.d = DIND(FP, d);\n");
+			print("\tDIND(d, FP, d);\n");
 		break;
 	}
 

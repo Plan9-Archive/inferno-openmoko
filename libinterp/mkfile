@@ -1,6 +1,6 @@
 <../mkconfig
 
-LIB=libinterp.a
+LIBNAME=libinterp.a
 
 OFILES=\
 	alt.$O\
@@ -110,6 +110,17 @@ kif.c:	kif.h
 kif.$O: kif.c
 	$CC $CFLAGS kif.c && rm -f kif.c
 
+dec.c:  decgen.out
+	decgen.out > dec.c
+	rm decgen.out
+
+decgen.out: decgen.c
+	$CC $CFLAGS decgen.c
+	$LD $LDFLAGS $ROOT/$OBJDIR/lib/lib9.a decgen.$O -out:$target
+	rm decgen.$O
+	rm decgen.map
+	rm decgen.pdb
+
 # optab.h:	$ROOT/include/isa.h mkoptab
 #	$SHELLNAME mkoptab > $target
 
@@ -117,4 +128,4 @@ kif.$O: kif.c
 #	it works only on UNIX and Plan 9.
 
 nuke:EV:	nuke-std
-	rm -f runt.h sysmod.h drawmod.h prefabmod.h tkmod.h mathmod.h keyring.h readimagemod.h loadermod.h freetypemod.h kif.c
+	rm -f decgen.map decgen.out decgen.pdb dec.c runt.h sysmod.h drawmod.h prefabmod.h tkmod.h mathmod.h keyring.h readimagemod.h loadermod.h freetypemod.h kif.c

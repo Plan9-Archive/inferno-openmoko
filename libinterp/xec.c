@@ -38,7 +38,7 @@ OP(runt) { CHECK_STACK_ALIGN(); }
 OP(negf) { CHECK_STACK_ALIGN(); F(d) = -F(s); }
 OP(jmp)  { CHECK_STACK_ALIGN(); JMP(d); }
 OP(movpc){ CHECK_STACK_ALIGN(); T(d) = &R.M->prog[W(s)]; }
-OP(movm) { CHECK_STACK_ALIGN(); if(R.s==H || R.d==H) error(exNilref); memmove(R.d, R.s, W(m)); }
+OP(movm) { CHECK_STACK_ALIGN(); memmove(R.d, R.s, W(m)); }
 OP(lea)  { CHECK_STACK_ALIGN(); W(d) = (WORD)R.s; }
 OP(movb) { CHECK_STACK_ALIGN(); B(d) = B(s); }
 OP(movw) { CHECK_STACK_ALIGN(); W(d) = W(s); }
