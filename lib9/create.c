@@ -23,7 +23,7 @@ create(char *f, int mode, int perm)
 	m |= O_CREAT|O_TRUNC;
 
 	if(perm & DMDIR){
-		if(mkdir(f, perm&0777) < 0)
+		if(mkdir(f, perm&0777) < 0) // bug: Nt's mkdir does not set permissions
 			return -1;
 		perm &= ~DMDIR;
 		m &= 3;
