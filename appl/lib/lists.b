@@ -92,13 +92,15 @@ delete[T](x: T, l: list of T): list of T
 	for { T =>	eq:	fn(a, b: T): int; }
 {
 	o: list of T;
-	for(; l != nil; l = tl l)
+	for(; l != nil; l = tl l){
 		if(T.eq(x, hd l)){
 			l = tl l;
 			for(; o != nil; o = tl o)
 				l = hd o :: l;
 			break;
 		}
+		o = hd l :: o;
+	}
 	return l;
 }
 
