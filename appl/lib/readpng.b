@@ -154,9 +154,9 @@ read(fd: ref Iobuf): (ref Rawimage, string)
 # Stash some detail in raw
 	raw.r.min = Point(0, 0);
 	raw.transp = 0;
-	raw.chans = array[raw.nchans] of array of byte;
+	raw.chans = array[raw.nchans+png.alpha] of array of byte;
 	{
-		for (r:= 0; r < raw.nchans; r++)
+		for (r:= 0; r < len raw.chans; r++)
 			raw.chans[r] = array[raw.r.max.x * raw.r.max.y] of byte;
 	}
 # Get the next chunk
@@ -204,7 +204,7 @@ read(fd: ref Iobuf): (ref Rawimage, string)
 				png.error = "superfluous PLTE";
 				break;
 			}
-			raw.cmap = array[256 * 3] of byte;
+			raw.cmap = array[chunk.size] of byte;
 			png.PLTEsize = chunk.size / 3;
 			if (!get_bytes(fd, chunk.crc_state, raw.cmap, chunk.size)) {
 				png.error = "eof in PLTE";
@@ -344,7 +344,7 @@ read(fd: ref Iobuf): (ref Rawimage, string)
 			seenLastIDAT = 1;
 	}
 	# can only get here if IEND was last chunk, or png.error set
-	
+
 	if (png.error == nil && !seenIDAT) {
 		png.error = "no IDAT!";
 		inflateFinished = 1;
@@ -376,7 +376,7 @@ read(fd: ref Iobuf): (ref Rawimage, string)
 			png.error = "inflate error\n";
 			inflateFinished = 1;
 		}
-		
+
 	}
 	if (png.error == nil && !png.done)
 		png.error = "insufficient data";
@@ -467,7 +467,7 @@ upconvert(out: array of byte, outstride: int, in: array of byte, pixels: int, bp
 			ucp := pixel;
 			for (y := bpp; y < 8; y += bpp)
 				ucp |= pixel << y;
-			out[outx] = ucp; 
+			out[outx] = ucp;
 			outx += outstride;
 		}
 		inx++;
@@ -480,7 +480,7 @@ upconvert(out: array of byte, outstride: int, in: array of byte, pixels: int, bp
 			ucp := pixel;
 			for (y := bpp; y < 8; y += bpp)
 				ucp |= pixel << y;
-			out[outx] = ucp; 
+			out[outx] = ucp;
 			outx += outstride;
 			if (--residue <= 0)
 				break;
@@ -547,6 +547,8 @@ outputrow(png: ref Png, raw: ref Rawimage, row: array of byte)
 			# might have an Alpha channel to ignore!
 			stride := (png.alpha + 1) * png.depth / 8;
 			copybytes(raw.chans[0][offset + png.colstart:], png.colstep, row, stride, png.phasecols);
+			if(png.alpha)
+				copybytes(raw.chans[1][offset + png.colstart:], png.colstep, row[png.depth / 8:], stride, png.phasecols);
 		}
 	3 =>
 		case (png.depth) {
@@ -560,6 +562,8 @@ outputrow(png: ref Png, raw: ref Rawimage, row: array of byte)
 			copybytes(raw.chans[0][offset + png.colstart:], png.colstep, row, stride, png.phasecols);
 			copybytes(raw.chans[1][offset + png.colstart:], png.colstep, row[bytespc:], stride, png.phasecols);
 			copybytes(raw.chans[2][offset + png.colstart:], png.colstep, row[bytespc * 2:], stride, png.phasecols);
+			if(png.alpha)
+				copybytes(raw.chans[3][offset + png.colstart:], png.colstep, row[bytespc * 3:], stride, png.phasecols);
 		}
 	}
 }
@@ -630,7 +634,7 @@ filterpaeth(png: ref Png)
 			png.thisrow[x] += b;
 		else
 			png.thisrow[x] += c;
-	}		
+	}
 }
 
 phaseendcheck(png: ref Png, raw: ref Rawimage): int

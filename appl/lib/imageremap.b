@@ -572,12 +572,12 @@ remap(i: ref RImagefile->Rawimage, d: ref Display, errdiff: int): (ref Image, st
 			return (nil, sys->sprint("image has no color map"));
 		if(i.nchans != 1)
 			return (nil, sys->sprint("can't handle nchans %d", i.nchans));
-		for(j=1; j<=8; j++)
-			if(len cmap == 3*(1<<j))
-				break;
-		if(j > 8)
-			return (nil, sys->sprint("can't understand colormap size 3*%d", len cmap/3));
-		if(len cmap != 3*256){
+#		for(j=1; j<=8; j++)
+#			if(len cmap == 3*(1<<j))
+#				break;
+#		if(j > 8)
+#			return (nil, sys->sprint("can't understand colormap size 3*%d", len cmap/3));
+		if(len cmap < 3*256){
 			# to avoid a range check in inner loop below, make a full-size cmap
 			cmap1 := array[3*256] of byte;
 			cmap1[0:] = cmap[0:];
