@@ -108,6 +108,16 @@ void		refreshslave(Display*);
 void		subfont_close(Subfont*);
 void		freeallsubfonts(Display*);
 
+static int nonemptyrect(const Rectangle* r)
+{
+	return r->max.x > r->min.x && r->max.y > r->min.y;
+}
+
+static int validrect(const Rectangle* r)
+{
+	return r->max.x >= r->min.x && r->max.y >= r->min.y;
+}
+
 void
 drawmodinit(void)
 {
@@ -1745,6 +1755,101 @@ Chans_mk(void *fp)
 	f->ret->desc = strtochan(string2c(f->s));
 }
 
+
+#define RGB2K(r,g,b)	((156763*(r)+307758*(g)+59769*(b))>>19)
+
+// todo: fast versions for known often used Chans
+void
+Chans_pack(void *fp)
+{
+	F_Chans_pack * const f = fp;
+
+	ulong chan;
+	int d=0, nb;
+	ulong v=0;
+	const uchar r=f->r, g=f->g, b=f->b, a=f->a;
+	uchar m;
+
+	for(chan=f->c.desc; chan; chan>>=8){
+		nb = NBITS(chan);
+		switch(TYPE(chan)){
+		case CRed:
+			v |= (r>>(8-nb))<<d;
+			break;
+		case CGreen:
+			v |= (g>>(8-nb))<<d;
+			break;
+		case CBlue:
+			v |= (b>>(8-nb))<<d;
+			break;
+		case CAlpha:
+			v |= (a>>(8-nb))<<d;
+			break;
+		case CMap:
+			m = rgb2cmap(r,g,b);
+			v |= (m>>(8-nb))<<d;
+			break;
+		case CGrey:
+			m = RGB2K(r,g,b);
+			v |= (m>>(8-nb))<<d;
+			break;
+		}
+		d += nb;
+	}
+//	print("rgba2img %.8lux = %.*lux\n", rgba, 2*d/8, v);
+	*f->ret = v;
+}
+
+void
+Chans_unpack(void *fp)
+{
+	F_Chans_unpack * const f = fp;
+
+	uchar r=0xAA, g=0xAA, b=0xAA, a=0xFF; /* garbage */
+	int nb, ov, v;
+	ulong chan, m, val = f->bits;
+
+	for(chan=f->c.desc; chan; chan>>=8){
+		nb = NBITS(chan);
+		ov = v = val&((1<<nb)-1);
+		val >>= nb;
+
+		while(nb < 8){
+			v |= v<<nb;
+			nb *= 2;
+		}
+		v >>= (nb-8);
+
+		switch(TYPE(chan)){
+		case CRed:
+			r = v;
+			break;
+		case CGreen:
+			g = v;
+			break;
+		case CBlue:
+			b = v;
+			break;
+		case CAlpha:
+			a = v;
+			break;
+		case CGrey:
+			r = g = b = v;
+			break;
+		case CMap:
+			m = cmap2rgb(ov);
+			r = (m>>16)&0xFF;
+			g = (m>>8)&0xFF;
+			b = (m>>0)&0xFF;
+			break;
+		}
+	}
+	f->ret->t0 = r;
+	f->ret->t1 = g;
+	f->ret->t2 = b;
+	f->ret->t3 = a;
+}
+
 void
 Display_rgb(void *fp)
 {
@@ -1902,6 +2007,12 @@ Screen_newwindow(void *fp)
 	f = fp;
 	s = checkscreen(f->screen);
 	R2R(r, f->r);
+
+	if(!nonemptyrect(&r))
+	{
+		o("Screen.newwindow(Rect(%d %d %d %d))\n", r.min.x, r.min.y, r.max.x, r.max.y);
+		return; //error("null rect");
+	}
 
 	if(f->backing != Refnone && f->backing != Refbackup)
 		f->backing = Refbackup;

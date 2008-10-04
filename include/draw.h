@@ -53,7 +53,7 @@ enum
 
 	DNotacolor	= 0xFFFFFF00,
 	DNofill		= DNotacolor,
-	
+
 };
 
 enum
@@ -84,7 +84,7 @@ enum
 #define	ARROW(a, b, c)	(Endarrow|((a)<<5)|((b)<<14)|((c)<<23))
 
 /*
- * image channel descriptors 
+ * image channel descriptors
  */
 enum {
 	CRed = 0,
@@ -121,6 +121,11 @@ enum {
 	BGR24	= CHAN3(CBlue, 8, CGreen, 8, CRed, 8),
 	ABGR32	= CHAN4(CAlpha, 8, CBlue, 8, CGreen, 8, CRed, 8),
 	XBGR32	= CHAN4(CIgnore, 8, CBlue, 8, CGreen, 8, CRed, 8),
+
+	GREYA8	= CHAN1(CAlpha, 8),
+	RGBA16	= CHAN4(CRed, 4, CGreen, 4, CBlue, 4, CAlpha, 4),
+	MRGB16	= CHAN4(CAlpha, 1, CRed, 5, CGreen, 5, CBlue, 5),	/* RGB15 + mask bit */
+	RGBA8 	= CHAN4(CRed, 2, CGreen, 2, CBlue, 2, CAlpha, 2),
 };
 
 /* compositing operators */
@@ -316,7 +321,7 @@ struct Font
 	Display		*display;
 	short		height;	/* max height of image, interline spacing */
 	short		ascent;	/* top of image to baseline */
-	short		width;	/* widest so far; used in caching only */	
+	short		width;	/* widest so far; used in caching only */
 	short		nsub;	/* number of subfonts */
 	ulong		age;	/* increasing counter; used for LRU */
 	int		maxdepth;	/* maximum depth of all loaded subfonts */
@@ -499,7 +504,7 @@ extern int		drawlsetrefresh(ulong, int, void*, void*);
 extern void	_setdrawop(Display*, Drawop);
 
 /*
- * Predefined 
+ * Predefined
  */
 extern	uchar	defontdata[];
 extern	int		sizeofdefont;

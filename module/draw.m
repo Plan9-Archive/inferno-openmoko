@@ -79,6 +79,10 @@ Draw: module
 		eq:	fn(c: self Chans, d: Chans): int;
 		# bits per pixel
 		depth:	fn(c: self Chans): int;
+		# pack rgb to 'depth' bits
+		pack:	fn(c: self Chans, r,g,b,a:int): int;
+		# unpack 'depth' bits to (r,g,b,a)
+		unpack:	fn(c: self Chans, bits:int): (int,int,int,int);
 	};
 
 	CRed, CGreen, CBlue, CGrey, CAlpha, CMap, CIgnore: con iota;
@@ -94,6 +98,11 @@ Draw: module
 	RGBA32: con Chans((((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8))<<8 | ((CAlpha<<4)|8));
 	ARGB32: con Chans(((CAlpha<<4)|8)<<24 | ((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8));	# stupid VGAs
 	XRGB32: con Chans(((CIgnore<<4)|8)<<24 | ((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8));	# stupid VGAs
+
+	GREYA8: con Chans((CAlpha<<4) | 8);									# only alpha channel
+	RGBA16: con Chans((((CRed<<4)|4)<<16 | ((CGreen<<4)|4)<<8 | ((CBlue<<4)|4))<<8 | ((CAlpha<<4)|4));	# r4g4b4a4
+	MRGB16: con Chans(((CAlpha<<4)|1)<<24 | ((CRed<<4)|5)<<16 | ((CGreen<<4)|5)<<8 | ((CBlue<<4)|5));	# RGB15 + mask bit
+	RGBA8:  con Chans((((CRed<<4)|2)<<16 | ((CGreen<<4)|2)<<8 | ((CBlue<<4)|2))<<8 | ((CAlpha<<4)|2));	# r2g2b2a2
 
 	# Coordinate of a pixel on display
 	Point: adt
