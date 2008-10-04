@@ -54,7 +54,7 @@ TkStab tkbuffer[] = {
 	"off",		TkCbufauto,
 	nil
 };
-	
+
 #define	O(t, e)		((long)(&((t*)0)->e))
 #define OA(t, e)	((long)(((t*)0)->e))
 
@@ -182,7 +182,7 @@ tkcanvas(TkTop *t, char *arg, char **ret)
 	e = tkvalue(ret, "%s", tk->name->name);
 	if(e == nil)
 	        return nil;
-	
+
 	tkfreename(tkc->current);
 	return e;
 err:
@@ -303,8 +303,8 @@ tkcvsconf(Tk *tk, char *arg, char **val)
 	tksettransparent(tk, tkhasalpha(tk->env, TkCbackgnd));
 
 	tkcvsf2i(tk, c);
-	
-	tkcvsgeom(tk);	
+
+	tkcvsgeom(tk);
 	tkgeomchg(tk, &g, bd);
 	tkbbmax(&c->update, &c->region);
 	tk->dirty = tkrect(tk, 1);
@@ -447,14 +447,15 @@ tkdrawcanv(Tk *tk, Point orig)
 			if(c->image != nil && c->ialloc)
 				freeimage(c->image);
 			c->image = allocimage(d, bufr, alpha?RGBA32:d->image->chan, 0, tk->env->colors[TkCbackgnd]);
+			// BUG: if(c->image==nil) ...
 			c->ialloc = 1;
 			c->update = bufr;
 			tkcvssetdirty(tk);		/* unnecessary? */
 		}
-	
+
 		if(c->image == nil)
 			return nil;
-	
+
 		r = c->update;
 		if (rectclip(&r, c->image->r)) {
 			if (alpha)
@@ -475,10 +476,10 @@ tkdrawcanv(Tk *tk, Point orig)
 		r = tkrect(tk, 0);
 		bufr = rectsubpt(bufr, c->view);
 		vis = rectclip(&bufr, tkrect(tk, 0));
-	
+
 		if (!vis || !rectinrect(tk->dirty, bufr))
 			draw(dst, rectaddpt(tk->dirty, rel), tkgc(tk->env, TkCbackgnd), nil, c->view);
-	
+
 		if (vis && rectclip(&bufr, tk->dirty))
 			draw(dst, rectaddpt(bufr, rel), c->image, nil, addpt(bufr.min, c->view));
 	}
@@ -896,7 +897,7 @@ tkcvsgrab(Tk *tk, char *arg, char **val)
 		f = tkctaglook(tk, nil, buf);
 		if(f == nil || f->obj == nil)
 			return TkBadtg;
-	
+
 		c = TKobj(TkCanvas, tk);
 		t = tkcfirsttag(c->head, f->obj);
 		if(t == nil)
@@ -955,7 +956,7 @@ tkcvsbind(Tk *tk, char *arg, char **val)
 				if(event & a->event)
 					return tkvalue(val, "%s", a->arg);
 		}
-		return nil;		
+		return nil;
 	}
 
 	mode = TkArepl;
@@ -1397,12 +1398,12 @@ tkcvsselect(Tk *tk, char *arg, char **val)
 	arg = tkword(tk->env->top, arg, buf, buf+sizeof(buf), nil);
 	if(strcmp(buf, "clear") == 0) {
 		tkcvstextclr(tk);
-		return nil;		
+		return nil;
 	}
 	if(strcmp(buf, "item") == 0) {
 		if(c->selection)
 			return tkvalue(val, "%d", c->selection->id);
-		return nil;		
+		return nil;
 	}
 
 	if(strcmp(buf, "to") == 0)
@@ -1487,7 +1488,7 @@ tkcvsfreename(TkCanvas *c, TkName *n)
 	ulong h;
 	char *p, *s;
 	TkName *f, **l;
-	
+
 	/* just free implicit ones for now */
 	if(n == nil)
 		return;
@@ -1867,7 +1868,7 @@ tkcvsview(Tk *tk, char *arg, char **val, int nl, int *posn, int min, int max, in
 
 	diff = max-min;
 	if(*arg == '\0') {
-		if ( diff == 0 ) 
+		if ( diff == 0 )
 			top = bot = 0;
 		else {
 			top = TKI2F(*posn-min)/diff;
@@ -1900,7 +1901,7 @@ tkcvsview(Tk *tk, char *arg, char **val, int nl, int *posn, int min, int max, in
 			amount = amount * nl / 10;
 		*posn += amount;
 	}
-	else	
+	else
 		return TkBadcm;
 
 	bot = max - nl;
@@ -1921,7 +1922,7 @@ tkcvsyview(Tk *tk, char *arg, char **val)
 	TkCanvas *c = TKobj(TkCanvas, tk);
 
 	si = TKF2I(c->yscrolli);
-	e = tkcvsview(tk, arg, val, tk->act.height, &c->view.y, c->region.min.y, c->region.max.y, si); 
+	e = tkcvsview(tk, arg, val, tk->act.height, &c->view.y, c->region.min.y, c->region.max.y, si);
 	tkcvssv(tk);
 	return e;
 }
@@ -2025,7 +2026,7 @@ tkcvsseerect(Tk *tk, Rectangle r, Point p)
 	if (scrollh || scrollv)
 		tk->dirty = tkrect(tk, 0);
 }
-			
+
 static char*
 tkcvssee(Tk *tk, char *arg, char **val)
 {
@@ -2100,7 +2101,7 @@ TkCimeth tkcimethod[] =
 			tkcvslineconf,
 			tkcvslinehit,
 
-	"text",		tkcvstextcreat,	
+	"text",		tkcvstextcreat,
 			tkcvstextdraw,
 			tkcvstextfree,
 			tkcvstextcoord,
@@ -2108,7 +2109,7 @@ TkCimeth tkcimethod[] =
 			tkcvstextconf,
 			nil,
 
-	"rectangle",	tkcvsrectcreat,	
+	"rectangle",	tkcvsrectcreat,
 			tkcvsrectdraw,
 			tkcvsrectfree,
 			tkcvsrectcoord,
@@ -2116,7 +2117,7 @@ TkCimeth tkcimethod[] =
 			tkcvsrectconf,
 			nil,
 
-	"oval",		tkcvsovalcreat,	
+	"oval",		tkcvsovalcreat,
 			tkcvsovaldraw,
 			tkcvsovalfree,
 			tkcvsovalcoord,
@@ -2124,7 +2125,7 @@ TkCimeth tkcimethod[] =
 			tkcvsovalconf,
 			tkcvsovalhit,
 
-	"bitmap",	tkcvsbitcreat,	
+	"bitmap",	tkcvsbitcreat,
 			tkcvsbitdraw,
 			tkcvsbitfree,
 			tkcvsbitcoord,
@@ -2132,7 +2133,7 @@ TkCimeth tkcimethod[] =
 			tkcvsbitconf,
 			nil,
 
-	"polygon",	tkcvspolycreat,	
+	"polygon",	tkcvspolycreat,
 			tkcvspolydraw,
 			tkcvspolyfree,
 			tkcvspolycoord,
@@ -2140,7 +2141,7 @@ TkCimeth tkcimethod[] =
 			tkcvspolyconf,
 			tkcvspolyhit,
 
-	"window",	tkcvswindcreat,	
+	"window",	tkcvswindcreat,
 			tkcvswinddraw,
 			tkcvswindfree,
 			tkcvswindcoord,
@@ -2148,7 +2149,7 @@ TkCimeth tkcimethod[] =
 			tkcvswindconf,
 			nil,
 
-	"image",	tkcvsimgcreat,	
+	"image",	tkcvsimgcreat,
 			tkcvsimgdraw,
 			tkcvsimgfree,
 			tkcvsimgcoord,
@@ -2156,7 +2157,7 @@ TkCimeth tkcimethod[] =
 			tkcvsimgconf,
 			nil,
 
-	"arc",		tkcvsarccreat,	
+	"arc",		tkcvsarccreat,
 			tkcvsarcdraw,
 			tkcvsarcfree,
 			tkcvsarccoord,

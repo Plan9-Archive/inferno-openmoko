@@ -164,41 +164,41 @@ Draw: module
 		# graphics operators
 		drawop:		fn(dst: self ref Image, r: Rect, src: ref Image, matte: ref Image, p: Point, op: int);
 		draw:		fn(dst: self ref Image, r: Rect, src: ref Image, matte: ref Image, p: Point);
-		gendrawop:		fn(dst: self ref Image, r: Rect, src: ref Image, p0: Point, matte: ref Image, p1: Point, op: int);
-		gendraw:		fn(dst: self ref Image, r: Rect, src: ref Image, p0: Point, matte: ref Image, p1: Point);
+		gendrawop:	fn(dst: self ref Image, r: Rect, src: ref Image, p0: Point, matte: ref Image, p1: Point, op: int);
+		gendraw:	fn(dst: self ref Image, r: Rect, src: ref Image, p0: Point, matte: ref Image, p1: Point);
 		lineop:		fn(dst: self ref Image, p0,p1: Point, end0,end1,radius: int, src: ref Image, sp: Point, op: int);
 		line:		fn(dst: self ref Image, p0,p1: Point, end0,end1,radius: int, src: ref Image, sp: Point);
 		polyop:		fn(dst: self ref Image, p: array of Point, end0,end1,radius: int, src: ref Image, sp: Point, op: int);
 		poly:		fn(dst: self ref Image, p: array of Point, end0,end1,radius: int, src: ref Image, sp: Point);
-		bezsplineop:		fn(dst: self ref Image, p: array of Point, end0,end1,radius: int, src: ref Image, sp: Point, op: int);
-		bezspline:		fn(dst: self ref Image, p: array of Point, end0,end1,radius: int, src: ref Image, sp: Point);
+		bezsplineop:	fn(dst: self ref Image, p: array of Point, end0,end1,radius: int, src: ref Image, sp: Point, op: int);
+		bezspline:	fn(dst: self ref Image, p: array of Point, end0,end1,radius: int, src: ref Image, sp: Point);
 		fillpolyop:	fn(dst: self ref Image, p: array of Point, wind: int, src: ref Image, sp: Point, op: int);
 		fillpoly:	fn(dst: self ref Image, p: array of Point, wind: int, src: ref Image, sp: Point);
-		fillbezsplineop:	fn(dst: self ref Image, p: array of Point, wind: int, src: ref Image, sp: Point, op: int);
+		fillbezsplineop:fn(dst: self ref Image, p: array of Point, wind: int, src: ref Image, sp: Point, op: int);
 		fillbezspline:	fn(dst: self ref Image, p: array of Point, wind: int, src: ref Image, sp: Point);
 		ellipseop:	fn(dst: self ref Image, c: Point, a, b, thick: int, src: ref Image, sp: Point, op: int);
 		ellipse:	fn(dst: self ref Image, c: Point, a, b, thick: int, src: ref Image, sp: Point);
 		fillellipseop:	fn(dst: self ref Image, c: Point, a, b: int, src: ref Image, sp: Point, op: int);
 		fillellipse:	fn(dst: self ref Image, c: Point, a, b: int, src: ref Image, sp: Point);
-		arcop:	fn(dst: self ref Image, c: Point, a, b, thick: int, src: ref Image, sp: Point, alpha, phi: int, op: int);
-		arc:	fn(dst: self ref Image, c: Point, a, b, thick: int, src: ref Image, sp: Point, alpha, phi: int);
+		arcop:		fn(dst: self ref Image, c: Point, a, b, thick: int, src: ref Image, sp: Point, alpha, phi: int, op: int);
+		arc:		fn(dst: self ref Image, c: Point, a, b, thick: int, src: ref Image, sp: Point, alpha, phi: int);
 		fillarcop:	fn(dst: self ref Image, c: Point, a, b: int, src: ref Image, sp: Point, alpha, phi: int, op: int);
 		fillarc:	fn(dst: self ref Image, c: Point, a, b: int, src: ref Image, sp: Point, alpha, phi: int);
 		bezierop:	fn(dst: self ref Image, a,b,c,d: Point, end0,end1,radius: int, src: ref Image, sp: Point, op: int);
-		bezier:	fn(dst: self ref Image, a,b,c,d: Point, end0,end1,radius: int, src: ref Image, sp: Point);
+		bezier:		fn(dst: self ref Image, a,b,c,d: Point, end0,end1,radius: int, src: ref Image, sp: Point);
 		fillbezierop:	fn(dst: self ref Image, a,b,c,d: Point, wind:int, src: ref Image, sp: Point, op: int);
 		fillbezier:	fn(dst: self ref Image, a,b,c,d: Point, wind:int, src: ref Image, sp: Point);
 		textop:		fn(dst: self ref Image, p: Point, src: ref Image, sp: Point, font: ref Font, str: string, op: int): Point;
 		text:		fn(dst: self ref Image, p: Point, src: ref Image, sp: Point, font: ref Font, str: string): Point;
-		textbgop:		fn(dst: self ref Image, p: Point, src: ref Image, sp: Point, font: ref Font, str: string, bg: ref Image, bgp: Point, op: int): Point;
+		textbgop:	fn(dst: self ref Image, p: Point, src: ref Image, sp: Point, font: ref Font, str: string, bg: ref Image, bgp: Point, op: int): Point;
 		textbg:		fn(dst: self ref Image, p: Point, src: ref Image, sp: Point, font: ref Font, str: string, bg: ref Image, bgp: Point): Point;
-		border:	fn(dst: self ref Image, r: Rect, i: int, src: ref Image, sp: Point);
+		border:		fn(dst: self ref Image, r: Rect, i: int, src: ref Image, sp: Point);
 		arrow:		fn(a,b,c: int): int;
 		# direct access to pixels
 		readpixels:	fn(src: self ref Image, r: Rect, data: array of byte): int;
 		writepixels:	fn(dst: self ref Image, r: Rect, data: array of byte): int;
 		# publishing
-		name:	fn(src: self ref Image, name: string, in: int): int;
+		name:		fn(src: self ref Image, name: string, in: int): int;
 		# windowing
 		top:		fn(win: self ref Image);
 		bottom:		fn(win: self ref Image);
@@ -224,7 +224,7 @@ Draw: module
 		# image creation
 		newimage:	fn(d: self ref Display, r: Rect, chans: Chans, repl, color: int): ref Image;
 		color:		fn(d: self ref Display, color: int): ref Image;
-		colormix:		fn(d: self ref Display, c1: int, c2: int): ref Image;
+		colormix:	fn(d: self ref Display, c1: int, c2: int): ref Image;
 		rgb:		fn(d: self ref Display, r, g, b: int): ref Image;
 		# attach to named Image
 		namedimage:	fn(d: self ref Display, name: string): ref Image;
