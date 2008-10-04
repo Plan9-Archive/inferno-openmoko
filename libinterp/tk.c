@@ -120,7 +120,7 @@ Tk_toplevel(void *a)
 	tkw->di = H;
 
 	tktopopt(tk, string2c(f->arg));
-	
+
 	tk->geom = tkmoveresize;
 	tk->name = tkmkname(".");
 	if(tk->name == nil) {
@@ -402,7 +402,7 @@ Tk_pointer(void *a)
 		dtype = 0;
 		if(f->p.buttons & (1<<8))		/* Double */
 			dtype = TkDouble;
-	
+
 		d = lastb ^ m.b;
 		if (d)	{
 			/* cancel any autorepeat, notifying existing client */
@@ -678,11 +678,11 @@ tkreplimg(TkTop *t, Draw_Image *f, Draw_Image *m, Image **ximg)
 	else {
 		if(cmask->screen != nil || cmask->display != d)
 			return;
-		new = allocimage(d, Rect(0, 0, Dx(cimg->r), Dy(cimg->r)), RGBA32, 0, DTransparent);
+		new = allocimage(d, Rect(0, 0, Dx(cimg->r), Dy(cimg->r)), RGBA32, 0, DNofill);
 	}
 	if(new == nil)
 		return;
-	draw(new, new->r, cimg, cmask, cimg->r.min);
+	drawop(new, new->r, cimg, cmask, cimg->r.min, S);
 	if(tkwiretap != nil)
 		tkwiretap(t, "replimg", nil, cimg, &cimg->r);
 	if(*ximg != nil)
@@ -749,7 +749,7 @@ tkdelpanelimage(TkTop *t, Image *i)
 		if (locked)
 			unlockdisplay(t->display);
 	}
-		
+
 	free(pi);
 }
 
@@ -838,13 +838,13 @@ Tk_putimage(void *a)
 			e = TkBadvl;
 			goto Error;
 		}
-	
+
 		d = t->display;
 		locked = lockdisplay(d);
 		tkreplimg(t, f->i, f->m, &tki->img);
 		if(locked)
 			unlockdisplay(d);
-	
+
 		tksizeimage(t->root, tki);
 	}
 Error:
