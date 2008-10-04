@@ -32,7 +32,7 @@ enum
 	DGreen		= 0x00FF00FF,
 	DBlue		= 0x0000FFFF,
 	DCyan		= 0x00FFFFFF,
-	DMagenta		= 0xFF00FFFF,
+	DMagenta	= 0xFF00FFFF,
 	DYellow		= 0xFFFF00FF,
 	DPaleyellow	= 0xFFFFAAFF,
 	DDarkyellow	= 0xEEEE9EFF,
@@ -40,13 +40,13 @@ enum
 	DPalegreen	= 0xAAFFAAFF,
 	DMedgreen	= 0x88CC88FF,
 	DDarkblue	= 0x000055FF,
-	DPalebluegreen= 0xAAFFFFFF,
-	DPaleblue		= 0x0000BBFF,
+	DPalebluegreen	= 0xAAFFFFFF,
+	DPaleblue	= 0x0000BBFF,
 	DBluegreen	= 0x008888FF,
 	DGreygreen	= 0x55AAAAFF,
 	DPalegreygreen	= 0x9EEEEEFF,
 	DYellowgreen	= 0x99994CFF,
-	DMedblue		= 0x000099FF,
+	DMedblue	= 0x000099FF,
 	DGreyblue	= 0x005DBBFF,
 	DPalegreyblue	= 0x4993DDFF,
 	DPurpleblue	= 0x8888CCFF,
@@ -60,7 +60,7 @@ enum
 {
 	Displaybufsize	= 8000,
 	ICOSSCALE	= 1024,
-	Borderwidth =	4,
+	Borderwidth	= 4,
 };
 
 enum
@@ -122,10 +122,12 @@ enum {
 	ABGR32	= CHAN4(CAlpha, 8, CBlue, 8, CGreen, 8, CRed, 8),
 	XBGR32	= CHAN4(CIgnore, 8, CBlue, 8, CGreen, 8, CRed, 8),
 
-	GREYA8	= CHAN1(CAlpha, 8),
+	/* compact image formats (for PDA) */
+	BWA8	= CHAN2(CGrey, 1, CAlpha, 7),
+	GREYA8	= CHAN2(CGrey, 4, CAlpha, 4),
+	RGBA8 	= CHAN4(CRed, 2, CGreen, 2, CBlue, 2, CAlpha, 2),
 	RGBA16	= CHAN4(CRed, 4, CGreen, 4, CBlue, 4, CAlpha, 4),
 	MRGB16	= CHAN4(CAlpha, 1, CRed, 5, CGreen, 5, CBlue, 5),	/* RGB15 + mask bit */
-	RGBA8 	= CHAN4(CRed, 2, CGreen, 2, CBlue, 2, CAlpha, 2),
 };
 
 /* compositing operators */
@@ -555,3 +557,5 @@ extern	void	font_close(Font*);
 #define R2R(r1, r2)	(r1).min.x = (r2).min.x, (r1).min.y = (r2).min.y,\
 			(r1).max.x = (r2).max.x, (r1).max.y = (r2).max.y
 extern Image*	display_open(Display*, char*);
+
+#define TR_ALLOCIMAGE(r,c) {char s[64]; o("%s:%d %s allocimage(%d %d %d %d 0x%08uX=%s)\n", __FILE__, __LINE__, __FUNCTION__, (r).min.x, (r).min.y, (r).max.x, (r).max.y, (c), chantostr(s,(c)) );}

@@ -87,22 +87,23 @@ Draw: module
 
 	CRed, CGreen, CBlue, CGrey, CAlpha, CMap, CIgnore: con iota;
 
-	GREY1: con Chans((CGrey<<4) | 1);
-	GREY2: con Chans((CGrey<<4) | 2);
-	GREY4: con Chans((CGrey<<4) | 4);
-	GREY8: con Chans((CGrey<<4) | 8);
-	CMAP8: con Chans((CMap<<4) | 8);
-	RGB15: con Chans(((CIgnore<<4)|1)<<24 | ((CRed<<4)|5)<<16 | ((CGreen<<4)|5)<<8 | ((CBlue<<4)|5));
-	RGB16: con Chans(((CRed<<4)|5)<<16 | ((CGreen<<4)|6)<<8 | ((CBlue<<4)|5));
-	RGB24: con Chans(((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8));
-	RGBA32: con Chans((((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8))<<8 | ((CAlpha<<4)|8));
-	ARGB32: con Chans(((CAlpha<<4)|8)<<24 | ((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8));	# stupid VGAs
-	XRGB32: con Chans(((CIgnore<<4)|8)<<24 | ((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8));	# stupid VGAs
-
-	GREYA8: con Chans((CAlpha<<4) | 8);									# only alpha channel
-	RGBA16: con Chans((((CRed<<4)|4)<<16 | ((CGreen<<4)|4)<<8 | ((CBlue<<4)|4))<<8 | ((CAlpha<<4)|4));	# r4g4b4a4
-	MRGB16: con Chans(((CAlpha<<4)|1)<<24 | ((CRed<<4)|5)<<16 | ((CGreen<<4)|5)<<8 | ((CBlue<<4)|5));	# RGB15 + mask bit
-	RGBA8:  con Chans((((CRed<<4)|2)<<16 | ((CGreen<<4)|2)<<8 | ((CBlue<<4)|2))<<8 | ((CAlpha<<4)|2));	# r2g2b2a2
+	GREY1:	con Chans((CGrey<<4) | 1);
+	GREY2:	con Chans((CGrey<<4) | 2);
+	GREY4:	con Chans((CGrey<<4) | 4);
+	GREY8:	con Chans((CGrey<<4) | 8);
+	CMAP8:	con Chans((CMap<<4) | 8);
+	RGB15:	con Chans(((CIgnore<<4)|1)<<24 | ((CRed<<4)|5)<<16 | ((CGreen<<4)|5)<<8 | ((CBlue<<4)|5));
+	RGB16:	con Chans(((CRed<<4)|5)<<16 | ((CGreen<<4)|6)<<8 | ((CBlue<<4)|5));
+	RGB24:	con Chans(((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8));
+	RGBA32:	con Chans((((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8))<<8 | ((CAlpha<<4)|8));
+	ARGB32:	con Chans(((CAlpha<<4)|8)<<24 | ((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8));	# stupid VGAs
+	XRGB32:	con Chans(((CIgnore<<4)|8)<<24 | ((CRed<<4)|8)<<16 | ((CGreen<<4)|8)<<8 | ((CBlue<<4)|8));	# stupid VGAs
+	# compact image formats (for PDA)
+	BWA8:	con Chans(((CGrey<<4)|1)<<8 | ((CAlpha<<4)|7));							# k1a7
+	GRAY4A:	con Chans(((CGrey<<4)|4)<<8 | ((CAlpha<<4)|4));							# k4a4
+	RGBA8:	con Chans((((CRed<<4)|2)<<16 | ((CGreen<<4)|2)<<8 | ((CBlue<<4)|2))<<8 | ((CAlpha<<4)|2));	# r2g2b2a2
+	RGBA16:	con Chans((((CRed<<4)|4)<<16 | ((CGreen<<4)|4)<<8 | ((CBlue<<4)|4))<<8 | ((CAlpha<<4)|4));	# r4g4b4a4
+	MRGB16:	con Chans(((CAlpha<<4)|1)<<24 | ((CRed<<4)|5)<<16 | ((CGreen<<4)|5)<<8 | ((CBlue<<4)|5));	# RGB15 + mask bit
 
 	# Coordinate of a pixel on display
 	Point: adt
