@@ -124,7 +124,7 @@ enum {
 
 	/* compact image formats (for PDA) */
 	BWA8	= CHAN2(CGrey, 1, CAlpha, 7),
-	GREYA8	= CHAN2(CGrey, 4, CAlpha, 4),
+	GRAY4A	= CHAN2(CGrey, 4, CAlpha, 4),
 	RGBA8 	= CHAN4(CRed, 2, CGreen, 2, CBlue, 2, CAlpha, 2),
 	RGBA16	= CHAN4(CRed, 4, CGreen, 4, CBlue, 4, CAlpha, 4),
 	MRGB16	= CHAN4(CAlpha, 1, CRed, 5, CGreen, 5, CBlue, 5),	/* RGB15 + mask bit */
