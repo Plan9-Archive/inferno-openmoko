@@ -97,7 +97,9 @@ DWORD WINAPI
 tramp(LPVOID p)
 {
 #if(_WIN32_WINNT >= 0x0400)
-	SetUnhandledExceptionFilter(&TrapHandler); /* Win2000+, does not work on NT4 */
+// i commended it to allow process crash on exception and to allow debugger be attached to the crashed process
+// sometimes it happens
+//	SetUnhandledExceptionFilter(&TrapHandler); /* Win2000+, does not work on NT4 */
 #endif
 	up = p;
 	up->func(up->arg);
@@ -513,16 +515,14 @@ sleep(int secs)
 	Sleep(secs*1000);
 }
 
-void*
-sbrk(int size)
+void* mem_reserve(ulong size)
 {
-	void *brk;
+	return VirtualAlloc(0, size, MEM_RESERVE, PAGE_NOACCESS);
+}
 
-	brk = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-	if(brk == 0)
-		return (void*)-1;
-
-	return brk;
+void mem_commit(void* p, ulong size)
+{
+	return VirtualAlloc(p, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 }
 
 ulong

@@ -3,6 +3,9 @@
 #include "interp.h"
 #include "error.h"
 
+//#define DBG //
+#define DBG
+
 enum
 {
 	MAXPOOL		= 4
@@ -36,6 +39,10 @@ struct Pool
 	int	nbrk;
 	int	lastfree;
 	void	(*move)(void*, void*);
+#if defined(_WIN32_WINNT) || defined(_WIN32_WCE)
+	void*   p_cur_host_memblock;  /* pool can have more than one - one allocated before poolsetsize() and another after */
+	ulong	n_host_commited;
+#endif
 };
 
 void*	initbrk(ulong);
@@ -123,6 +130,10 @@ poolsetsize(char *s, int size)
 		if(strcmp(table.pool[i].name, s) == 0) {
 			table.pool[i].maxsize = size;
 			table.pool[i].ressize = size-RESERVED;
+#if defined(_WIN32_WINNT) || defined(_WIN32_WCE)
+                        table.pool[i].p_cur_host_memblock = 0; //VirtualAlloc(0, size, MEM_RESERVE, PAGE_NOACCESS);
+                        table.pool[i].n_host_commited = 0;
+#endif
 			if(size < RESERVED)
 				panic("not enough memory");
 			return 1;
@@ -293,6 +304,11 @@ pooladd(Pool *p, Bhdr *q)
 		tp->right = q;
 }
 
+#if defined(_WIN32_WINNT) || defined(_WIN32_WCE)
+extern void* mem_reserve(ulong size);
+extern void* mem_commit(void* p, ulong size);
+#endif
+
 static void*
 dopoolalloc(Pool *p, ulong asize, ulong pc)
 {
@@ -300,9 +316,11 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 	int alloc, ldr, ns, frag;
 	int osize, size;
 
+	/*o("dopoolalloc(%s,%d)\n", p->name, asize);*/
+
 	if(asize >= 1024*1024*1024)	/* for sanity and to avoid overflow */
 	{
-		o("dopoolalloc(%d)=0\n", asize);
+		o("dopoolalloc(%s,%d)=0\n", p->name, size);
 		return nil;
 	}
 	size = asize;
@@ -325,6 +343,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 			unlock(&p->l);
 			if(p->monitor)
 				MM(p->pnum, pc, (ulong)B2D(t), size);
+DBG memset(B2D(t), 0xA1, asize);
 			return B2D(t);
 		}
 		if(size < t->size) {
@@ -345,6 +364,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 			unlock(&p->l);
 			if(p->monitor)
 				MM(p->pnum, pc, (ulong)B2D(q), size);
+DBG memset(B2D(q), 0xB2, asize);
 			return B2D(q);
 		}
 		/* Split */
@@ -361,6 +381,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 		unlock(&p->l);
 		if(p->monitor)
 			MM(p->pnum, pc, (ulong)B2D(q), size);
+DBG memset(B2D(q), 0xC3, asize);
 		return B2D(q);
 	}
 
@@ -391,13 +412,32 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 	}
 
 	p->nbrk++;
+#if defined(_WIN32_WINNT) || defined(_WIN32_WCE)
+	if(p->p_cur_host_memblock==nil)
+	{
+		p->p_cur_host_memblock = mem_reserve(p->maxsize);
+		if(0==p->p_cur_host_memblock)
+		{
+			p->nbrk--;
+			unlock(&p->l);
+			return nil;
+		}
+		p->n_host_commited = 0;
+	}
+
+	assert(p->n_host_commited+size <= p->maxsize);
+
+	t = (Bhdr *)((char*)p->p_cur_host_memblock + p->n_host_commited);
+	mem_commit(t, alloc);
+	p->n_host_commited += alloc;
+#else
 	t = (Bhdr *)sbrk(alloc);
 	if(t == (void*)-1) {
-		o("sbrk(%d) failed\n", alloc); // todo: try to sbrk less ?
 		p->nbrk--;
 		unlock(&p->l);
 		return nil;
 	}
+#endif
 	/* Double alignment */
 	t = (Bhdr *)(((ulong)t + 7) & ~7);
 
@@ -415,6 +455,9 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 		unlock(&p->l);
 		poolfree(p, B2D(q));		/* for backward merge */
 		return poolalloc(p, osize);
+ 	} else
+ 	{
+DBG 		o("alloc: cannot merge chains\n"); /* it is ok for first alloc in a heap */
 	}
 
 	t->magic = MAGIC_E;		/* Make a leader */
@@ -445,6 +488,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 	unlock(&p->l);
 	if(p->monitor)
 		MM(p->pnum, pc, (ulong)B2D(t), size);
+DBG memset(B2D(t), 0xD4, asize);
 	return B2D(t);
 }
 
@@ -511,8 +555,13 @@ poolrealloc(Pool *p, void *v, ulong size)
 	void *nv;
 	int osize;
 
+	/*o("dopoolrealloc(%s,%d)\n", p->name, size);*/
+
 	if(size >= 1024*1024*1024)	/* for sanity and to avoid overflow */
+	{
+		o("dopoolrealloc(%s,%d)=0\n", p->name, size);
 		return nil;
+	}
 	if(size == 0){
 		poolfree(p, v);
 		return nil;
