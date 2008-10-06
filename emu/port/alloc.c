@@ -131,7 +131,7 @@ poolsetsize(char *s, int size)
 			table.pool[i].maxsize = size;
 			table.pool[i].ressize = size-RESERVED;
 #if defined(_WIN32_WINNT) || defined(_WIN32_WCE)
-                        table.pool[i].p_cur_host_memblock = 0; //VirtualAlloc(0, size, MEM_RESERVE, PAGE_NOACCESS);
+                        table.pool[i].p_cur_host_memblock = 0;
                         table.pool[i].n_host_commited = 0;
 #endif
 			if(size < RESERVED)
@@ -320,7 +320,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 
 	if(asize >= 1024*1024*1024)	/* for sanity and to avoid overflow */
 	{
-		o("dopoolalloc(%s,%d)=0\n", p->name, size);
+		o("dopoolalloc(%s,%d)=0\n", p->name, asize);
 		return nil;
 	}
 	size = asize;
@@ -433,6 +433,7 @@ DBG memset(B2D(q), 0xC3, asize);
 #else
 	t = (Bhdr *)sbrk(alloc);
 	if(t == (void*)-1) {
+		o("sbrk(%d) failed\n", alloc); // todo: try to sbrk less ?
 		p->nbrk--;
 		unlock(&p->l);
 		return nil;
