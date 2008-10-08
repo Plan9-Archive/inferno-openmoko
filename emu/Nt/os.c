@@ -520,7 +520,7 @@ void* mem_reserve(ulong size)
 	return VirtualAlloc(0, size, MEM_RESERVE, PAGE_NOACCESS);
 }
 
-void mem_commit(void* p, ulong size)
+void* mem_commit(void* p, ulong size)
 {
 	return VirtualAlloc(p, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 }
