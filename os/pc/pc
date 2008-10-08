@@ -38,7 +38,7 @@ ip
 lib
 	interp
 	keyring
-	draw 
+	draw
 	memlayer
 	memdraw
 	tk
@@ -70,7 +70,7 @@ mod
 	math
 
 init
-	wminit
+	shell
 
 code
 	int kernel_pool_pcnt = 10;
@@ -79,7 +79,7 @@ code
 	int image_pool_pcnt = 40;
 	int cflag=0;
 	int swcursor=0;
-	int consoleprint=0;
+	int consoleprint=1;
 
 port
 	alarm
@@ -137,3 +137,5 @@ root
 	/dis/lib/daytime.dis
 	/dis/lib/auth.dis
 	/dis/lib/ssl.dis
+	/dis/lib/arg.dis
+	/dis/lib/filepat.dis
