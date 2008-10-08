@@ -10,7 +10,7 @@ void	decgen(int);
  */
 #define	SOFTMMU		0
 
-void
+int
 main(void)
 {
 	int i;
@@ -37,6 +37,7 @@ main(void)
 	for(i = 0; i < 256; i++)
 		print("\tD%.2uX%c\n", i, i != 255 ? ',' : ' ');
 	print("};\n");
+	return 0;
 }
 
 void
