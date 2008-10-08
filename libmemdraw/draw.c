@@ -2385,7 +2385,7 @@ DBG print("bsh %d\n", bsh);
 	 * for loop counts from bsh to bsh+dx
 	 *
 	 * we want the bottom bits to be the amount
-	 * to shift the pixels down, so for nâ%¡0 (mod 8) we want
+	 * to shift the pixels down, so for nâ‰¡0 (mod 8) we want
 	 * bottom bits 7.  for nâ‰¡1, 6, etc.
 	 * the bits come from -n-1.
 	 */
