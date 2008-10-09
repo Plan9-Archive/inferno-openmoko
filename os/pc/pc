@@ -57,9 +57,7 @@ link
 #	pppmedium ppp compress
 
 misc
-	vgas3	+cur vgasavage
-	vgamach64xx
-	cga
+	vgavmware	+cur
 	uarti8250
 
 mod
@@ -118,10 +116,21 @@ root
 	/net	/
 	/nvfs	/
 	/prog	/
+	/start
 	/dis/lib
 	/dis/svc
 	/dis/wm
 	/osinit.dis
+	/dis/lc
+	/dis/p.dis
+	/dis/touchcal.dis
+	/dis/ns.dis
+	/dis/ftest.dis
+	/dis/cp.dis
+	/dis/ps.dis
+	/dis/mc.dis
+	/dis/netstat.dis
+	/dis/kill.dis
 	/dis/sh.dis
 	/dis/ls.dis
 	/dis/cat.dis
@@ -130,6 +139,8 @@ root
 	/dis/pwd.dis
 	/dis/echo.dis
 	/dis/cd.dis
+	/dis/ip/ping.dis
+	/dis/ip/dhcp.dis
 	/dis/lib/bufio.dis
 	/dis/lib/string.dis
 	/dis/lib/readdir.dis
@@ -139,3 +150,24 @@ root
 	/dis/lib/ssl.dis
 	/dis/lib/arg.dis
 	/dis/lib/filepat.dis
+	/dis/lib/tkclient.dis
+	/dis/lib/wmclient.dis
+	/dis/lib/wmlib.dis
+	/dis/lib/wmsrv.dis
+	/dis/lib/titlebar.dis
+	/dis/lib/winplace.dis
+	/dis/wm/wm.dis
+	/dis/wm/sh.dis
+	/dis/wm/toolbar.dis
+	/dis/sh/std.dis
+	/fonts/pelm/unicode.8.font
+	/fonts/pelm/latin1.8
+	/fonts/pelm/latin1.8.font
+	/fonts/misc/latin1.6x13
+	/fonts/misc/latin1.6x13.font
+	/icons/tk/maxf.bit
+	/icons/tk/exit.bit
+	/icons/tk/task.bit
+	/icons/tk/vitasmall.bit
+	/lib/wmsetup
+	/b.dis

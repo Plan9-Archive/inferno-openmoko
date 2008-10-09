@@ -79,12 +79,13 @@ struct VGAdev {
 	void	(*enable)(VGAscr*);
 	void	(*disable)(VGAscr*);
 	void	(*page)(VGAscr*, int);
-	ulong	(*linear)(VGAscr*, int*, int*);
+	ulong	(*linear)(VGAscr*, int*, int*); /* to be removed */
 	void	(*drawinit)(VGAscr*);
 	int	(*fill)(VGAscr*, Rectangle, ulong);
 	void	(*ovlctl)(VGAscr*, Chan*, void*, int);
 	int	(*ovlwrite)(VGAscr*, void*, int, vlong);
-	void (*flush)(VGAscr*, Rectangle);
+	void	(*flush)(VGAscr*, Rectangle);
+	int	(*setmode)(VGAscr*, int, int, int, ulong);
 };
 
 struct VGAcur {

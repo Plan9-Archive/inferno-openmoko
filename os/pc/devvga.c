@@ -35,11 +35,12 @@ enum {
 };
 
 static Dirtab vgadir[Qmax] = {
-	".",	{ Qdir, 0, QTDIR },		0,	0550,
-	"vgactl",		{ Qvgactl, 0 },		0,	0660,
-	"vgaovl",		{ Qvgaovl, 0 },		0,	0660,
+	".",		{ Qdir, 0, QTDIR },	0,	0550,
+	"vgactl",	{ Qvgactl, 0 },		0,	0660,
+	"vgaovl",	{ Qvgaovl, 0 },		0,	0660,
 	"vgaovlctl",	{ Qvgaovlctl, 0 },	0, 	0660,
 	/* dynamically-created memory segments are added here */
+	/* MAYBE: cgamem, cgacaret(pos,size,blink), cgaborder */
 };
 
 static Vgaseg vgasegs[Nvgaseg];
@@ -54,7 +55,7 @@ enum {
 	CMhwaccel,
 	CMhwblank,
 	CMhwgc,
-	CMlinear,
+	CMlinear,   /* to be removed: assume it is always linear */
 	CMpalettedepth,
 	CMpanning,
 	CMsize,
@@ -83,9 +84,9 @@ vgareset(void)
 {
 	/* reserve the 'standard' vga registers */
 	if(ioalloc(0x2b0, 0x2df-0x2b0+1, 0, "vga") < 0)
-		panic("vga ports already allocated"); 
+		panic("vga ports already allocated");
 	if(ioalloc(0x3c0, 0x3da-0x3c0+1, 0, "vga") < 0)
-		panic("vga ports already allocated"); 
+		panic("vga ports already allocated");
 	conf.monitor = 1;
 }
 
@@ -252,7 +253,7 @@ vgaopen(Chan* c, int omode)
 	if ((ulong)c->qid.path == Qvgaovlctl) {
 		if (scr->dev && scr->dev->ovlctl)
 			scr->dev->ovlctl(scr, c, openctl, strlen(openctl));
-		else 
+		else
 			error(Enonexist);
 	}
 	return devopen(c, omode, vgadir, nvgadir, devgen);
@@ -326,7 +327,7 @@ vgaread(Chan* c, void* a, long n, vlong off)
 				scr->gscreen->r.max.x, scr->gscreen->r.max.y,
 				scr->gscreen->depth, chantostr(chbuf, scr->gscreen->chan));
 
-			if(Dx(scr->gscreen->r) != Dx(physgscreenr) 
+			if(Dx(scr->gscreen->r) != Dx(physgscreenr)
 			|| Dy(scr->gscreen->r) != Dy(physgscreenr))
 				len += snprint(p+len, READSTR-len, "actualsize %dx%d\n",
 					physgscreenr.max.x, physgscreenr.max.y);
@@ -467,7 +468,7 @@ vgactl(Cmdbuf *cb)
 		physgscreenr = Rect(0,0,x,y);
 		scr->gscreen->clipr = physgscreenr;
 		return;
-	
+
 	case CMpalettedepth:
 		x = strtoul(cb->f[1], &p, 0);
 		if(x != 8 && x != 6)
@@ -497,11 +498,11 @@ vgactl(Cmdbuf *cb)
 	case CMblank:
 		drawblankscreen(1);
 		return;
-	
+
 	case CMunblank:
 		drawblankscreen(0);
 		return;
-	
+
 	case CMblanktime:
 		blanktime = strtoul(cb->f[1], 0, 0);
 		return;
@@ -530,7 +531,7 @@ vgactl(Cmdbuf *cb)
 		else
 			break;
 		return;
-	
+
 	case CMhwblank:
 		if(strcmp(cb->f[1], "on") == 0)
 			hwblank = 1;

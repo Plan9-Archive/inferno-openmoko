@@ -117,6 +117,7 @@ vgascreenputc(VGAscr* scr, char* buf, Rectangle *flushr)
 		break;
 
 	default:
+/* TODO: draw cursor */
 		p = memsubfontwidth(scr->memdefont, buf);
 		w = p.x;
 
@@ -125,7 +126,9 @@ vgascreenputc(VGAscr* scr, char* buf, Rectangle *flushr)
 
 		*xp++ = curpos.x;
 		r = Rect(curpos.x, curpos.y, curpos.x+w, curpos.y+h);
+//memimagedraw(Memimage *dst, Rectangle r, Memimage *src, Point p0, Memimage *mask, Point p1, int op)
 		memimagedraw(scr->gscreen, r, back, back->r.min, nil, back->r.min, S);
+//memimagestring(Memimage *b, Point p, Memimage *color, Point cp, Memsubfont *f, char *cs)
 		memimagestring(scr->gscreen, curpos, conscol, ZP, scr->memdefont, buf);
 		combinerect(flushr, r);
 		curpos.x += w;
@@ -182,8 +185,8 @@ vgascreenwin(VGAscr* scr)
 
 	h = scr->memdefont->height;
 	w = scr->memdefont->info[' '].width;
-
-	window = insetrect(scr->gscreen->r, 48);
+//	window = insetrect(scr->gscreen->r, 48); /* wozu? */
+	window = scr->gscreen->r;
 	window.max.x = window.min.x+((window.max.x-window.min.x)/w)*w;
 	window.max.y = window.min.y+((window.max.y-window.min.y)/h)*h;
 	curpos = window.min;
@@ -218,7 +221,7 @@ vgablank(VGAscr*, int blank)
 	vgaxo(Crtx, 0x17, crtc17);
 	outs(Crtx, 0x0300);				/* end synchronous reset */
 }
-
+/*
 void
 cornerstring(char *s)
 {
@@ -239,3 +242,4 @@ cornerstring(char *s)
 	memimagestring(scr->gscreen, r.min, conscol, ZP, scr->memdefont, s);
 //	flushmemscreen(r);
 }
+*/

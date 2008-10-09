@@ -21,7 +21,7 @@ enum {
 	Yellow = Bright|Brown,
 	White = Bright|Grey,
 };
-	
+
 enum {
 	Width		= 80*2,
 	Height		= 25,
@@ -33,7 +33,7 @@ enum {
 
 #define CGASCREENBASE	((uchar*)KADDR(0xB8000))
 
-static int cgapos;
+static int cgapos; /* x=cgapos%160; y=cgapos/160; */
 static Lock cgascreenlock;
 
 static uchar
@@ -84,6 +84,7 @@ cgascreenputc(int c)
 		CGASCREENBASE[cgapos++] = Attr;
 	}
 	if(cgapos >= Width*Height){
+		/* scroll up */
 		memmove(CGASCREENBASE, &CGASCREENBASE[Width], Width*(Height-1));
 		p = &CGASCREENBASE[Width*(Height-1)];
 		for(i=0; i<Width/2; i++){
