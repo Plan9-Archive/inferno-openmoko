@@ -209,12 +209,18 @@ vmwareenable(VGAscr* scr)
 	scr->apsize = 0;
 
 	p = pcimatch(nil, PCIVMWARE, 0);
-	if(p == nil)
-		error("no vmware card found");
+	if(p == nil) {
+		//error("no vmware card found");
+		print("no vmware card found");
+		return;
+	}
 
 	switch(p->did){
 	default:
-		errorf("unknown vmware id %.4ux", p->did);
+		//errorf("unknown vmware id %.4ux", p->did);
+		print("unknown vmware id %.4ux", p->did);
+		return;
+
 
 	case VMWARE1:
 		vmra = 0x4560;
@@ -230,8 +236,11 @@ vmwareenable(VGAscr* scr)
 	size = vmread(SVGA_REG_FB_SIZE);
 	offset = vmread(SVGA_REG_FB_OFFSET);
 
-	if(aperture == 0 || size==0 || offset!=0)
-		error("vmware get address error");
+	if(aperture == 0 || size==0 || offset!=0) {
+		//error("vmware get address error");
+		print("vmware get address error");
+		return;
+	}
 
 	aperture = upamalloc(aperture, size, 0 /*align*/);
 

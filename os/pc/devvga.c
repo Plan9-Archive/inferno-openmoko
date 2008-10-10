@@ -410,6 +410,8 @@ vgactl(Cmdbuf *cb)
 				scr->dev->disable(scr);
 			scr->dev = vgadev[i];
 			if(scr->dev->enable)
+				/* BUG: here could be an error if type of vga card mismatch,
+					need to restore old type */
 				scr->dev->enable(scr);
 			return;
 		}
