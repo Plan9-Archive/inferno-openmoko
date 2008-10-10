@@ -403,6 +403,14 @@ vgactl(Cmdbuf *cb)
 		break;
 
 	case CMtype:
+		 /* echo 'type cga' > '#v/vgactl' */
+		if(!strcmp(cb->f[1], "cga")) {
+			if(scr->dev && scr->dev->disable)
+				scr->dev->disable(scr);
+			scr->dev = 0;
+			screeninit();
+			return;
+		}
 		for(i = 0; vgadev[i]; i++){
 			if(strcmp(cb->f[1], vgadev[i]->name))
 				continue;
@@ -410,9 +418,12 @@ vgactl(Cmdbuf *cb)
 				scr->dev->disable(scr);
 			scr->dev = vgadev[i];
 			if(scr->dev->enable)
-				/* BUG: here could be an error if type of vga card mismatch,
-					need to restore old type */
-				scr->dev->enable(scr);
+				if(scr->dev->enable(scr))
+				{
+					scr->dev = 0;
+					screeninit();
+					cmderror(cb, "error setting type");
+				}
 			return;
 		}
 		break;
@@ -420,6 +431,9 @@ vgactl(Cmdbuf *cb)
 	case CMsize:
 		if(drawhasclients())
 			error(Ebusy);
+
+		if(!scr->dev)
+			error(Ebadarg);
 
 		x = strtoul(cb->f[1], &p, 0);
 		if(x == 0 || x > 2048)
@@ -480,6 +494,8 @@ vgactl(Cmdbuf *cb)
 		return;
 
 	case CMdrawinit:
+		if(!scr || !scr->dev)
+			error(Ebadarg);
 		memimagedraw(scr->gscreen, scr->gscreen->r, memblack, ZP, nil, ZP, S);
 		if(scr && scr->dev && scr->dev->drawinit)
 			scr->dev->drawinit(scr);

@@ -198,28 +198,30 @@ vmwait()
 */
 
 /* made after nvidiaenable() */
-static void
+static int
 vmwareenable(VGAscr* scr)
 {
 	ulong aperture, size, offset;
 	int ;
 	Pcidev *p;
 
+	if(scr->aperture)
+		upafree(scr->aperture, scr->apsize);
+
 	scr->aperture = 0;
 	scr->apsize = 0;
+	scr->isupamem = 0;
 
 	p = pcimatch(nil, PCIVMWARE, 0);
 	if(p == nil) {
-		//error("no vmware card found");
-		print("no vmware card found");
-		return;
+		print("no vmware card found\n");
+		return 1;
 	}
 
 	switch(p->did){
 	default:
-		//errorf("unknown vmware id %.4ux", p->did);
-		print("unknown vmware id %.4ux", p->did);
-		return;
+		print("unknown vmware id %.4ux\n", p->did);
+		return 1;
 
 
 	case VMWARE1:
@@ -237,19 +239,32 @@ vmwareenable(VGAscr* scr)
 	offset = vmread(SVGA_REG_FB_OFFSET);
 
 	if(aperture == 0 || size==0 || offset!=0) {
-		//error("vmware get address error");
-		print("vmware get address error");
-		return;
+		print("vmware get address error\n");
+		return 1;
 	}
 
 	aperture = upamalloc(aperture, size, 0 /*align*/);
+	if(!aperture) {
+		print("upamalloc error\n");
+		return 1;
+	}
 
 	addvgaseg("vmwarescreen", aperture, size);
 
-	scr->isupamem = 0;
+	scr->isupamem = 1;
 	scr->aperture = aperture;
 	scr->apsize = size;
+	return 0;
 }
+
+static void
+vmwaredisable(VGAscr* scr)
+{
+	vmwrite(SVGA_REG_ENABLE, 0);
+	if(scr->aperture)
+		upafree(scr->aperture, scr->apsize);
+}
+
 /*
 static void
 vmfifowr(Vmware *vm, ulong v)
@@ -515,7 +530,7 @@ VGAdev vgavmwaredev = {
 	"vmware",
 
 	vmwareenable,
-	0,
+	vmwaredisable,
 	0,
 	0,//vmwarelinear,
 	0,//vmwaredrawinit,

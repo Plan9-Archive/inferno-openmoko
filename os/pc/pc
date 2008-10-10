@@ -117,6 +117,7 @@ root
 	/nvfs	/
 	/prog	/
 	/start
+	/stop
 	/dis/lib
 	/dis/svc
 	/dis/wm

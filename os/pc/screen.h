@@ -76,7 +76,7 @@ typedef struct VGAscr VGAscr;
 struct VGAdev {
 	char*	name;
 
-	void	(*enable)(VGAscr*);
+	int	(*enable)(VGAscr*);
 	void	(*disable)(VGAscr*);
 	void	(*page)(VGAscr*, int);
 	ulong	(*linear)(VGAscr*, int*, int*); /* to be removed */
