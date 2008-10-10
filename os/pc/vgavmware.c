@@ -205,6 +205,9 @@ vmwareenable(VGAscr* scr)
 	int ;
 	Pcidev *p;
 
+	scr->aperture = 0;
+	scr->apsize = 0;
+
 	p = pcimatch(nil, PCIVMWARE, 0);
 	if(p == nil)
 		error("no vmware card found");
@@ -405,9 +408,14 @@ vmwaredrawinit(VGAscr * /*scr*/)
 
 
 int
-vmwaresetmode(VGAscr*, int x, int y, int z, ulong chan)
+vmwaresetmode(VGAscr* scr, int x, int y, int z, ulong chan)
 {
 	ulong maxwidth, maxheight;
+
+	if(scr->aperture==0) /* not initialized or was initialization error */
+	{
+		return 1;
+	}
 
 	if(!((z==16&&chan==RGB16) || (z==32&&chan==XRGB32)))
 	{

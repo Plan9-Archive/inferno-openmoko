@@ -455,3 +455,10 @@ isaconfig(char *class, int ctlrno, ISAConf *isa)
 	}
 	return 1;
 }
+
+void
+idlehands(void)
+{
+	if(conf.nmach == 1)
+		halt();
+}

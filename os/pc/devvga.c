@@ -482,7 +482,7 @@ vgactl(Cmdbuf *cb)
 		if(scr && scr->dev && scr->dev->drawinit)
 			scr->dev->drawinit(scr);
 		return;
-	
+
 	case CMlinear:
 		if(cb->nf!=2 && cb->nf!=3)
 			error(Ebadarg);
