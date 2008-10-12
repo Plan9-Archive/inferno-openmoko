@@ -397,6 +397,7 @@ vgactl(Cmdbuf *cb)
 			scr->cur = vgacur[i];
 			if(scr->cur->enable)
 				scr->cur->enable(scr);
+			setcursor(&arrow); /* perhaps there is a better place to upload cursor */
 			unlock(&cursor);
 			return;
 		}

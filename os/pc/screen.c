@@ -38,6 +38,25 @@ Cursor	arrow = {
 	},
 };
 
+/* correct mouse position if mouse is out of screen */
+void boundmouse(int* px, int* py)
+{
+
+/*	if(gscreen==nil){
+		*px=*py=0;
+		return;
+	}*/
+assert(gscreen!=nil);
+	if(*px<0)
+		*px=0;
+	else if(*px>Dx(gscreen->clipr))
+		*px=Dx(gscreen->clipr);
+	if(*py<0)
+		*py=0;
+	else if(*py>Dy(gscreen->clipr))
+		*py=Dy(gscreen->clipr);
+}
+
 int
 screensize(int x, int y, int z, ulong chan)
 {
@@ -78,7 +97,7 @@ screensize(int x, int y, int z, ulong chan)
 
 	gscreen = allocmemimaged(Rect(0,0,x,y), chan, &gscreendata);
 	vgaimageinit(chan);
-	if(gscreen == nil)
+	if(gscreen == nil) /* maybe panic? */
 		return -1;
 
 	if(scr->dev && scr->dev->flush)

@@ -1,0 +1,45 @@
+#!/dis/sh
+
+load std
+
+echo ''
+echo 'configuring vga'
+
+#echo 'type clgd542x' > '#v/vgactl'
+echo 'type vmware' > '#v/vgactl'
+#echo 'size 1024x768x32 x8r8g8b8' > '#v/vgactl'
+echo 'size 800x600x16 r5g6b5' > '#v/vgactl'
+echo 'drawinit' > '#v/vgactl'
+echo 'hwgc vmwarehwgc' > '#v/vgactl'
+cat '#v/vgactl'
+
+bind -a '#i' /dev	# draw
+#ls -l '#i'
+
+
+
+echo ''
+echo 'configuring network'
+
+bind '#l' /net		# ip
+bind -a '#I' /net	# ether
+
+x=`{cat /net/ipifc/clone}
+echo bind ether /net/ether0 >/net/ipifc/$x/ctl &&
+ip/dhcp -p /net/ipifc/$x
+
+cat /net/ndb
+
+#ip/ping 198.41.0.4
+
+
+echo ''
+echo 'starting DNS server'
+ndb/dns
+#ndb/dnsquery ya.ru
+
+echo ''
+echo 'starting connection server'
+ndb/cs
+
+#/dis/sh

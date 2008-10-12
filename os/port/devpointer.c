@@ -41,9 +41,9 @@ static struct
 
 static
 Dirtab pointertab[]={
-	".",			{Qdir, 0, QTDIR},	0,	0555,
-	"pointer",		{Qpointer},	0,	0666,
-	"cursor",		{Qcursor},		0,	0222,
+	".",		{Qdir, 0, QTDIR},	0,	0555,
+	"pointer",	{Qpointer},		0,	0666,
+	"cursor",	{Qcursor},		0,	0222,
 };
 
 enum {
@@ -60,6 +60,7 @@ static struct {
 	int	get;
 } ptrq;
 
+extern void boundmouse(int* px, int* py);
 /*
  * called by any source of pointer data
  */
@@ -74,6 +75,7 @@ mousetrack(int b, int x, int y, int isdelta)
 		x += mouse.x;
 		y += mouse.y;
 	}
+	boundmouse(&x, &y);
 	msec = TK2MS(MACHP(0)->ticks);
 	if(b && (mouse.b ^ b)&0x1f){
 		if(msec - mouse.msec < 300 && mouse.lastb == b
@@ -102,6 +104,7 @@ mousetrack(int b, int x, int y, int isdelta)
 	wakeup(&ptrq.r);
 	drawactive(1);
 	/* TO DO: cursor update */
+	cursoron(1);
 }
 
 static int
