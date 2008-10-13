@@ -153,7 +153,7 @@ gkbdputc(Queue *q, int ch)
 	n = runetochar(buf, &r);
 	if(n == 0)
 		return;
-	/* if(!isdbgkey(r)) */ 
+	/* if(!isdbgkey(r)) */
 		qproduce(q, buf, n);
 }
 
@@ -188,7 +188,7 @@ consattach(char *spec)
 
 	if(kp == 0 && !dflag) {
 		kp = 1;
-		kproc("kbd", kbdslave, 0, 0);
+		kproc("kbd", kbdslave, 0, 0);   /* BUG: check return value */
 	}
 	return devattach('c', spec);
 }
@@ -573,7 +573,7 @@ conswrite(Chan *c, void *va, long n, vlong offset)
 	return n;
 }
 
-static int	
+static int
 sysconwrite(void *va, ulong count)
 {
 	Cmdbuf *cb;
@@ -605,7 +605,7 @@ sysconwrite(void *va, ulong count)
 	poperror();
 	free(cb);
 	return count;
-} 
+}
 
 Dev consdevtab = {
 	'c',

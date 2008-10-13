@@ -148,16 +148,16 @@ void	(*optab[256])(void) =
 	indl,
 	movpc,
 	tcmp,
-	mnewz,
-	cvtrf,
-	cvtfr,
-	cvtws,
-	cvtsw,
-	lsrw,
-	lsrl,
+	mnewz,		/* j2d */
+	cvtrf,		/* j2d */
+	cvtfr,		/* j2d */
+	cvtws,		/* j2d */
+	cvtsw,		/* j2d */
+	lsrw,		/* j2d */
+	lsrl,		/* j2d */
 	eclr,		/* unused */
-	newz,
-	newaz,
+	newz,		/* j2d */
+	newaz,		/* j2d */
 	iraise,
 	casel,
 	mulx,

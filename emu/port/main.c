@@ -6,26 +6,28 @@
 #include	"draw.h"
 #include	"version.h"
 
-int		rebootargc = 0;
-char**		rebootargv;
-static	char	*imod = "/dis/emuinit.dis";
 extern	char*	hosttype;
-char*	tkfont;	/* for libtk/utils.c */
-int	tkstylus;	/* libinterp/tk.c */
-extern	int	mflag;
-	int	dflag;
-	int vflag;
-	int	vflag;
-	Procs	procs;
-	char	*eve;
-	int	Xsize	= 480;
-	int	Ysize	= 640;
-	int	bflag = 1;
-	int	sflag;
-	int	qflag;
-	int	xtblbit;
-	ulong	displaychan;
-char *cputype;
+extern	char*	cputype;
+extern	char*	tkfont;	/* for libtk/utils.c */
+extern	int	tkstylus;	/* libinterp/tk.c */
+extern	int	Xsize	= 480; /* screen width in pixels */
+extern	int	Ysize	= 640; /* screen height in pixels */
+
+int	xtblbit = 0;
+char	*eve = 0; /* superuser name */
+int	bflag = 1;
+int	cflag = 0;
+int	dflag = 0;
+int	mflag = 0;
+int	sflag = 0;
+int	vflag = 0;
+Procs	procs = {0};
+ulong	displaychan = 0;
+int	rebootargc = 0;
+char**	rebootargv = 0;
+
+static	char*	imod = "/dis/emuinit.dis";
+
 
 static void
 usage(void)
@@ -187,6 +189,9 @@ option(int argc, char *argv[], void (*badusage)(void))
 	} ARGEND
 }
 
+/**
+ *	Save argc,argv -> rebootargc,rebootargv
+ */
 static void
 savestartup(int argc, char *argv[])
 {
@@ -204,7 +209,7 @@ savestartup(int argc, char *argv[])
 	rebootargv[i] = nil;
 }
 
-void
+static void
 putenvq(char *name, char *val, int conf)
 {
 	val = smprint("%q", val);
@@ -212,7 +217,7 @@ putenvq(char *name, char *val, int conf)
 	free(val);
 }
 
-void
+static void
 putenvqv(char *name, char **v, int n, int conf)
 {
 	Fmt f;
@@ -227,7 +232,7 @@ putenvqv(char *name, char **v, int n, int conf)
 	free(val);
 }
 
-void
+NORETURN
 main(int argc, char *argv[])
 {
 	char *opt, *p;
@@ -263,7 +268,10 @@ main(int argc, char *argv[])
 	libinit(imod);
 }
 
-void
+/**
+ * main() -> os-specific libinit(startmodule) -> emuinit(startmodule)
+ */
+NORETURN
 emuinit(void *imod)
 {
 	Osenv *e;
@@ -317,13 +325,13 @@ emuinit(void *imod)
 	putenvq("emuroot", rootdir, 1);
 	ksetenv("emuhost", hosttype, 1);
 
-	kproc("main", disinit, imod, KPDUPFDG|KPDUPPG|KPDUPENVG);
+	kproc("main", disinit, imod, KPDUP);  /* BUG: check return value */
 
 	for(;;)
 		ospause();
 }
 
-void
+static NORETURN
 errorv(char *fmt, va_list arg)
 {
 	char buf[PRINTSIZE];
@@ -332,7 +340,7 @@ errorv(char *fmt, va_list arg)
 	error(buf);
 }
 
-void
+NORETURN
 errorf(char *fmt, ...)
 {
 	va_list arg;
@@ -342,7 +350,20 @@ errorf(char *fmt, ...)
 	va_end(arg);
 }
 
-void
+/*
+ * mainly for libmp
+ */
+NORETURN
+sysfatal(char *fmt, ...)
+{
+	va_list arg;
+
+	va_start(arg, fmt);
+	errorv(fmt, arg);
+	va_end(arg);
+}
+
+NORETURN
 error(char *err)
 {
 //	o("error '%s'\n",err);
@@ -352,7 +373,7 @@ error(char *err)
 	nexterror();
 }
 
-void
+NORETURN
 exhausted(char *resource)
 {
 	char buf[64];
@@ -364,7 +385,7 @@ exhausted(char *resource)
 	error(buf);
 }
 
-void
+NORETURN
 nexterror(void)
 {
 	//assert(0<up->nerr && up->nerr<=NERR-1);
@@ -394,7 +415,7 @@ enverror(void)
 	return up->env->errstr;
 }
 
-void
+NORETURN
 panic(char *fmt, ...)
 {
 	va_list arg;
@@ -426,7 +447,7 @@ iprint(char *fmt, ...)
 	return 1;
 }
 
-void
+NORETURN
 _assert(char *fmt, ...)
 {
 	va_list arg;
@@ -436,34 +457,8 @@ _assert(char *fmt, ...)
 	abort();
 }
 
-/*
- * debugging
- */
-// o==fprint(2,
-void o(char* fmt, ...)
-{
-	va_list arg;
-  	va_start(arg, fmt);
-	vfprint(2, fmt, arg);
-  	va_end(arg);
-}
 
-/*
- * mainly for libmp
- */
-void
-sysfatal(char *fmt, ...)
-{
-	va_list arg;
-	char buf[64];
-
-	va_start(arg, fmt);
-	vsnprint(buf, sizeof(buf), fmt, arg);
-	va_end(arg);
-	error(buf);
-}
-
-void
+NORETURN
 _oserror(void)
 {
 	oserrstr(up->env->errstr, ERRMAX);

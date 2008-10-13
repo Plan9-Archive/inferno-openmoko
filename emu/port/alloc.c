@@ -316,11 +316,11 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 	int alloc, ldr, ns, frag;
 	int osize, size;
 
-	/*o("dopoolalloc(%s,%d)\n", p->name, asize);*/
+	/*print("dopoolalloc(%s,%d)\n", p->name, asize);*/
 
 	if(asize >= 1024*1024*1024)	/* for sanity and to avoid overflow */
 	{
-		o("dopoolalloc(%s,%d)=0\n", p->name, asize);
+		print("dopoolalloc(%s,%d)=0\n", p->name, asize);
 		return nil;
 	}
 	size = asize;
@@ -433,7 +433,7 @@ DBG memset(B2D(q), 0xC3, asize);
 #else
 	t = (Bhdr *)sbrk(alloc);
 	if(t == (void*)-1) {
-		o("sbrk(%d) failed\n", alloc); // todo: try to sbrk less ?
+		print("sbrk(%d) failed\n", alloc); // todo: try to sbrk less ?
 		p->nbrk--;
 		unlock(&p->l);
 		return nil;
@@ -458,7 +458,7 @@ DBG memset(B2D(q), 0xC3, asize);
 		return poolalloc(p, osize);
  	} else
  	{
-DBG 		o("alloc: cannot merge chains\n"); /* it is ok for first alloc in a heap */
+DBG 		print("alloc: cannot merge chains\n"); /* it is ok for first alloc in a heap */
 	}
 
 	t->magic = MAGIC_E;		/* Make a leader */
@@ -507,7 +507,7 @@ poolalloc(Pool *p, ulong asize)
 	else
 		ptr = dopoolalloc(p, asize, getcallerpc(&p));
 	if(nil==ptr)
-		o("poolalloc(%s,0x%ux)=0\n", p->name, asize);
+		print("poolalloc(%s,0x%ux)=0\n", p->name, asize);
 	return ptr;
 }
 
@@ -556,11 +556,11 @@ poolrealloc(Pool *p, void *v, ulong size)
 	void *nv;
 	int osize;
 
-	/*o("dopoolrealloc(%s,%d)\n", p->name, size);*/
+	/*print("dopoolrealloc(%s,%d)\n", p->name, size);*/
 
 	if(size >= 1024*1024*1024)	/* for sanity and to avoid overflow */
 	{
-		o("dopoolrealloc(%s,%d)=0\n", p->name, size);
+		print("dopoolrealloc(%s,%d)=0\n", p->name, size);
 		return nil;
 	}
 	if(size == 0){
@@ -733,7 +733,7 @@ malloc(size_t size)
 		MM(0, getcallerpc(&size), (ulong)v, size);
 	} else
 		print("malloc failed from %lux\n", getcallerpc(&size));
-	//o("malloc(%d)=%p\n", size, v);
+	//print("malloc(%d)=%p\n", size, v);
 	return v;
 }
 
@@ -756,7 +756,7 @@ mallocz(ulong size, int clr)
 		MM(0, getcallerpc(&size), (ulong)v, size);
 	} else
 		print("mallocz failed from %lux\n", getcallerpc(&size));
-	//o("mallocz(%d,%d)=%p\n", size, clr, v);
+	//print("mallocz(%d,%d)=%p\n", size, clr, v);
 	return v;
 }
 
@@ -768,7 +768,7 @@ free(void *v)
 
 	if(v != nil) {
 		ulong mt = getmagictag(v);
-		//o("free(%p) %x '%c%c%c%c'\n", v, mt, mt>>24, mt>>16, mt>>8, mt );
+		//print("free(%p) %x '%c%c%c%c'\n", v, mt, mt>>24, mt>>16, mt>>8, mt );
 		if(!(mt=='SMAL' || mt=='KMAL' || mt=='MALL' || mt=='MALZ' || mt=='REAL'))
 		{
 			panic("invalid free"); // set bp here
@@ -808,7 +808,7 @@ realloc(void *v, size_t size)
 			setmalloctag(nv, getcallerpc(&v));
 	} else
 		print("realloc failed from %lux\n", getcallerpc(&v));
-	//o("realloc(%d,%d)=%p\n", v, size, nv);
+	//print("realloc(%d,%d)=%p\n", v, size, nv);
 	return nv;
 }
 #if defined(_MSC_VER)
@@ -941,6 +941,8 @@ poolcompact(Pool *pool)
 {
 	Bhdr *base, *limit, *ptr, *end, *next;
 	int compacted, nb;
+
+	print("poolcompact(%s, move=%p)\n", pool->name, pool->move);
 
 	if(pool->move == nil || pool->lastfree == pool->nfree)
 		return 0;
@@ -1113,6 +1115,8 @@ poolaudit(char*(*audit)(int, Bhdr *))
 	Pool *p;
 	Bhdr *bc, *ec, *b;
 	char *r = nil;
+
+	print("poolaudit\n");
 
 	for (p = &table.pool[0]; p < &table.pool[nelem(table.pool)]; p++) {
 		lock(&p->l);

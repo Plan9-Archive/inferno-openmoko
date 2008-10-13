@@ -23,19 +23,22 @@ struct
 	Atidle*	idletasks;
 } isched;
 
-int	bflag;
-int	cflag;
-uvlong	gcbusy;
-uvlong	gcidle;
-uvlong	gcidlepass;
-uvlong	gcpartial;
-int keepbroken = 1;
-extern int	vflag;
+extern	int	bflag;
+extern	int	cflag;
+extern	int	vflag;
+
+uvlong	gcbusy = 0;		/* idle gc statistic */
+uvlong	gcidle = 0;
+uvlong	gcidlepass = 0;
+uvlong	gcpartial = 0;
+int	keepbroken = 1; /* kill broken processes or leave them for debugger */
+
+
 static Prog*	proghash[64];
 
 static Progs*	delgrp(Prog*);
 static void	addgrp(Prog*, Prog*);
-void	printgrp(Prog*, char*);
+/*static void	printgrp(Prog*, char*);*/
 
 static Prog**
 pidlook(int pid)
@@ -49,7 +52,7 @@ pidlook(int pid)
 	return l;
 }
 
-int
+static int
 tready(void *a)
 {
 	USED(a);
@@ -71,7 +74,7 @@ progn(int n)
 		;
 	return p;
 }
-
+/*
 int
 nprog(void)
 {
@@ -82,7 +85,7 @@ nprog(void)
 	for(p = isched.head; p; p = p->next)
 		n++;
 	return n;
-}
+}*/
 
 static void
 execatidle(void)
@@ -110,6 +113,9 @@ execatidle(void)
 	delrunq(up->prog);
 }
 
+/**
+ *	Create new Limbo process
+ */
 Prog*
 newprog(Prog *p, Modlink *m)
 {
@@ -190,7 +196,7 @@ newprog(Prog *p, Modlink *m)
 	return n;
 }
 
-void
+static void
 delprog(Prog *p, char *msg)
 {
 	Osenv *o;
@@ -236,7 +242,7 @@ delprog(Prog *p, char *msg)
 		free(p->exstr);
 	free(p);
 }
-
+/*
 void
 renameproguser(char *old, char *new)
 {
@@ -250,9 +256,9 @@ renameproguser(char *old, char *new)
 			kstrdup(&o->user, new);
 	}
 	release();
-}
+}*/
 
-void
+static void
 tellsomeone(Prog *p, char *buf)
 {
 	Osenv *o;
@@ -262,8 +268,8 @@ tellsomeone(Prog *p, char *buf)
 	o = p->osenv;
 	if(o->childq != nil)
 		qproduce(o->childq, buf, strlen(buf));
-	if(o->waitq != nil) 
-		qproduce(o->waitq, buf, strlen(buf)); 
+	if(o->waitq != nil)
+		qproduce(o->waitq, buf, strlen(buf));
 	poperror();
 }
 
@@ -296,7 +302,7 @@ grpleader(Prog *p)
 	return nil;
 }
 
-int
+static int
 exprog(Prog *p, char *exc)
 {
 	/* similar code to killprog but not quite */
@@ -524,7 +530,7 @@ delgrp(Prog *p)
 	}
 	return g;
 }
-
+/*
 void
 printgrp(Prog *p, char *v)
 {
@@ -539,7 +545,7 @@ printgrp(Prog *p, char *v)
 	for(g = g->child; g != nil; g = g->sib)
 		print(" %d", g->id);
 	print("]\n");
-}
+}*/
 
 int
 killgrp(Prog *p, char *msg)
@@ -610,6 +616,9 @@ killcomm(Progq **q)
 	}
 }
 
+/**
+ * Add a fake Limbo process to the kernel process
+ */
 void
 addprog(Proc *p)
 {
@@ -629,7 +638,7 @@ cwakeme(Prog *p)
 
 	p->addrun = nil;
 	o = p->osenv;
-	Wakeup(o->rend);
+	wakeup9(o->rend);
 }
 
 static int
@@ -660,7 +669,7 @@ cblock(Prog *p)
 		p->addrun = nil;
 		nexterror();
 	}
-	Sleep(o->rend, cdone, p);
+	sleep9(o->rend, cdone, p);
 	if (p->kill != nil)
 		error(Eintr);
 	poperror();
@@ -698,7 +707,7 @@ delrun(int state)
 	return p;
 }
 
-void
+static void
 delrunq(Prog *p)
 {
 	Prog *prev, *f;
@@ -736,7 +745,10 @@ currun(void)
 	return isched.runhd;
 }
 
-Prog*
+/**
+ * Like mspawn for the first module
+ */
+static Prog*
 schedmod(Module *m)
 {
 	Heap *h;
@@ -806,7 +818,7 @@ acquire(void)
 		unlock(&isched.l);
 		strcpy(up->text, "acquire");
 		if(empty)
-			Wakeup(&isched.irend);
+			wakeup9(&isched.irend);
 		osblock();
 	}
 
@@ -845,7 +857,7 @@ release(void)
 		isched.creating = 1;
 		unlock(&isched.l);
 		if(f == 0)
-			kproc("dis", vmachine, nil, 0);
+			kproc("dis", vmachine, nil, 0);  /* BUG: check return value */
 		return;
 	}
 	p = *pq;
@@ -856,7 +868,7 @@ release(void)
 	strcpy(up->text, "released");
 }
 
-void
+static void
 iyield(void)
 {
 	Proc *p;
@@ -887,7 +899,7 @@ iyield(void)
 	strcpy(up->text, "dis");
 }
 
-void
+static void
 startup(void)
 {
 
@@ -908,7 +920,7 @@ startup(void)
 	osblock();
 }
 
-void
+static void
 progexit(void)
 {
 	Prog *r;
@@ -939,6 +951,15 @@ progexit(void)
 				R.PC = r->R.PC = (Inst*)strtol(pc+3, nil, 0);	/* for debugging */
 		}
 		print("[%s] Broken: \"%s\"\n", m->name, estr);
+
+		/* read /prog/id/stack */
+		/* or better exec 'stack id' to see with debug info */
+		{
+		static char va[0x1000];
+		extern int progstack(REG *reg, int state, char *va, int count, long offset);
+		progstack(&r->R, r->state, va, sizeof(va), 0);
+		print("Stack:\n%s\n", va);
+		}
 	}
 
 	snprint(msg, sizeof(msg), "%d \"%s\":%s", r->pid, m->name, estr);
@@ -966,15 +987,18 @@ progexit(void)
 		cleanexit(0);
 }
 
-void
+/**
+ * Called from OS-specific code on exception
+ */
+NORETURN
 disfault(void *reg, char *msg)
 {
 	Prog *p;
 
 	USED(reg);
 
-	if(strncmp(msg, Eintr, 6) == 0)
-		exits(0);
+	if(strncmp(msg, Eintr, 6) == 0) /* TODO "interr"? */
+		cleanexit(0);
 
 	if(up == nil) {
 		print("EMU: faults: %s\n", msg);
@@ -997,7 +1021,7 @@ disfault(void *reg, char *msg)
 	oslongjmp(reg, up->estack[--up->nerr], 1);
 }
 
-void
+NORETURN
 vmachine(void *a)
 {
 	Prog *r;
@@ -1024,7 +1048,7 @@ vmachine(void *a)
 		if(tready(nil) == 0) {
 			execatidle();
 			strcpy(up->text, "idle");
-			Sleep(&isched.irend, tready, 0);
+			sleep9(&isched.irend, tready, 0);
 			strcpy(up->text, "dis");
 		}
 
@@ -1064,13 +1088,13 @@ vmachine(void *a)
 	}
 }
 
-void
-disinit(void *a)
+NORETURN
+disinit(void *initmodv)
 {
 	Prog *p;
 	Osenv *o;
 	Module *root;
-	char *initmod = a;
+	char *initmod = initmodv;
 
 	if(waserror())
 		panic("disinit error: %r");

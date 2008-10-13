@@ -153,16 +153,16 @@ struct
 	"indl",		IINDL,		TOKI3,
 	"movpc",	IMOVPC,		TOKI2,
 	"tcmp",		ITCMP,		TOKI2,
-	"mnewz",	IMNEWZ,		TOKI3,
-	"cvtrf",	ICVTRF,		TOKI2,
-	"cvtfr",	ICVTFR,		TOKI2,
-	"cvtws",	ICVTWS,		TOKI2,
-	"cvtsw",	ICVTSW,		TOKI2,
-	"lsrw",		ILSRW,		TOKI3,
-	"lsrl",		ILSRL,		TOKI3,
-	"eclr",		IECLR,		TOKI0,
-	"newz",		INEWZ,		TOKI2,
-	"newaz",	INEWAZ,		TOKI3,
+	"mnewz",	IMNEWZ,		TOKI3,	/* j2d */
+	"cvtrf",	ICVTRF,		TOKI2,	/* j2d */
+	"cvtfr",	ICVTFR,		TOKI2,	/* j2d */
+	"cvtws",	ICVTWS,		TOKI2,	/* j2d */
+	"cvtsw",	ICVTSW,		TOKI2,	/* j2d */
+	"lsrw",		ILSRW,		TOKI3,	/* j2d */
+	"lsrl",		ILSRL,		TOKI3,	/* j2d */
+	"eclr",		IECLR,		TOKI0,	/* unused */
+	"newz",		INEWZ,		TOKI2,	/* j2d */
+	"newaz",	INEWAZ,		TOKI3,	/* j2d */
 	"raise",	IRAISE,	TOKI1,
 	"casel",	ICASEL,	TOKI2,
 	"mulx",	IMULX,	TOKI3,

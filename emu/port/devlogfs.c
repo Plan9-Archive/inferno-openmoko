@@ -11,10 +11,6 @@
 #include	<logfs.h>
 #include	<nandfs.h>
 
-#ifndef EMU
-#define Sleep sleep
-#define Wakeup wakeup
-#endif
 
 #ifndef offsetof
 #define offsetof(T,X) ((ulong)&(((T*)0)->X))
@@ -979,7 +975,7 @@ devlogfsserverread(Devlogfs *d, void *buf, long n)
 {
 	if (d->state == Hungup)
 		error(Ehungup);
-	Sleep(&d->readrendez, readok, d);
+	sleep9(&d->readrendez, readok, d);
 	if (n > d->readcount)
 		n = d->readcount;
 	memmove(buf, d->readp, n);
@@ -987,7 +983,7 @@ devlogfsserverread(Devlogfs *d, void *buf, long n)
 	d->readcount -= n;
 	if (d->readcount == 0) {
 		d->reading = 0;
-		Wakeup(&d->writerendez);
+		wakeup9(&d->writerendez);
 	}
 	return n;
 }
@@ -1001,7 +997,7 @@ reply(Devlogfs *d)
 	if (d->readcount == 0)
 		panic("logfs: reply: did not fit\n");
 	d->reading = 1;
-	Wakeup(&d->readrendez);
+	wakeup9(&d->readrendez);
 }
 
 static void
@@ -1146,7 +1142,7 @@ devlogfsserverwrite(Devlogfs *d, void *buf, long n)
 	int locked = 0;
 	if (d->state == Hungup)
 		error(Ehungup);
-	Sleep(&d->writerendez, writeok, d);
+	sleep9(&d->writerendez, writeok, d);
 	if (convM2S(buf, n, &d->in) != n) {
 		/*
 		 * someone is writing drivel; have nothing to do with them anymore

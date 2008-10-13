@@ -28,7 +28,7 @@ newproc(void)
 #pragma optimize("y", off) // for getcallerpc()
 #endif
 void
-Sleep(Rendez *r, int (*f)(void*), void *arg)
+sleep9(Rendez *r, int (*f)(void*), void *arg)
 {
 	lock(&up->rlock);
 	lock(&r->l);
@@ -67,7 +67,7 @@ Sleep(Rendez *r, int (*f)(void*), void *arg)
 #endif
 
 int
-Wakeup(Rendez *r)
+wakeup9(Rendez *r)
 {
 	Proc *p;
 
@@ -170,7 +170,7 @@ rptwakeup(void *o, void *ar)
 	lock(&r->l);
 	r->o = o;
 	unlock(&r->l);
-	Wakeup(&r->r);
+	wakeup9(&r->r);
 }
 
 static int
@@ -198,7 +198,7 @@ rproc(void *a)
 	t = (ulong)r->t;
 
 Wait:
-	Sleep(&r->r, rptactive, r);
+	sleep9(&r->r, rptactive, r);
 	lock(&r->l);
 	o = r->o;
 	unlock(&r->l);
@@ -240,6 +240,6 @@ rptproc(char *s, int t, void *o, int (*active)(void*), int (*ck)(void*, int), vo
 	r->ck = ck;
 	r->f = f;
 	r->o = o;
-	kproc(s, rproc, r, KPDUPPG);
+	kproc(s, rproc, r, KPDUPPG);  /* BUG: check return value */
 	return r;
 }

@@ -79,7 +79,7 @@ struct Rept
 	void	(*f)(void*);	/* called with VM acquire()'d */
 };
 
-/*
+/**
  * Access types in namec & channel flags
  */
 enum
@@ -261,6 +261,9 @@ struct Mntparam {
 	int	flags;
 };
 
+/**
+ *  Kernel process group, 'namespace, working dir and root'
+ */
 struct Pgrp
 {
 	Ref	r;			/* also used as a lock when mounting */
@@ -268,7 +271,7 @@ struct Pgrp
 	RWlock	ns;			/* Namespace n read/one write lock */
 	QLock	nsh;
 	Mhead*	mnthash[MNTHASH];
-	int	progmode;
+	int	progmode;	/* access mode to prog, i.e. 0644 */
 	int	privatemem;	/* deny access to /prog by debuggers */
 	Chan*	dot;
 	Chan*	slash;
@@ -382,49 +385,52 @@ enum
 	Moribund
 };
 
+/**
+ *	Kernel process
+ *	Thread on Windows
+ */
 struct Proc
 {
-	int	type;		/* interpreter or not */
-	char	text[KNAMELEN];
-	Proc*	qnext;		/* list of processes waiting on a Qlock */
-	long	pid;
-	Proc*	next;		/* list of created processes */
-	Proc*	prev;
-	Lock	rlock;	/* sync between sleep/swiproc for r */
-	Rendez*	r;		/* rendezvous point slept on */
-	Rendez	sleep;		/* place to sleep */
+	int		type;		/* interpreter or not */
+	char		text[KNAMELEN];
+	Proc*		qnext;		/* list of processes waiting on a Qlock */
+	long		pid;
+	Proc*		next;		/* list of created processes */
+	Proc*		prev;
+	Lock		rlock;		/* sync between sleep/swiproc for r */
+	Rendez*		r;		/* rendezvous point slept on */
+	Rendez		sleep;		/* place to sleep */
 	int		killed;		/* by swiproc */
-	int	swipend;	/* software interrupt pending for Prog */
-	int	syscall;	/* set true under sysio for interruptable syscalls */
-	int	intwait;	/* spin wait for note to turn up */
-	int	sigid;		/* handle used for signal/note/exception */
-	Lock	sysio;		/* note handler lock */
-	char	genbuf[128];	/* buffer used e.g. for last name element from namec */
-	int	nerr;		/* error stack SP */
+	int		swipend;	/* software interrupt pending for Prog */
+	int		syscall;	/* set true under sysio for interruptable syscalls */
+	int		intwait;	/* spin wait for note to turn up */
+	int		sigid;		/* handle used for signal/note/exception */
+	Lock		sysio;		/* note handler lock */
+	char		genbuf[128];	/* buffer used e.g. for last name element from namec */
+	int		nerr;		/* error stack SP */
 	osjmpbuf	estack[NERR];	/* vector of error jump labels */
-	char*	kstack;
-	void	(*func)(void*);	/* saved trampoline pointer for kproc */
-	void*	arg;		/* arg for invoked kproc function */
-	void*	iprog;		/* work for Prog after release */
-	void*	prog;		/* fake prog for slaves eg. exportfs */
-	Osenv*	env;		/* effective operating system environment */
-	Osenv	defenv;		/* default env for slaves with no prog */
+	char*		kstack;
+	void		(*func)(void*);	/* saved trampoline pointer for kproc */
+	void*		arg;		/* arg for invoked kproc function */
+	void*		iprog;		/* work for Prog after release */
+	void*		prog;		/* fake prog for slaves eg. exportfs */
+	Osenv*		env;		/* effective operating system environment */
+	Osenv		defenv;		/* default env for slaves with no prog */
 	osjmpbuf	privstack;	/* private stack for making new kids */
 	osjmpbuf	sharestack;
-	Proc	*kid;
-	void	*kidsp;
-	void	*os;		/* host os specific data */
+	Proc*		kid;
+	void*		kidsp;
+	void*		os;		/* host os specific data */
 };
 
 #define poperror()	up->nerr--
 #define	waserror()	(up->nerr++, ossetjmp(up->estack[up->nerr-1]))
 
-enum
+enum KProcFlags
 {
-	/* kproc flags */
-	KPDUPPG		= (1<<0),
-	KPDUPFDG	= (1<<1),
-	KPDUPENVG	= (1<<2),
+	KPDUPPG		= (1<<0),		/* Dup 'namespace, working dir and root' */
+	KPDUPFDG	= (1<<1),		/* Dup 'file descriptors' */
+	KPDUPENVG	= (1<<2),		/* Dup 'Environment vars' */
 	KPX11		= (1<<8),		/* needs silly amount of stack */
 	KPDUP		= (KPDUPPG|KPDUPFDG|KPDUPENVG)
 };

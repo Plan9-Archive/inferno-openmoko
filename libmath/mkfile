@@ -64,4 +64,4 @@ HFILES=\
 <$ROOT/mkfiles/mksyslib-$SHELLTYPE
 
 %.$O:	fdlibm/%.c
-	$CC $CFLAGS -o $target -Ifdlibm fdlibm/$stem.c
+	$CC $CFLAGS $CCOUT$target -Ifdlibm fdlibm/$stem.c

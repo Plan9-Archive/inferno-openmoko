@@ -543,7 +543,7 @@ pc2dispc(Inst *pc, Module *mod)
 	return 0;
 }
 
-static int
+/*static*/ int
 progstack(REG *reg, int state, char *va, int count, long offset)
 {
 	int n;
@@ -748,7 +748,7 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 					n += snprint(va+n, count-n, "%d.%lux.%d.%d\n", c->buf->len, (ulong)c->buf->data, c->front, c->size);
 			}
 			break;
-			
+
 		}
 		addr += s;
 		if(signed_off > 0) {
@@ -1221,7 +1221,7 @@ telldbg(Progctl *ctl, char *msg)
 {
 	kstrcpy(ctl->msg, msg, ERRMAX);
 	ctl->debugger = nil;
-	Wakeup(&ctl->r);
+	wakeup9(&ctl->r);
 }
 
 static void
@@ -1293,7 +1293,7 @@ dbgstep(Progctl *vctl, Prog *p, int n)
 		nexterror();
 	}
 	release();
-	Sleep(&ctl->r, xecdone, ctl);
+	sleep9(&ctl->r, xecdone, ctl);
 	poperror();
 	acquire();
 	if(msg[0] != '\0')
@@ -1331,7 +1331,7 @@ dbgaddrun(Prog *p)
 	p->addrun = nil;
 	o = p->osenv;
 	if(o->rend != nil)
-		Wakeup(o->rend);
+		wakeup9(o->rend);
 	o->rend = nil;
 }
 
@@ -1366,7 +1366,7 @@ dbgblock(Prog *p)
 	}
 	release();
 	if(o->rend != nil)
-		Sleep(o->rend, bdone, p);
+		sleep9(o->rend, bdone, p);
 	poperror();
 	acquire();
 	if(p->kill != nil)

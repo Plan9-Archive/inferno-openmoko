@@ -98,7 +98,7 @@ mousetrack(int b, int x, int y, int isdelta)
 	}
 	mouse.modify = 1;
 	ptrq.put++;
-	Wakeup(&ptrq.r);
+	wakeup9(&ptrq.r);
 /*	drawactive(1);	*/
 /*	setpointer(x, y); */
 }
@@ -115,7 +115,7 @@ mouseconsume(void)
 {
 	Pointer e;
 
-	Sleep(&ptrq.r, ptrqnotempty, 0);
+	sleep9(&ptrq.r, ptrqnotempty, 0);
 	ptrq.full = 0;
 	ptrq.get = ptrq.put;
 	if(ptrq.rd != ptrq.wr){

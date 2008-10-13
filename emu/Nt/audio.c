@@ -74,7 +74,7 @@ static void CALLBACK waveOutProc(HWAVEOUT, UINT, DWORD, DWORD, DWORD);
 #define AUDIOIN  0
 #define AUDIOOUT  1
 
-/* 
+/*
 * Error routines
 */
 static int
@@ -216,19 +216,19 @@ static int
 audio_open_in(HWAVEIN* h, Audio_d* d)
 {
 	HWAVEIN th;
-	WAVEFORMATEX format; 
+	WAVEFORMATEX format;
 
 	format.wFormatTag = d->enc;
 	format.nChannels = d->chan;
 	format.nSamplesPerSec = d->rate;
 	format.wBitsPerSample = d->bits;
 	format.nBlockAlign = (d->chan * d->bits) / Bits_Per_Byte;
-	format.nAvgBytesPerSec = 
+	format.nAvgBytesPerSec =
 		format.nSamplesPerSec * format.nBlockAlign;
 	format.cbSize = 0;
 
 	if (audioerror(
-		waveInOpen(&th, WAVE_MAPPER, &format, (DWORD)waveInProc, 0, CALLBACK_FUNCTION), 
+		waveInOpen(&th, WAVE_MAPPER, &format, (DWORD)waveInProc, 0, CALLBACK_FUNCTION),
 		AUDIOIN,
 		"cannot open microphone/line-in") == 0) {
 		*h = th;
@@ -242,14 +242,14 @@ audio_open_out(HWAVEOUT* h, Audio_d* d)
 {
 	unsigned int code;
 	HWAVEOUT th;
-	WAVEFORMATEX format; 
+	WAVEFORMATEX format;
 
 	format.wFormatTag = d->enc;
 	format.nChannels = d->chan;
 	format.nSamplesPerSec = d->rate;
 	format.wBitsPerSample = d->bits;
 	format.nBlockAlign = (d->chan * d->bits) / Bits_Per_Byte;
-	format.nAvgBytesPerSec = 
+	format.nAvgBytesPerSec =
 		format.nSamplesPerSec * format.nBlockAlign;
 	format.cbSize = 0;
 
@@ -302,11 +302,11 @@ audio_close_in()
 	audioerror(waveInStop(audio_file_in), AUDIOIN, "audio_close_in Stop");
 	audioerror(waveInReset(audio_file_in), AUDIOIN, "audio_close_in Reset");
 
-	audioerror(waveInUnprepareHeader(audio_file_in, &audio_ping.hdr, 
+	audioerror(waveInUnprepareHeader(audio_file_in, &audio_ping.hdr,
 			sizeof(WAVEHDR)), AUDIOIN, "in un prepare ping header");
 	audio_ping.sz = 0;
 	audio_ping.ptr = &audio_ping.data[0];
-	audioerror(waveInUnprepareHeader(audio_file_in, &audio_pong.hdr, 
+	audioerror(waveInUnprepareHeader(audio_file_in, &audio_pong.hdr,
 			sizeof(WAVEHDR)), AUDIOIN, "in un prepare pong header");
 	audio_pong.sz = 0;
 	audio_pong.ptr = &audio_pong.data[0];
@@ -322,7 +322,7 @@ Again:
 	WaitForSingleObject(outlock, INFINITE);
 	while(out_buf_count > 0) {
 		ReleaseMutex(outlock);
-		sleep(0);
+		Sleep(0);
 		goto Again;
 	}
 	ReleaseMutex(outlock);
@@ -346,15 +346,15 @@ audio_file_read(Chan *c, void *va, long count, vlong offset)
 	WaitForSingleObject(inlock, INFINITE);
 
 	if(waserror()) {
-		audioerror(waveInStop(audio_file_in), AUDIOIN, 
+		audioerror(waveInStop(audio_file_in), AUDIOIN,
 			"audio_file_read Stop 1");
-		audioerror(waveInReset(audio_file_in), AUDIOIN, 
+		audioerror(waveInReset(audio_file_in), AUDIOIN,
 			"audio_file_read Reset 1");
-		audioerror(waveInUnprepareHeader(audio_file_in, 
-			&audio_ping.hdr, sizeof(WAVEHDR)), AUDIOIN, 
+		audioerror(waveInUnprepareHeader(audio_file_in,
+			&audio_ping.hdr, sizeof(WAVEHDR)), AUDIOIN,
 			"in unprepare ping");
-		audioerror(waveInUnprepareHeader(audio_file_in, 
-			&audio_pong.hdr, sizeof(WAVEHDR)), 
+		audioerror(waveInUnprepareHeader(audio_file_in,
+			&audio_pong.hdr, sizeof(WAVEHDR)),
 			AUDIOIN, "in unprepare pong");
 
 		audio_ping.sz = 0;
@@ -381,18 +381,18 @@ audio_file_read(Chan *c, void *va, long count, vlong offset)
 		error(Ebadarg);
 
 	if(!(audio_flags & INPUTISGOING)) {
-		if(audioerror(waveInStart(audio_file_in), AUDIOIN, 
+		if(audioerror(waveInStart(audio_file_in), AUDIOIN,
 			"in start") == -1)
 				error(Eio);
 
 		audio_ping.sz = 0;
 		audio_ping.ptr = &audio_ping.data[0];
 		audio_ping.hdr.lpData = audio_ping.ptr;
-		audio_ping.hdr.dwBufferLength = len;  
+		audio_ping.hdr.dwBufferLength = len;
 		audio_ping.hdr.dwUser = Ping;
 		audio_ping.hdr.dwFlags = 0;
 
-		status = waveInPrepareHeader(audio_file_in, &audio_ping.hdr, 
+		status = waveInPrepareHeader(audio_file_in, &audio_ping.hdr,
 			sizeof(WAVEHDR));
 
 		if (audioerror(status, AUDIOIN, "in prepare header") == -1)
@@ -401,20 +401,20 @@ audio_file_read(Chan *c, void *va, long count, vlong offset)
 		audio_pong.sz = 0;
 		audio_pong.ptr = &audio_pong.data[0];
 		audio_pong.hdr.lpData = audio_pong.ptr;
-		audio_pong.hdr.dwBufferLength = len;  
+		audio_pong.hdr.dwBufferLength = len;
 		audio_pong.hdr.dwUser = Pong;
 		audio_pong.hdr.dwFlags = 0;
 
-		status = waveInPrepareHeader(audio_file_in, &audio_pong.hdr, 
+		status = waveInPrepareHeader(audio_file_in, &audio_pong.hdr,
 			sizeof(WAVEHDR));
 
 		if (audioerror(status, AUDIOIN, "in prepare header") == -1)
 			error(Eio);
 
-		status = waveInAddBuffer(audio_file_in, &audio_ping.hdr, 
+		status = waveInAddBuffer(audio_file_in, &audio_ping.hdr,
 			sizeof(WAVEHDR));
 		if (audioerror(status, AUDIOIN, "file_read Add Buffer")== -1){
-			waveInUnprepareHeader(audio_file_in, &audio_ping.hdr, 
+			waveInUnprepareHeader(audio_file_in, &audio_ping.hdr,
 				sizeof(WAVEHDR));
 			audio_ping.sz = 0;
 			audio_ping.ptr = &audio_ping.data[0];
@@ -435,15 +435,15 @@ Draining:
 
 	WaitForSingleObject(inlock, INFINITE);
 	if(waserror()) {
-		audioerror(waveInStop(audio_file_in), AUDIOIN, 
+		audioerror(waveInStop(audio_file_in), AUDIOIN,
 			"audio_file_read Stop 2");
-		audioerror(waveInReset(audio_file_in), AUDIOIN, 
+		audioerror(waveInReset(audio_file_in), AUDIOIN,
 			"audio_file_read Reset 2");
-		audioerror(waveInUnprepareHeader(audio_file_in, 
-			&audio_ping.hdr, sizeof(WAVEHDR)), AUDIOIN, 
+		audioerror(waveInUnprepareHeader(audio_file_in,
+			&audio_ping.hdr, sizeof(WAVEHDR)), AUDIOIN,
 			"in unprepare ping");
-		audioerror(waveInUnprepareHeader(audio_file_in, 
-			&audio_pong.hdr, sizeof(WAVEHDR)), AUDIOIN, 
+		audioerror(waveInUnprepareHeader(audio_file_in,
+			&audio_pong.hdr, sizeof(WAVEHDR)), AUDIOIN,
 			"in unprepare pong");
 
 		audio_ping.sz = 0;
@@ -472,7 +472,7 @@ Draining:
 			if(!pong_is_filling) {
 
 				if(audioerror(waveInAddBuffer(audio_file_in,
-						&audio_pong.hdr, sizeof(WAVEHDR)), AUDIOIN, 
+						&audio_pong.hdr, sizeof(WAVEHDR)), AUDIOIN,
 						"draining ping calling add buffer pong") == -1)
 						error(Eio);
 
@@ -491,7 +491,7 @@ Draining:
 			if(!ping_is_filling) {
 
 				if(audioerror(waveInAddBuffer(audio_file_in,
-						&audio_ping.hdr, sizeof(WAVEHDR)), AUDIOIN, 
+						&audio_ping.hdr, sizeof(WAVEHDR)), AUDIOIN,
 						"draining pong calling add buffer ping") == -1)
 						error(Eio);
 
@@ -522,8 +522,8 @@ Filling:
 	WaitForSingleObject(inlock, INFINITE);
 	while((audio_ping.sz < 1) && (audio_pong.sz < 1)) {
 		ReleaseMutex(inlock);
-		sleep(0);
-		goto Filling;	
+		Sleep(0);
+		goto Filling;
 	}
 	ReleaseMutex(inlock);
 
@@ -574,7 +574,7 @@ Drain:
 	WaitForSingleObject(outlock, INFINITE);
 	while(out_buf_count > bufsz) {
 		ReleaseMutex(outlock);
-		sleep(0);
+		Sleep(0);
 		goto Drain;
 	}
 
@@ -582,9 +582,9 @@ Drain:
 		audioerror(waveOutReset(audio_file_out), AUDIOOUT, "wave out reset");
 	ReleaseMutex(outlock);
 
-	/* 
-	 * allocate and lock the memory for the wave header 
-	 * and data blocks 
+	/*
+	 * allocate and lock the memory for the wave header
+	 * and data blocks
 	 */
 	hHdr = (WAVEHDR *) malloc(sizeof(WAVEHDR));
 	if (!hHdr)
@@ -601,13 +601,13 @@ Drain:
 	 */
 
 	/*
-	 * copy user data into write Q 
+	 * copy user data into write Q
 	 */
-	memmove(hData, p+total, chunk);  
+	memmove(hData, p+total, chunk);
 
 	hHdr->lpData = hData;
-	hHdr->dwBufferLength = chunk; 
-	hHdr->dwBytesRecorded = 0; 
+	hHdr->dwBufferLength = chunk;
+	hHdr->dwBytesRecorded = 0;
 	hHdr->dwUser = chunk;
 	hHdr->dwFlags = 0;
 	hHdr->dwLoops = 0;
@@ -664,7 +664,7 @@ waveInProc(HWAVEIN hwi, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwPar
 			count = hHdr->dwBytesRecorded;
 			if(count > 0) {
 				WaitForSingleObject(inlock, INFINITE);
-				if(hHdr->dwUser == Ping) 
+				if(hHdr->dwUser == Ping)
 					audio_ping.sz = count;
 				else
 					audio_pong.sz = count;
@@ -693,7 +693,7 @@ waveOutProc(HWAVEOUT hwo, UINT uMsg, DWORD dwOutstance, DWORD dwParam1, DWORD dw
 			waveOutUnprepareHeader(
 			audio_file_out, hHdr, sizeof(WAVEHDR)),
 			AUDIOOUT, "out un prepare header");
-		if(hHdr->lpData != NULL) 
+		if(hHdr->lpData != NULL)
 			free(hHdr->lpData);
 		free(hHdr);
 		}
@@ -728,9 +728,9 @@ audio_ctl_write(Chan *c, void *va, long count, vlong offset)
 		format.wBitsPerSample = tmpav.in.bits;
 		format.nChannels = tmpav.in.chan;
 		format.nSamplesPerSec = tmpav.in.rate;
-		format.nBlockAlign = 
+		format.nBlockAlign =
 			(tmpav.in.chan * tmpav.in.bits) / Bits_Per_Byte;
-		format.nAvgBytesPerSec = 
+		format.nAvgBytesPerSec =
 			format.nSamplesPerSec * format.nBlockAlign;
 		format.cbSize = 0;
 
@@ -764,15 +764,15 @@ audio_ctl_write(Chan *c, void *va, long count, vlong offset)
 		format.wBitsPerSample = tmpav.out.bits;
 		format.nChannels = tmpav.out.chan;
 		format.nSamplesPerSec = tmpav.out.rate;
-		format.nBlockAlign = 
+		format.nBlockAlign =
 			(tmpav.out.chan * tmpav.out.bits) / Bits_Per_Byte;
-		format.nAvgBytesPerSec = 
+		format.nAvgBytesPerSec =
 			format.nSamplesPerSec * format.nBlockAlign;
 		format.cbSize = 0;
 
-		if (audioerror(waveOutOpen(NULL, WAVE_MAPPER, 
+		if (audioerror(waveOutOpen(NULL, WAVE_MAPPER,
 			&format,
-			0, 0, WAVE_FORMAT_QUERY), 
+			0, 0, WAVE_FORMAT_QUERY),
 			AUDIOOUT, "cannot open output to test parameters") == -1)
 				error(Ebadarg);
 
@@ -782,7 +782,7 @@ audio_ctl_write(Chan *c, void *va, long count, vlong offset)
 			nexterror();
 		}
 		if(audio_flags & OUTISOPEN) {
-			audio_close_out(); 
+			audio_close_out();
 
 			audio_flags &= ~OUTISOPEN;
 			if(!audio_open_out(&audio_file_out, &tmpav.out)) {

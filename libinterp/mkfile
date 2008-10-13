@@ -111,15 +111,15 @@ kif.$O: kif.c
 	$CC $CFLAGS kif.c && rm -f kif.c
 
 dec.c:  decgen.out
-	./decgen.out > dec.c
+	decgen.out > dec.c
 	rm decgen.out
 
 decgen.out: decgen.c
 	$CC $CFLAGS decgen.c
-	$LD $LDFLAGS -o $target decgen.$O $ROOT/$OBJDIR/lib/lib9.a 
+	$LD $LDFLAGS $ROOT/$OBJDIR/lib/lib9.a decgen.$O $LDOUT$target
 	rm decgen.$O
-#	rm decgen.map
-#	rm decgen.pdb
+	rm decgen.map
+	rm decgen.pdb
 
 # optab.h:	$ROOT/include/isa.h mkoptab
 #	$SHELLNAME mkoptab > $target

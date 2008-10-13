@@ -560,7 +560,6 @@ extern	int	segbrk(void*, void*);
 extern	int	segdetach(void*);
 extern	int	segflush(void*, ulong);
 extern	int	segfree(void*, ulong);
-extern	int	sleep(long);
 extern	int	stat(char*, uchar*, int);
 extern	Waitmsg*	wait(void);
 extern	int	waitpid(void);

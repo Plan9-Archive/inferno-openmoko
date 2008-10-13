@@ -155,7 +155,7 @@ export(int fd, char *dir, int async)
 	if(async){
 		if(waserror())
 			return -1;
-		kproc("exportfs", exportproc, fs, 0);
+		kproc("exportfs", exportproc, fs, 0);  /* BUG: check return value */
 		poperror();
 	}else
 		exportproc(fs);
@@ -258,8 +258,8 @@ exportproc(void *a)
 				break;
 			if(n%600 == 0)
 				print("exportproc %ld: waiting for memory (%d) for request\n", up->pid, msize);
-			osenter();
-			osmillisleep(100);
+			osenter(); /* BUG WTF */
+			osmillisleep(100); 
 			osleave();
 		}
 		if(q == nil){
@@ -333,8 +333,8 @@ exportproc(void *a)
 		exq.tail = q;
 		unlock(&exq.l);
 		if(exq.qwait.head == nil)
-			kproc("exslave", exslave, nil, 0);
-		Wakeup(&exq.rwait);
+			kproc("exslave", exslave, nil, 0);  /* BUG: check return value */
+		wakeup9(&exq.rwait);
 	}
 
 	if(exdebug){
@@ -506,7 +506,7 @@ exslave(void *a)
 			qunlock(&exq.qwait);
 			continue;
 		}
-		Sleep(&exq.rwait, exwork, nil);
+		sleep9(&exq.rwait, exwork, nil);
 		poperror();
 
 		lock(&exq.l);

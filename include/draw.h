@@ -87,13 +87,13 @@ enum
  * image channel descriptors
  */
 enum {
-	CRed = 0,
-	CGreen,
-	CBlue,
-	CGrey,
-	CAlpha,
-	CMap,
-	CIgnore,
+	CRed = 0,  /* r */
+	CGreen,    /* g */
+	CBlue,     /* b */
+	CGrey,     /* k */
+	CAlpha,    /* a */
+	CMap,      /* m */
+	CIgnore,   /* x */
 	NChan,
 };
 
@@ -134,8 +134,8 @@ enum {
 
 typedef enum
 {
-	SinD		= 1<<3,
-	DinS		= 1<<2,
+	SinD	= 1<<3,
+	DinS	= 1<<2,
 	SoutD	= 1<<1,
 	DoutS	= 1 <<0,
 
@@ -144,7 +144,7 @@ typedef enum
 	SatopD	= SinD|DoutS,
 	SxorD	= SoutD|DoutS,
 
-	D		= DinS|DoutS,
+	D	= DinS|DoutS,
 	DoverS	= DinS|DoutS|SoutD,
 	DatopS	= DinS|SoutD,
 	DxorS	= DoutS|SoutD,
@@ -190,16 +190,16 @@ struct Refreshq
 
 struct Display
 {
-	void*	qlock;
+	void		*qlock;
 	int		locking;	/*program is using lockdisplay */
 	int		dirno;
-	void	*datachan;
-	void	*refchan;
-	void	*ctlchan;
+	void		*datachan;
+	void		*refchan;
+	void		*ctlchan;
 	int		imageid;
 	int		local;
 	int		depth;
-	ulong	chan;
+	ulong		chan;
 	void		(*error)(Display*, char*);
 	char		*devdir;
 	char		*windir;
@@ -228,7 +228,7 @@ struct Image
 	Rectangle	r;		/* rectangle in data area, local coords */
 	Rectangle 	clipr;		/* clipping region */
 	int		depth;		/* number of bits per pixel */
-	ulong	chan;
+	ulong		chan;
 	int		repl;		/* flag: data replicates to tile clipr */
 	Screen		*screen;	/* 0 if not a window */
 	Image		*next;	/* next in list of windows */
@@ -411,7 +411,7 @@ extern int		rectclip(Rectangle*, Rectangle);
 extern int		ptinrect(Point, Rectangle);
 extern void		replclipr(Image*, int, Rectangle);
 extern int		drawreplxy(int, int, int);	/* used to be drawsetxy */
-extern Point	drawrepl(Rectangle, Point);
+extern Point		drawrepl(Rectangle, Point);
 extern int		rgb2cmap(int, int, int);
 extern int		cmap2rgb(int);
 extern int		cmap2rgba(int);
@@ -449,15 +449,15 @@ extern Point	runestringnbg(Image*, Point, Image*, Point, Font*, Rune*, int, Imag
 extern Point	runestringnbgop(Image*, Point, Image*, Point, Font*, Rune*, int, Image*, Point, Drawop);
 extern Point	_string(Image*, Point, Image*, Point, Font*, char*, Rune*, int, Rectangle, Image*, Point, Drawop);
 extern Point	stringsubfont(Image*, Point, Image*, Subfont*, char*);
-extern int		bezier(Image*, Point, Point, Point, Point, int, int, int, Image*, Point);
-extern int		bezierop(Image*, Point, Point, Point, Point, int, int, int, Image*, Point, Drawop);
-extern int		bezspline(Image*, Point*, int, int, int, int, Image*, Point);
-extern int		bezsplineop(Image*, Point*, int, int, int, int, Image*, Point, Drawop);
-extern int		getbezsplinepts(Point*, int, Point**);
-extern int		fillbezier(Image*, Point, Point, Point, Point, int, Image*, Point);
-extern int		fillbezierop(Image*, Point, Point, Point, Point, int, Image*, Point, Drawop);
-extern int		fillbezspline(Image*, Point*, int, int, Image*, Point);
-extern int		fillbezsplineop(Image*, Point*, int, int, Image*, Point, Drawop);
+extern int	bezier(Image*, Point, Point, Point, Point, int, int, int, Image*, Point);
+extern int	bezierop(Image*, Point, Point, Point, Point, int, int, int, Image*, Point, Drawop);
+extern int	bezspline(Image*, Point*, int, int, int, int, Image*, Point);
+extern int	bezsplineop(Image*, Point*, int, int, int, int, Image*, Point, Drawop);
+extern int	getbezsplinepts(Point*, int, Point**);
+extern int	fillbezier(Image*, Point, Point, Point, Point, int, Image*, Point);
+extern int	fillbezierop(Image*, Point, Point, Point, Point, int, Image*, Point, Drawop);
+extern int	fillbezspline(Image*, Point*, int, int, Image*, Point);
+extern int	fillbezsplineop(Image*, Point*, int, int, Image*, Point, Drawop);
 extern void	ellipse(Image*, Point, int, int, int, Image*, Point);
 extern void	ellipseop(Image*, Point, int, int, int, Image*, Point, Drawop);
 extern void	fillellipse(Image*, Point, int, int, Image*, Point);
@@ -498,9 +498,9 @@ extern int	loadchar(Font*, Rune, Cacheinfo*, int, int, char**);
 extern char*	subfontname(char*, char*, int);
 extern Subfont*	_getsubfont(Display*, char*);
 extern Subfont*	getdefont(Display*);
-extern int		lockdisplay(Display*);
+extern int	lockdisplay(Display*);
 extern void	unlockdisplay(Display*);
-extern int		drawlsetrefresh(ulong, int, void*, void*);
+extern int	drawlsetrefresh(ulong, int, void*, void*);
 
 /* Compositing operator utility */
 extern void	_setdrawop(Display*, Drawop);
@@ -508,7 +508,7 @@ extern void	_setdrawop(Display*, Drawop);
 /*
  * Predefined
  */
-extern	uchar	defontdata[];
+extern	uchar		defontdata[];
 extern	int		sizeofdefont;
 extern	Point		ZP;
 extern	Rectangle	ZR;
@@ -537,7 +537,7 @@ extern	int	_compblocksize(Rectangle, int);
 
 /* XXX backwards helps; should go */
 extern	ulong	drawld2chan[];
-extern	void		drawsetdebug(int);
+extern	void	drawsetdebug(int);
 
 /*
  * Inferno interface

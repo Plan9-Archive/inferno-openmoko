@@ -8,7 +8,7 @@
 #define Unknown win_Unknown
 #include	<windows.h>
 #undef Unknown
-#undef	Sleep
+//#undef	Sleep
 #include	"dat.h"
 #include	"fns.h"
 #include	"error.h"
@@ -55,7 +55,7 @@ typedef struct Eia Eia;
 struct Eia {
 	Ref	r;
 	HANDLE      comfh;          //handle to open port
-	int		restore;       //flag to restore prev. states 
+	int		restore;       //flag to restore prev. states
 	DCB		dcb;           //win32 device control block used for restore
 	int		id;            //index to host port name in sysdev
 };
@@ -63,8 +63,8 @@ struct Eia {
 // the same timeouts are used for all ports
 // currently there is no Inferno interface to
 // change the timeouts.
-static COMMTIMEOUTS  timeouts;  
-                   
+static COMMTIMEOUTS  timeouts;
+
 // std win32 serial port names are COM1..COM4
 // however there can be more and they can be
 // named anything. we should be more flexible
@@ -81,7 +81,7 @@ static char* sysdev[] = {
 	"COM8:",
 	NULL
 };
-    
+
 static Eia *eia;
 
 typedef struct OptTable OptTable;
@@ -162,7 +162,7 @@ eiainit(void)
 			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 		if(comfh != INVALID_HANDLE_VALUE) {
-			ports |= 1<<i;   
+			ports |= 1<<i;
 			CloseHandle(comfh);
 			nports++;
 			max = i;
@@ -298,9 +298,9 @@ eiaread(Chan *c, void *buf, long n, vlong offset)
 		// this will give osleave() a chance to detect an
 		// interruption (i.e. killprog)
 		while(cnt==0) {
-  			osenter(); 
+  			osenter();
 			good = ReadFile(eia[port].comfh, buf, n, &cnt, NULL);
-			SleepEx(0,FALSE);  //allow another thread access to port
+			Sleep(0);  //allow another thread access to port
 			osleave();
 			if(!good)
 				oserror();
@@ -335,9 +335,9 @@ eiawrite(Chan *c, void *buf, long n, vlong offset)
 		// allow osleave() to check for an interrupt otherwise try
 		// to send the unsent data.
 		while(n>0) {
-	  		osenter(); 
+	  		osenter();
 			good = WriteFile(eia[port].comfh, data, n, &cnt, NULL);
-			osleave(); 
+			osleave();
 			if(!good)
 				oserror();
 			data += cnt;
@@ -400,7 +400,7 @@ Dev eiadevtab = {
 //
 
 /*
- * open the indicated comm port and then set 
+ * open the indicated comm port and then set
  * the default settings for the port.
  */
 static void
@@ -409,7 +409,7 @@ openport(int port)
 	Eia* p = &eia[port];
 
 	// open the port
-	p->comfh = CreateFile(sysdev[p->id], 
+	p->comfh = CreateFile(sysdev[p->id],
 		GENERIC_READ|GENERIC_WRITE,     //open underlying port for rd/wr
 		0,	                            //comm port can't be shared
 		NULL,	                        //no security attrs
@@ -440,7 +440,7 @@ openport(int port)
 		p->dcb.Parity = NOPARITY;
 		p->dcb.StopBits = ONESTOPBIT;
 		p->dcb.fInX = 0;  //default to xoff
-		p->dcb.fOutX = 0;  
+		p->dcb.fOutX = 0;
 		p->dcb.fAbortOnError = 1; //read/write abort on err
 	}
 
@@ -503,14 +503,14 @@ rdstat(int port, void *buf, long n, ulong offset)
 
 	/* TO DO: mimic native eia driver's first line */
 
-	s = seprint(str, str+sizeof(str), "opens %d ferr %d oerr %d baud %d", 
-		    eia[port].r.ref-1, 
-			frame, 
+	s = seprint(str, str+sizeof(str), "opens %d ferr %d oerr %d baud %d",
+		    eia[port].r.ref-1,
+			frame,
 			overrun,
 		    dcb.BaudRate);
 
 	// add line settings
-	for(i=0; i < L_MAX; i++) 
+	for(i=0; i < L_MAX; i++)
 		if(status[i])
 			s = seprint(s, str+sizeof(str), " %s", lines[i]);
 	seprint(s, str+sizeof(str), "\n");
@@ -542,7 +542,7 @@ wrctl(int port, char *cmd)
 		if(strcmp(f[i], "break") == 0){
 			if(!SetCommBreak(comfh))
 				oserror();
-			SleepEx((DWORD)300, FALSE);
+			Sleep(300);
 			if(!ClearCommBreak(comfh))
 				oserror();
 			continue;
@@ -573,7 +573,7 @@ wrctl(int port, char *cmd)
 			break;
 		case 'F':
 		case 'f':	// flush any untransmitted data
-			if(!PurgeComm(comfh, PURGE_TXCLEAR)) 
+			if(!PurgeComm(comfh, PURGE_TXCLEAR))
 				oserror();
 			break;
 		case 'H':
@@ -590,12 +590,12 @@ wrctl(int port, char *cmd)
 			/* send a break */
 			if(!SetCommBreak(comfh))
 				oserror();
-			SleepEx((DWORD)300, FALSE);
+			Sleep(300);
 			if(!ClearCommBreak(comfh))
 				oserror();
 			break;
 		case 'L':
-		case 'l':	// set bits per byte 
+		case 'l':	// set bits per byte
 			flag = stof(size, f[0]+1);
 			if(flag == BAD)
 				error(Ebadarg);

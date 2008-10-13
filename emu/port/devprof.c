@@ -55,7 +55,7 @@ struct Pmod
 	char*	name;
 	Pmod*	link;
 } *pmods;
-	
+
 #define QSHIFT	4
 #define QID(q)		((ulong)(q).path&0xf)
 #define QPID(pid)	((pid)<<QSHIFT)
@@ -400,7 +400,7 @@ profwrite(Chan *c, void *va, long n, vlong offset)
 					profiler = Psam;
 					if(!samplefn){
 						samplefn = 1;
-						kproc("prof", sampler, 0, 0);
+						kproc("prof", sampler, 0, 0);  /* BUG: check return value */
 					}
 				}
 			}
@@ -539,7 +539,7 @@ limbomodule(void)
 	}
 	return nil;
 }
-	
+
 static Record*
 mlook(Module *m, int limbo, int vm, int scale, int origin)
 {

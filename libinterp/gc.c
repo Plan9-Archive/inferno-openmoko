@@ -21,7 +21,7 @@ struct Ptrhash
 
 	int	nprop;
 	int	gchalt;
-	int	mflag;
+extern	int	mflag;
 	int	mutator = 0;
 	int	gccolor = 3;
 

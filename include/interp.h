@@ -1,3 +1,7 @@
+#if !defined(NORETURN)
+#define NORETURN void
+#endif
+
 typedef uchar		BYTE;		/* 8  bits */
 typedef int		WORD;		/* 32 bits */
 typedef unsigned int	UWORD;		/* 32 bits */
@@ -32,7 +36,7 @@ enum
 	STRUCTALIGN = sizeof(int)	/* must be >=2 because of Strings */
 };
 
-enum
+enum ProgFlags
 {
 	Ppropagate = 1<<0,
 	Pnotifyleader = 1<<1,
@@ -63,8 +67,8 @@ typedef struct Frame	Frame;
 typedef union  Stkext	Stkext;
 typedef struct Atidle	Atidle;
 typedef struct Altc	Altc;
-typedef struct Except Except;
-typedef struct Handler Handler;
+typedef struct Except	Except;
+typedef struct Handler	Handler;
 
 struct Frame
 {
@@ -76,19 +80,22 @@ struct Frame
 
 union Stkext
 {
-	uchar	stack[1];
+	uchar		stack[1];
 	struct {
-		Type*	TR;
-		uchar*	SP;
-		uchar*	TS;
-		uchar*	EX;
+		Type*		TR;
+		uchar*		SP;
+		uchar*		TS;
+		uchar*		EX;
 		union {
-			uchar	fu[1];
-			Frame	fr[1];
+			uchar		fu[1];
+			Frame		fr[1];
 		} tos;
 	} reg;
 };
 
+/**
+ * Limbo's array (TODO: vlist, O(log n) appends)
+ */
 struct Array
 {
 	WORD	len;
@@ -106,36 +113,42 @@ struct List
 
 struct Channel
 {
-	Array*	buf;		/* For buffered channels - must be first */
-	Progq*	send;		/* Queue of progs ready to send */
-	Progq*	recv;		/* Queue of progs ready to receive */
-	void*	aux;		/* Rock for devsrv */
-	void	(*mover)(void);	/* Data mover */
+	Array*		buf;		/* For buffered channels - must be first */
+	Progq*		send;		/* Queue of progs ready to send */
+	Progq*		recv;		/* Queue of progs ready to receive */
+	void*		aux;		/* Rock for devsrv */
+	void		(*mover)(void);	/* Data mover */
 	union {
 		WORD	w;
 		Type*	t;
 	} mid;
-	int	front;	/* Front of buffered queue */
-	int	size;		/* Number of data items in buffered queue */
+	int		front;		/* Front of buffered queue */
+	int		size;		/* Number of data items in buffered queue */
 };
 
+/**
+ * Queue of Progs (lisp-like cons)
+ */
 struct Progq
 {
 	Prog*	prog;
 	Progq*	next;
 };
-	
+
+/**
+ * Limbo's string (TODO: cord, O(log n) appends)
+ */
 struct String
 {
-	int	len;		/* string length */
-	int	max;		/* maximum length in representation */
-	char*	tmp;
+	int		len;		/* string length */
+	int		max;		/* maximum length in representation */
+	char*		tmp;
 	union {
 	#define	Sascii	data.ascii
-	#define Srune	data.runes
+	#define	Srune	data.runes
 		char	ascii[STRUCTALIGN];	/* string.c relies on having extra space (eg, in string2c) */
 		Rune	runes[1];
-	}data;	
+	}data;
 };
 
 union Linkpc
@@ -155,22 +168,22 @@ struct Link
 typedef union	Adr	Adr;
 union Adr
 {
-	WORD	imm;
-	WORD	ind;
-	Inst*	ins;
+	WORD		imm;
+	WORD		ind;
+	Inst*		ins;
 	struct {
-		ushort	f;	/* First indirection */	
-		ushort	s;	/* Second indirection */
+		ushort	f;		/* First indirection */
+		ushort	s;		/* Second indirection */
 	} i;
 };
 
 struct Inst
 {
-	uchar	op;
-	uchar	add;
-	ushort	reg;
-	Adr	s;
-	Adr	d;
+	uchar		op;
+	uchar		add;
+	ushort		reg;
+	Adr		s;
+	Adr		d;
 };
 
 struct Altc
@@ -181,21 +194,21 @@ struct Altc
 
 struct Alt
 {
-	int	nsend;
-	int	nrecv;
-	Altc	ac[1];
+	int		nsend;
+	int		nrecv;
+	Altc		ac[1];
 };
 
 struct Type
 {
-	int	ref;
-	void	(*free)(Heap*, int);
-	void	(*mark)(Type*, void*);
-	int	size;
-	int	np;
-	void*	destroy;
-	void*	initialize;
-	uchar	map[STRUCTALIGN];
+	int		ref;
+	void		(*free)(Heap*, int);
+	void		(*mark)(Type*, void*);
+	int		size;
+	int		np;
+	void*		destroy;
+	void*		initialize;
+	uchar		map[STRUCTALIGN];
 };
 
 struct REG
@@ -217,124 +230,129 @@ struct REG
 	WORD		dt;		/* Destination temporary */
 };
 
+/**
+ * Tree?
+ */
 struct Progs
 {
-	int	id;
-	int	flags;
-	Progs*	parent;
-	Progs*	child;
-	Progs*	sib;
-	Prog*	head;	/* live group leader is at head */
-	Prog*	tail;
+	int		id;
+	int		flags;
+	Progs*		parent;
+	Progs*		child;
+	Progs*		sib;
+	Prog*		head;	/* live group leader is at head */
+	Prog*		tail;
 };
 
+/**
+ * Limbo process
+ */
 struct Prog
 {
 	REG		R;		/* Register set */
 	Prog*		link;		/* Run queue */
-	Channel*		chan;	/* Channel pointer */
+	Channel*	chan;		/* Channel pointer */
 	void*		ptr;		/* Channel data pointer */
 	enum ProgState	state;		/* Scheduler state */
 	char*		kill;		/* Set if prog should error */
 	char*		killstr;	/* kill string buffer when needed */
 	int		pid;		/* unique Prog id */
 	int		quanta;		/* time slice */
-	ulong	ticks;		/* time used */
-	int		flags;		/* error recovery flags */
+	ulong		ticks;		/* time used */ /* TODO: emu never writes the variable */
+	enum ProgFlags	flags;		/* error recovery flags */
 	Prog*		prev;
 	Prog*		next;
-	Prog*	pidlink;	/* next in pid hash chain */
-	Progs*	group;	/* process group */
-	Prog*	grpprev;	/* previous group member */
-	Prog*	grpnext;	/* next group member */
-	void*	exval;	/* current exception */
-	char*	exstr;	/* last exception */
+	Prog*		pidlink;	/* next in pid hash chain */
+	Progs*		group;		/* process group */
+	Prog*		grpprev;	/* previous group member */
+	Prog*		grpnext;	/* next group member */
+	void*		exval;		/* current exception */
+	char*		exstr;		/* last exception */
 	void		(*addrun)(Prog*);
 	void		(*xec)(Prog*);
-
 	void*		osenv;
 };
 
 struct Module
 {
-	int	ref;		/* Use count */
-	int	compiled;	/* Compiled into native assembler */
-	ulong	ss;		/* Stack size */
-	ulong	rt;		/* Runtime flags */
-	ulong	mtime;		/* Modtime of dis file */
+	int		ref;		/* Use count */
+	int		compiled;	/* Compiled into native assembler */
+	ulong		ss;		/* Stack size */
+	ulong		rt;		/* Runtime flags */
+	ulong		mtime;		/* Modtime of dis file */
 	Qid		qid;		/* Qid of dis file */
-	ushort	dtype;		/* type of dis file's server*/
-	uint	dev;	/* subtype of dis file's server */
-	int	nprog;		/* number of instructions */
-	Inst*	prog;		/* text segment */
-	uchar*	origmp;		/* unpolluted Module data */
-	int	ntype;		/* Number of type descriptors */
-	Type**	type;		/* Type descriptors */
-	Inst*	entry;		/* Entry PC */
-	Type*	entryt;		/* Entry frame */
-	char*	name;	/* Implements type */
-	char*	path;		/* File module loaded from */
-	Module*	link;		/* Links */
-	Link*	ext;		/* External dynamic links */
-	Import**	ldt;	/* Internal linkage descriptor tables */
-	Handler*	htab;	/* Exception handler table */
-	ulong*	pctab;	/* dis pc to code pc when compiled */
-	void*	dlm;		/* dynamic C module */
+	ushort		dtype;		/* type of dis file's server*/
+	uint		dev;		/* subtype of dis file's server */
+	int		nprog;		/* number of instructions */
+	Inst*		prog;		/* text segment */
+	uchar*		origmp;		/* unpolluted Module data */
+	int		ntype;		/* Number of type descriptors */
+	Type**		type;		/* Type descriptors */
+	Inst*		entry;		/* Entry PC */
+	Type*		entryt;		/* Entry frame */
+	char*		name;		/* Implements type */
+	char*		path;		/* File module loaded from */
+	Module*		link;		/* Links */
+	Link*		ext;		/* External dynamic links */
+	Import**	ldt;		/* Internal linkage descriptor tables */
+	Handler*	htab;		/* Exception handler table */
+	ulong*		pctab;		/* dis pc to code pc when compiled */
+	void*		dlm;		/* dynamic C module */
 };
 
 struct Modl
 {
-	Linkpc	u;		/* PC of Dynamic link */
-	Type*	frame;		/* Frame type for this entry */
+	Linkpc		u;		/* PC of Dynamic link */
+	Type*		frame;		/* Frame type for this entry */
 };
 
 struct Modlink
 {
-	uchar*	MP;		/* Module data for this instance */
-	Module*	m;		/* The real module */
-	int	compiled;	/* Compiled into native assembler */
-	Inst*	prog;		/* text segment */
-	Type**	type;		/* Type descriptors */
-	uchar*	data;		/* for dynamic C modules */
-	int	nlinks;		/* ?apparently required by Java */
-	Modl	links[1];
+	uchar*		MP;		/* Module data for this instance */
+	Module*		m;		/* The real module */
+	int		compiled;	/* Compiled into native assembler */
+	Inst*		prog;		/* text segment */
+	Type**		type;		/* Type descriptors */
+	uchar*		data;		/* for dynamic C modules */
+	int		nlinks;		/* ?apparently required by Java */
+	Modl		links[1];
 };
 
 /* must be a multiple of 8 bytes */
 struct Heap
 {
-	int	color;		/* Allocation color */
-	ulong	ref;
-	Type*	t;
-	ulong	hprof;	/* heap profiling */
+	int		color;		/* Allocation color */
+	ulong		ref;
+	Type*		t;
+	ulong		hprof;		/* heap profiling */
 };
 
 struct	Atidle
 {
-	int	(*fn)(void*);
-	void*	arg;
-	Atidle*	link;
+	int		(*fn)(void*);
+	void*		arg;
+	Atidle*		link;
 };
 
 struct Import
 {
-	int	sig;
-	char*	name;
+	int		sig;
+	char*		name;
 };
 
 struct Except
 {
-	char*	s;
-	ulong	pc;
+	char*		s;
+	ulong		pc;
 };
 
 struct Handler
 {
-	ulong	pc1;
-	ulong	pc2;
-	ulong	eoff;
-	ulong	ne;
-	Type*	t;
+	ulong		pc1;
+	ulong		pc2;
+	ulong		eoff;
+	ulong		ne;
+	Type*		t;
 	Except*	etab;
 };
 
@@ -358,9 +376,9 @@ extern	Type	Tmodlink;
 extern	Type*	TImage;
 extern	Type	Tptr;
 extern	Type	Tbyte;
-extern	Type Tword;
-extern	Type Tlong;
-extern	Type Treal;
+extern	Type	Tword;
+extern	Type	Tlong;
+extern	Type	Treal;
 extern	REG	R;
 extern	String	snil;
 extern	void	(*optab[256])(void);
@@ -379,7 +397,7 @@ extern	void		addrun(Prog*);
 extern	void		altdone(Alt*, Prog*, Channel*, int);
 extern	void		altgone(Prog*);
 extern	Array*		allocimgarray(Heap*, Heap*);
-extern	Module*	builtinmod(char*, void*, int);
+extern	Module*		builtinmod(char*, void*, int);
 extern	void		cblock(Prog*);
 extern	void		cmovw(void*, void*);
 extern	Channel*	cnewc(Type*, void (*)(void), int);
@@ -406,8 +424,8 @@ extern	int		dynldable(int);
 extern	void		loadermodinit(void);
 extern	Type*		dtype(void (*)(Heap*, int), int, uchar*, int);
 extern	Module*		dupmod(Module*);
-extern	void		error(char*);
-extern	void		errorf(char*, ...);
+extern	NORETURN	error(char*);
+extern	NORETURN	errorf(char*, ...);
 extern	void		extend(void);
 extern	void		freedyncode(Module*);
 extern	void		freedyndata(Modlink*);
@@ -417,12 +435,12 @@ extern	void		freeptrs(void*, Type*);
 extern	void		freestring(Heap*, int);
 extern	void		freetype(Type*);
 extern	void		freetypemodinit(void);
-extern	long	getdbreg();
+extern	long		getdbreg();
 extern	int		gfltconv(Fmt*);
 extern	void		go(Module*);
 extern	int		handler(char*);
-extern	Heap*	heap(Type*);
-extern	Heap*	heaparray(Type*, int);
+extern	Heap*		heap(Type*);
+extern	Heap*		heaparray(Type*, int);
 extern	void		(*heapmonitor)(int, void*, ulong);
 extern	int		heapref(void*);
 extern	Heap*		heapz(Type*);
@@ -440,7 +458,7 @@ extern	Modlink*	linkmod(Module*, Import*, int);
 extern	Modlink*	mklinkmod(Module*, int);
 extern	Module*		load(char*);
 extern	Module*		lookmod(char*);
-extern	long	magic(void);
+extern	long		magic(void);
 extern	void		markarray(Type*, void*);
 extern	void		markchan(Type*, void*);
 extern	void		markheap(Type*, void*);
@@ -454,11 +472,11 @@ extern	WORD		modstatus(REG*, char*, int);
 extern	void		movp(void);
 extern	void		movtmp(void);
 extern	void		movtmpsafe(void);
-extern	int			mustbesigned(char*, uchar*, ulong, Dir*);
+extern	int		mustbesigned(char*, uchar*, ulong, Dir*);
 extern	Module*		newmod(char*);
 extern	Module*		newdyncode(int, char*, Dir*);
 extern	void		newdyndata(Modlink*);
-extern	void	newgrp(Prog*);
+extern	void		newgrp(Prog*);
 extern	void		newmp(void*, void*, Type*);
 extern	Prog*		newprog(Prog*, Modlink*);
 extern	void		newstack(Prog*);
@@ -485,8 +503,8 @@ extern	void		runtime(Module*, Link*, char*, int, void(*)(void*), Type*);
 extern	void		safemem(void*, Type*, void (*)(void*));
 extern	int		segflush(void *, ulong);
 extern	void		isend(void);
-extern	void	setdbreg(uchar*);
-extern	uchar*	setdbloc(uchar*);
+extern	void		setdbreg(uchar*);
+extern	uchar*		setdbloc(uchar*);
 extern	void		seterror(char*, ...);
 extern	void		sethints(String*, int);
 extern	String*		splitc(String**, int);

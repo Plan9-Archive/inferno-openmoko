@@ -477,7 +477,7 @@ qget(Queue *q)
 	unlock(&q->l);
 
 	if(dowakeup)
-		Wakeup(&q->wr);
+		wakeup9(&q->wr);
 
 	return b;
 }
@@ -521,7 +521,7 @@ qdiscard(Queue *q, int len)
 	unlock(&q->l);
 
 	if(dowakeup)
-		Wakeup(&q->wr);
+		wakeup9(&q->wr);
 
 	return sofar;
 }
@@ -589,7 +589,7 @@ qconsume(Queue *q, void *vp, int len)
 	unlock(&q->l);
 
 	if(dowakeup)
-		Wakeup(&q->wr);
+		wakeup9(&q->wr);
 
 	if(tofree != nil)
 		freeblist(tofree);
@@ -645,7 +645,7 @@ qpass(Queue *q, Block *b)
 	unlock(&q->l);
 
 	if(dowakeup)
-		Wakeup(&q->rr);
+		wakeup9(&q->rr);
 
 	return len;
 }
@@ -693,7 +693,7 @@ qpassnolim(Queue *q, Block *b)
 	unlock(&q->l);
 
 	if(dowakeup)
-		Wakeup(&q->rr);
+		wakeup9(&q->rr);
 
 	return len;
 }
@@ -776,7 +776,7 @@ qproduce(Queue *q, void *vp, int len)
 
 
 	if(dowakeup)
-		Wakeup(&q->rr);
+		wakeup9(&q->rr);
 
 	return len;
 }
@@ -901,7 +901,7 @@ qwait(Queue *q)
 
 		q->state |= Qstarve;	/* flag requesting producer to wake me */
 		unlock(&q->l);
-		Sleep(&q->rr, notempty, q);
+		sleep9(&q->rr, notempty, q);
 		lock(&q->l);
 	}
 	return 1;
@@ -1042,7 +1042,7 @@ qwakeup_unlock(Queue *q)
 	if(dowakeup){
 		if(q->kick)
 			q->kick(q->arg);
-		Wakeup(&q->wr);
+		wakeup9(&q->wr);
 	}
 }
 
@@ -1261,7 +1261,7 @@ qbwrite(Queue *q, Block *b)
 		q->kick(q->arg);
 
 	if(dowakeup)
-		Wakeup(&q->rr);
+		wakeup9(&q->rr);
 
 	/*
 	 *  flow control, wait for queue to get below the limit
@@ -1282,7 +1282,7 @@ qbwrite(Queue *q, Block *b)
 		lock(&q->l);
 		q->state |= Qflow;
 		unlock(&q->l);
-		Sleep(&q->wr, qnotfull, q);
+		sleep9(&q->wr, qnotfull, q);
 	}
 
 	qunlock(&q->wlock);
@@ -1378,7 +1378,7 @@ qiwrite(Queue *q, void *vp, int len)
 		if(dowakeup){
 			if(q->kick)
 				q->kick(q->arg);
-			Wakeup(&q->rr);
+			wakeup9(&q->rr);
 		}
 
 		sofar += n;
@@ -1426,8 +1426,8 @@ qclose(Queue *q)
 	freeblist(bfirst);
 
 	/* wake up readers/writers */
-	Wakeup(&q->rr);
-	Wakeup(&q->wr);
+	wakeup9(&q->rr);
+	wakeup9(&q->wr);
 }
 
 /*
@@ -1447,8 +1447,8 @@ qhangup(Queue *q, char *msg)
 	unlock(&q->l);
 
 	/* wake up readers/writers */
-	Wakeup(&q->rr);
-	Wakeup(&q->wr);
+	wakeup9(&q->rr);
+	wakeup9(&q->wr);
 }
 
 /*
@@ -1544,7 +1544,7 @@ qflush(Queue *q)
 	freeblist(bfirst);
 
 	/* wake up readers/writers */
-	Wakeup(&q->wr);
+	wakeup9(&q->wr);
 }
 
 int

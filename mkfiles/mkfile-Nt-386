@@ -31,18 +31,21 @@ CFLAGS=		-c\
 		-nologo\
 		-W3\
  		-Zi\
- 		-GAFy -GS- -Ox -Oi-\
 		-MT\
 		-D_WIN32_WINNT=0x0400\
 		-I$ROOT/Nt/386/include\
 		-I$ROOT/include\
-		$XCFLAGS\
+		$XCFLAGS
+CCOUT=		'-Fo'
+
+# 		-GAFy -GS- -Ox -Oi-\
 
 
 ANSICPP=
 LD=		link.exe
 LDFLAGS=	$LDEBUG -nologo -incremental:no -map -force:multiple -debug
 # LDFLAGS=	-nologo -incremental:no -debug
+LDOUT=		'-out:'
 
 SYSLIBS=	binmode.obj
 

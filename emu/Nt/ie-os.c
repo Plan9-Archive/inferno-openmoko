@@ -566,13 +566,6 @@ oslopri(void)
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
 }
 
-/* Resolve system header name conflict */
-#undef Sleep
-void
-sleep(int secs)
-{
-	Sleep(secs*1000);
-}
 
 void*
 sbrk(int size)
@@ -742,14 +735,14 @@ limbosleep(ulong milsec)
 void
 osyield(void)
 {
-	sleep(0);
+	Sleep(0);
 }
 
 void
 ospause(void)
 {
       for(;;)
-              sleep(1000000);
+              Sleep(1000000);
 }
 
 /*

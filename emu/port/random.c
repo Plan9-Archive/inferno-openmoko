@@ -53,14 +53,14 @@ genrandom(void *v)
 			if(++rb.randomcount > 65535)
 				break;
 		if(rb.filled || !rbnotfull(0))
-			Sleep(&rb.producer, rbnotfull, 0);
+			sleep9(&rb.producer, rbnotfull, 0);
 	}
 }
 
 /*
  *  produce random bits in a circular buffer
  */
-static void
+static NORETURN
 randomclock(void *v)
 {
 	uchar *p;
@@ -69,7 +69,7 @@ randomclock(void *v)
 	for(;; osmillisleep(20)){
 		while(!rbnotfull(0)){
 			rb.filled = 1;
-			Sleep(&rb.clock, rbnotfull, 0);
+			sleep9(&rb.clock, rbnotfull, 0);
 		}
 		if(rb.randomcount == 0)
 			continue;
@@ -89,7 +89,7 @@ randomclock(void *v)
 		rb.wp = p;
 
 		if(rb.wakeme)
-			Wakeup(&rb.consumer);
+			wakeup9(&rb.consumer);
 	}
 }
 
@@ -122,17 +122,17 @@ if(0)print("A%ld.%d.%lux|", n, rb.target, getcallerpc(&xp));
 	qlock(&rb.l);
 	if(!rb.kprocstarted){
 		rb.kprocstarted = 1;
-		kproc("genrand", genrandom, 0, 0);
-		kproc("randomclock", randomclock, 0, 0);
+		kproc("genrand", genrandom, 0, 0);  /* BUG: check return value */
+		kproc("randomclock", randomclock, 0, 0);  /* BUG: check return value */
 	}
 
 	for(e = p + n; p < e; ){
 		r = rb.rp;
 		if(r == rb.wp){
 			rb.wakeme = 1;
-			Wakeup(&rb.clock);
-			Wakeup(&rb.producer);
-			Sleep(&rb.consumer, rbnotempty, 0);
+			wakeup9(&rb.clock);
+			wakeup9(&rb.producer);
+			sleep9(&rb.consumer, rbnotempty, 0);
 			rb.wakeme = 0;
 			continue;
 		}
@@ -159,8 +159,8 @@ if(0)print("A%ld.%d.%lux|", n, rb.target, getcallerpc(&xp));
 	qunlock(&rb.l);
 	poperror();
 
-	Wakeup(&rb.clock);
-	Wakeup(&rb.producer);
+	wakeup9(&rb.clock);
+	wakeup9(&rb.producer);
 
 if(0)print("B");
 	return n;

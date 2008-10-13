@@ -2010,7 +2010,7 @@ Screen_newwindow(void *fp)
 
 	if(!nonemptyrect(&r))
 	{
-		o("Screen.newwindow(Rect(%d %d %d %d))\n", r.min.x, r.min.y, r.max.x, r.max.y);
+		print("Screen.newwindow(Rect(%d %d %d %d))\n", r.min.x, r.min.y, r.max.x, r.max.y);
 		return; //error("null rect");
 	}
 

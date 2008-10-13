@@ -1103,7 +1103,7 @@ drawread(Chan *c, void *a, long n, vlong off)
 				qlock(&sdraw.q);	/* restore lock for waserror() above */
 				nexterror();
 			}
-			Sleep(&cl->refrend, drawrefactive, cl);
+			sleep9(&cl->refrend, drawrefactive, cl);
 			poperror();
 			qlock(&sdraw.q);
 		}
@@ -1137,7 +1137,7 @@ drawwakeall(void)
 	for(i=0; i<sdraw.nclient; i++){
 		cl = sdraw.client[i];
 		if(cl && (cl->refreshme || cl->refresh))
-			Wakeup(&cl->refrend);
+			wakeup9(&cl->refrend);
 	}
 }
 

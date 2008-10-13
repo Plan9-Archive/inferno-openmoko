@@ -6,6 +6,9 @@
 
 #define T(r)	*((void**)(R.r))
 
+/*
+ * Alloc stack of Limbo process' frames
+ */
 void
 newstack(Prog *p)
 {
@@ -45,6 +48,9 @@ newstack(Prog *p)
 	f->t = nil;
 }
 
+/*
+ * Extend stack of Limbo process' frames
+ */
 void
 extend(void)
 {

@@ -1,7 +1,7 @@
 #define Unknown win_Unknown
 #define UNICODE
 #include	<windows.h>
-#include <winbase.h>
+#include	<Lmcons.h>
 #include	<winsock.h>
 #undef Unknown
 #include	"dat.h"
@@ -37,8 +37,8 @@ __declspec(thread)       Proc    *up;
 HANDLE	ntfd2h(int);
 int	nth2fd(HANDLE);
 void	termrestore(void);
-char *hosttype = "Nt";
-char *cputype = "386";
+char*	hosttype = "Nt";
+char*	cputype = "386";
 
 static void
 pfree(Proc *p)
@@ -97,9 +97,8 @@ DWORD WINAPI
 tramp(LPVOID p)
 {
 #if(_WIN32_WINNT >= 0x0400)
-// i commended it to allow process crash on exception and to allow debugger be attached to the crashed process
-// sometimes it happens
-//	SetUnhandledExceptionFilter(&TrapHandler); /* Win2000+, does not work on NT4 */
+	if(sflag == 0)
+		SetUnhandledExceptionFilter(&TrapHandler); /* Win2000+, does not work on NT4 and Win95 */
 #endif
 	up = p;
 	up->func(up->arg);
@@ -111,7 +110,7 @@ tramp(LPVOID p)
 }
 
 int
-kproc(char *name, void (*func)(void*), void *arg, int flags)
+kproc(char *name, void (*func)(void*), void *arg, enum KProcFlags flags)
 {
 	DWORD h;
 	Proc *p;
@@ -167,6 +166,7 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 	unlock(&procs.l);
 
 	p->pid = (int)CreateThread(0, 16384, tramp, p, 0, &h);
+	print("kproc(%s) p->pid=%x\n", name, p->pid);
 	if(p->pid == 0){
 		pfree(p);
 		print("ran out of  kernel processes\n");
@@ -194,7 +194,7 @@ oshostintr(Proc *p)
 #endif
 }
 
-void
+NORETURN
 oslongjmp(void *regs, osjmpbuf env, int val)
 {
 	USED(regs);
@@ -222,7 +222,7 @@ readkbd(void)
 	return buf[0];
 }
 
-void
+NORETURN
 cleanexit(int x)
 {
 	termrestore();
@@ -353,14 +353,14 @@ osreboot(char *file, char **argv)
 	}
 }
 
-void
+NORETURN
 libinit(char *imod)
 {
 	WSADATA wasdat;
 	DWORD lasterror, namelen;
 	OSVERSIONINFO os;
 	char sys[64], uname[64];
-	wchar_t wuname[64];
+	WCHAR wuname[UNLEN + 1];
 	char *uns;
 
 	os.dwOSVersionInfoSize = sizeof(os);
@@ -389,13 +389,13 @@ libinit(char *imod)
 	if(path == nil)
 		path = ".";
 
-	up = newproc();
+	up = newproc(); /* create Proc for main thread */
 	if(up == nil)
 		panic("cannot create kernel process");
 
 	strcpy(uname, "inferno");
 	namelen = sizeof(wuname);
-	if(GetUserName(wuname, &namelen) != TRUE) {
+	if(GetUserNameW(wuname, &namelen) != TRUE) {
 		lasterror = GetLastError();
 		if(PlatformId == VER_PLATFORM_WIN32_NT || lasterror != ERROR_NOT_LOGGED_ON)
 			print("cannot GetUserName: %d\n", lasterror);
@@ -507,13 +507,6 @@ oslopri(void)
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
 }
 
-/* Resolve system header name conflict */
-#undef Sleep
-void
-sleep(int secs)
-{
-	Sleep(secs*1000);
-}
 
 void* mem_reserve(ulong size)
 {
@@ -638,18 +631,18 @@ osnsec(void)
 int
 osmillisleep(ulong milsec)
 {
-	SleepEx(milsec, FALSE);
+	Sleep(milsec);
 	return 0;
 }
 
 int
 limbosleep(ulong milsec)
 {
-	if (sleepers > MAXSLEEPERS)
+	if (sleepers > MAXSLEEPERS) /* BUG WTF MAXSLEEPERS? */
 		return -1;
 	sleepers++;
 	up->syscall = SYS_SLEEP;
-	SleepEx(milsec, TRUE);
+	SleepEx(milsec, TRUE); /* TODO: alertable? */
 	up->syscall = 0;
 	sleepers--;
 	return 0;
@@ -658,59 +651,14 @@ limbosleep(ulong milsec)
 void
 osyield(void)
 {
-	sleep(0);
+	Sleep(0);
 }
 
-void
+NORETURN
 ospause(void)
 {
       for(;;)
-              sleep(1000000);
-}
-
-/*
- * these should never be called, and are included
- * as stubs since we are linking against a library which defines them
- */
-int
-open(const char *path, int how, ...)
-{
-	panic("open");
-	return -1;
-}
-
-int
-creat(const char *path, int how)
-{
-	panic("creat");
-	return -1;
-}
-
-int
-stat(const char *path, struct stat *sp)
-{
-	panic("stat");
-	return -1;
-}
-
-int
-chown(const char *path, int uid, int gid)
-{
-	panic("chown");
-	return -1;
-}
-
-int
-chmod(const char *path, int mode)
-{
-	panic("chmod");
-	return -1;
-}
-
-void
-link(char *path, char *next)
-{
-	panic("link");
+              Sleep(1000000);
 }
 
 int

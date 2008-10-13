@@ -471,7 +471,7 @@ cmdwrite(Chan *ch, void *a, long n, vlong offset)
 					error(Einuse);
 			if(cb->nf < 1)
 				error(Etoosmall);
-			kproc("cmdproc", cmdproc, c, 0);	/* cmdproc held back until unlock below */
+			kproc("cmdproc", cmdproc, c, 0);  /* BUG: check return value */	/* cmdproc held back until unlock below */
 			free(c->cmd);
 			c->cmd = cb;	/* don't free cb */
 			c->state = "Execute";
@@ -479,7 +479,7 @@ cmdwrite(Chan *ch, void *a, long n, vlong offset)
 			qunlock(&c->l);
 			while(waserror())
 				;
-			Sleep(&c->startr, cmdstarted, c);
+			sleep9(&c->startr, cmdstarted, c);
 			poperror();
 			if(c->error)
 				error(c->error);
@@ -625,7 +625,7 @@ cmdproc(void *a)
 		kstrdup(&c->error, up->env->errstr);
 		c->state = "Done";
 		qunlock(&c->l);
-		Wakeup(&c->startr);
+		wakeup9(&c->startr);
 		pexit("cmdproc", 0);
 	}
 	t = oscmd(c->cmd->f+1, c->nice, c->dir, c->fd);
@@ -634,7 +634,7 @@ cmdproc(void *a)
 	c->child = t;	/* to allow oscmdkill */
 	poperror();
 	qunlock(&c->l);
-	Wakeup(&c->startr);
+	wakeup9(&c->startr);
 	if(Debug)
 		print("started\n");
 	while(waserror())

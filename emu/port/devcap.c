@@ -148,7 +148,7 @@ capwritehash(uchar *a, int l)
 	allcaps.caps = c;
 	if(!allcaps.kpstarted){
 		allcaps.kpstarted = 1;
-		kproc("capwatch", capwatch, 0, 0);
+		kproc("capwatch", capwatch, 0, 0); /* BUG: check return value */
 	}
 	qunlock(&allcaps.l);
 	return 0;
@@ -197,7 +197,7 @@ capwriteuse(uchar *a, int len)
 	return -1;
 }
 
-static long	 
+static long
 capwrite(Chan* c, void* buf, long n, vlong offset)
 {
 	USED(offset);

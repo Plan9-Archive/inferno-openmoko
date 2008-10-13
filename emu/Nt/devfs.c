@@ -3,7 +3,6 @@
 #include	<windows.h>
 #include	<winbase.h>
 #undef Unknown
-#undef	Sleep
 #include	"dat.h"
 #include	"fns.h"
 #include	"error.h"
@@ -343,7 +342,7 @@ fsinit(void)
 			panic("illegal root path");
 	}
 	n = GetFullPathName(wpath, MAXROOT, wrootdir, &last);
-	free(wpath);	
+	free(wpath);
 	runestoutf(rootdir, wrootdir, MAXROOT);
 	if(n >= MAXROOT || n == 0)
 		panic("illegal root path");
@@ -1056,7 +1055,7 @@ fswstat(Chan *c, uchar *buf, int n)
 		} else if(!file_share_delete && c->flag & COPEN) {
 			int	aflag;
 			SECURITY_ATTRIBUTES sa;
-			
+
 			/* The move succeeded, so open new file to maintain handle */
 			sa.nLength = sizeof(sa);
 			sa.lpSecurityDescriptor = sd;
@@ -1469,7 +1468,7 @@ fsdirset(char *edir, int n, WIN32_FIND_DATA *data, char *path, Chan *c, int isdi
 
 	if(isdir && sizeD2M(&dir) > n)
 		n = -1;
-	else 
+	else
 		n = convD2M(&dir, edir, n);
 	if(dir.uid != neveryone)
 		free(dir.uid);

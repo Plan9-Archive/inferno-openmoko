@@ -192,7 +192,7 @@ _memmonitor(int pool, ulong pc, ulong base, ulong size)
 		poolevents.lost++;
 	if(poolevents.want){
 		poolevents.want = 0;
-		Wakeup(&poolevents.r);
+		wakeup9(&poolevents.r);
 	}
 	unlock(&poolevents.l);
 }
@@ -389,7 +389,7 @@ memread(Chan *c, void *va, long count, vlong offset)
 	case Qevent:
 		while(!ismemdata(nil)){
 			poolevents.want = 1;
-			Sleep(&poolevents.r, ismemdata, nil);
+			sleep9(&poolevents.r, ismemdata, nil);
 		}
 		m = va;
 		do{

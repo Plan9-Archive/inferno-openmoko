@@ -805,7 +805,7 @@ mountio(Mnt *m, Mntrpc *r)
 		if(m->rip == 0)
 			break;
 		unlock(&m->l);
-		Sleep(&r->r, rpcattn, r);
+		sleep9(&r->r, rpcattn, r);
 		if(r->done){
 			poperror();
 			mntflushfree(m, r);
@@ -923,7 +923,7 @@ mntgate(Mnt *m)
 	m->rip = 0;
 	for(q = m->queue; q; q = q->list) {
 		if(q->done == 0)
-		if(Wakeup(&q->r))
+		if(wakeup9(&q->r))
 			break;
 	}
 	unlock(&m->l);
@@ -956,7 +956,7 @@ mountmux(Mnt *m, Mntrpc *r)
 					m->c, q->stime,
 					q->reqlen + r->replen);
 			if(q != r)
-				Wakeup(&q->r);
+				wakeup9(&q->r);
 			return;
 		}
 		l = &q->list;
