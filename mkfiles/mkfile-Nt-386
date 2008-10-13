@@ -30,6 +30,7 @@ CC=		cl.exe
 CFLAGS=		-c\
 		-nologo\
 		-W3\
+		-FC\
  		-Zi\
 		-MT\
 		-D_WIN32_WINNT=0x0400\
