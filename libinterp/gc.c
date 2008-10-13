@@ -21,7 +21,7 @@ struct Ptrhash
 
 	int	nprop;
 	int	gchalt;
-extern	int	mflag;
+/*extern	int	mflag;*/
 	int	mutator = 0;
 	int	gccolor = 3;
 
@@ -275,7 +275,7 @@ okbhdr(Bhdr *b)
 	}
 	return 0;
 }
-
+/*
 static void
 domflag(Heap *h)
 {
@@ -294,7 +294,7 @@ domflag(Heap *h)
 	print("\n");
 	if(mflag > 1)
 		abort();
-}
+}*/
 
 void
 rungc(Prog *p)
@@ -339,8 +339,8 @@ rungc(Prog *p)
 			else
 			if(h->color == sweeper) {
 				gce++;
-				if(0 && mflag)
-					domflag(h);
+				/*if(0 && mflag)
+					domflag(h);*/
 				if(heapmonitor != nil)
 					heapmonitor(2, h, 0);
 				if(t != nil) {
