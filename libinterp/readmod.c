@@ -5,7 +5,7 @@
 #include "dynld.h"
 
 Module*
-readmod(char *path, Module *m, int sync)
+readmod(const char *path, Module *m /*=lookmod(path)*/, int sync)
 {
 	Dir *d;
 	int fd, n, dynld;
@@ -35,13 +35,14 @@ readmod(char *path, Module *m, int sync)
 	if((d = kdirfstat(fd)) == nil)
 		goto done;
 
+	/* module exists and is not need to be reloaded */
 	if(m != nil) {
 		if(d->dev == m->dev && d->type == m->dtype &&
-		   d->mtime == m->mtime &&
+		d->mtime == m->mtime &&
 		   d->qid.type == m->qid.type && d->qid.path == m->qid.path && d->qid.vers == m->qid.vers) {
-			ans = m;
-			goto done;
-		}
+		ans = m;
+		goto done;
+	}
 	}
 
 	if(d->length < 0 || d->length >= 8*1024*1024){

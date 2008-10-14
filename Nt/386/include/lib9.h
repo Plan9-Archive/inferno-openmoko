@@ -14,6 +14,7 @@
 
 #define	getwd	infgetwd
 
+#define STACK 0
 #ifndef EMU
 typedef struct Proc Proc;
 #endif
@@ -38,6 +39,8 @@ typedef struct Proc Proc;
  */
 #pragma warning( disable : 4305 4244 4102 4761 4018 4245 4244 4068 4090 4554 4146 4996)
 
+#define NORETURN __declspec(noreturn) void
+
 #define	nil		((void*)0)
 
 typedef unsigned char	uchar;
@@ -46,8 +49,8 @@ typedef unsigned long	ulong;
 typedef signed char	schar;
 typedef unsigned short	ushort;
 typedef unsigned short	Rune;
-typedef __int64		vlong;
-typedef unsigned __int64		uvlong;
+typedef long long	vlong;
+typedef unsigned long long	uvlong;
 typedef unsigned int u32int;
 typedef unsigned int	mpdigit;	/* for /sys/include/mp.h */
 typedef unsigned short u16int;
@@ -265,25 +268,25 @@ extern	vlong	osnsec(void);
 /*
  * one-of-a-kind
  */
-extern	void	_assert(char*, ...);
-extern	double	charstod(int(*)(void*), void*);
-extern	char*	cleanname(char*);
-extern	ulong	getcallerpc(void*);
-extern	int	getfields(char*, char**, int, int, char*);
-extern	char*	getuser(void);
-extern	char*	getuser(void);
-extern	char*	getwd(char*, int);
-extern	char*	getwd(char*, int);
-extern	double	ipow10(int);
-extern	double	pow10(int);
-extern	void	sysfatal(char*, ...);
-extern	int	dec64(uchar*, int, char*, int);
-extern	int	enc64(char*, int, uchar*, int);
-extern	int	dec32(uchar*, int, char*, int);
-extern	int	enc32(char*, int, uchar*, int);
-extern	int	dec16(uchar*, int, char*, int);
-extern	int	enc16(char*, int, uchar*, int);
-extern	int	encodefmt(Fmt*);
+extern	NORETURN	_assert(char*, ...);
+extern	double		charstod(int(*)(void*), void*);
+extern	char*		cleanname(char*);
+extern	ulong		getcallerpc(void*);
+extern	int		getfields(char*, char**, int, int, char*);
+extern	char*		getuser(void);
+extern	char*		getuser(void);
+extern	char*		getwd(char*, int);
+extern	char*		getwd(char*, int);
+extern	double		ipow10(int);
+extern	double		pow10(int);
+extern	NORETURN	sysfatal(char*, ...);
+extern	int		dec64(uchar*, int, char*, int);
+extern	int		enc64(char*, int, uchar*, int);
+extern	int		dec32(uchar*, int, char*, int);
+extern	int		enc32(char*, int, uchar*, int);
+extern	int		dec16(uchar*, int, char*, int);
+extern	int		enc16(char*, int, uchar*, int);
+extern	int		encodefmt(Fmt*);
 
 /*
  *  synchronization
@@ -478,11 +481,9 @@ struct FPU
 	uchar	env[28];
 };
 
-extern	void		sleep(int);
 
 /* Set up private thread space */
 extern	__declspec(thread) Proc*	up;
-#define Sleep	NTsleep
 
 typedef jmp_buf osjmpbuf;
 #define	ossetjmp(buf)	setjmp(buf)

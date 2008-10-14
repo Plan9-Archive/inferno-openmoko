@@ -141,7 +141,7 @@ markheap(Type *t, void *vw)
 }
 
 /*
- * This routine should be modified to be incremental, but how?
+ * TODO This routine should be modified to be incremental, but how?
  */
 void
 markarray(Type *t, void *vw)
@@ -220,7 +220,8 @@ rootset(Prog *root)
 			h = D2H(mp);
 			Setmark(h);
 		}
-
+/* TODO */
+#if STACK
 		sp = root->R.SP;
 		ex = root->R.EX;
 		while(ex != nil) {
@@ -247,7 +248,9 @@ rootset(Prog *root)
 			ex = sx->reg.EX;
 			sp = sx->reg.SP;
 		}
-
+#else
+	print("rootset\n");
+#endif
 		root = root->next;
 	}
 
@@ -299,9 +302,13 @@ domflag(Heap *h)
 void
 rungc(Prog *p)
 {
+print("rungc\n");
+/*
 	Type *t;
 	Heap *h;
 	Bhdr *b;
+
+	return;
 
 	gcnruns++;
 	if(gchalt) {
@@ -316,7 +323,7 @@ rungc(Prog *p)
 		limit = B2LIMIT(b);
 	}
 
-	/* Chain broken ? */
+	//* Chain broken ? *
 	if(!okbhdr(ptr)) {
 		base = nil;
 		gcbroken++;
@@ -339,8 +346,8 @@ rungc(Prog *p)
 			else
 			if(h->color == sweeper) {
 				gce++;
-				/*if(0 && mflag)
-					domflag(h);*/
+				//*if(0 && mflag)
+				//	domflag(h);*
 				if(heapmonitor != nil)
 					heapmonitor(2, h, 0);
 				if(t != nil) {
@@ -369,9 +376,9 @@ rungc(Prog *p)
 	if(quanta > MaxQuanta)
 		quanta = MaxQuanta;
 
-	if(base != nil)		/* Completed this iteration ? */
+	if(base != nil)		/* Completed this iteration ? *
 		return;
-	if(nprop == 0) {	/* Completed the epoch ? */
+	if(nprop == 0) {	/* Completed the epoch ? *
 		gcepochs++;
 		gccolor++;
 		rootset(p);
@@ -380,4 +387,5 @@ rungc(Prog *p)
 		return;
 	}
 	nprop = 0;
+*/
 }

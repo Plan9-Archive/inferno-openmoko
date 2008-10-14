@@ -522,18 +522,16 @@ newmodule(Module *m, int vm, int scale, int origin)
 Module*
 limbomodule(void)
 {
-	Frame *f;
-	uchar *fp;
+	const Frame *f;
 	Module *m;
 
 	m = R.M->m;
 	if(LIMBO(m))
 		return m;
-	for(fp = R.FP ; fp != nil; fp = f->fp){
-		f = (Frame*)fp;
-		if(f->mr != nil){
+	for (f = R.FP; f != nil; f = f->fp) {
+		if (f->mr != nil) {
 			m = f->mr->m;
-			if(LIMBO(m))
+			if (LIMBO(m))
 				return m;
 		}
 	}
@@ -624,9 +622,13 @@ cpxec(Prog *p)
 		error(m);
 	}
 
-	if(R.M->compiled)
+	if(R.M->compiled) {
+		/* BUG */
+#if STACK
 		comvec();
-	else{
+#endif
+	} else
+	{
 		m = R.M->m;
 		r = profiler == Pcov ? mlook(m, 0, 1, 1, 0) : nil;
 		do{

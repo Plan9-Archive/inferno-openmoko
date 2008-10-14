@@ -4,17 +4,13 @@
 #include "raise.h"
 #include "pool.h"
 
-#ifndef CHECK_STACK_ALIGN
-#define CHECK_STACK_ALIGN()
-#endif
+/*#define DEBUGVM*/
 
-//#define DEBUGVM
+REG	R = {0};			/* Virtual Machine registers */
+String	snil = {0};			/* String known to be zero length */
 
-REG	R;			/* Virtual Machine registers */
-String	snil;			/* String known to be zero length */
-
-#define Stmp	*((WORD*)(R.FP+NREG*IBY2WD))
-#define Dtmp	*((WORD*)(R.FP+(NREG+2)*IBY2WD))
+#define Stmp	*((WORD*)(((uchar*)R.FP)+NREG*IBY2WD))
+#define Dtmp	*((WORD*)(((uchar*)R.FP)+(NREG+2)*IBY2WD))
 
 #define OP(fn)	void fn(void)
 #define B(r)	(*((BYTE*)(R.r)))
@@ -29,102 +25,102 @@ String	snil;			/* String known to be zero length */
 #define	L(r)	(*((List**)(R.r)))
 #define P(r)	(*((WORD**)(R.r)))
 #define C(r)	(*((Channel**)(R.r)))
+#define FR(r)	(*((Frame**)(R.r)))
 #define T(r)	(*((void**)(R.r)))
 #define JMP(r)	R.PC = *(Inst**)(R.r)
 #define SH(r)	(*((SHORT*)(R.r)))
 #define SR(r)	(*((SREAL*)(R.r)))
 
-OP(runt) { CHECK_STACK_ALIGN(); }
-OP(negf) { CHECK_STACK_ALIGN(); F(d) = -F(s); }
-OP(jmp)  { CHECK_STACK_ALIGN(); JMP(d); }
-OP(movpc){ CHECK_STACK_ALIGN(); T(d) = &R.M->prog[W(s)]; }
-OP(movm) { CHECK_STACK_ALIGN(); memmove(R.d, R.s, W(m)); }
-OP(lea)  { CHECK_STACK_ALIGN(); W(d) = (WORD)R.s; }
-OP(movb) { CHECK_STACK_ALIGN(); B(d) = B(s); }
-OP(movw) { CHECK_STACK_ALIGN(); W(d) = W(s); }
-OP(movf) { CHECK_STACK_ALIGN(); F(d) = F(s); }
-OP(movl) { CHECK_STACK_ALIGN(); V(d) = V(s); }
-OP(cvtbw){ CHECK_STACK_ALIGN(); W(d) = B(s); }
-OP(cvtwb){ CHECK_STACK_ALIGN(); B(d) = W(s); }
-OP(cvtrf){ CHECK_STACK_ALIGN(); F(d) = SR(s); }
-OP(cvtfr){ CHECK_STACK_ALIGN(); SR(d) = F(s); }
-OP(cvtws){ CHECK_STACK_ALIGN(); SH(d) = W(s); }
-OP(cvtsw){ CHECK_STACK_ALIGN(); W(d) = SH(s); }
-OP(cvtwf){ CHECK_STACK_ALIGN(); F(d) = W(s); }
-OP(addb) { CHECK_STACK_ALIGN(); B(d) = B(m) + B(s); }
-OP(addw) { CHECK_STACK_ALIGN(); W(d) = W(m) + W(s); }
-OP(addl) { CHECK_STACK_ALIGN(); V(d) = V(m) + V(s); }
-OP(addf) { CHECK_STACK_ALIGN(); F(d) = F(m) + F(s); }
-OP(subb) { CHECK_STACK_ALIGN(); B(d) = B(m) - B(s); }
-OP(subw) { CHECK_STACK_ALIGN(); W(d) = W(m) - W(s); }
-OP(subl) { CHECK_STACK_ALIGN(); V(d) = V(m) - V(s); }
-OP(subf) { CHECK_STACK_ALIGN(); F(d) = F(m) - F(s); }
-OP(divb) { CHECK_STACK_ALIGN(); B(d) = B(m) / B(s); }
-OP(divw) { CHECK_STACK_ALIGN(); W(d) = W(m) / W(s); }
-OP(divl) { CHECK_STACK_ALIGN(); V(d) = V(m) / V(s); }
-OP(divf) { CHECK_STACK_ALIGN(); F(d) = F(m) / F(s); }
-OP(modb) { CHECK_STACK_ALIGN(); B(d) = B(m) % B(s); }
-OP(modw) { CHECK_STACK_ALIGN(); W(d) = W(m) % W(s); }
-OP(modl) { CHECK_STACK_ALIGN(); V(d) = V(m) % V(s); }
-OP(mulb) { CHECK_STACK_ALIGN(); B(d) = B(m) * B(s); }
-OP(mulw) { CHECK_STACK_ALIGN(); W(d) = W(m) * W(s); }
-OP(mull) { CHECK_STACK_ALIGN(); V(d) = V(m) * V(s); }
-OP(mulf) { CHECK_STACK_ALIGN(); F(d) = F(m) * F(s); }
-OP(andb) { CHECK_STACK_ALIGN(); B(d) = B(m) & B(s); }
-OP(andw) { CHECK_STACK_ALIGN(); W(d) = W(m) & W(s); }
-OP(andl) { CHECK_STACK_ALIGN(); V(d) = V(m) & V(s); }
-OP(xorb) { CHECK_STACK_ALIGN(); B(d) = B(m) ^ B(s); }
-OP(xorw) { CHECK_STACK_ALIGN(); W(d) = W(m) ^ W(s); }
-OP(xorl) { CHECK_STACK_ALIGN(); V(d) = V(m) ^ V(s); }
-OP(orb)  { CHECK_STACK_ALIGN(); B(d) = B(m) | B(s); }
-OP(orw)  { CHECK_STACK_ALIGN(); W(d) = W(m) | W(s); }
-OP(orl)  { CHECK_STACK_ALIGN(); V(d) = V(m) | V(s); }
-OP(shlb) { CHECK_STACK_ALIGN(); B(d) = B(m) << W(s); }
-OP(shlw) { CHECK_STACK_ALIGN(); W(d) = W(m) << W(s); }
-OP(shll) { CHECK_STACK_ALIGN(); V(d) = V(m) << W(s); }
-OP(shrb) { CHECK_STACK_ALIGN(); B(d) = B(m) >> W(s); }
-OP(shrw) { CHECK_STACK_ALIGN(); W(d) = W(m) >> W(s); }
-OP(shrl) { CHECK_STACK_ALIGN(); V(d) = V(m) >> W(s); }
-OP(lsrw) { CHECK_STACK_ALIGN(); W(d) = UW(m) >> W(s); }
-OP(lsrl) { CHECK_STACK_ALIGN(); V(d) = UV(m) >> W(s); }
-OP(beqb) { CHECK_STACK_ALIGN(); if(B(s) == B(m)) JMP(d); }
-OP(bneb) { CHECK_STACK_ALIGN(); if(B(s) != B(m)) JMP(d); }
-OP(bltb) { CHECK_STACK_ALIGN(); if(B(s) <  B(m)) JMP(d); }
-OP(bleb) { CHECK_STACK_ALIGN(); if(B(s) <= B(m)) JMP(d); }
-OP(bgtb) { CHECK_STACK_ALIGN(); if(B(s) >  B(m)) JMP(d); }
-OP(bgeb) { CHECK_STACK_ALIGN(); if(B(s) >= B(m)) JMP(d); }
-OP(beqw) { CHECK_STACK_ALIGN(); if(W(s) == W(m)) JMP(d); }
-OP(bnew) { CHECK_STACK_ALIGN(); if(W(s) != W(m)) JMP(d); }
-OP(bltw) { CHECK_STACK_ALIGN(); if(W(s) <  W(m)) JMP(d); }
-OP(blew) { CHECK_STACK_ALIGN(); if(W(s) <= W(m)) JMP(d); }
-OP(bgtw) { CHECK_STACK_ALIGN(); if(W(s) >  W(m)) JMP(d); }
-OP(bgew) { CHECK_STACK_ALIGN(); if(W(s) >= W(m)) JMP(d); }
-OP(beql) { CHECK_STACK_ALIGN(); if(V(s) == V(m)) JMP(d); }
-OP(bnel) { CHECK_STACK_ALIGN(); if(V(s) != V(m)) JMP(d); }
-OP(bltl) { CHECK_STACK_ALIGN(); if(V(s) <  V(m)) JMP(d); }
-OP(blel) { CHECK_STACK_ALIGN(); if(V(s) <= V(m)) JMP(d); }
-OP(bgtl) { CHECK_STACK_ALIGN(); if(V(s) >  V(m)) JMP(d); }
-OP(bgel) { CHECK_STACK_ALIGN(); if(V(s) >= V(m)) JMP(d); }
-OP(beqf) { CHECK_STACK_ALIGN(); if(F(s) == F(m)) JMP(d); }
-OP(bnef) { CHECK_STACK_ALIGN(); if(F(s) != F(m)) JMP(d); }
-OP(bltf) { CHECK_STACK_ALIGN(); if(F(s) <  F(m)) JMP(d); }
-OP(blef) { CHECK_STACK_ALIGN(); if(F(s) <= F(m)) JMP(d); }
-OP(bgtf) { CHECK_STACK_ALIGN(); if(F(s) >  F(m)) JMP(d); }
-OP(bgef) { CHECK_STACK_ALIGN(); if(F(s) >= F(m)) JMP(d); }
-OP(beqc) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) == 0) JMP(d); }
-OP(bnec) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) != 0) JMP(d); }
-OP(bltc) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) <  0) JMP(d); }
-OP(blec) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) <= 0) JMP(d); }
-OP(bgtc) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) >  0) JMP(d); }
-OP(bgec) { CHECK_STACK_ALIGN(); if(stringcmp(S(s), S(m)) >= 0) JMP(d); }
-OP(iexit){ CHECK_STACK_ALIGN(); error(""); }
-OP(cvtwl){ CHECK_STACK_ALIGN(); V(d) = W(s); }
-OP(cvtlw){ CHECK_STACK_ALIGN(); W(d) = V(s); }
-OP(cvtlf){ CHECK_STACK_ALIGN(); F(d) = V(s); }
+OP(runt) { }
+OP(negf) { F(d) = -F(s); }
+OP(jmp)  { JMP(d); }
+OP(movpc){ T(d) = &R.M->prog[W(s)]; }
+OP(movm) { memmove(R.d, R.s, W(m)); }
+OP(lea)  { W(d) = (WORD)R.s; }
+OP(movb) { B(d) = B(s); }
+OP(movw) { W(d) = W(s); }
+OP(movf) { F(d) = F(s); }
+OP(movl) { V(d) = V(s); }
+OP(cvtbw){ W(d) = B(s); }
+OP(cvtwb){ B(d) = W(s); }
+OP(cvtrf){ F(d) = SR(s); }
+OP(cvtfr){ SR(d) = F(s); }
+OP(cvtws){ SH(d) = W(s); }
+OP(cvtsw){ W(d) = SH(s); }
+OP(cvtwf){ F(d) = W(s); }
+OP(addb) { B(d) = B(m) + B(s); }
+OP(addw) { W(d) = W(m) + W(s); }
+OP(addl) { V(d) = V(m) + V(s); }
+OP(addf) { F(d) = F(m) + F(s); }
+OP(subb) { B(d) = B(m) - B(s); }
+OP(subw) { W(d) = W(m) - W(s); }
+OP(subl) { V(d) = V(m) - V(s); }
+OP(subf) { F(d) = F(m) - F(s); }
+OP(divb) { B(d) = B(m) / B(s); }
+OP(divw) { W(d) = W(m) / W(s); }
+OP(divl) { V(d) = V(m) / V(s); }
+OP(divf) { F(d) = F(m) / F(s); }
+OP(modb) { B(d) = B(m) % B(s); }
+OP(modw) { W(d) = W(m) % W(s); }
+OP(modl) { V(d) = V(m) % V(s); }
+OP(mulb) { B(d) = B(m) * B(s); }
+OP(mulw) { W(d) = W(m) * W(s); }
+OP(mull) { V(d) = V(m) * V(s); }
+OP(mulf) { F(d) = F(m) * F(s); }
+OP(andb) { B(d) = B(m) & B(s); }
+OP(andw) { W(d) = W(m) & W(s); }
+OP(andl) { V(d) = V(m) & V(s); }
+OP(xorb) { B(d) = B(m) ^ B(s); }
+OP(xorw) { W(d) = W(m) ^ W(s); }
+OP(xorl) { V(d) = V(m) ^ V(s); }
+OP(orb)  { B(d) = B(m) | B(s); }
+OP(orw)  { W(d) = W(m) | W(s); }
+OP(orl)  { V(d) = V(m) | V(s); }
+OP(shlb) { B(d) = B(m) << W(s); }
+OP(shlw) { W(d) = W(m) << W(s); }
+OP(shll) { V(d) = V(m) << W(s); }
+OP(shrb) { B(d) = B(m) >> W(s); }
+OP(shrw) { W(d) = W(m) >> W(s); }
+OP(shrl) { V(d) = V(m) >> W(s); }
+OP(lsrw) { W(d) = UW(m) >> W(s); }
+OP(lsrl) { V(d) = UV(m) >> W(s); }
+OP(beqb) { if(B(s) == B(m)) JMP(d); }
+OP(bneb) { if(B(s) != B(m)) JMP(d); }
+OP(bltb) { if(B(s) <  B(m)) JMP(d); }
+OP(bleb) { if(B(s) <= B(m)) JMP(d); }
+OP(bgtb) { if(B(s) >  B(m)) JMP(d); }
+OP(bgeb) { if(B(s) >= B(m)) JMP(d); }
+OP(beqw) { if(W(s) == W(m)) JMP(d); }
+OP(bnew) { if(W(s) != W(m)) JMP(d); }
+OP(bltw) { if(W(s) <  W(m)) JMP(d); }
+OP(blew) { if(W(s) <= W(m)) JMP(d); }
+OP(bgtw) { if(W(s) >  W(m)) JMP(d); }
+OP(bgew) { if(W(s) >= W(m)) JMP(d); }
+OP(beql) { if(V(s) == V(m)) JMP(d); }
+OP(bnel) { if(V(s) != V(m)) JMP(d); }
+OP(bltl) { if(V(s) <  V(m)) JMP(d); }
+OP(blel) { if(V(s) <= V(m)) JMP(d); }
+OP(bgtl) { if(V(s) >  V(m)) JMP(d); }
+OP(bgel) { if(V(s) >= V(m)) JMP(d); }
+OP(beqf) { if(F(s) == F(m)) JMP(d); }
+OP(bnef) { if(F(s) != F(m)) JMP(d); }
+OP(bltf) { if(F(s) <  F(m)) JMP(d); }
+OP(blef) { if(F(s) <= F(m)) JMP(d); }
+OP(bgtf) { if(F(s) >  F(m)) JMP(d); }
+OP(bgef) { if(F(s) >= F(m)) JMP(d); }
+OP(beqc) { if(stringcmp(S(s), S(m)) == 0) JMP(d); }
+OP(bnec) { if(stringcmp(S(s), S(m)) != 0) JMP(d); }
+OP(bltc) { if(stringcmp(S(s), S(m)) <  0) JMP(d); }
+OP(blec) { if(stringcmp(S(s), S(m)) <= 0) JMP(d); }
+OP(bgtc) { if(stringcmp(S(s), S(m)) >  0) JMP(d); }
+OP(bgec) { if(stringcmp(S(s), S(m)) >= 0) JMP(d); }
+OP(iexit){ error(""); }
+OP(cvtwl){ V(d) = W(s); }
+OP(cvtlw){ W(d) = V(s); }
+OP(cvtlf){ F(d) = V(s); }
 OP(cvtfl)
 {
 	REAL f;
-	CHECK_STACK_ALIGN();
 
 	f = F(s);
 	V(d) = f < 0 ? f - .5 : f + .5;
@@ -132,7 +128,6 @@ OP(cvtfl)
 OP(cvtfw)
 {
 	REAL f;
-	CHECK_STACK_ALIGN();
 
 	f = F(s);
 	W(d) = f < 0 ? f - .5 : f + .5;
@@ -140,7 +135,6 @@ OP(cvtfw)
 OP(cvtcl)
 {
 	String *s;
-	CHECK_STACK_ALIGN();
 
 	s = S(s);
 	if(s == H)
@@ -152,7 +146,6 @@ OP(iexpw)
 {
 	int inv;
 	WORD x, n, r;
-	CHECK_STACK_ALIGN();
 
 	x = W(m);
 	n = W(s);
@@ -178,7 +171,6 @@ OP(iexpl)
 	int inv;
 	WORD n;
 	LONG x, r;
-	CHECK_STACK_ALIGN();
 
 	x = V(m);
 	n = W(s);
@@ -204,7 +196,6 @@ OP(iexpf)
 	int inv;
 	WORD n;
 	REAL x, r;
-	CHECK_STACK_ALIGN();
 
 	x = F(m);
 	n = W(s);
@@ -229,7 +220,6 @@ OP(indx)
 {
 	ulong i;
 	Array *a;
-	CHECK_STACK_ALIGN();
 
 	a = A(s);
 	i = W(d);
@@ -241,7 +231,6 @@ OP(indw)
 {
 	ulong i;
 	Array *a;
-	CHECK_STACK_ALIGN();
 
 	a = A(s);
 	i = W(d);
@@ -253,7 +242,6 @@ OP(indf)
 {
 	ulong i;
 	Array *a;
-	CHECK_STACK_ALIGN();
 
 	a = A(s);
 	i = W(d);
@@ -265,7 +253,6 @@ OP(indl)
 {
 	ulong i;
 	Array *a;
-	CHECK_STACK_ALIGN();
 
 	a = A(s);
 	i = W(d);
@@ -277,7 +264,6 @@ OP(indb)
 {
 	ulong i;
 	Array *a;
-	CHECK_STACK_ALIGN();
 
 	a = A(s);
 	i = W(d);
@@ -289,7 +275,6 @@ OP(movp)
 {
 	Heap *h;
 	WORD *dv, *sv;
-	CHECK_STACK_ALIGN();
 
 	sv = P(s);
 	if(sv != H) {
@@ -304,7 +289,6 @@ OP(movp)
 OP(movmp)
 {
 	Type *t;
-	CHECK_STACK_ALIGN();
 
 	t = R.M->type[W(m)];
 
@@ -317,7 +301,6 @@ OP(new)
 {
 	Heap *h;
 	WORD **wp, *t;
-	CHECK_STACK_ALIGN();
 
 	h = heap(R.M->type[W(s)]);
 	wp = R.d;
@@ -329,7 +312,6 @@ OP(newz)
 {
 	Heap *h;
 	WORD **wp, *t;
-	CHECK_STACK_ALIGN();
 
 	h = heapz(R.M->type[W(s)]);
 	wp = R.d;
@@ -342,7 +324,6 @@ OP(mnewz)
 	Heap *h;
 	WORD **wp, *t;
 	Modlink *ml;
-	CHECK_STACK_ALIGN();
 
 	ml = *(Modlink**)R.s;
 	if(ml == H)
@@ -357,59 +338,32 @@ OP(frame)
 {
 	Type *t;
 	Frame *f;
-	uchar *nsp;
-	CHECK_STACK_ALIGN();
 
 	t = R.M->type[W(s)];
-	nsp = R.SP + t->size;
-	if(nsp >= R.TS) {
-		R.s = t;
-		extend();
-		T(d) = R.s;
-		return;
-	}
-	f = (Frame*)R.SP;
-	R.SP  = nsp;
-	f->t  = t;
-	f->mr = nil;
-	if (t->np)
-		initmem(t, f);
+	f = H2D(Frame*,heapz(t));
 	T(d) = f;
 }
 OP(mframe)
 {
 	Type *t;
 	Frame *f;
-	uchar *nsp;
 	Modlink *ml;
 	int o;
-	CHECK_STACK_ALIGN();
 
 	ml = *(Modlink**)R.s;
 	if(ml == H)
 		error(exModule);
 
 	o = W(m);
-	if(o >= 0){
+	if (o >= 0) {
 		if(o >= ml->nlinks)
 			error("invalid mframe");
 		t = ml->links[o].frame;
-	}
-	else
+	} else
 		t = ml->m->ext[-o-1].frame;
-	nsp = R.SP + t->size;
-	if(nsp >= R.TS) {
-		R.s = t;
-		extend();
-		T(d) = R.s;
-		return;
-	}
-	f = (Frame*)R.SP;
-	R.SP = nsp;
-	f->t = t;
-	f->mr = nil;
-	if (t->np)
-		initmem(t, f);
+
+	f = H2D(Frame*,heapz(t));
+
 	T(d) = f;
 }
 void
@@ -427,7 +381,6 @@ OP(newa)
 	Type *t;
 	Heap *h;
 	Array *a, *at, **ap;
-	CHECK_STACK_ALIGN();
 
 	t = R.M->type[W(m)];
 	sz = W(s);
@@ -453,7 +406,6 @@ OP(newaz)
 	Type *t;
 	Heap *h;
 	Array *a, *at, **ap;
-	CHECK_STACK_ALIGN();
 
 	t = R.M->type[W(m)];
 	sz = W(s);
@@ -479,7 +431,6 @@ cnewc(Type *t, void (*mover)(void), int len)
 {
 	Heap *h;
 	Channel *c;
-	CHECK_STACK_ALIGN();
 
 	h = heap(&Tchannel);
 	c = H2D(Channel*, h);
@@ -509,7 +460,6 @@ newc(Type *t, void (*mover)(void))
 {
 	Channel **cp, *oldc;
 	WORD len;
-	CHECK_STACK_ALIGN();
 
 	len = 0;
 	if(R.m != R.d){
@@ -523,16 +473,15 @@ newc(Type *t, void (*mover)(void))
 	destroy(oldc);
 	return *cp;
 }
-OP(newcl)  { CHECK_STACK_ALIGN(); newc(&Tlong, movl);  }
-OP(newcb)  { CHECK_STACK_ALIGN(); newc(&Tbyte, movb);  }
-OP(newcw)  { CHECK_STACK_ALIGN(); newc(&Tword, movw);  }
-OP(newcf)  { CHECK_STACK_ALIGN(); newc(&Treal, movf);  }
-OP(newcp)  { CHECK_STACK_ALIGN(); newc(&Tptr, movp);  }
+OP(newcl)  { newc(&Tlong, movl);  }
+OP(newcb)  { newc(&Tbyte, movb);  }
+OP(newcw)  { newc(&Tword, movw);  }
+OP(newcf)  { newc(&Treal, movf);  }
+OP(newcp)  { newc(&Tptr, movp);  }
 OP(newcm)
 {
 	Channel *c;
 	Type *t;
-	CHECK_STACK_ALIGN();
 
 	t = nil;
 	if(R.m != R.d && W(m) > 0)
@@ -544,13 +493,11 @@ OP(newcm)
 }
 OP(newcmp)
 {
-	CHECK_STACK_ALIGN();
 	newc(R.M->type[W(s)], movtmp);
 }
 OP(icase)
 {
 	WORD v, *t, *l, d, n, n2;
-	CHECK_STACK_ALIGN();
 
 	v = W(s);
 	t = (WORD*)((WORD)R.d + IBY2WD);
@@ -582,7 +529,6 @@ OP(casel)
 {
 	WORD *t, *l, d, n, n2;
 	LONG v;
-	CHECK_STACK_ALIGN();
 
 	v = V(s);
 	t = (WORD*)((WORD)R.d + 2*IBY2WD);
@@ -614,7 +560,6 @@ OP(casec)
 {
 	WORD *l, *t, *e, n, n2, r;
 	String *sl, *sh, *sv;
-	CHECK_STACK_ALIGN();
 
 	sv = S(s);
 	t = (WORD*)((WORD)R.d + IBY2WD);
@@ -673,7 +618,6 @@ found:
 OP(igoto)
 {
 	WORD *t;
-	CHECK_STACK_ALIGN();
 
 	t = (WORD*)((WORD)R.d + (W(s) * IBY2WD));
 	if(R.M->compiled) {
@@ -685,30 +629,26 @@ OP(igoto)
 OP(call)
 {
 	Frame *f;
-	CHECK_STACK_ALIGN();
 
 	f = T(s);
 	f->lr = R.PC;
 	f->fp = R.FP;
-	R.FP = (uchar*)f;
+	R.FP = f;
 	JMP(d);
 }
 OP(spawn)
 {
 	Prog *p;
-	CHECK_STACK_ALIGN();
 
 	p = newprog(currun(), R.M);
 	p->R.PC = *(Inst**)R.d;
-	newstack(p);
-	unframe();
+	p->R.FP = FR(s);
 }
 OP(mspawn)
 {
 	Prog *p;
 	Modlink *ml;
 	int o;
-	CHECK_STACK_ALIGN();
 
 	ml = *(Modlink**)R.d;
 	if(ml == H)
@@ -721,30 +661,27 @@ OP(mspawn)
 		p->R.PC = ml->links[o].u.pc;
 	else
 		p->R.PC = ml->m->ext[-o-1].u.pc;
-	newstack(p);
-	unframe();
+	p->R.FP = FR(s);
 }
 OP(ret)
 {
 	Frame *f;
 	Modlink *m;
-	CHECK_STACK_ALIGN();
 
-	f = (Frame*)R.FP;
+	f = R.FP;
 	R.FP = f->fp;
 	if(R.FP == nil) {
-		R.FP = (uchar*)f;
-		error("");
+		R.FP = f;
+		error(""); /* 'stack' underflow */
 	}
-	R.SP = (uchar*)f;
 	R.PC = f->lr;
 	m = f->mr;
 
-	if(f->t == nil)
-		unextend(f);
-	else if (f->t->np)
-		freeptrs(f, f->t);
+	//? destroy(f)
+	assert(D2H(f)->t != nil);
+	freeptrs(f, D2H(f)->t);
 
+	/* return from mcall */
 	if(m != nil) {
 		if(R.M->compiled != m->compiled) {
 			R.IC = 1;
@@ -761,16 +698,13 @@ OP(iload)
 	Import *ldt;
 	Module *m;
 	Modlink *ml, **mp, *t;
-	CHECK_STACK_ALIGN();
 
 	n = string2c(S(s));
 	m = R.M->m;
-	if(m->rt & HASLDT)
-		ldt = m->ldt[W(m)];
-	else{
-		ldt = nil;
+	if(!(m->rt & HASLDT)) {
 		error("obsolete dis");
 	}
+	ldt = m->ldt[W(m)];
 
 	if(strcmp(n, "$self") == 0) {
 		m->ref++;
@@ -785,7 +719,7 @@ OP(iload)
 		ml = linkmod(m, ldt, 1);
 	}
 
-	mp = R.d;
+	mp = R.d; /* FIXME dirty hack */
 	t = *mp;
 	*mp = ml;
 	destroy(t);
@@ -798,7 +732,6 @@ OP(mcall)
 	Linkpc *l;
 	Modlink *ml;
 	int o;
-	CHECK_STACK_ALIGN();
 
 	ml = *(Modlink**)R.d;
 	if(ml == H)
@@ -808,7 +741,7 @@ OP(mcall)
 	f->fp = R.FP;
 	f->mr = R.M;
 
-	R.FP = (uchar*)f;
+	R.FP = f;
 	R.M = ml;
 	h = D2H(ml);
 	h->ref++;
@@ -822,12 +755,12 @@ OP(mcall)
 		l->runt(f);
 		h->ref--;
 		R.M = f->mr;
-		R.SP = R.FP;
 		R.FP = f->fp;
-		if(f->t == nil)
-			unextend(f);
-		else if (f->t->np)
-			freeptrs(f, f->t);
+
+		//? destroy(f)
+		assert(D2H(f)->t != nil);
+		freeptrs(f, D2H(f)->t);
+
 		p = currun();
 		if(p->kill != nil)
 			error(p->kill);
@@ -845,7 +778,6 @@ OP(lena)
 {
 	WORD l;
 	Array *a;
-	CHECK_STACK_ALIGN();
 
 	a = A(s);
 	l = 0;
@@ -857,7 +789,6 @@ OP(lenl)
 {
 	WORD l;
 	List *a;
-	CHECK_STACK_ALIGN();
 
 	a = L(s);
 	l = 0;
@@ -983,7 +914,6 @@ OP(isend)
 {
 	Channel *c;
  	Prog *p;
-	CHECK_STACK_ALIGN();
 
 	c = C(d);
 	if(c == H)
@@ -1019,7 +949,6 @@ OP(irecv)
 {
 	Channel *c;
 	Prog *p;
-	CHECK_STACK_ALIGN();
 
 	c = C(s);
 	if(c == H)
@@ -1108,7 +1037,6 @@ cons(ulong size, List **lp)
 OP(consb)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = cons(IBY2WD, R.d);
 	*(BYTE*)l->data = B(s);
@@ -1116,7 +1044,6 @@ OP(consb)
 OP(consw)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = cons(IBY2WD, R.d);
 	*(WORD*)l->data = W(s);
@@ -1124,7 +1051,6 @@ OP(consw)
 OP(consl)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = cons(IBY2LG, R.d);
 	*(LONG*)l->data = V(s);
@@ -1134,7 +1060,6 @@ OP(consp)
 	List *l;
 	Heap *h;
 	WORD *sv;
-	CHECK_STACK_ALIGN();
 
 	l = cons(IBY2WD, R.d);
 	sv = P(s);
@@ -1150,7 +1075,6 @@ OP(consp)
 OP(consf)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = cons(sizeof(REAL), R.d);
 	*(REAL*)l->data = F(s);
@@ -1159,7 +1083,6 @@ OP(consm)
 {
 	int v;
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	v = W(m);
 	l = cons(v, R.d);
@@ -1169,7 +1092,6 @@ OP(consmp)
 {
 	List *l;
 	Type *t;
-	CHECK_STACK_ALIGN();
 
 	t = R.M->type[W(m)];
 	l = cons(t->size, R.d);
@@ -1181,7 +1103,6 @@ OP(consmp)
 OP(headb)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = L(s);
 	B(d) = *(BYTE*)l->data;
@@ -1189,7 +1110,6 @@ OP(headb)
 OP(headw)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = L(s);
 	W(d) = *(WORD*)l->data;
@@ -1197,7 +1117,6 @@ OP(headw)
 OP(headl)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = L(s);
 	V(d) = *(LONG*)l->data;
@@ -1205,7 +1124,6 @@ OP(headl)
 OP(headp)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = L(s);
 	R.s = l->data;
@@ -1214,7 +1132,6 @@ OP(headp)
 OP(headf)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = L(s);
 	F(d) = *(REAL*)l->data;
@@ -1222,7 +1139,6 @@ OP(headf)
 OP(headm)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = L(s);
 	memmove(R.d, l->data, W(m));
@@ -1230,7 +1146,6 @@ OP(headm)
 OP(headmp)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = L(s);
 	R.s = l->data;
@@ -1239,7 +1154,6 @@ OP(headmp)
 OP(tail)
 {
 	List *l;
-	CHECK_STACK_ALIGN();
 
 	l = L(s);
 	R.s = &l->tail;
@@ -1251,7 +1165,6 @@ OP(slicea)
 	Heap *h;
 	Array *at, *ss, *ds;
 	int v, n, start;
-	CHECK_STACK_ALIGN();
 
 	v = W(m);
 	start = W(s);
@@ -1296,7 +1209,6 @@ OP(slicela)
 	int l, dl;
 	Array *ss, *ds;
 	uchar *sp, *dp, *ep;
-	CHECK_STACK_ALIGN();
 
 	ss = A(s);
 	dl = W(m);
@@ -1342,19 +1254,16 @@ OP(slicela)
 }
 OP(alt)
 {
-	CHECK_STACK_ALIGN();
 	R.t = 0;
 	xecalt(1);
 }
 OP(nbalt)
 {
-	CHECK_STACK_ALIGN();
 	xecalt(0);
 }
 OP(tcmp)
 {
 	void *s, *d;
-	CHECK_STACK_ALIGN();
 
 	s = T(s);
 	d = T(d);
@@ -1367,7 +1276,6 @@ OP(eclr)
 }
 OP(badop)
 {
-	CHECK_STACK_ALIGN();
 	error(exOp);
 }
 OP(iraise)
@@ -1375,7 +1283,7 @@ OP(iraise)
 	void *v;
 	Heap *h;
 	Prog *p;
-	CHECK_STACK_ALIGN();
+
 
 	p = currun();
 	v = T(s);
@@ -1393,7 +1301,6 @@ OP(mulx)
 {
 	WORD p;
 	LONG r;
-	CHECK_STACK_ALIGN();
 
 	p = Dtmp;
 	r = (LONG)W(m)*(LONG)W(s);
@@ -1407,7 +1314,6 @@ OP(divx)
 {
 	WORD p;
 	LONG s;
-	CHECK_STACK_ALIGN();
 
 	p = Dtmp;
 	s = (LONG)W(m);
@@ -1422,7 +1328,6 @@ OP(cvtxx)
 {
 	WORD p;
 	LONG r;
-	CHECK_STACK_ALIGN();
 
 	p = W(m);
 	r = (LONG)W(s);
@@ -1436,7 +1341,6 @@ OP(mulx0)
 {
 	WORD x, y, p, a;
 	LONG r;
-	CHECK_STACK_ALIGN();
 
 	x = W(m);
 	y = W(s);
@@ -1458,7 +1362,6 @@ OP(divx0)
 {
 	WORD x, y, p, b;
 	LONG s;
-	CHECK_STACK_ALIGN();
 
 	x = W(m);
 	y = W(s);
@@ -1480,7 +1383,6 @@ OP(cvtxx0)
 {
 	WORD x, p, a;
 	LONG r;
-	CHECK_STACK_ALIGN();
 
 	x = W(s);
 	p = W(m);
@@ -1502,7 +1404,6 @@ OP(mulx1)
 	WORD x, y, p, a, v;
 	int vnz, wnz;
 	LONG w, r;
-	CHECK_STACK_ALIGN();
 
 	x = W(m);
 	y = W(s);
@@ -1541,7 +1442,6 @@ OP(divx1)
 	WORD x, y, p, b, v;
 	int vnz, wnz;
 	LONG w, s;
-	CHECK_STACK_ALIGN();
 
 	x = W(m);
 	y = W(s);
@@ -1578,7 +1478,6 @@ OP(cvtxx1)
 	WORD x, p, a, v;
 	int vnz, wnz;
 	LONG w, r;
-	CHECK_STACK_ALIGN();
 
 	x = W(s);
 	p = W(m);
@@ -1614,7 +1513,6 @@ OP(cvtxx1)
 OP(cvtxx)
 {
 	REAL v;
-	CHECK_STACK_ALIGN();
 
 	v = (REAL)W(s)*F(m);
 	v = v < 0 ? v-0.5: v+0.5;
@@ -1624,7 +1522,6 @@ OP(cvtxx)
 OP(cvtfx)
 {
 	REAL v;
-	CHECK_STACK_ALIGN();
 
 	v = F(s)*F(m);
 	v = v < 0 ? v-0.5: v+0.5;
@@ -1632,14 +1529,12 @@ OP(cvtfx)
 }
 OP(cvtxf)
 {
-	CHECK_STACK_ALIGN();
 	F(d) = (REAL)W(s)*F(m);
 }
 
 OP(self)
 {
 	Modlink *ml, **mp, *t;
-	CHECK_STACK_ALIGN();
 
 	ml = R.M;
 	D2H(ml)->ref++;
@@ -1652,12 +1547,13 @@ OP(self)
 void
 destroystack(REG *reg)
 {
+	/* BUG */
+#if STACK
 	Type *t;
 	Frame *f, *fp;
 	Modlink *m;
 	Stkext *sx;
 	uchar *ex;
-	CHECK_STACK_ALIGN();
 
 	ex = reg->EX;
 	reg->EX = nil;
@@ -1683,15 +1579,14 @@ destroystack(REG *reg)
 		ex = sx->reg.EX;
 		free(sx);
 	}
+#endif
 	destroy(reg->M);
 	reg->M = H;	/* for devprof */
 }
-
 Prog*
 isave(void)
 {
 	Prog *p;
-	CHECK_STACK_ALIGN();
 
 	p = delrun(Prelease);
 	p->R = R;
@@ -1701,7 +1596,6 @@ isave(void)
 void
 irestore(Prog *p)
 {
-	CHECK_STACK_ALIGN();
 	R = p->R;
 	R.IC = 1;
 }
@@ -1710,7 +1604,6 @@ void
 movtmp(void)		/* Used by send & receive */
 {
 	Type *t;
-	CHECK_STACK_ALIGN();
 
 	t = (Type*)W(m);
 
@@ -1886,10 +1779,10 @@ void statebefore(char* o, int n, uchar op, Inst* modprog)
 	case ISLICEC: 	snprint(o,n,"\"%s\" [%d:%d]", string2c(S(d)), W(s), W(m)); break;
 	case ISLICELA: 	snprint(o,n,"Array[%d]@%p [%d:] = Array[%d]@%p", Alen(d), A(d), W(m), Alen(s), A(s)); break;
 	case IMSPAWN:
-	case IMCALL:	snprint(o,n,"%s.%d Frame@%p", ((Modlink*)T(d))->m->name, W(m), (Frame*)T(s)); break;
+	case IMCALL:	snprint(o,n,"%s.%d Frame@%p FP=Frame@%p", ((Modlink*)T(d))->m->name, W(m), (Frame*)T(s), R.FP); break;
 	case IMFRAME:	snprint(o,n,"%s.%d", ((Modlink*)T(s))->m->name, W(m)); break;
 	case ISPAWN:
-	case ICALL: 	snprint(o,n,"%s_%uX Frame@%p", CURM, I(d), (Frame*)T(s)); break;
+	case ICALL: 	snprint(o,n,"%s_%uX Frame@%p FP=Frame@%p", CURM, I(d), (Frame*)T(s), R.FP); break;
 	case IJMP: 	snprint(o,n,"%s_%uX", CURM, I(d)); break;
 	case IGOTO:	snprint(o,n,"%s_%uX", CURM, (WORD*)((WORD)R.d + (W(s) * IBY2WD))); break;
 	case IMOVPC:	snprint(o,n,"%s_%uX", CURM, I(s)); break;
@@ -2092,7 +1985,10 @@ xec(Prog *p)
 
 	if(R.M->compiled)
 	{
+		/* BUG */
+#if STACK
 		comvec();
+#endif
 	} else do {
 		dec[R.PC->add]();
 		op = R.PC->op;

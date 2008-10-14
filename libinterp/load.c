@@ -6,8 +6,8 @@
 
 #define	A(r)	*((Array**)(r))
 
-Module*	modules;
-int	dontcompile;
+Module*	modules = 0;
+int	dontcompile = 0;
 
 static int
 operand(uchar **p)
@@ -30,16 +30,16 @@ operand(uchar **p)
 			c |= ~0x3F;
 		else
 			c &= 0x3F;
-		return (c<<8)|cp[1];		
+		return (c<<8)|cp[1];
 	case 0xC0:
 		*p = cp+4;
 		if(c & 0x20)
 			c |= ~0x3F;
 		else
 			c &= 0x3F;
-		return (c<<24)|(cp[1]<<16)|(cp[2]<<8)|cp[3];		
+		return (c<<24)|(cp[1]<<16)|(cp[2]<<8)|cp[3];
 	}
-	return 0;	
+	return 0;
 }
 
 static ulong
@@ -187,7 +187,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 			goto bad;
 		}
 		*isp += siglen;
-		break;		
+		break;
 	case XMAGIC:
 		if(mustbesigned(path, code, length, dir)){
 			kwerrstr("security violation: not signed");
@@ -235,7 +235,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 		}
 		switch(UXSRC(ip->add)) {
 		case SRC(AFP):
-		case SRC(AMP):	
+		case SRC(AMP):
 		case SRC(AIMM):
 			ip->s.ind = operand(isp);
 			break;
@@ -247,7 +247,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 		}
 		switch(UXDST(ip->add)) {
 		case DST(AFP):
-		case DST(AMP):	
+		case DST(AMP):
 			ip->d.ind = operand(isp);
 			break;
 		case DST(AIMM):
@@ -263,7 +263,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 			ip->d.i.s = operand(isp);
 			break;
 		}
-		ip++;		
+		ip++;
 	}
 
 	m->ntype = hsize;
@@ -367,7 +367,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 			memset((void*)ary->data, 0, pt->size*v);
 			initarray(pt, ary);
 			A(si) = ary;
-			break;			
+			break;
 		case DIND:			/* Set index */
 			ary = A(si);
 			if(ary == H || D2H(ary)->t != &Tarray) {
@@ -405,7 +405,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 		;
 
 	l = m->ext = (Link*)malloc((lsize+1)*sizeof(Link));
-	if(l == nil){
+	if (l == nil) {
 		kwerrstr(exNomem);
 		goto bad;
 	}
@@ -509,13 +509,13 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 		m->entryt = m->type[entryt];
 	}
 
-	if(cflag) {
+	if (cflag) {
 		if((m->rt&DONTCOMPILE) == 0 && !dontcompile)
 			compile(m, isize, nil);
 	}
 	else
 	if(m->rt & MUSTCOMPILE && !dontcompile) {
-		if(compile(m, isize, nil) == 0) {
+		if (compile(m, isize, nil) == 0) {
 			kwerrstr("compiler required");
 			goto bad;
 		}
@@ -558,6 +558,9 @@ newmod(char *s)
 	return m;
 }
 
+/**
+ * Find module by path, increment ref if found
+ */
 Module*
 lookmod(char *s)
 {

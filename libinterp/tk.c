@@ -1,6 +1,6 @@
 #include "lib9.h"
-#include "interp.h"
 #include "isa.h"
+#include "interp.h"
 #include "runt.h"
 #include "draw.h"
 #include "tk.h"

@@ -24,7 +24,7 @@ OFILES=\
 	readmod.$O\
 	runt.$O\
 	sign.$O\
-	stack.$O\
+#	stack.$O\
 	tk.$O\
 	validstk.$O\
 	xec.$O\

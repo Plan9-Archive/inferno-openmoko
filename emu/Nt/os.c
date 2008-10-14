@@ -8,9 +8,7 @@
 #include	"fns.h"
 #include	"error.h"
 
-int	SYS_SLEEP = 2;
-int SOCK_SELECT = 3;
-#define	MAXSLEEPERS	1500
+#define	MAXSLEEPERS	1500 /* WTF */
 
 extern	int	cflag;
 
@@ -174,26 +172,27 @@ kproc(char *name, void (*func)(void*), void *arg, enum KProcFlags flags)
 	}
 	return p->pid;
 }
-
+/*
 #if(_WIN32_WINNT >= 0x0400)
 void APIENTRY sleepintr(DWORD param)
 {
 }
 #endif
-
+/**/
 void
 oshostintr(Proc *p)
 {
-	if (p->syscall == SOCK_SELECT)
+	if (p->syscall == SYSCALL_SOCK_SELECT)
 		return;
 	p->intwait = 0;
 #if(_WIN32_WINNT >= 0x0400)
+	/*
 	if(p->syscall == SYS_SLEEP) {
 		QueueUserAPC(sleepintr, (HANDLE) p->pid, (DWORD) p->pid);
-	}
+	}*/
 #endif
 }
-
+/**/
 NORETURN
 oslongjmp(void *regs, osjmpbuf env, int val)
 {
@@ -214,8 +213,7 @@ readkbd(void)
 
 	if (buf[0] == 0x03) {
 		// INTR (CTRL+C)
-		termrestore();
-		ExitProcess(0);
+		cleanexit(0);
 	}
 	if(buf[0] == '\r')
 		buf[0] = '\n';
@@ -641,9 +639,10 @@ limbosleep(ulong milsec)
 	if (sleepers > MAXSLEEPERS) /* BUG WTF MAXSLEEPERS? */
 		return -1;
 	sleepers++;
-	up->syscall = SYS_SLEEP;
-	SleepEx(milsec, TRUE); /* TODO: alertable? */
-	up->syscall = 0;
+	up->syscall = SYSCALL_SLEEP;
+	/*SleepEx(milsec, TRUE); /* TODO: alertable? */
+	Sleep(milsec);
+	up->syscall = SYSCALL_NO;
 	sleepers--;
 	return 0;
 }

@@ -25,7 +25,7 @@ main(void)
 	/*print("#define DIND(reg, xxx) (uchar*)((*(ulong*)(R.reg+R.PC->xxx.i.f))+R.PC->xxx.i.s)\n");*/
 
 	print("#define DIND(target, reg, xxx){\\\n");
-	print(" ulong ul = *(ulong*)(R.reg+R.PC->xxx.i.f);\\\n");
+	print(" ulong ul = *(ulong*)(((uchar*)R.reg)+R.PC->xxx.i.f);\\\n");
 	print(" if((ulong)H==ul) {error(exNilref);}\\\n");
 	print(" R.target = (uchar*)(ul+R.PC->xxx.i.s);\\\n");
 	print("}\n");
@@ -49,17 +49,17 @@ decgen(int addr)
 
 	switch(USRC(addr)) {
 	case AMP:
-		print("\tR.s = R.MP+R.PC->s.ind;\n");
+		print("\tR.s = ((uchar*)R.MP)+R.PC->s.ind;\n");
 		break;
 	case AFP:
-		print("\tR.s = R.FP+R.PC->s.ind;\n");
+		print("\tR.s = ((uchar*)R.FP)+R.PC->s.ind;\n");
 		break;
 	case AIMM:
 		print("\tR.s = (uchar*)&R.PC->s.imm;\n");
 		break;
 	case AMP|AIND:
 		if(SOFTMMU) {
-			print("R.s = R.MP+R.PC->s.i.f\n");
+			print("R.s = ((uchar*)R.MP)+R.PC->s.i.f\n");
 			print("R.s = *(WORD**)R.s\n");
 			print("R.s = (uchar*)R.s + R.PC->s.i.s\n");
 		}
@@ -68,7 +68,7 @@ decgen(int addr)
 		break;
 	case AFP|AIND:
 		if(SOFTMMU) {
-			print("R.s = R.FP+R.PC->s.i.f\n");
+			print("R.s = ((uchar*)R.FP)+R.PC->s.i.f\n");
 			print("R.s = *(WORD**)R.s\n");
 			print("R.s = (uchar*)R.s + R.PC->s.i.s\n");
 		}
@@ -82,17 +82,17 @@ decgen(int addr)
 		nodst = 1;
 		break;
 	case AMP:
-		print("\tR.d = R.MP+R.PC->d.ind;\n");
+		print("\tR.d = ((uchar*)R.MP)+R.PC->d.ind;\n");
 		break;
 	case AFP:
-		print("\tR.d = R.FP+R.PC->d.ind;\n");
+		print("\tR.d = ((uchar*)R.FP)+R.PC->d.ind;\n");
 		break;
 	case AIMM:
 		print("\tR.d = (uchar*)&R.PC->d.imm;\n");
 		break;
 	case AMP|AIND:
 		if(SOFTMMU) {
-			print("R.d = R.MP+R.PC->d.i.f\n");
+			print("R.d = ((uchar*)R.MP)+R.PC->d.i.f\n");
 			print("R.d = *(WORD**)R.d\n");
 			print("R.d = (uchar*)R.d + R.PC->d.i.s\n");
 		}
@@ -101,7 +101,7 @@ decgen(int addr)
 		break;
 	case AFP|AIND:
 		if(SOFTMMU) {
-			print("R.d = R.FP+R.PC->d.i.f\n");
+			print("R.d = ((uchar*)R.FP)+R.PC->d.i.f\n");
 			print("R.d = *(WORD**)R.d\n");
 			print("R.d = (uchar*)R.d + R.PC->d.i.s\n");
 		}
@@ -120,10 +120,10 @@ decgen(int addr)
 		print("\tR.m = &R.t;\n");
 		break;
 	case AXINF:
-		print("\tR.m = R.FP+R.PC->reg;\n");
+		print("\tR.m = ((uchar*)R.FP)+R.PC->reg;\n");
 		break;
 	case AXINM:
-		print("\tR.m = R.MP+R.PC->reg;\n");
+		print("\tR.m = ((uchar*)R.MP)+R.PC->reg;\n");
 		break;
 	}
 	print("}\n");

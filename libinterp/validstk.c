@@ -33,21 +33,3 @@ memchk(void *p, Type *t)
 	depth--;
 }
 
-void
-validstk(void)
-{
-	Type *t;
-	Frame *f;
-	uchar *fp;
-
-	fp = R.FP;
-	while(fp != nil) {
-		f = (Frame*)fp;
-		t = f->t;
-		if(t == nil)
-			t = SEXTYPE(f)->reg.TR;
-
-		memchk(f, t);
-		fp = f->fp;
-	}
-}

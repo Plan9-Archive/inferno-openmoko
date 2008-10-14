@@ -61,6 +61,10 @@ bad:
 	return -1;
 }
 
+/**
+ * Modlink constructor
+ * n - num of links
+ */
 Modlink*
 mklinkmod(Module *m, int n)
 {
@@ -83,7 +87,7 @@ mklinkmod(Module *m, int n)
 }
 
 Modlink*
-linkmod(Module *m, Import *ldt, int mkmp)
+linkmod(Module *m, Import *ldt, int mkmp/*=0*/)
 {
 	Type *t;
 	Heap *h;

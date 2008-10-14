@@ -2,6 +2,7 @@
 #include "isa.h"
 #include "interp.h"
 #include "raise.h"
+#if STACK
 
 #define DOT			((ulong)code)
 
@@ -1803,7 +1804,7 @@ macrelq(void)
 	genb(Oret);
 }
 
-void
+static void
 comd(Type *t)
 {
 	int i, j, m, c;
@@ -1822,7 +1823,7 @@ comd(Type *t)
 	genb(Oret);
 }
 
-void
+static void
 comi(Type *t)
 {
 	int i, j, m, c;
@@ -1840,7 +1841,7 @@ comi(Type *t)
 	genb(Oret);
 }
 
-void
+static void
 typecom(Type *t)
 {
 	int n;
@@ -1892,10 +1893,11 @@ patchex(Module *m, ulong *p)
 			e->pc = p[e->pc];
 	}
 }
-
+#endif
 int
 compile(Module *m, int size, Modlink *ml)
 {
+#if STACK
 	ulong v;
 	Modl *e;
 	Link *l;
@@ -1989,5 +1991,6 @@ bad:
 	free(tinit);
 	free(tmp);
 	free(base);
+#endif
 	return 0;
 }

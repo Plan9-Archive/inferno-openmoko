@@ -53,7 +53,7 @@ mod
 	freetype
 
 port
-	alloc
+	alloc-Nt
 	cache
 	chan
 	dev

@@ -1,7 +1,7 @@
 #include <lib9.h>
 #include <kernel.h>
-#include "interp.h"
 #include "isa.h"
+#include "interp.h"
 #include "runt.h"
 #include "raise.h"
 #include "freetypemod.h"
@@ -228,4 +228,3 @@ ckface(Freetype_Face *face)
 		error(exType);
 	return (Face*)face;
 }
-

@@ -1,7 +1,3 @@
-#if !defined(NORETURN)
-#define NORETURN void
-#endif
-
 typedef uchar		BYTE;		/* 8  bits */
 typedef int		WORD;		/* 32 bits */
 typedef unsigned int	UWORD;		/* 32 bits */
@@ -73,24 +69,10 @@ typedef struct Handler	Handler;
 struct Frame
 {
 	Inst*		lr;	/* REGLINK isa.h */
-	uchar*		fp;	/* REGFP */
+	Frame*		fp;	/* REGFP */ /* parent frame */
 	Modlink*	mr;	/* REGMOD */
-	Type*		t;	/* REGTYPE */
-};
-
-union Stkext
-{
-	uchar		stack[1];
-	struct {
-		Type*		TR;
-		uchar*		SP;
-		uchar*		TS;
-		uchar*		EX;
-		union {
-			uchar		fu[1];
-			Frame		fr[1];
-		} tos;
-	} reg;
+	Type*		_t_;	/* REGTYPE */
+	/* REGRET */
 };
 
 /**
@@ -151,6 +133,9 @@ struct String
 	}data;
 };
 
+/**
+ * Pointer to function of Dis or native code
+ */
 union Linkpc
 {
 	void	(*runt)(void*);
@@ -159,10 +144,10 @@ union Linkpc
 
 struct Link
 {
-	int	sig;
-	Type*	frame;
-	Linkpc	u;
-	char	*name;
+	int		sig;
+	Type*		frame;
+	Linkpc		u;
+	char*		name;
 };
 
 typedef union	Adr	Adr;
@@ -205,20 +190,17 @@ struct Type
 	void		(*free)(Heap*, int);
 	void		(*mark)(Type*, void*);
 	int		size;
-	int		np;
-	void*		destroy;
-	void*		initialize;
+	int		np;		/* map size in bytes, 0 if there is no pointers */
+	void*		destroy;	/* JITted code */
+	void*		initialize;	/* JITted code */
 	uchar		map[STRUCTALIGN];
 };
 
 struct REG
 {
 	Inst*		PC;		/* Program counter */
-	uchar*		MP;		/* Module data */
-	uchar*		FP;		/* Frame pointer */
-	uchar*		SP;		/* Stack pointer */
-	uchar*		TS;		/* Top of allocated stack */
-	uchar*		EX;		/* Extent register */
+	void*		MP;		/* Module data */
+	Frame*		FP;		/* Frame pointer */
 	Modlink*	M;		/* Module */
 	int		IC;		/* Instruction count for this quanta */
 	Inst*		xpc;		/* Saved program counter */
@@ -278,7 +260,7 @@ struct Module
 	int		ref;		/* Use count */
 	int		compiled;	/* Compiled into native assembler */
 	ulong		ss;		/* Stack size */
-	ulong		rt;		/* Runtime flags */
+	enum ModRtFlags	rt;		/* Runtime flags */
 	ulong		mtime;		/* Modtime of dis file */
 	Qid		qid;		/* Qid of dis file */
 	ushort		dtype;		/* type of dis file's server*/
@@ -295,6 +277,7 @@ struct Module
 	Module*		link;		/* Links */
 	Link*		ext;		/* External dynamic links */
 	Import**	ldt;		/* Internal linkage descriptor tables */
+					/* все сигнатуры модулей (возможно неполные), которые могут понадобиться этому модулю */
 	Handler*	htab;		/* Exception handler table */
 	ulong*		pctab;		/* dis pc to code pc when compiled */
 	void*		dlm;		/* dynamic C module */
@@ -306,19 +289,27 @@ struct Modl
 	Type*		frame;		/* Frame type for this entry */
 };
 
+/**
+ * Imported module instance
+ */
 struct Modlink
 {
 	uchar*		MP;		/* Module data for this instance */
 	Module*		m;		/* The real module */
-	int		compiled;	/* Compiled into native assembler */
-	Inst*		prog;		/* text segment */
-	Type**		type;		/* Type descriptors */
+	int		compiled;	/* Compiled into native assembler (overwrites m->compiled) */
+	Inst*		prog;		/* text segment (overwrites m->prog) */
+	Type**		type;		/* Type descriptors (overwrites m->type)*/
 	uchar*		data;		/* for dynamic C modules */
 	int		nlinks;		/* ?apparently required by Java */
 	Modl		links[1];
 };
 
-/* must be a multiple of 8 bytes */
+/**
+ * Header of heap allocated memory blocks
+ * must be a multiple of 8 bytes
+ * D2H() casts from data to Heap pointer
+ * H2D() casts from Heap to data  pointer
+ */
 struct Heap
 {
 	int		color;		/* Allocation color */
@@ -359,7 +350,6 @@ struct Handler
 #define H2D(t, x)	((t)(((uchar*)(x))+sizeof(Heap)))
 #define D2H(x)		((Heap*)(((uchar*)(x))-sizeof(Heap)))
 #define H		((void*)(-1))
-#define SEXTYPE(f)	((Stkext*)((uchar*)(f)-OA(Stkext, reg.tos.fu)))
 #define Setmark(h)	if((h)->color!=mutator) { (h)->color = propagator; nprop=1; }
 #define gclock()	gchalt++
 #define gcunlock()	gchalt--
@@ -492,7 +482,7 @@ extern	Prog*		progpid(int);
 extern	void		ptradd(Heap*);
 extern	void		ptrdel(Heap*);
 extern	void		pushrun(Prog*);
-extern	Module*		readmod(char*, Module*, int);
+extern	Module*		readmod(const char*, Module*, int sync);
 extern	void		irecv(void);
 extern	void		release(void);
 extern	void		releasex(void);

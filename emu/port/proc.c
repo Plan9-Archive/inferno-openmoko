@@ -113,7 +113,7 @@ swiproc(Proc *p, int interp)
 	 * Maybe pull out of Host OS
 	 */
 	lock(&p->sysio);
-	if(p->syscall && p->intwait == 0) {
+	if(p->syscall!=SYSCALL_NO && p->intwait == 0) {
 		p->swipend = 1;
 		p->intwait = 1;
 		unlock(&p->sysio);
@@ -134,7 +134,7 @@ notkilled(void)
 void
 osenter(void)
 {
-	up->syscall = 1;
+	up->syscall = SYSCALL_OTHER;
 }
 
 void
@@ -148,7 +148,7 @@ osleave(void)
 	unlock(&up->rlock);
 
 	lock(&up->sysio);
-	up->syscall = 0;
+	up->syscall = SYSCALL_NO;
 	unlock(&up->sysio);
 
 	/* Cleared by the signal/note/exception handler */

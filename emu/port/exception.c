@@ -63,7 +63,7 @@ newestring(char *estr)
 }
 
 #define NOPC	0xffffffff
-
+#if STACK
 #define FRTYPE(f)	((f)->t == nil ? SEXTYPE(f)->reg.TR : (f)->t)
 
 /*
@@ -82,7 +82,7 @@ freeframe(uchar *fp, int setsp)
 	if(setsp)
 		R.SP = fp;
 }
-
+#endif
 int
 handler(char *estr)
 {
@@ -91,13 +91,18 @@ handler(char *estr)
 	int str, ne;
 	ulong pc, newpc;
 	long eoff;
-	uchar *fp, **eadr;
-	Frame *f;
-	Type *t, *zt;
+	const Frame *f;
+	uchar **eadr;
+	Type *zt;
 	Handler *h;
 	Except *e;
 	void *v;
-
+#if STACK
+#else
+	print("handler |%s|\n", "");
+	print("handler |%s|\n", estr);
+	/*panic("handler");*/
+#endif
 	p = currun();
 	if(*estr == 0 || p == nil)
 		return 0;
@@ -108,9 +113,8 @@ handler(char *estr)
 	else
 		pc = R.PC-m->prog;
 	pc--;
-	fp = R.FP;
 
-	while(fp != nil){		/* look for a handler */
+	for(f = R.FP; f != nil; f = f->fp) {		/* look for a handler */
 		if((h = m->m->htab) != nil){
 			for( ; h->etab != nil; h++){
 				if(pc < h->pc1 || pc >= h->pc2)
@@ -128,7 +132,7 @@ handler(char *estr)
 					goto found;
 			}
 		}
-		if(!str && fp != R.FP){		/* becomes a string exception in immediate caller */
+		if(!str && f != R.FP){		/* becomes a string exception in immediate caller */
 			v = p->exval;
 			p->exval = *(String**)v;
 			D2H(p->exval)->ref++;
@@ -136,7 +140,7 @@ handler(char *estr)
 			str = 1;
 			continue;
 		}
-		f = (Frame*)fp;
+		//f = (Frame*)fp;
 		if(f->mr != nil)
 			m = f->mr;
 		if(m->compiled)
@@ -144,7 +148,6 @@ handler(char *estr)
 		else
 			pc = f->lr-m->prog;
 		pc--;
-		fp = f->fp;
 	}
 	destroy(p->exval);
 	p->exval = H;
@@ -164,24 +167,27 @@ found:
 	/*
 	 * there may be an uncalled frame at the top of the stack
 	 */
-	f = (Frame*)R.FP;
+	f = R.FP;
+	/* BUG */
+#if STACK
 	t = FRTYPE(f);
 	if(R.FP < R.EX || R.FP >= R.TS)
 		freeframe(R.EX+OA(Stkext, reg.tos.fr), 0);
 	else if(R.FP+t->size < R.SP)
 		freeframe(R.FP+t->size, 1);
-
+#endif
 	m = R.M;
-	while(R.FP != fp){
-		f = (Frame*)R.FP;
+	while(R.FP != f){
+		f = R.FP;
 		R.PC = f->lr;
 		R.FP = f->fp;
-		R.SP = (uchar*)f;
+
 		mr = f->mr;
-		if(f->t == nil)
-			unextend(f);
-		else if(f->t->np)
-			freeptrs(f, f->t);
+
+		//? destroy(f)
+		assert(D2H(f)->t != nil);
+		freeptrs(f, D2H(f)->t);
+
 		if(mr != nil){
 			m = mr;
 			destroy(R.M);
@@ -190,10 +196,10 @@ found:
 		}
 	}
 	if(zt != nil){
-		freeptrs(fp, zt);
-		initmem(zt, fp);
+		freeptrs(f, zt);
+		initmem(zt, f);
 	}
-	eadr = (uchar**)(fp+eoff);
+	eadr = (uchar**)((uchar*)f+eoff);
 	destroy(*eadr);
 	*eadr = H;
 	if(p->exval == H)

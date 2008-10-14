@@ -107,6 +107,8 @@ auditentry(Type *t)
 void
 heapaudit(void)
 {
+print("heapaudit\n");
+/* TODO
 	Type *t;
 	Heap *h;
 	List *l;
@@ -195,4 +197,5 @@ heapaudit(void)
 		}
 
 	release();
+*/
 }

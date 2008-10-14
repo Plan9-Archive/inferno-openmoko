@@ -8,6 +8,9 @@ void	freearray(Heap*, int);
 void	freelist(Heap*, int);
 void	freemodlink(Heap*, int);
 void	freechan(Heap*, int);
+/**
+ * Dis types
+ */
 Type	Tarray = { 1, freearray, markarray, sizeof(Array) };
 Type	Tstring = { 1, freestring, noptrs, sizeof(String) };
 Type	Tlist = { 1, freelist, marklist, sizeof(List) };
@@ -15,9 +18,9 @@ Type	Tmodlink = { 1, freemodlink, markheap, -1, 1, 0, 0, { 0x80 } };
 Type	Tchannel = { 1, freechan, markheap, sizeof(Channel), 1,0,0,{0x80} };
 Type	Tptr = { 1, 0, markheap, sizeof(WORD*), 1, 0, 0, { 0x80 } };
 Type	Tbyte = { 1, 0, 0, 1 };
-Type Tword = { 1, 0, 0, sizeof(WORD) };
-Type Tlong = { 1, 0, 0, sizeof(LONG) };
-Type Treal = { 1, 0, 0, sizeof(REAL) };
+Type	Tword = { 1, 0, 0, sizeof(WORD) };
+Type	Tlong = { 1, 0, 0, sizeof(LONG) };
+Type	Treal = { 1, 0, 0, sizeof(REAL) };
 
 extern	Pool*	heapmem;
 extern	int	mutator;
@@ -27,7 +30,7 @@ void	(*heapmonitor)(int, void*, ulong);
 #define	BIT(bt, nb)	(bt & (1<<nb))
 
 void
-freeptrs(void *v, Type *t)
+freeptrs(void *v, Type *t /* usually =D2H(v)->t */)
 {
 	int c;
 	WORD **w, *x;
@@ -120,13 +123,13 @@ freearray(Heap *h, int swept)
 		if(a->root != H)
 			destroy(a->root);
 		else
-		if(t->np != 0) {
-			v = a->data;
-			for(i = 0; i < a->len; i++) {
-				freeptrs(v, t);
-				v += t->size;
+			if(t->np != 0) {
+				v = a->data;
+				for(i = 0; i < a->len; i++) {
+					freeptrs(v, t);
+					v += t->size;
+				}
 			}
-		}
 	}
 	if(t->ref-- == 1) {
 		free(t->initialize);
@@ -297,6 +300,9 @@ scanptrs(void *vw, Type *t, void (*f)(void*))
 	}
 }
 
+/**
+ * Set pointers to H accorting to type map
+ */
 void
 initmem(Type *t, void *vw)
 {
@@ -324,6 +330,9 @@ initmem(Type *t, void *vw)
 	}
 }
 
+/**
+ * Alloc n bytes on heap (with Heap header)
+ */
 Heap*
 nheap(int n)
 {
@@ -453,7 +462,7 @@ arraycpy(Array *sa)
 		 * in include/isa.h
 		 */
 		for(i = 0; i < sa->len; i++)
-			dp[i] = arraycpy(sp[i]);			
+			dp[i] = arraycpy(sp[i]);
 	}
 	else {
 		memmove(da->data, sa->data, da->len*sa->t->size);
@@ -471,29 +480,26 @@ newmp(void *dst, void *src, Type *t)
 {
 	Heap *h;
 	int c, i, m;
-	void **uld, *wp, **q;
+	void **uld, *wp;
 
 	memmove(dst, src, t->size);
 	uld = dst;
 	for(i = 0; i < t->np; i++) {
 		c = t->map[i];
 		if(c != 0) {
-			m = 0x80;
-			q = uld;
-			while(m != 0) {
-				if((m & c) && (wp = *q) != H) {
+			for(m = 0x80; m !=0; m >>= 1) {
+				if((m & c) && (wp = *uld) != H) {
 					h = D2H(wp);
-					if(h->t == &Tarray)
-						*q = arraycpy(wp);
-					else {
+					if(h->t == &Tarray){
+						*uld = arraycpy(wp);
+					}else {
 						h->ref++;
 						Setmark(h);
 					}
 				}
-				m >>= 1;
-				q++;
+				uld++;
 			}
-		}
-		uld += 8;
+		} else
+			uld += 8;
 	}
 }

@@ -355,25 +355,28 @@ struct Uqidtab
 	ulong	pathgen;
 };
 
+/**
+ * Kernel process' operating system environment
+ */
 struct Osenv
 {
-	char	*syserrstr;	/* last error from a system call, errbuf0 or 1 */
-	char	*errstr;	/* reason we're unwinding the error stack, errbuf1 or 0 */
-	char	errbuf0[ERRMAX];
-	char	errbuf1[ERRMAX];
-	Pgrp*	pgrp;		/* Ref to namespace, working dir and root */
-	Fgrp*	fgrp;		/* Ref to file descriptors */
-	Egrp*	egrp;	/* Environment vars */
-	Skeyset*		sigs;		/* Signed module keys */
-	Rendez*	rend;		/* Synchro point */
-	Queue*	waitq;		/* Info about dead children */
-	Queue*	childq;		/* Info about children for debuggers */
-	void*	debug;		/* Debugging master */
-	char*	user;	/* Inferno user name */
-	FPU	fpu;		/* Floating point thread state */
-	int	uid;		/* Numeric user id for host system */
-	int	gid;		/* Numeric group id for host system */
-	void	*ui;		/* User info for NT */
+	char*		syserrstr;	/* last error from a system call, errbuf0 or 1 */
+	char*		errstr;		/* reason we're unwinding the error stack, errbuf1 or 0 */
+	char		errbuf0[ERRMAX];
+	char		errbuf1[ERRMAX];
+	Pgrp*		pgrp;		/* Ref to namespace, working dir and root */
+	Fgrp*		fgrp;		/* Ref to file descriptors */
+	Egrp*		egrp;		/* Environment vars */
+	Skeyset*	sigs;		/* Signed module keys */
+	Rendez*		rend;		/* Synchro point */
+	Queue*		waitq;		/* Info about dead children */
+	Queue*		childq;		/* Info about children for debuggers */
+	void*		debug;		/* Debugging master */
+	char*		user;		/* Inferno user name */
+	FPU		fpu;		/* Floating point thread state */
+	int		uid;		/* Numeric user id for host system */
+	int		gid;		/* Numeric group id for host system */
+	void*		ui;		/* User info for NT */
 };
 
 enum
@@ -383,6 +386,14 @@ enum
 	Interp	= 0x17,
 	BusyGC	= 0x18,
 	Moribund
+};
+
+enum Syscalls
+{
+	SYSCALL_NO = 0,
+	SYSCALL_OTHER = 1,
+	SYSCALL_SLEEP = 2,
+	SYSCALL_SOCK_SELECT = 3
 };
 
 /**
@@ -402,7 +413,7 @@ struct Proc
 	Rendez		sleep;		/* place to sleep */
 	int		killed;		/* by swiproc */
 	int		swipend;	/* software interrupt pending for Prog */
-	int		syscall;	/* set true under sysio for interruptable syscalls */
+	enum Syscalls	syscall;	/* set true under sysio for interruptable syscalls */
 	int		intwait;	/* spin wait for note to turn up */
 	int		sigid;		/* handle used for signal/note/exception */
 	Lock		sysio;		/* note handler lock */

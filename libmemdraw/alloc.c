@@ -29,8 +29,8 @@ allocmemimaged(Rectangle r, ulong chan, Memdata *md)
 	Memimage *i;
 
 	if((d = chantodepth(chan)) == 0) {
+		print("allocmemimaged(...)=0\n");
 		werrstr("bad channel descriptor %.8lux", chan);
-		o("allocmemimaged(...)=0\n");
 		return nil;
 	}
 
@@ -39,7 +39,7 @@ allocmemimaged(Rectangle r, ulong chan, Memdata *md)
 	i = mallocz(sizeof(Memimage), 1);
 	if(i == nil)
 	{
-		o("allocmemimaged(...)=0\n");
+		print("allocmemimaged(...)=0\n");
 		return nil;
 	}
 
@@ -59,7 +59,7 @@ allocmemimaged(Rectangle r, ulong chan, Memdata *md)
 	i->cmap = memdefcmap;
 	if(memsetchan(i, chan) < 0){
 		free(i);
-		o("allocmemimaged(...)=0\n");
+		print("allocmemimaged(...)=0\n");
 		return nil;
 	}
 	return i;
@@ -83,15 +83,15 @@ allocmemimage(Rectangle r, ulong chan)
 	md = malloc(sizeof(Memdata));
 	if(md == nil)
 	{
-		o("allocmemimage(...)=0\n");
+		print("allocmemimage(...)=0\n");
 		return nil;
 	}
 
 	md->ref = 1;
 	md->base = poolalloc(imagmem, (2+nw)*sizeof(ulong));
 	if(md->base == nil){
+		print("allocmemimage(...)=0\n");
 		free(md);
-		o("allocmemimage(...)=0\n");
 		return nil;
 	}
 
@@ -105,9 +105,9 @@ allocmemimage(Rectangle r, ulong chan)
 
 	i = allocmemimaged(r, chan, md);
 	if(i == nil){
+		print("allocmemimage(...)=0\n");
 		poolfree(imagmem, md->base);
 		free(md);
-		o("allocmemimage(...)=0\n");
 		return nil;
 	}
 	md->imref = i;

@@ -426,7 +426,10 @@ panic(char *fmt, ...)
 	va_end(arg);
 	fprint(2, "panic: %s\n", buf);
 	if(sflag)
+	{
+		__asm int 3;
 		abort();
+	}
 
 	cleanexit(0);
 }

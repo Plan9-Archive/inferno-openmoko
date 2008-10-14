@@ -423,8 +423,7 @@ static int
 progsize(Prog *p)
 {
 	int size;
-	Frame *f;
-	uchar *fp;
+	const Frame *f;
 	Modlink *m;
 
 	m = p->R.M;
@@ -434,18 +433,13 @@ progsize(Prog *p)
 	if(m->prog != nil)
 		size += msize(m->prog);
 
-	fp = p->R.FP;
-	while(fp != nil) {
-		f = (Frame*)fp;
-		fp = f->fp;
+	for(f = p->R.FP; f != nil; f = f->fp) {
 		if(f->mr != nil) {
 			if(f->mr->MP != H)
 				size += hmsize(D2H(f->mr->MP));
 			if(f->mr->prog != nil)
 				size += msize(f->mr->prog);
 		}
-		if(f->t == nil)
-			size += msize(SEXTYPE(f));
 	}
 	return size/1024;
 }
@@ -543,38 +537,35 @@ pc2dispc(Inst *pc, Module *mod)
 	return 0;
 }
 
-/*static*/ int
+static int
 progstack(REG *reg, int state, char *va, int count, long offset)
 {
 	int n;
-	Frame *f;
+	const Frame *f;
 	Inst *pc;
-	uchar *fp;
-	Modlink *m;
+	const Modlink *ml;
 
 	n = 0;
-	m = reg->M;
-	fp = reg->FP;
+	ml = reg->M;
 	pc = reg->PC;
 
 	/*
 	 * all states other than debug and ready block,
 	 * but interp has already advanced the PC
 	 */
-	if(!m->compiled && state != Pready && state != Pdebug && pc > m->prog)
+	if(!ml->compiled && state != Pready && state != Pdebug && pc > ml->prog)
 		pc--;
-	if(m->compiled && m->m->pctab != nil)
-		pc = pc2dispc(pc, m->m);
+	if(ml->compiled && ml->m->pctab != nil)
+		pc = pc2dispc(pc, ml->m);
 
-	while(fp != nil) {
-		f = (Frame*)fp;
+	for(f = reg->FP; f != nil; f = f->fp) {
 		n += snprint(va+n, count-n, "%.8lux %.8lux %.8lux %.8lux %d %s\n",
 				(ulong)f,		/* FP */
-				(ulong)(pc - m->prog),	/* PC in dis instructions */
-				(ulong)m->MP,		/* MP */
-				(ulong)m->prog,	/* Code for module */
-				m->compiled && m->m->pctab == nil,	/* True if native assembler: fool stack utility for now */
-				m->m->path);	/* File system path */
+				(ulong)(pc - ml->prog),	/* PC in dis instructions */
+				(ulong)ml->MP,		/* MP */
+				(ulong)ml->prog,	/* Code for module */
+				ml->compiled && ml->m->pctab == nil,	/* True if native assembler: fool stack utility for now */
+				ml->m->path);	/* File system path */
 
 		if(offset > 0) {
 			offset -= n;
@@ -587,13 +578,13 @@ progstack(REG *reg, int state, char *va, int count, long offset)
 		}
 
 		pc = f->lr;
-		fp = f->fp;
+
 		if(f->mr != nil)
-			m = f->mr;
-		if(!m->compiled)
+			ml = f->mr;
+		if(!ml->compiled)
 			pc--;
-		else if(m->m->pctab != nil)
-			pc = pc2dispc(pc, m->m)-1;
+		else if(ml->m->pctab != nil)
+			pc = pc2dispc(pc, ml->m)-1;
 	}
 	return n;
 }
@@ -602,10 +593,10 @@ static int
 calldepth(REG *reg)
 {
 	int n;
-	uchar *fp;
+	const Frame* f;
 
 	n = 0;
-	for(fp = reg->FP; fp != nil; fp = ((Frame*)fp)->fp)
+	for(f = reg->FP; f != nil; f = f->fp)
 		n++;
 	return n;
 }
@@ -771,7 +762,7 @@ modstatus(REG *r, char *ptr, int len)
 	Frame *f;
 
 	if(r->M->m->name[0] == '$') {
-		f = (Frame*)r->FP;
+		f = r->FP;
 		snprint(ptr, len, "%s[%s]", f->mr->m->name, r->M->m->name);
 		if(f->mr->compiled)
 			return (WORD)f->lr;
@@ -1408,7 +1399,10 @@ dbgxec(Prog *p)
 	buf[0] = '\0';
 
 	if(R.IC != 0 && R.M->compiled) {
+		/* BUG */
+#if STACK
 		comvec();
+#endif
 		if(p != currun())
 			dbgblock(p);
 		goto save;

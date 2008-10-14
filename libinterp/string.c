@@ -470,7 +470,7 @@ newstring(int nb)
 	s = H2D(String*, h);
 	s->tmp = nil;
 	s->len = nb;
-	s->max = hmsize(h) - (sizeof(String)+sizeof(Heap));
+	s->max = nb; /*hmsize(h) - (sizeof(String)+sizeof(Heap)); WTF? */
 	return s;
 }
 

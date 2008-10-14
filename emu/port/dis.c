@@ -122,7 +122,7 @@ newprog(Prog *p, Modlink *m)
 	Heap *h;
 	Prog *n, **ph;
 	Osenv *on, *op;
-	static int pidnum;
+	static int pidnum; /* TODO: 4G is enough for unique id? */
 
 	n = malloc(sizeof(Prog)+sizeof(Osenv));
 	if(n == 0){
@@ -746,7 +746,7 @@ currun(void)
 }
 
 /**
- * Like mspawn for the first module
+ * Like mspawn/linkmod for the first module
  */
 static Prog*
 schedmod(Module *m)
@@ -755,10 +755,9 @@ schedmod(Module *m)
 	Type *t;
 	Prog *p;
 	Modlink *ml;
-	Frame f, *fp;
+	Frame *f;
 
 	ml = mklinkmod(m, 0);
-
 	if(m->origmp != H && m->ntype > 0) {
 		t = m->type[0];
 		h = nheap(t->size);
@@ -769,14 +768,11 @@ schedmod(Module *m)
 	}
 
 	p = newprog(nil, ml);
-	h = D2H(ml);
-	h->ref--;
+	D2H(ml)->ref--;
 	p->R.PC = m->entry;
-	fp = &f;
-	R.s = &fp;
-	f.t = m->entryt;
-	newstack(p);
-	initmem(m->entryt, p->R.FP);
+
+	f = H2D(Frame*,heapz(m->entryt));
+	p->R.FP = f;
 
 	return p;
 }
@@ -953,13 +949,14 @@ progexit(void)
 		print("[%s] Broken: \"%s\"\n", m->name, estr);
 
 		/* read /prog/id/stack */
-		/* or better exec 'stack id' to see with debug info */
+		/* or better exec '/dis/watson.dis id' to see with debug info */
+		/*
 		{
 		static char va[0x1000];
 		extern int progstack(REG *reg, int state, char *va, int count, long offset);
 		progstack(&r->R, r->state, va, sizeof(va), 0);
 		print("Stack:\n%s\n", va);
-		}
+		}*/
 	}
 
 	snprint(msg, sizeof(msg), "%d \"%s\":%s", r->pid, m->name, estr);
@@ -972,6 +969,76 @@ progexit(void)
 		broken = 0;	/* don't want them or short of memory */
 
 	if(broken){
+		/* it can change error string d*/
+#if 0
+		if(0){
+			/* iload */
+			Module* mod;
+			Modlink *ml;
+			Prog *p;
+			Type *t;
+			uchar* nsp;
+			Frame*f;
+			static Import imp_command[] = {
+				{0x4244b354,"init"},
+				0
+			};
+			//const char*path = "/dis/stack.dis";
+			const char*path = "/dis/ls.dis";
+			/*mod = load(path);*/
+			mod = readmod(path, lookmod(path), 1);
+			print("mod=%p", mod);
+			print(" %s %s\n", mod->name, mod->path);
+			if(mod == 0) {
+				kgerrstr(up->genbuf, sizeof up->genbuf);
+				panic("loading \"%s\": %s", path, up->genbuf);
+			}
+			ml = linkmod(m, imp_command, 1);
+			/* iload end */
+
+			/* mframe */
+			t = ml->links[0].frame;
+			nsp = R.SP + t->size;
+			if(nsp >= R.TS) {
+				R.s = t;
+				extend();
+				f = R.s;
+			} else
+			{
+				f = (Frame*)R.SP;
+				R.SP = nsp;
+				f->t = t;
+				f->mr = nil;
+				if (t->np)
+					initmem(t, f);
+				R.s = f;
+			}
+			print("f=%p\n", f);
+			/* mframe end */
+
+			/* mspawn */
+
+			print("ml=%p\n", ml);
+			print("currun()=%p\n", currun());
+			p = newprog(currun(), ml);
+			p->R.PC = ml->links[0].u.pc;
+			print("p->R.PC=%p\n", p->R.PC);
+			print("%D\n", p->R.PC+0);
+			print("%D\n", p->R.PC+1);
+			print("%D\n", p->R.PC+2);
+			print("%D\n", p->R.PC+3);
+			print("%D\n", p->R.PC+4);
+			print("%D\n", p->R.PC+5);
+			print("%D\n", p->R.PC+6);
+			print("%D\n", p->R.PC+7);
+			print("f=%p\n", R.s);
+			newstack(p); /* frame in R.s */
+			print("ok\n");
+			unframe();
+			/* mspawn end */
+			print("ok\n");
+		}
+#endif
 		tellsomeone(r, msg);
 		r = isave();
 		r->state = Pbroken;
@@ -979,7 +1046,9 @@ progexit(void)
 	}
 
 	gclock();
+
 	destroystack(&R);
+
 	delprog(r, msg);
 	gcunlock();
 
@@ -1089,12 +1158,11 @@ vmachine(void *a)
 }
 
 NORETURN
-disinit(void *initmodv)
+disinit(void *initmod)
 {
 	Prog *p;
 	Osenv *o;
 	Module *root;
-	char *initmod = initmodv;
 
 	if(waserror())
 		panic("disinit error: %r");
@@ -1111,7 +1179,7 @@ disinit(void *initmodv)
 	modinit();
 	excinit();
 
-	root = load(initmod);
+	root = load((char *)initmod);
 	if(root == 0) {
 		kgerrstr(up->genbuf, sizeof up->genbuf);
 		panic("loading \"%s\": %s", initmod, up->genbuf);

@@ -46,16 +46,17 @@ struct Btail
 #define D2B(b, dp)	b = ((Bhdr*)(((uchar*)dp)-(((Bhdr*)0)->u.data))); \
 			if(b->magic != MAGIC_A && b->magic != MAGIC_I)\
 				poolfault(dp, "alloc:D2B", getcallerpc(&dp));
-#define B2NB(b)		((Bhdr*)((uchar*)b + b->size))
-#define B2PT(b)		((Btail*)((uchar*)b - sizeof(Btail)))
-#define B2T(b)		((Btail*)(((uchar*)b)+b->size-sizeof(Btail)))
+//#define B2NB(b)		((Bhdr*)((uchar*)b + b->size))
+//#define B2PT(b)		((Btail*)((uchar*)b - sizeof(Btail)))
+//#define B2T(b)		((Btail*)(((uchar*)b)+b->size-sizeof(Btail)))
 
-#define B2LIMIT(b)	((Bhdr*)((uchar*)b + b->csize))
+//#define B2LIMIT(b)	((Bhdr*)((uchar*)b + b->csize))
 
-#define BHDRSIZE	((int)(((Bhdr*)0)->u.data)+sizeof(Btail))
+//#define BHDRSIZE	((int)(((Bhdr*)0)->u.data)+sizeof(Btail))
+#define BHDRSIZE offsetof(Bhdr,u.data)
 
 extern	void	(*poolfault)(void *, char *, ulong);
-extern	void	poolinit(void);
+extern	void	poolinit(void); /* never called */
 extern	void*	poolalloc(Pool*, ulong);
 extern	void	poolfree(Pool*, void*);
 extern	Bhdr*	poolchain(Pool*);
@@ -70,4 +71,4 @@ extern	int	poolsetsize(char*, int);
 extern	void	poolsetcompact(Pool*, void (*)(void*, void*));
 extern	char*	poolaudit(char*(*)(int, Bhdr *));
 
-extern	void	(*poolmonitor)(int, ulong, Bhdr*, ulong);
+/*extern	void	(*poolmonitor)(int, ulong, Bhdr*, ulong);*/
