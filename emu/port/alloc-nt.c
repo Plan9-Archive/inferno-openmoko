@@ -6,52 +6,58 @@
 typedef struct Bhdr Bhdr;
 typedef struct Btail Btail;
 
+#define MYMARK 0xECA01F37
 struct Bhdr
 {
-	ulong	tag;
-	ulong	size;
-	const char* file;
-	int line;
-	const char* function;
-	const char* comment;
-	int _align_;
-	int guard;
+	int		mymark;
+	size_t		size;
+	int		tag;
+	const char*	file;
+	int		line;
+	const char*	function;
+	const char*	comment;
+	int		guard;
 };
 
 struct Btail
 {
-	int guard;
-	int _align_;
+	int		guard;
+	int		_align_;
 };
-#define GUARD(b) ( ((int)(b)) ^ ((b)->size & ~3) ^ 0xABABCDEF )
-#define BTAIL(b) ((Btail*)((char*)B2D(b)+(b)->size))
+#define GUARD(b) ( ((int)(b)) ^ (((Bhdr*)(b))->size & ~3) ^ 0xABABCDEF )
+#define BTAIL(b) ((Btail*)((char*)B2D(b)+((Bhdr*)(b))->size))
 
 #define B2D(bp)		(void*)((Bhdr*)(bp)+1)
 #define D2B(dp)		((Bhdr*)(dp)-1)
 
-#define VALIDATE_PTR(b) \
-	if(IsBadReadPtr(b, sizeof(Bhdr))) \
-	{ \
-		panic(__FUNCTION__ "(invalid ptr b=%p) %s:%d %s\n", b, file, line, function); \
-	} \
-	if((b)->guard != GUARD(b)) \
-	{ \
-		panic(__FUNCTION__ "(invalid head guard %lux!=%lux b=%lux size=%d) %s:%d %s\n", \
-			b->guard, GUARD(b), b, b->size, b->file, b->line, b->function); \
-	} \
-	if(BTAIL(b)->guard != GUARD(b)) \
-	{ \
-		panic(__FUNCTION__ "(invalid tail guard %lux!=%lux b=%lux size=%d) %s:%d %s\n", \
-			BTAIL(b)->guard, GUARD(b), b, b->size, b->file, b->line, b->function); \
+//panic(__FUNCTION__ "(invalid ptr b=%p) %s:%d %s\n", b, file, line, function); \
+
+#define VALIDATE_PTR(p) { \
+	Bhdr* z=(Bhdr*)(p); \
+	if(IsBadReadPtr(z, sizeof(Bhdr))) \
+		panic(__FUNCTION__ "(invalid ptr %p)", z); \
+	if(IsBadStringPtrA(z->file, 256)) \
+		panic(__FUNCTION__ "(invalid file name b=%p b->file=%p)", z, z->file); \
+	if(IsBadStringPtrA(z->function, 256)) \
+		panic(__FUNCTION__ "(invalid function name b=%p b->file=%p)", z, z->function); \
+	if(b->comment!=0 && IsBadStringPtrA(z->comment, 256)) \
+		panic(__FUNCTION__ "(invalid comment b=%p b->file=%p)", z, z->comment); \
+	if(z->guard != GUARD(z)) \
+		panic(__FUNCTION__ "(invalid head guard %lux!=%lux b=%lux size=%d) %s:%d %s", \
+			z->guard, GUARD(z), z, z->size, z->file, z->line, z->function); \
+	if(BTAIL(z)->guard != GUARD(z)) \
+		panic(__FUNCTION__ "(invalid tail guard %lux!=%lux b=%lux size=%d) %s:%d %s", \
+			BTAIL(z)->guard, GUARD(z), b, z->size, z->file, z->line, z->function); \
 	}
 
-
-#define VALIDATE_PTR2(pool, b) \
-	VALIDATE_PTR(b) \
+/* pool aware */
+#define VALIDATE_PTR2(pool, p) { \
+	VALIDATE_PTR(p) \
+{Bhdr* z=(Bhdr*)(p); \
 	if(!HeapValidate(pool->handle, 0, b)) \
-	{ \
-		panic(__FUNCTION__ "(invalid block b=%p size=%d) %s:%d %s\n", b, b->size, b->file, b->line, b->function); \
-	}
+		panic(__FUNCTION__ "(invalid block b=%p size=%d) %s:%d %s", \
+			z, z->size, z->file, z->line, z->function); \
+}}
 
 
 
@@ -62,6 +68,16 @@ struct Pool
 	size_t	maxsize;
 	int	chunk;
 	HANDLE	handle;
+
+	uvlong	nalloc;
+	uvlong	nfree;
+	uvlong	nrealloc;
+	uvlong	nrefree;
+	uvlong	allocbytes;
+	uvlong	freebytes;
+	uvlong	reallocbytes;	/* allocated in realloc */
+	uvlong	refreebytes;	/* freed in realloc */
+
 };
 
 enum
@@ -108,12 +124,16 @@ void*	v_poolalloc(Pool* pool, size_t size, const char*file, int line, const char
 		pool->handle = HeapCreate(HEAP_CREATE_ENABLE_EXECUTE, pool->chunk, 0 /* BUG: can grow big */ );
 		if(pool->handle==NULL)
 			panic("HeapCreate");
+		poolwalk(pool, 0);
 	}
 	b = HeapAlloc(pool->handle, 0, sizeof(Bhdr)+size+sizeof(Btail));
 	if(b==nil)
 		return nil;
+	pool->nalloc++;
+	pool->allocbytes += size;
 
 	/*b->magic = MAGIC_A;*/
+	b->mymark = MYMARK;
 	b->tag = 0;
 	b->size = size;
 	b->file = file;
@@ -153,7 +173,12 @@ void*	v_poolrealloc(Pool* pool, void* v, size_t size, const char*file, int line,
 	oldsize = b->size;
 	b = HeapReAlloc(pool->handle, 0, b, sizeof(Bhdr)+size+sizeof(Btail));
 	if(b==nil)
+	{
+		pool->nfree++;
+		pool->freebytes += oldsize;
 		return nil;
+	}
+	b->mymark = MYMARK;
 	b->tag = oldtag;
 	b->size = size;
 	b->file = file;
@@ -165,7 +190,15 @@ void*	v_poolrealloc(Pool* pool, void* v, size_t size, const char*file, int line,
 
 	nv = B2D(b);
 	if(size > oldsize)
+	{
+		pool->nrealloc++;
+		pool->reallocbytes += size-oldsize;
 		memset((char*)nv+oldsize, 0, size-oldsize);  /* some count on it */
+	} else
+	{
+		pool->nrefree++;
+		pool->refreebytes += oldsize-size;
+	}
 	return nv;
 }
 void	v_poolfree(Pool* pool, void* v, const char*file, int line, const char*function)
@@ -176,6 +209,8 @@ void	v_poolfree(Pool* pool, void* v, const char*file, int line, const char*funct
 
 	b = D2B(v);
 	VALIDATE_PTR2(pool, b);
+	pool->nfree++;
+	pool->freebytes += b->size;
 	memset(v, 0xCD, b->size);
 	memset(BTAIL(b), 0xF1, sizeof(Btail));
 	memset(b, 0xFD, sizeof(Bhdr));
@@ -191,7 +226,7 @@ size_t	v_poolmsize(Pool *pool, void *v, const char*file, int line, const char*fu
 	VALIDATE_PTR2(pool, b);
 	return b->size;
 }
-void	v_setmemcomment(void *v, const char* comment, const char*file, int line, const char*function)
+void	setmemcomment(void *v, const char* comment)
 {
 	Bhdr*b;
 	b = D2B(v);
@@ -199,28 +234,73 @@ void	v_setmemcomment(void *v, const char* comment, const char*file, int line, co
 	b->comment = comment;
 }
 
-void	poolwalk(Pool* pool, void(*callback)(void *))
+void	poolwalk(Pool* pool, poolwalk_callback callback)
 {
-	PROCESS_HEAP_ENTRY entry;
-	while (HeapWalk( pool->handle, &entry ))
+	PROCESS_HEAP_ENTRY phe;
+	int nblock=0;
+	int err;
+	Bhdr* b;
+
+	print(	"name\t%s\n"
+		"alloc\t%lld\t%lld\n"
+		"free\t%lld\t%lld\n"
+		"realloc\t%lld\t%lld\n"
+		"refree\t%lld\t%lld\n"
+		"active\t%lld\t%lld\n",
+		pool->name,
+		pool->nalloc,	pool->allocbytes,
+		pool->nfree,	pool->freebytes,
+		pool->nrealloc,	pool->reallocbytes,
+		pool->nrefree,	pool->refreebytes,
+		pool->nalloc-pool->nfree,
+		(pool->allocbytes-pool->freebytes) + (pool->reallocbytes-pool->refreebytes)
+		);
+	if(0==pool->handle)
+		return;
+
+	if (!HeapLock(pool->handle))
+		panic("poolwalk: cannot lock the heap %d", GetLastError());
+
+	phe.lpData = 0;
+	while (HeapWalk( pool->handle, &phe ))
 	{
-		if (entry.wFlags & PROCESS_HEAP_REGION)
+
+		b = phe.lpData;
+		if (phe.wFlags & PROCESS_HEAP_ENTRY_BUSY && b->mymark==MYMARK )
 		{
-			/*
-	            pLocal32Info->dwMemReserved += entry.u.Region.dwCommittedSize
-	                                           + entry.u.Region.dwUnCommittedSize;
-	            pLocal32Info->dwMemCommitted = entry.u.Region.dwCommittedSize;
-			 */
-		}
-		else if (!(entry.wFlags & PROCESS_HEAP_ENTRY_BUSY))
-		{
-			/*
-	            DWORD size = entry.cbData + entry.cbOverhead;
-	            pLocal32Info->dwTotalFree += size;
-	            if (size > pLocal32Info->dwLargestFreeBlock) pLocal32Info->dwLargestFreeBlock = size;
-			 */
+			/*print("<%d w=%x %p/%x bsize=%x>",
+				nblock,
+				phe.wFlags,
+				phe.lpData, phe.cbData,
+				((Bhdr*)phe.lpData)->size + sizeof(Bhdr) + sizeof(Btail));*/
+			/* do not go to TrapHandler from callback function */
+			__try
+			{
+				VALIDATE_PTR2(pool, phe.lpData);
+				if(phe.cbData != b->size + sizeof(Bhdr) + sizeof(Btail)) \
+					panic(__FUNCTION__ "(invalid size %p)", b);
+				//assert(phe.cbData == b->size + sizeof(Bhdr) + sizeof(Btail));
+				callback(B2D(b), b->size, b->tag, b->file, b->line, b->function, b->comment);
+			}
+			__except(EXCEPTION_EXECUTE_HANDLER)
+			{
+				panic("poolwalk: EXCEPTION %p:%x flags=%x",
+					phe.lpData, phe.cbData, phe.wFlags);
+				/*continue, break*/
+			}
+			++nblock;
+
 		}
 	}
+	err = GetLastError();
+	if (err != ERROR_NO_MORE_ITEMS) {
+		panic("poolwalk: HeapWalk aborted with error %d", err);
+	}
+	if(!HeapUnlock(pool->handle))
+		panic("poolwalk: cannot unlock the heap %d", GetLastError());
+	print("\n");
+	print("walked\t%d\n", nblock);
+	print("\n");
 }
 
 
@@ -291,6 +371,17 @@ v_mallocz(size_t size, int clr, const char*file, int line, const char*function)
 	else
 		memset(v, 0xA4, size);*/
 	return v;
+}
+
+char*
+v_strdup(const char *s, const char*file, int line, const char*function)
+{
+	char *os;
+
+	os = v_malloc(strlen(s) + 1, file, line, function);
+	if(os == 0)
+		return 0;
+	return strcpy(os, s);
 }
 
 size_t
