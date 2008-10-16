@@ -89,7 +89,7 @@ freechan(Heap *h, int swept)
 
 	USED(swept);
 	c = H2D(Channel*, h);
-	if(c->mover == movtmp)
+	if(c->mover == movertmp)
 		freetype(c->mid.t);
 	killcomm(&c->send);
 	killcomm(&c->recv);

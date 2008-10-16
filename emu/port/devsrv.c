@@ -506,7 +506,7 @@ srvread(Chan *c, char *va, long count, vlong offset)
 	if(rd == H)
 		error(Eshutdown);
 
-	rc = cnewc(dev.Rread, movtmp, 1);
+	rc = cnewc(dev.Rread, movertmp, 1);
 	ptradd(D2H(rc));
 	if(waserror()){
 		ptrdel(D2H(rc));
@@ -581,7 +581,7 @@ srvwrite(Chan *c, const char *va, long count, vlong offset)
 	if(wr == H)
 		error(Eshutdown);
 
-	wc = cnewc(dev.Rwrite, movtmp, 1);
+	wc = cnewc(dev.Rwrite, movertmp, 1);
 	ptradd(D2H(wc));
 	if(waserror()){
 		ptrdel(D2H(wc));

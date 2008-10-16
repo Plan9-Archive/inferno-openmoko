@@ -143,7 +143,7 @@ Tk_toplevel(void *a)
 	t->root = tk;
 	Setmark(h);
 	/* BUG poolmutable(h); */
-	t->wreq = cnewc(&Tptr, movp, 8);
+	t->wreq = cnewc(&Tptr, moverp, 8);
 	*f->ret = (Tk_Toplevel*)t;
 }
 

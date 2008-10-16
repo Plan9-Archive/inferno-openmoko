@@ -361,7 +361,7 @@ OP(newaz)
 	R.d->parray = a;
 }
 Channel*
-cnewc(Type *t, void (*mover)(void), int len)
+cnewc(Type *t, void (*mover)(void*d, void*s, Channel*c), int len)
 {
 	Heap *h = heap(&Tchannel);
 	Channel *c = H2D(Channel*, h);
@@ -381,7 +381,7 @@ cnewc(Type *t, void (*mover)(void), int len)
 		c->buf = H2D(Array*, heaparray(t, len));
 	c->front = 0;
 	c->size = 0;
-	if(mover == movtmp){
+	if(mover == movertmp){
 		c->mid.t = t;
 		t->ref++;
 	}
@@ -389,7 +389,7 @@ cnewc(Type *t, void (*mover)(void), int len)
 }
 
 static Channel*
-newc(Type *t, void (*mover)(void))
+newc(Type *t, void (*mover)(void*d, void*s, Channel*c))
 {
 	DISINT len = 0;
 
@@ -402,11 +402,42 @@ newc(Type *t, void (*mover)(void))
 	destroy(R.d->pchannel);
 	return R.d->pchannel = cnewc(t, mover, len);
 }
-OP(newcl)  { newc(&Tlong, movl);  }
-OP(newcb)  { newc(&Tbyte, movb);  }
-OP(newcw)  { newc(&Tword, movw);  }
-OP(newcf)  { newc(&Treal, movf);  }
-OP(newcp)  { newc(&Tptr, movp);  }
+
+static void moverb(void*d, void*s, Channel*c) { *(DISBYTE*)d = *(DISBYTE*)s; }
+static void moverw(void*d, void*s, Channel*c) { *(DISINT *)d = *(DISINT *)s; }
+static void moverf(void*d, void*s, Channel*c) { *(DISREAL*)d = *(DISREAL*)s; }
+static void moverl(void*d, void*s, Channel*c) { *(DISBIG *)d = *(DISBIG *)s; }
+void moverp(void*d, void*s, Channel*c)
+{
+	void *sv = *(void**)s;
+
+	if(sv != H) {
+		ADDREF(sv);
+		Setmark(D2H(sv));
+	}
+	destroy(*(void**)d);
+	*(void**)d = sv;
+}
+void
+movertmp(void*d, void*s, Channel*c)		/* Used by send & receive */
+{
+	Type* t = c->mid.t;
+	incmem(s, t);
+	freeptrs(d, t);
+	memmove(d, s, t->size);
+}
+static void
+moverm(void*d, void*s, Channel*c)		/* Used by send & receive */
+{
+	memmove(d, s, c->mid.w);
+}
+
+
+OP(newcl)  { newc(&Tlong, moverl);  }
+OP(newcb)  { newc(&Tbyte, moverb);  }
+OP(newcw)  { newc(&Tword, moverw);  }
+OP(newcf)  { newc(&Treal, moverf);  }
+OP(newcp)  { newc(&Tptr, moverp);  }
 OP(newcm)
 {
 	Channel *c;
@@ -415,14 +446,14 @@ OP(newcm)
 	t = nil;
 	if(R.m != R.d && R.s->disint > 0)
 		t = dtype(nil, R.s->disint, nil, 0, "(newcm)");
-	c = newc(t, movm);
+	c = newc(t, moverm);
 	c->mid.w = R.s->disint;
 	if(t != nil)
 		freetype(t);
 }
 OP(newcmp)
 {
-	newc(R.M->type[R.s->disint], movtmp);  /* TODO: check index range */
+	newc(R.M->type[R.s->disint], movertmp);  /* TODO: check index range */
 }
 OP(icase)
 {
@@ -727,10 +758,11 @@ cgetb(Channel *c, void *v)
 		if(c->front == c->buf->len)
 			c->front = 0;
 		c->size--;
-		R.s = w;
-		R.m = (Disdata*) &c->mid;
-		R.d = v;
-		c->mover(); /* FIXME */
+		//R.s = w;
+		//R.m = (Disdata*) &c->mid;
+		//R.d = v;
+
+		c->mover(v, w, c);
 		if(a->t->np){
 			freeptrs(w, a->t);
 			initmem(a->t, w);
@@ -753,10 +785,8 @@ cputb(Channel *c, void *v)
 		if(r >= len)
 			r -= len;
 		c->size++;
-		R.s = v;
-		R.m = (Disdata*) &c->mid;
-		R.d = (Disdata*) (a->data + r * a->t->size);
-		c->mover(); /* FIXME: args passed via R */
+
+		c->mover(a->data + r * a->t->size, v, c);
 		return 1;
 	}
 	return 0;
@@ -852,10 +882,8 @@ OP(isend)
 	if(p->state == Palt)
 		altdone(&p->R.s->alt, p, c, 1);
 
-	R.m = &c->mid;
-	R.d = p->ptr;
+	c->mover(p->ptr, R.s, c);
 	p->ptr = nil;
-	c->mover();  /* FIXME: args passed via R */
 	addrun(p);
 	R.t = 0;
 }
@@ -892,10 +920,8 @@ OP(irecv)
 		p->ptr = nil;
 	}
 	else{
-		R.m = &c->mid;
-		R.s = p->ptr;
+		c->mover(R.d, p->ptr, c);
 		p->ptr = nil;
-		c->mover(); /* FIXME */
 	}
 	addrun(p);
 	R.t = 0;
@@ -1489,16 +1515,7 @@ irestore(Prog *p)
 	R.IC = 1;
 }
 
-void
-movtmp(void)		/* Used by send & receive */
-{
-	Type *t = R.m->ptype;
 
-	incmem(R.s, t);
-	if (t->np)
-		freeptrs(R.d, t);
-	memmove(R.d, R.s, t->size);
-}
 
 extern OP(cvtca);
 extern OP(cvtac);

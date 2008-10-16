@@ -760,10 +760,10 @@ Sys_file2chan(void *fp)
 
 	fio = H2D(Sys_FileIO*, h);
 
-	c = cnewc(FioTread, movtmp, 16);
+	c = cnewc(FioTread, movertmp, 16);
 	fio->read = c;
 
-	c = cnewc(FioTwrite, movtmp, 16);
+	c = cnewc(FioTwrite, movertmp, 16);
 	fio->write = c;
 
 	f = fp;

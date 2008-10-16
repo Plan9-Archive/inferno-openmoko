@@ -440,7 +440,7 @@ extern	Array*		allocimgarray(Heap*, Heap*);
 extern	Module*		builtinmod(char*, void*, int);
 extern	void		cblock(Prog*);
 extern	void		cmovw(void*, void*);
-extern	Channel*	cnewc(Type*, void (*)(void), int);
+extern	Channel*	cnewc(Type*, void (*mover)(void*d, void*s, const Type*t), int);
 extern	int		compile(Module*, int, Modlink*);
 extern	void		cqadd(Progq**, Prog*);
 extern	void		cqdel(Progq**);
@@ -492,7 +492,7 @@ extern	Heap*		v_nheap(int, const char*, int, const char*);
 #define nheap(n)		v_nheap(n, __FILE__, __LINE__, __FUNCTION__)
 
 extern	int		hmsize(void*);
-extern	void		incmem(void*, Type*);
+extern	void		incmem(const void*, Type*);
 extern	void		initarray(Type*, Array*);
 extern	void		initmem(Type*, void*);
 extern	void		irestore(Prog*);
@@ -517,7 +517,8 @@ extern	void		mlink(Module*, Link*, uchar*, int, int, Type*);
 extern	void		modinit(void);
 extern	DISINT		modstatus(REG*, char*, int);
 extern	void		movp(void);
-extern	void		movtmp(void);
+extern	void		moverp(void*d, void*s, Channel*c);
+extern	void		movertmp(void*d, void*s, Channel*c);
 extern	void		movtmpsafe(void);
 extern	int		mustbesigned(char*, uchar*, ulong, Dir*);
 extern	Module*		newmod(char*);
