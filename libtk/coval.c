@@ -3,7 +3,6 @@
 #include "tk.h"
 #include "canvs.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
 typedef void	(*Drawfn)(Image*, Point, int, int, Image*, int);
 
 /* Oval Options (+ means implemented)
@@ -26,17 +25,17 @@ struct TkCoval
 static
 TkOption ovalopts[] =
 {
-	"width",	OPTnnfrac,	O(TkCoval, width),	nil,			/* XXX should be nnfrac */
-	"stipple",	OPTbmap,	O(TkCoval, stipple),	nil,
+	"width",	OPTnnfrac,	offsetof(TkCoval, width),	nil,			/* XXX should be nnfrac */
+	"stipple",	OPTbmap,	offsetof(TkCoval, stipple),	nil,
 	nil
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	O(TkCitem, tags),	nil,
-	"fill",		OPTcolr,	O(TkCitem, env),	IAUX(TkCfill),
-	"outline",	OPTcolr,	O(TkCitem, env),	IAUX(TkCforegnd),
+	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
+	"fill",		OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCfill),
+	"outline",	OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCforegnd),
 	nil
 };
 
@@ -228,7 +227,7 @@ tkcvsovalhit(TkCitem *i, Point p)
 	TkCoval *o;
 	int w, dx, dy;
 	Rectangle d;
-	
+
 	o = TKobj(TkCoval, i);
 	w = TKF2I(o->width)/2;
 	d = canonrect(Rpt(i->p.drawpt[0], i->p.drawpt[1]));

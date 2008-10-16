@@ -171,10 +171,10 @@ SHA1state* sha1unpickle(char*);
 /*/////////////////////////////////////////////////////// */
 /* random number generation */
 /*/////////////////////////////////////////////////////// */
-void	genrandom(uchar *buf, int nbytes);
+void	genrandom(char *buf, int nbytes);
 void	_genrandomqlock(void);
 void	_genrandomqunlock(void);
-void	prng(uchar *buf, int nbytes);
+void	prng(char *buf, int nbytes);
 ulong	fastrand(void);
 ulong	nfastrand(ulong);
 

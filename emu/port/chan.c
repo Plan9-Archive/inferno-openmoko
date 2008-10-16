@@ -42,7 +42,7 @@ struct Elemlist
 void cleancname(Cname*);
 
 int
-isdotdot(char *p)
+isdotdot(const char *p)
 {
 	return p[0]=='.' && p[1]=='.' && p[2]=='\0';
 }
@@ -111,7 +111,7 @@ kstrcpy(char *s, char *t, int ns)
 }
 
 int
-emptystr(char *s)
+emptystr(const char *s)
 {
 	return s == nil || s[0] == '\0';
 }
@@ -120,7 +120,7 @@ emptystr(char *s)
  * Atomically replace *p with copy of s
  */
 void
-kstrdup(char **p, char *s)
+kstrdup(char **p, const char *s)
 {
 	int n;
 	char *t, *prev;
@@ -190,7 +190,7 @@ newchan(void)
 	c->umh = 0;
 	c->uri = 0;
 	c->dri = 0;
-	c->aux = 0;
+	c->aux.i = 0;
 	c->mchan = 0;
 	c->mcp = 0;
 	c->mux = 0;
@@ -233,7 +233,7 @@ cnameclose(Cname *n)
 }
 
 Cname*
-addelem(Cname *n, char *s)
+addelem(Cname *n, const char *s)
 {
 	int i, a;
 	char *t;

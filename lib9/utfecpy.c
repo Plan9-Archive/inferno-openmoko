@@ -1,7 +1,7 @@
 #include "lib9.h"
 
 char*
-utfecpy(char *to, char *e, char *from)
+utfecpy(char *to, const char *e, const char *from)
 {
 	char *end;
 

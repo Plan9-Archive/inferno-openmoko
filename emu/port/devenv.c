@@ -42,7 +42,7 @@ envgen(Chan *c, char *name, Dirtab *d, int nd, int s, Dir *dp)
 }
 
 static Chan*
-envattach(char *spec)
+envattach(const char *spec)
 {
 	return devattach('e', spec);
 }
@@ -54,7 +54,7 @@ envwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-envstat(Chan *c, uchar *db, int n)
+envstat(Chan *c, char *db, int n)
 {
 	if(c->qid.type & QTDIR)
 		c->qid.vers = up->env->egrp->vers;
@@ -98,7 +98,7 @@ envopen(Chan *c, int mode)
 }
 
 static void
-envcreate(Chan *c, char *name, int mode, ulong perm)
+envcreate(Chan *c, const char *name, int mode, ulong perm)
 {
 	Egrp *eg;
 	Evalue *e, *le;
@@ -115,8 +115,8 @@ envcreate(Chan *c, char *name, int mode, ulong perm)
 			qunlock(&eg->l);
 			error(Eexist);
 		}
-	e = smalloc(sizeof(Evalue));
-	e->var = smalloc(strlen(name)+1);
+	e = (Evalue*)smalloc(sizeof(Evalue));
+	e->var = (char*)smalloc(strlen(name)+1);
 	strcpy(e->var, name);
 	e->val = 0;
 	e->len = 0;
@@ -142,7 +142,7 @@ envclose(Chan * c)
 }
 
 static long
-envread(Chan *c, void *a, long n, vlong offset)
+envread(Chan *c, char *a, long n, vlong offset)
 {
 	Egrp *eg;
 	Evalue *e;
@@ -171,7 +171,7 @@ envread(Chan *c, void *a, long n, vlong offset)
 }
 
 static long
-envwrite(Chan *c, void *a, long n, vlong offset)
+envwrite(Chan *c, const char *a, long n, vlong offset)
 {
 	char *s;
 	ulong ve;
@@ -193,7 +193,7 @@ envwrite(Chan *c, void *a, long n, vlong offset)
 		error(Enonexist);
 	}
 	if(ve > e->len) {
-		s = smalloc(ve);
+		s = (char*)smalloc(ve);
 		memmove(s, e->val, e->len);
 		if(e->val)
 			free(e->val);

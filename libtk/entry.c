@@ -18,8 +18,6 @@
 	+see
 */
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 #define CNTL(c) ((c)&0x1f)
 
 /* Layout constants */
@@ -46,7 +44,7 @@ static TkStab tkjust[] =
 };
 
 static
-TkEbind b[] = 
+TkEbind b[] =
 {
 	{TkKey,			"%W delete sel.first sel.last; %W insert insert {%A};%W see insert"},
 	{TkKey|CNTL('a'),	"%W icursor 0;%W see insert;%W selection clear"},
@@ -108,9 +106,9 @@ static void blinkreset(Tk*);
 static
 TkOption opts[] =
 {
-	"xscrollcommand",	OPTtext,	O(TkEntry, xscroll),	nil,
-	"justify",		OPTstab,	O(TkEntry, flag),	tkjust,
-	"show",			OPTtext,	O(TkEntry, show),	nil,
+	"xscrollcommand",	OPTtext,	offsetof(TkEntry, xscroll),	nil,
+	"justify",		OPTstab,	offsetof(TkEntry, flag),	tkjust,
+	"show",			OPTtext,	offsetof(TkEntry, show),	nil,
 	nil
 };
 
@@ -356,7 +354,7 @@ tkentrytext(Image *i, Rectangle s, Tk *tk, TkEnv *env)
 
 	if((tke->flag&Ecursoron) && tke->icursor >= tke->v0 && tke->icursor <= tke->v1) {
 		r = Rect(
-			tke->xicursor - tke->x0, 0, 
+			tke->xicursor - tke->x0, 0,
 			tke->xicursor - tke->x0 + Inswidth, env->font->height
 		);
 		draw(i, rectaddpt(r, s.min), tkgc(env, TkCforegnd), nil, ZP);
@@ -404,7 +402,7 @@ tkdrawentry(Tk *tk, Point orig)
 
 	return nil;
 }
-	
+
 char*
 tkentrysh(Tk *tk)
 {
@@ -629,7 +627,7 @@ tkentryseecmd(Tk *tk, char *arg, char **val)
 
 	tkentrysee(tk, index, 1);
 	recalcentry(tk);
-	
+
 	return nil;
 }
 
@@ -723,7 +721,7 @@ tkentryget(Tk *tk, char *arg, char **val)
 	int first, last;
 	char *e, *buf;
 
-	tke = TKobj(TkEntry, tk);	
+	tke = TKobj(TkEntry, tk);
 	if(tke->text == nil)
 		return nil;
 
@@ -1001,7 +999,7 @@ tkentryselect(Tk *tk, char *arg, char **val)
 			free(buf);
 			return e;
 		}
-		
+
 		if(to < tke->anchor) {
 			if(tke->flag & Ewordsel)
 				while(to > 0 && tkiswordchar(tke->text[to-1]))

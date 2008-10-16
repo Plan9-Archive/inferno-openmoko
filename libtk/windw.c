@@ -58,7 +58,7 @@ tkitmp(TkEnv *e, Point p, int fillcol)
 	Rectangle r;
 	ulong pix;
 	int alpha;
-	
+
 	t = e->top;
 	ti = t->ctxt;
 	d = t->display;
@@ -300,7 +300,7 @@ tkdrawslaves1(Tk *tk, Point orig, Image *dst, int *dirty)
 		replclipr(dst, 0, oclip);
 	return e;
 }
-	
+
 char*
 tkdrawslaves(Tk *tk, Point orig, int *dirty)
 {
@@ -605,9 +605,6 @@ tkdirtyfocusorder(TkTop *tkt)
 	tkt->nfocus = 0;
 }
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-#define OA(t, e)	((long)(((t*)0)->e))
-
 typedef struct TkSee TkSee;
 struct TkSee {
 	int r[4];
@@ -617,9 +614,9 @@ struct TkSee {
 
 static
 TkOption seeopts[] = {
-	"rectangle",		OPTfrac,	OA(TkSee, r),	IAUX(4),
-	"point",			OPTfrac,	OA(TkSee, p),	IAUX(2),
-	"where",			OPTbool,	O(TkSee, query),	nil,
+	"rectangle",		OPTfrac,	offsetof(TkSee, r),	IAUX(4),
+	"point",		OPTfrac,	offsetof(TkSee, p),	IAUX(2),
+	"where",		OPTbool,	offsetof(TkSee, query),	nil,
 	nil
 };
 

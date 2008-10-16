@@ -2,7 +2,7 @@
 
 
 long
-runestrlen(Rune *s)
+runestrlen(const Rune *s)
 {
 	int i;
 

@@ -4,8 +4,6 @@
 #include "tk.h"
 #include "canvs.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 /* Text Options (+ means implemented)
 	+anchor
 	+fill
@@ -48,20 +46,20 @@ struct TkCtext
 static
 TkOption textopts[] =
 {
-	"anchor",	OPTstab,	O(TkCtext, anchor),	tkanchor,
-	"justify",	OPTstab,	O(TkCtext, justify),	tktabjust,
-	"width",	OPTdist,	O(TkCtext, width),	IAUX(O(TkCtext, env)),
-	"stipple",	OPTbmap,	O(TkCtext, stipple),	nil,
-	"text",		OPTtext,	O(TkCtext, text),	nil,
+	"anchor",	OPTstab,	offsetof(TkCtext, anchor),	tkanchor,
+	"justify",	OPTstab,	offsetof(TkCtext, justify),	tktabjust,
+	"width",	OPTdist,	offsetof(TkCtext, width),	IAUX(offsetof(TkCtext, env)),
+	"stipple",	OPTbmap,	offsetof(TkCtext, stipple),	nil,
+	"text",		OPTtext,	offsetof(TkCtext, text),	nil,
 	nil
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	O(TkCitem, tags),	nil,
-	"font",		OPTfont,	O(TkCitem, env),	nil,
-	"fill",		OPTcolr,	O(TkCitem, env),	IAUX(TkCfill),
+	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
+	"font",		OPTfont,	offsetof(TkCitem, env),	nil,
+	"fill",		OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCfill),
 	nil
 };
 
@@ -184,7 +182,7 @@ tkcvstextcreat(Tk* tk, char *arg, char **val)
 		tkcvsfreeitem(i);
 		return e;
 	}
-	
+
 	e = tkcaddtag(tk, i, 1);
 	if(e != nil) {
 		tkcvsfreeitem(i);
@@ -404,7 +402,7 @@ tkcvstextsrch(TkCitem *i, int x, int y)
 		}
 		y -= font->height;
 		p = next;
-	}	
+	}
 	return p - t->text + n;
 }
 
@@ -456,7 +454,7 @@ tkcvsparseindex(TkCitem *i, char *buf, int *index)
 		x = 0;
 	if(x > t->tlen)
 		x = t->tlen;
-	*index = x;	
+	*index = x;
 	return nil;
 }
 

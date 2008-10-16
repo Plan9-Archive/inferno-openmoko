@@ -16,7 +16,7 @@ copen(Chan *c)
 }
 
 int
-cread(Chan *c, uchar *b, int n, vlong off)
+cread(Chan *c, char *b, int n, vlong off)
 {
 	USED(c);
 	USED(b);
@@ -26,7 +26,7 @@ cread(Chan *c, uchar *b, int n, vlong off)
 }
 
 void
-cwrite(Chan *c, uchar *buf, int n, vlong off)
+cwrite(Chan *c, char *buf, int n, vlong off)
 {
 	USED(c);
 	USED(buf);
@@ -35,7 +35,7 @@ cwrite(Chan *c, uchar *buf, int n, vlong off)
 }
 
 void
-cupdate(Chan *c, uchar *buf,  int n, vlong off)
+cupdate(Chan *c, char *buf,  int n, vlong off)
 {
 	USED(c);
 	USED(buf);

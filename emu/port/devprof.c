@@ -6,7 +6,7 @@
 #include	"runt.h"
 
 extern	Pool*	imagmem;
-extern void	(*memmonitor)(int, ulong, ulong, ulong);
+/* BUG extern void	(*memmonitor)(int, ulong, ulong, ulong); */
 
 static void	cpxec(Prog *);
 static void memprof(int, void*, ulong);
@@ -118,16 +118,15 @@ getrec(int id)
 static void
 addpmod(char *m)
 {
-	Pmod *p = malloc(sizeof(Pmod));
+	Pmod *p = (Pmod *)malloc(sizeof(Pmod));
 
 	if(p == nil)
 		return;
-	p->name = malloc(strlen(m)+1);
+	p->name = strdup(m);
 	if(p->name == nil){
 		free(p);
 		return;
 	}
-	strcpy(p->name, m);
 	p->link = pmods;
 	pmods = p;
 }
@@ -239,7 +238,7 @@ profgen(Chan *c, char *name, Dirtab *d, int nd, int s, Dir *dp)
 }
 
 static Chan*
-profattach(char *spec)
+profattach(const char *spec)
 {
 	return devattach('P', spec);
 }
@@ -251,7 +250,7 @@ profwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-profstat(Chan *c, uchar *db, int n)
+profstat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, 0, 0, profgen);
 }
@@ -296,12 +295,12 @@ profopen(Chan *c, int omode)
 	c->flag |= COPEN;
 	c->mode = openmode(omode);
 	if(QID(c->qid) == Qhist)
-		c->aux = nil;
+		c->aux.i = 0;
 	return c;
 }
 
 static int
-profwstat(Chan *c, uchar *dp, int n)
+profwstat(Chan *c, char *dp, int n)
 {
 	Dir d;
 	Record *r;
@@ -330,14 +329,14 @@ profclose(Chan *c)
 }
 
 static long
-profread(Chan *c, void *va, long n, vlong offset)
+profread(Chan *c, char *va, long n, vlong offset)
 {
 	int i;
 	Record *r;
-	char *a = va;
+	/*char *a = (char*)va;*/
 
 	if(c->qid.type & QTDIR)
-		return devdirread(c, a, n, 0, 0, profgen);
+		return devdirread(c, va, n, 0, 0, profgen);
 	acquire();
 	r = getrec(PID(c->qid));
 	release();
@@ -349,15 +348,15 @@ profread(Chan *c, void *va, long n, vlong offset)
 	case Qpath:
 		return readstr(offset, va, n, r->path);
 	case Qhist:
-		i = (int)c->aux;
+		i = c->aux.i;
 		while(i < r->size && r->bucket[i] == 0)
 			i++;
 		if(i >= r->size)
 			return 0;
-		c->aux = (void*)(i+1);
+		c->aux.i = i+1;
 		if(n < 20)
 			error(Etoosmall);
-		return sprint(a, "%d %lud", i, r->bucket[i]);
+		return sprint(va, "%d %lud", i, r->bucket[i]);
 	case Qctl:
 		error(Eperm);
 	}
@@ -365,12 +364,12 @@ profread(Chan *c, void *va, long n, vlong offset)
 }
 
 static long
-profwrite(Chan *c, void *va, long n, vlong offset)
+profwrite(Chan *c, const char *va, long n, vlong offset)
 {
 	int i;
-	char *a = va;
 	char buf[128], *fields[128];
-	void	(*f)(int, ulong, ulong, ulong);
+	/* BUG void	(*f)(int, ulong, ulong, ulong); */
+	const char* a;
 
 	USED(va);
 	USED(n);
@@ -382,16 +381,16 @@ profwrite(Chan *c, void *va, long n, vlong offset)
 	case Qctl:
 		if(n > sizeof(buf)-1)
 			n = sizeof(buf)-1;
-		memmove(buf, a, n);
+		memmove(buf, va, n);
 		buf[n] = 0;
 		i = getfields(buf, fields, nelem(fields), 1, " \t\n");
 		if(i > 0 && strcmp(fields[0], "module") == 0){
-			f = memmonitor;
-			memmonitor = nil;
+			/* BUG f = memmonitor;
+			memmonitor = nil; */
 			freepmods();
 			while(--i > 0)
-				addpmod(fields[i]);
-			memmonitor = f;
+				addpmod(fields[i]); /* BUG can fail */
+			/* BUG memmonitor = f; */
 			return n;
 		}
 		if(i == 1){
@@ -409,7 +408,7 @@ profwrite(Chan *c, void *va, long n, vlong offset)
 					profiler = Pmem;
 					for(a = &fields[0][7]; *a != '\0'; a++){
 						if(*a == '1'){
-							memmonitor = memprofmi;
+							/* BUG memmonitor = memprofmi; */
 							mprofiler |= Mmain;
 						}
 						else if(*a == '2'){
@@ -417,7 +416,7 @@ profwrite(Chan *c, void *va, long n, vlong offset)
 							mprofiler |= Mheap;
 						}
 						else if(*a == '3'){
-							memmonitor = memprofmi;
+							/* BUG memmonitor = memprofmi; */
 							mprofiler |= Mimage;
 						}
 					};
@@ -430,7 +429,7 @@ profwrite(Chan *c, void *va, long n, vlong offset)
 			else if(strcmp(fields[0], "end") == 0){
 				profiler = Pnil;
 				mprofiler = Mnone;
-				memmonitor = nil;
+				/* BUG memmonitor = nil; */
 				freeprof();
 				interval = 100;
 			}
@@ -486,7 +485,7 @@ newmodule(Module *m, int vm, int scale, int origin)
 		dsize = (msize(m->prog)/sizeof(Inst)) * sizeof(r->bucket[0]);
 	dsize *= scale;
 	dsize += origin;
-	r = malloc(sizeof(Record)+dsize);
+	r = (Record *)malloc(sizeof(Record)+dsize);
 	if(r == nil) {
 		if(!vm)
 			release();
@@ -555,10 +554,10 @@ mlook(Module *m, int limbo, int vm, int scale, int origin)
 		}
 	}
 	if(pmods == nil || inpmods(m->name) || inpmods(m->path)){
-		f = memmonitor;
+		/* BUG f = memmonitor;
 		memmonitor = nil;	/* prevent monitoring of our memory usage */
 		r = newmodule(m, vm, scale, origin);
-		memmonitor = f;
+		/* BUG memmonitor = f; */
 		return r;
 	}
 	return nil;
@@ -676,12 +675,11 @@ memprof(int c, void *v, ulong n)
 	Module *m;
 	Record *r;
 	Inst *p;
-	Heap *h;
 
 	USED(v);
 	USED(n);
 	if(profiler != Pmem){
-		memmonitor = nil;
+		/* BUG memmonitor = nil; */
 		heapmonitor = nil;
 		return;
 	}
@@ -691,7 +689,6 @@ memprof(int c, void *v, ulong n)
 		unlock(&profile.l);
 		return;
 	}
-	h = v;
 	if(c == Mhalloc || c == Mmalloc || c == Mialloc){
 		p = R.PC;
 		if(m->compiled && m->pctab != nil)
@@ -703,12 +700,12 @@ memprof(int c, void *v, ulong n)
 		i = p-r->base;
 		k = (r->id<<24) | i;
 		if(c == Mhalloc){
-			h->hprof = k;
-			j = hmsize(h)-sizeof(Heap);
+			((Heap*)v)->hprof = k;
+			j = poolmsize(heapmem, v)-sizeof(Heap);
 		}
 		else if(c == Mmalloc){
-			setmalloctag(v, k);
-			j = msize(v);
+			/* BUG setmalloctag(v, k); */
+			j = poolmsize(mainmem, v);
 		}
 		else{
 			((ulong*)v)[1] = k;
@@ -717,22 +714,22 @@ memprof(int c, void *v, ulong n)
 	}
 	else{
 		if(c == Mmfree)
-			k = getmalloctag(v);
+			; /* BUG k = getmalloctag(v); */
 		else if(c == Mifree)
 			k = ((ulong*)v)[1];
 		else
-			k = h->hprof;
+			k = ((Heap*)v)->hprof;
 		if((r = getrec(k>>24)) == nil){
 			unlock(&profile.l);
 			return;
 		}
 		i = k&0xffffff;
 		if(c == Mmfree)
-			j = msize(v);
+			j = poolmsize(mainmem, v);
 		else if(c == Mifree)
 			j = poolmsize(imagmem, v)-sizeof(ulong);
 		else
-			j = hmsize(h)-sizeof(Heap);
+			j = poolmsize(heapmem, v)-sizeof(Heap);
 		j = -j;
 	}
 	i = 2*(i+1);

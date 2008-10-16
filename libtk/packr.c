@@ -2,10 +2,8 @@
 #include "draw.h"
 #include "tk.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 typedef struct Pack Pack;
-struct Pack 
+struct Pack
 {
 	Tk*	t;
 	Pack*	next;
@@ -63,17 +61,17 @@ TkStab tkfill[] =
 static
 TkOption opts[] =
 {
-	"padx",		OPTnndist,	O(TkParam, pad.x),	nil,
-	"pady",		OPTnndist,	O(TkParam, pad.y),	nil,
-	"ipadx",	OPTnndist,	O(TkParam, ipad.x),	nil,
-	"ipady",	OPTnndist,	O(TkParam, ipad.y),	nil,
-	"side",		OPTstab,	O(TkParam, side),	tkside,
-	"anchor",	OPTstab,	O(TkParam, anchor),	tkanchor,
-	"fill",		OPTstab,	O(TkParam, fill),	tkfill,
-	"in",		OPTwinp,	O(TkParam, in),		nil,
-	"before",	OPTwinp,	O(TkParam, before),	nil,
-	"after",	OPTwinp,	O(TkParam, after),	nil,
-	"expand",	OPTstab,	O(TkParam, expand),	tkbool,
+	"padx",		OPTnndist,	offsetof(TkParam, pad.x),	nil,
+	"pady",		OPTnndist,	offsetof(TkParam, pad.y),	nil,
+	"ipadx",	OPTnndist,	offsetof(TkParam, ipad.x),	nil,
+	"ipady",	OPTnndist,	offsetof(TkParam, ipad.y),	nil,
+	"side",		OPTstab,	offsetof(TkParam, side),	tkside,
+	"anchor",	OPTstab,	offsetof(TkParam, anchor),	tkanchor,
+	"fill",		OPTstab,	offsetof(TkParam, fill),	tkfill,
+	"in",		OPTwinp,	offsetof(TkParam, in),		nil,
+	"before",	OPTwinp,	offsetof(TkParam, before),	nil,
+	"after",	OPTwinp,	offsetof(TkParam, after),	nil,
+	"expand",	OPTstab,	offsetof(TkParam, expand),	tkbool,
 	nil
 };
 
@@ -299,7 +297,7 @@ tkslaves(TkTop *t, char *arg, char **val)
 			fmt = " %s";
 		}
 	}
-	
+
 	return nil;
 }
 
@@ -621,7 +619,7 @@ tkpacker(Tk *master)
 	if(maxwidth != master->req.width || maxheight != master->req.height)
 	if((master->flag & Tknoprop) == 0) {
 		if(master->geom != nil) {
-			master->geom(master, master->act.x, master->act.y, 
+			master->geom(master, master->act.x, master->act.y,
 					maxwidth, maxheight);
 		} else {
 			master->req.width = maxwidth;
@@ -661,7 +659,7 @@ tkpacker(Tk *master)
 		}
 		else {
 	    		frame.height = cavity.height;
-	    		frame.width = slave->req.width + slave2BW + 
+	    		frame.width = slave->req.width + slave2BW +
 					slave->pad.x + slave->ipad.x;
 	    		if(slave->flag & Tkexpand)
 				frame.width += tkexpandx(slave, cavity.width);

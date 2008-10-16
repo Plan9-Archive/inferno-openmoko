@@ -4,151 +4,130 @@
 #include "raise.h"
 #include "pool.h"
 
-/*#define DEBUGVM*/
+//#define DEBUGVM
 
-REG	R = {0};			/* Virtual Machine registers */
+REG	R = {0};			/* Virtual Machine registers */ /* BUG: WTF Global R? on multi-processor? */
 String	snil = {0};			/* String known to be zero length */
 
-#define Stmp	*((WORD*)(((uchar*)R.FP)+NREG*IBY2WD))
-#define Dtmp	*((WORD*)(((uchar*)R.FP)+(NREG+2)*IBY2WD))
 
 #define OP(fn)	void fn(void)
-#define B(r)	(*((BYTE*)(R.r)))
-#define W(r)	(*((WORD*)(R.r)))
-#define UW(r)	(*((UWORD*)(R.r)))
-#define F(r)	(*((REAL*)(R.r)))
-#define V(r)	(*((LONG*)(R.r)))
-#define UV(r)	(*((ULONG*)(R.r)))
-#define	S(r)	(*((String**)(R.r)))
-#define	A(r)	(*((Array**)(R.r)))
-#define	Alen(r)	(A(r)==H?0:A(r)->len)
-#define	L(r)	(*((List**)(R.r)))
-#define P(r)	(*((WORD**)(R.r)))
-#define C(r)	(*((Channel**)(R.r)))
-#define FR(r)	(*((Frame**)(R.r)))
-#define T(r)	(*((void**)(R.r)))
-#define JMP(r)	R.PC = *(Inst**)(R.r)
-#define SH(r)	(*((SHORT*)(R.r)))
-#define SR(r)	(*((SREAL*)(R.r)))
+
 
 OP(runt) { }
-OP(negf) { F(d) = -F(s); }
-OP(jmp)  { JMP(d); }
-OP(movpc){ T(d) = &R.M->prog[W(s)]; }
-OP(movm) { memmove(R.d, R.s, W(m)); }
-OP(lea)  { W(d) = (WORD)R.s; }
-OP(movb) { B(d) = B(s); }
-OP(movw) { W(d) = W(s); }
-OP(movf) { F(d) = F(s); }
-OP(movl) { V(d) = V(s); }
-OP(cvtbw){ W(d) = B(s); }
-OP(cvtwb){ B(d) = W(s); }
-OP(cvtrf){ F(d) = SR(s); }
-OP(cvtfr){ SR(d) = F(s); }
-OP(cvtws){ SH(d) = W(s); }
-OP(cvtsw){ W(d) = SH(s); }
-OP(cvtwf){ F(d) = W(s); }
-OP(addb) { B(d) = B(m) + B(s); }
-OP(addw) { W(d) = W(m) + W(s); }
-OP(addl) { V(d) = V(m) + V(s); }
-OP(addf) { F(d) = F(m) + F(s); }
-OP(subb) { B(d) = B(m) - B(s); }
-OP(subw) { W(d) = W(m) - W(s); }
-OP(subl) { V(d) = V(m) - V(s); }
-OP(subf) { F(d) = F(m) - F(s); }
-OP(divb) { B(d) = B(m) / B(s); }
-OP(divw) { W(d) = W(m) / W(s); }
-OP(divl) { V(d) = V(m) / V(s); }
-OP(divf) { F(d) = F(m) / F(s); }
-OP(modb) { B(d) = B(m) % B(s); }
-OP(modw) { W(d) = W(m) % W(s); }
-OP(modl) { V(d) = V(m) % V(s); }
-OP(mulb) { B(d) = B(m) * B(s); }
-OP(mulw) { W(d) = W(m) * W(s); }
-OP(mull) { V(d) = V(m) * V(s); }
-OP(mulf) { F(d) = F(m) * F(s); }
-OP(andb) { B(d) = B(m) & B(s); }
-OP(andw) { W(d) = W(m) & W(s); }
-OP(andl) { V(d) = V(m) & V(s); }
-OP(xorb) { B(d) = B(m) ^ B(s); }
-OP(xorw) { W(d) = W(m) ^ W(s); }
-OP(xorl) { V(d) = V(m) ^ V(s); }
-OP(orb)  { B(d) = B(m) | B(s); }
-OP(orw)  { W(d) = W(m) | W(s); }
-OP(orl)  { V(d) = V(m) | V(s); }
-OP(shlb) { B(d) = B(m) << W(s); }
-OP(shlw) { W(d) = W(m) << W(s); }
-OP(shll) { V(d) = V(m) << W(s); }
-OP(shrb) { B(d) = B(m) >> W(s); }
-OP(shrw) { W(d) = W(m) >> W(s); }
-OP(shrl) { V(d) = V(m) >> W(s); }
-OP(lsrw) { W(d) = UW(m) >> W(s); }
-OP(lsrl) { V(d) = UV(m) >> W(s); }
-OP(beqb) { if(B(s) == B(m)) JMP(d); }
-OP(bneb) { if(B(s) != B(m)) JMP(d); }
-OP(bltb) { if(B(s) <  B(m)) JMP(d); }
-OP(bleb) { if(B(s) <= B(m)) JMP(d); }
-OP(bgtb) { if(B(s) >  B(m)) JMP(d); }
-OP(bgeb) { if(B(s) >= B(m)) JMP(d); }
-OP(beqw) { if(W(s) == W(m)) JMP(d); }
-OP(bnew) { if(W(s) != W(m)) JMP(d); }
-OP(bltw) { if(W(s) <  W(m)) JMP(d); }
-OP(blew) { if(W(s) <= W(m)) JMP(d); }
-OP(bgtw) { if(W(s) >  W(m)) JMP(d); }
-OP(bgew) { if(W(s) >= W(m)) JMP(d); }
-OP(beql) { if(V(s) == V(m)) JMP(d); }
-OP(bnel) { if(V(s) != V(m)) JMP(d); }
-OP(bltl) { if(V(s) <  V(m)) JMP(d); }
-OP(blel) { if(V(s) <= V(m)) JMP(d); }
-OP(bgtl) { if(V(s) >  V(m)) JMP(d); }
-OP(bgel) { if(V(s) >= V(m)) JMP(d); }
-OP(beqf) { if(F(s) == F(m)) JMP(d); }
-OP(bnef) { if(F(s) != F(m)) JMP(d); }
-OP(bltf) { if(F(s) <  F(m)) JMP(d); }
-OP(blef) { if(F(s) <= F(m)) JMP(d); }
-OP(bgtf) { if(F(s) >  F(m)) JMP(d); }
-OP(bgef) { if(F(s) >= F(m)) JMP(d); }
-OP(beqc) { if(stringcmp(S(s), S(m)) == 0) JMP(d); }
-OP(bnec) { if(stringcmp(S(s), S(m)) != 0) JMP(d); }
-OP(bltc) { if(stringcmp(S(s), S(m)) <  0) JMP(d); }
-OP(blec) { if(stringcmp(S(s), S(m)) <= 0) JMP(d); }
-OP(bgtc) { if(stringcmp(S(s), S(m)) >  0) JMP(d); }
-OP(bgec) { if(stringcmp(S(s), S(m)) >= 0) JMP(d); }
+OP(negf) { R.d->disreal = -R.s->disreal; }
+OP(jmp)  { R.PC = R.d->pinst; }
+OP(movpc){ R.d->pinst = R.M->prog + R.s->disint; }
+OP(movm) { memmove(R.d, R.s, R.m->disint); /* TODO: add some assertions here */ }
+OP(lea)  { R.d->pdisdata = R.s; }
+OP(movb) { R.d->disbyte = R.s->disbyte; }
+OP(movw) { R.d->disint = R.s->disint; }
+OP(movf) { R.d->disreal = R.s->disreal; }
+OP(movl) { R.d->disbig = R.s->disbig; }
+OP(cvtbw){ R.d->disint = R.s->disbyte; }
+OP(cvtwb){ R.d->disbyte = R.s->disint;	/* TODO: optional runtime warning when the value is beyond target range */ }
+OP(cvtrf){ R.d->disreal = R.s->disreal32; }
+OP(cvtfr){ R.d->disreal32 = R.s->disreal;/* TODO: optional runtime warning when the value is beyond target range */ }
+OP(cvtws){ R.d->disint16 = R.s->disint; /* TODO: optional runtime warning when the value is beyond target range */ }
+OP(cvtsw){ R.d->disint = R.s->disint16; }
+OP(cvtwf){ R.d->disreal = R.s->disint;  /* TODO: optional runtime warning when the value is beyond target range */ }
+OP(addb) { R.d->disbyte = R.m->disbyte + R.s->disbyte; }
+OP(addw) { R.d->disint = R.m->disint + R.s->disint; }
+OP(addl) { R.d->disbig = R.m->disbig + R.s->disbig; }
+OP(addf) { R.d->disreal = R.m->disreal + R.s->disreal; }
+OP(subb) { R.d->disbyte = R.m->disbyte - R.s->disbyte; }
+OP(subw) { R.d->disint = R.m->disint - R.s->disint; }
+OP(subl) { R.d->disbig = R.m->disbig - R.s->disbig; }
+OP(subf) { R.d->disreal = R.m->disreal - R.s->disreal; }
+OP(divb) { R.d->disbyte = R.m->disbyte / R.s->disbyte; }
+OP(divw) { R.d->disint = R.m->disint / R.s->disint; }
+OP(divl) { R.d->disbig = R.m->disbig / R.s->disbig; }
+OP(divf) { R.d->disreal = R.m->disreal / R.s->disreal; }
+OP(modb) { R.d->disbyte = R.m->disbyte % R.s->disbyte; }
+OP(modw) { R.d->disint = R.m->disint % R.s->disint; }
+OP(modl) { R.d->disbig = R.m->disbig % R.s->disbig; }
+OP(mulb) { R.d->disbyte = R.m->disbyte * R.s->disbyte; }
+OP(mulw) { R.d->disint = R.m->disint * R.s->disint; }
+OP(mull) { R.d->disbig = R.m->disbig * R.s->disbig; }
+OP(mulf) { R.d->disreal = R.m->disreal * R.s->disreal; }
+OP(andb) { R.d->disbyte = R.m->disbyte & R.s->disbyte; }
+OP(andw) { R.d->disint = R.m->disint & R.s->disint; }
+OP(andl) { R.d->disbig = R.m->disbig & R.s->disbig; }
+OP(xorb) { R.d->disbyte = R.m->disbyte ^ R.s->disbyte; }
+OP(xorw) { R.d->disint = R.m->disint ^ R.s->disint; }
+OP(xorl) { R.d->disbig = R.m->disbig ^ R.s->disbig; }
+OP(orb)  { R.d->disbyte = R.m->disbyte | R.s->disbyte; }
+OP(orw)  { R.d->disint = R.m->disint | R.s->disint; }
+OP(orl)  { R.d->disbig = R.m->disbig | R.s->disbig; }
+OP(shlb) { R.d->disbyte = R.m->disbyte << R.s->disint; }
+OP(shlw) { R.d->disint = R.m->disint << R.s->disint; }
+OP(shll) { R.d->disbig = R.m->disbig << R.s->disint; }
+OP(shrb) { R.d->disbyte = R.m->disbyte >> R.s->disint; }
+OP(shrw) { R.d->disint = R.m->disint >> R.s->disint; }
+OP(shrl) { R.d->disbig = R.m->disbig >> R.s->disint; }
+OP(lsrw) { R.d->disint = (DISUINT)R.m->disint >> R.s->disint; }
+OP(lsrl) { R.d->disbig = (DISUBIG)(R.m->disbig) >> R.s->disint; }
+OP(beqb) { if(R.s->disbyte == R.m->disbyte) R.PC = R.d->pinst; }
+OP(bneb) { if(R.s->disbyte != R.m->disbyte) R.PC = R.d->pinst; }
+OP(bltb) { if(R.s->disbyte <  R.m->disbyte) R.PC = R.d->pinst; }
+OP(bleb) { if(R.s->disbyte <= R.m->disbyte) R.PC = R.d->pinst; }
+OP(bgtb) { if(R.s->disbyte >  R.m->disbyte) R.PC = R.d->pinst; }
+OP(bgeb) { if(R.s->disbyte >= R.m->disbyte) R.PC = R.d->pinst; }
+OP(beqw) { if(R.s->disint == R.m->disint) R.PC = R.d->pinst; }
+OP(bnew) { if(R.s->disint != R.m->disint) R.PC = R.d->pinst; }
+OP(bltw) { if(R.s->disint <  R.m->disint) R.PC = R.d->pinst; }
+OP(blew) { if(R.s->disint <= R.m->disint) R.PC = R.d->pinst; }
+OP(bgtw) { if(R.s->disint >  R.m->disint) R.PC = R.d->pinst; }
+OP(bgew) { if(R.s->disint >= R.m->disint) R.PC = R.d->pinst; }
+OP(beql) { if(R.s->disbig == R.m->disbig) R.PC = R.d->pinst; }
+OP(bnel) { if(R.s->disbig != R.m->disbig) R.PC = R.d->pinst; }
+OP(bltl) { if(R.s->disbig <  R.m->disbig) R.PC = R.d->pinst; }
+OP(blel) { if(R.s->disbig <= R.m->disbig) R.PC = R.d->pinst; }
+OP(bgtl) { if(R.s->disbig >  R.m->disbig) R.PC = R.d->pinst; }
+OP(bgel) { if(R.s->disbig >= R.m->disbig) R.PC = R.d->pinst; }
+OP(beqf) { if(R.s->disreal == R.m->disreal) R.PC = R.d->pinst; }
+OP(bnef) { if(R.s->disreal != R.m->disreal) R.PC = R.d->pinst; }
+OP(bltf) { if(R.s->disreal <  R.m->disreal) R.PC = R.d->pinst; }
+OP(blef) { if(R.s->disreal <= R.m->disreal) R.PC = R.d->pinst; }
+OP(bgtf) { if(R.s->disreal >  R.m->disreal) R.PC = R.d->pinst; }
+OP(bgef) { if(R.s->disreal >= R.m->disreal) R.PC = R.d->pinst; }
+OP(beqc) { if(stringcmp(R.s->pstring, R.m->pstring) == 0) R.PC = R.d->pinst; }
+OP(bnec) { if(stringcmp(R.s->pstring, R.m->pstring) != 0) R.PC = R.d->pinst; }
+OP(bltc) { if(stringcmp(R.s->pstring, R.m->pstring) <  0) R.PC = R.d->pinst; }
+OP(blec) { if(stringcmp(R.s->pstring, R.m->pstring) <= 0) R.PC = R.d->pinst; }
+OP(bgtc) { if(stringcmp(R.s->pstring, R.m->pstring) >  0) R.PC = R.d->pinst; }
+OP(bgec) { if(stringcmp(R.s->pstring, R.m->pstring) >= 0) R.PC = R.d->pinst; }
 OP(iexit){ error(""); }
-OP(cvtwl){ V(d) = W(s); }
-OP(cvtlw){ W(d) = V(s); }
-OP(cvtlf){ F(d) = V(s); }
+OP(cvtwl){ R.d->disbig = R.s->disint; }
+OP(cvtlw){ R.d->disint = R.s->disbig; /* TODO: optional runtime warning when the value is beyond target range */ }
+OP(cvtlf){ R.d->disreal = R.s->disbig; /* TODO: optional runtime warning when the value is beyond target range */ }
 OP(cvtfl)
 {
-	REAL f;
+	const DISREAL f = R.s->disreal;
 
-	f = F(s);
-	V(d) = f < 0 ? f - .5 : f + .5;
+	R.d->disbig = f < 0 ? f - .5 : f + .5;
 }
 OP(cvtfw)
 {
-	REAL f;
+	const DISREAL f = R.s->disreal;
 
-	f = F(s);
-	W(d) = f < 0 ? f - .5 : f + .5;
+	R.d->disint = f < 0 ? f - .5 : f + .5;
 }
 OP(cvtcl)
 {
-	String *s;
+	const String *s = R.s->pstring;
 
-	s = S(s);
 	if(s == H)
-		V(d) = 0;
+		R.d->disbig = 0;
 	else
-		V(d) = strtoll(string2c(s), nil, 10);
+		R.d->disbig = strtoll(string2c(s), nil, 10);
 }
 OP(iexpw)
 {
 	int inv;
-	WORD x, n, r;
+	DISINT x, n, r;
 
-	x = W(m);
-	n = W(s);
+	x = R.m->disint;
+	n = R.s->disint;
 	inv = 0;
 	if(n < 0){
 		n = -n;
@@ -164,16 +143,16 @@ OP(iexpw)
 	}
 	if(inv)
 		r = 1/r;
-	W(d) = r;
+	R.d->disint = r;
 }
 OP(iexpl)
 {
 	int inv;
-	WORD n;
-	LONG x, r;
+	DISINT n;
+	DISBIG x, r;
 
-	x = V(m);
-	n = W(s);
+	x = R.m->disbig;
+	n = R.s->disint;
 	inv = 0;
 	if(n < 0){
 		n = -n;
@@ -189,16 +168,16 @@ OP(iexpl)
 	}
 	if(inv)
 		r = 1/r;
-	V(d) = r;
+	R.d->disbig = r;
 }
 OP(iexpf)
 {
 	int inv;
-	WORD n;
-	REAL x, r;
+	DISINT n;
+	DISREAL x, r;
 
-	x = F(m);
-	n = W(s);
+	x = R.m->disreal;
+	n = R.s->disint;
 	inv = 0;
 	if(n < 0){
 		n = -n;
@@ -214,157 +193,120 @@ OP(iexpf)
 	}
 	if(inv)
 		r = 1/r;
-	F(d) = r;
+	R.d->disreal = r;
 }
 OP(indx)
 {
-	ulong i;
-	Array *a;
+	Array *a = R.s->parray;
+	DISINT i = R.d->disint;
 
-	a = A(s);
-	i = W(d);
-	if(a == H || i >= a->len)
+	if (a == H || i < 0 || i >= a->len)
 		error(exBounds);
-	W(m) = (WORD)(a->data+i*a->t->size);
+
+	R.m->pvoid = a->data + i*a->t->size;
 }
 OP(indw)
 {
-	ulong i;
-	Array *a;
+	Array *a = R.s->parray;
+	DISINT i = R.d->disint;
 
-	a = A(s);
-	i = W(d);
-	if(a == H || i >= a->len)
+	if (a == H || i < 0 || i >= a->len)
 		error(exBounds);
-	W(m) = (WORD)(a->data+i*sizeof(WORD));
+
+	R.m->pvoid = a->data + i*sizeof(DISINT);
 }
 OP(indf)
 {
-	ulong i;
-	Array *a;
+	Array *a = R.s->parray;
+	DISINT i = R.d->disint;
 
-	a = A(s);
-	i = W(d);
-	if(a == H || i >= a->len)
+	if (a == H || i < 0 || i >= a->len)
 		error(exBounds);
-	W(m) = (WORD)(a->data+i*sizeof(REAL));
+
+	R.m->pvoid = a->data + i*sizeof(DISREAL);
 }
 OP(indl)
 {
-	ulong i;
-	Array *a;
+	Array *a = R.s->parray;
+	DISINT i = R.d->disint;
 
-	a = A(s);
-	i = W(d);
-	if(a == H || i >= a->len)
+	if (a == H || i < 0 || i >= a->len)
 		error(exBounds);
-	W(m) = (WORD)(a->data+i*sizeof(LONG));
+
+	R.m->pvoid = a->data + i*sizeof(DISBIG);
 }
 OP(indb)
 {
-	ulong i;
-	Array *a;
+	Array *a = R.s->parray;
+	DISINT i = R.d->disint;
 
-	a = A(s);
-	i = W(d);
-	if(a == H || i >= a->len)
+	if (a == H || i < 0 || i >= a->len)
 		error(exBounds);
-	W(m) = (WORD)(a->data+i*sizeof(BYTE));
+
+	R.m->pvoid = a->data + i*sizeof(DISBYTE);
 }
 OP(movp)
 {
-	Heap *h;
-	WORD *dv, *sv;
+	void *sv = R.s->pvoid;
 
-	sv = P(s);
 	if(sv != H) {
-		h = D2H(sv);
-		h->ref++;
-		Setmark(h);
+		ADDREF(sv);
+		Setmark(D2H(sv));
 	}
-	dv = P(d);
-	P(d) = sv;
-	destroy(dv);
+	destroy(R.d->pvoid);
+	R.d->pvoid = sv;
 }
 OP(movmp)
 {
-	Type *t;
-
-	t = R.M->type[W(m)];
+	Type *t = R.M->type[R.m->disint];  /* TODO: check index range */
 
 	incmem(R.s, t);
 	if (t->np)
 		freeptrs(R.d, t);
-	memmove(R.d, R.s, t->size);
+	memcpy(R.d, R.s, t->size);
 }
 OP(new)
 {
-	Heap *h;
-	WORD **wp, *t;
-
-	h = heap(R.M->type[W(s)]);
-	wp = R.d;
-	t = *wp;
-	*wp = H2D(WORD*, h);
-	destroy(t);
+	destroy(R.d->pvoid);
+	R.d->pvoid = H2D(void*, heap(R.M->type[R.s->disint]));  /* TODO: check index range */
 }
 OP(newz)
 {
-	Heap *h;
-	WORD **wp, *t;
-
-	h = heapz(R.M->type[W(s)]);
-	wp = R.d;
-	t = *wp;
-	*wp = H2D(WORD*, h);
-	destroy(t);
+	destroy(R.d->pvoid);
+	R.d->pvoid = H2D(void*, heapz(R.M->type[R.s->disint]));  /* TODO: check index range */
 }
 OP(mnewz)
 {
-	Heap *h;
-	WORD **wp, *t;
-	Modlink *ml;
+	Modlink *ml = R.s->pmodlink;
 
-	ml = *(Modlink**)R.s;
 	if(ml == H)
 		error(exModule);
-	h = heapz(ml->type[W(m)]);
-	wp = R.d;
-	t = *wp;
-	*wp = H2D(WORD*, h);
-	destroy(t);
-}
-OP(frame)
-{
-	Type *t;
-	Frame *f;
 
-	t = R.M->type[W(s)];
-	f = H2D(Frame*,heapz(t));
-	T(d) = f;
+	destroy(R.d->pvoid);
+	R.d->pvoid = H2D(void*, heapz(ml->type[R.m->disint]));  /* TODO: check index range */
+}
+OP(frame) /* == newz */
+{
+	/*destroy(R.d->pframe); /* ??*/
+	R.d->pframe = H2D(Frame*, heapz(R.M->type[R.s->disint]));  /* TODO: check index range */
 }
 OP(mframe)
 {
 	Type *t;
-	Frame *f;
-	Modlink *ml;
-	int o;
+	Modlink *ml = R.s->pmodlink;
+	int o = R.m->disint;
 
-	ml = *(Modlink**)R.s;
 	if(ml == H)
 		error(exModule);
 
-	o = W(m);
 	if (o >= 0) {
 		if(o >= ml->nlinks)
 			error("invalid mframe");
 		t = ml->links[o].frame;
 	} else
-		t = ml->m->ext[-o-1].frame;
+		t = ml->m->ext[-o-1].frame;   /* TODO: check index range */
 
-	f = H2D(Frame*,heapz(t));
-
-	T(d) = f;
+	R.d->pframe = H2D(Frame*,heapz(t));
 }
 void
 acheck(int tsz, int sz)
@@ -377,63 +319,53 @@ acheck(int tsz, int sz)
 }
 OP(newa)
 {
-	int sz;
-	Type *t;
+	Type * const t = R.M->type[R.m->disint];  /* TODO: check index range */
+	const int sz = R.s->disint;
 	Heap *h;
-	Array *a, *at, **ap;
+	Array *a;
 
-	t = R.M->type[W(m)];
-	sz = W(s);
 	acheck(t->size, sz);
 	h = nheap(sizeof(Array) + (t->size*sz));
 	h->t = &Tarray;
-	Tarray.ref++;
+	Tarray.ref++; /* meaningless? */
 	a = H2D(Array*, h);
 	a->t = t;
 	a->len = sz;
 	a->root = H;
-	a->data = (uchar*)a + sizeof(Array);
+	a->data = (char*)(a+1);
 	initarray(t, a);
 
-	ap = R.d;
-	at = *ap;
-	*ap = a;
-	destroy(at);
+	destroy(R.d->parray);
+	R.d->parray = a;
 }
 OP(newaz)
 {
-	int sz;
-	Type *t;
+	Type * const t = R.M->type[R.m->disint];  /* TODO: check index range */
+	const int sz = R.s->disint;
 	Heap *h;
-	Array *a, *at, **ap;
+	Array *a;
 
-	t = R.M->type[W(m)];
-	sz = W(s);
 	acheck(t->size, sz);
 	h = nheap(sizeof(Array) + (t->size*sz));
 	h->t = &Tarray;
-	Tarray.ref++;
+	Tarray.ref++; /* meaningless? */
 	a = H2D(Array*, h);
 	a->t = t;
 	a->len = sz;
 	a->root = H;
-	a->data = (uchar*)a + sizeof(Array);
+	a->data = (char*)(a+1);
 	memset(a->data, 0, t->size*sz);
 	initarray(t, a);
 
-	ap = R.d;
-	at = *ap;
-	*ap = a;
-	destroy(at);
+	destroy(R.d->parray);
+	R.d->parray = a;
 }
 Channel*
 cnewc(Type *t, void (*mover)(void), int len)
 {
-	Heap *h;
-	Channel *c;
+	Heap *h = heap(&Tchannel);
+	Channel *c = H2D(Channel*, h);
 
-	h = heap(&Tchannel);
-	c = H2D(Channel*, h);
 	c->send = (Progq*)malloc(sizeof(Progq));
 	c->recv = (Progq*)malloc(sizeof(Progq));
 	if(c->send == nil || c->recv == nil){
@@ -455,23 +387,20 @@ cnewc(Type *t, void (*mover)(void), int len)
 	}
 	return c;
 }
-Channel*
+
+static Channel*
 newc(Type *t, void (*mover)(void))
 {
-	Channel **cp, *oldc;
-	WORD len;
+	DISINT len = 0;
 
-	len = 0;
 	if(R.m != R.d){
-		len = W(m);
+		len = R.m->disint;
 		if(len < 0)
 			error(exNegsize);
 	}
-	cp = R.d;
-	oldc = *cp;
-	*cp = cnewc(t, mover, len);
-	destroy(oldc);
-	return *cp;
+
+	destroy(R.d->pchannel);
+	return R.d->pchannel = cnewc(t, mover, len);
 }
 OP(newcl)  { newc(&Tlong, movl);  }
 OP(newcb)  { newc(&Tbyte, movb);  }
@@ -484,23 +413,23 @@ OP(newcm)
 	Type *t;
 
 	t = nil;
-	if(R.m != R.d && W(m) > 0)
-		t = dtype(nil, W(s), nil, 0);
+	if(R.m != R.d && R.s->disint > 0)
+		t = dtype(nil, R.s->disint, nil, 0, "(newcm)");
 	c = newc(t, movm);
-	c->mid.w = W(s);
+	c->mid.w = R.s->disint;
 	if(t != nil)
 		freetype(t);
 }
 OP(newcmp)
 {
-	newc(R.M->type[W(s)], movtmp);
+	newc(R.M->type[R.s->disint], movtmp);  /* TODO: check index range */
 }
 OP(icase)
 {
-	WORD v, *t, *l, d, n, n2;
+	DISINT v, *t, *l, d, n, n2;
 
-	v = W(s);
-	t = (WORD*)((WORD)R.d + IBY2WD);
+	v = R.s->disint;
+	t = (DISINT*)((DISINT)R.d + sizeof(DISINT)); /* FIXME */
 	n = t[-1];
 	d = t[n*3];
 
@@ -527,22 +456,22 @@ OP(icase)
 }
 OP(casel)
 {
-	WORD *t, *l, d, n, n2;
-	LONG v;
+	DISINT *t, *l, d, n, n2;
+	DISBIG v;
 
-	v = V(s);
-	t = (WORD*)((WORD)R.d + 2*IBY2WD);
+	v = R.s->disbig;
+	t = (DISINT*)((DISINT)R.d + 2*sizeof(DISINT)); /* FIXME */
 	n = t[-2];
 	d = t[n*6];
 
 	while(n > 0) {
 		n2 = n >> 1;
 		l = t + n2*6;
-		if(v < ((LONG*)l)[0]) {
+		if(v < ((DISBIG*)l)[0]) {
 			n = n2;
 			continue;
 		}
-		if(v >= ((LONG*)l)[1]) {
+		if(v >= ((DISBIG*)l)[1]) {
 			t = l+6;
 			n -= n2 + 1;
 			continue;
@@ -558,11 +487,11 @@ OP(casel)
 }
 OP(casec)
 {
-	WORD *l, *t, *e, n, n2, r;
+	DISINT *l, *t, *e, n, n2, r;
 	String *sl, *sh, *sv;
 
-	sv = S(s);
-	t = (WORD*)((WORD)R.d + IBY2WD);
+	sv = R.s->pstring;
+	t = (DISINT*)((DISINT)R.d + sizeof(DISINT)); /* FIXME */
 	n = t[-1];
 	e = t + n*3;
 	if(n > 2){
@@ -617,9 +546,9 @@ found:
 }
 OP(igoto)
 {
-	WORD *t;
+	DISINT *t;
 
-	t = (WORD*)((WORD)R.d + (W(s) * IBY2WD));
+	t = (DISINT*)((DISINT)R.d + (R.s->disint * sizeof(DISINT))); /* FIXME */
 	if(R.M->compiled) {
 		R.PC = (Inst*)t[0];
 		return;
@@ -628,47 +557,43 @@ OP(igoto)
 }
 OP(call)
 {
-	Frame *f;
+	Frame *f = R.s->pframe;
 
-	f = T(s);
 	f->lr = R.PC;
 	f->fp = R.FP;
 	R.FP = f;
-	JMP(d);
+	R.PC = R.d->pinst;
 }
 OP(spawn)
 {
-	Prog *p;
+	Prog *p = newprog(currun(), R.M);
 
-	p = newprog(currun(), R.M);
-	p->R.PC = *(Inst**)R.d;
-	p->R.FP = FR(s);
+	p->R.PC = R.d->pinst;
+	p->R.FP = R.s->pframe;
 }
 OP(mspawn)
 {
 	Prog *p;
-	Modlink *ml;
+	Modlink *ml = R.d->pmodlink;
 	int o;
 
-	ml = *(Modlink**)R.d;
 	if(ml == H)
 		error(exModule);
 	if(ml->prog == nil)
 		error(exSpawn);
 	p = newprog(currun(), ml);
-	o = W(m);
+	o = R.m->disint;
 	if(o >= 0)
-		p->R.PC = ml->links[o].u.pc;
+		p->R.PC = ml->links[o].u.pc;   /* TODO: check index range */
 	else
-		p->R.PC = ml->m->ext[-o-1].u.pc;
-	p->R.FP = FR(s);
+		p->R.PC = ml->m->ext[-o-1].u.pc;   /* TODO: check index range */
+	p->R.FP = R.s->pframe;
 }
 OP(ret)
 {
-	Frame *f;
+	Frame *f = R.FP;
 	Modlink *m;
 
-	f = R.FP;
 	R.FP = f->fp;
 	if(R.FP == nil) {
 		R.FP = f;
@@ -678,6 +603,7 @@ OP(ret)
 	m = f->mr;
 
 	//? destroy(f)
+	// FIXME: huh, what if the return value is array or adt ?
 	assert(D2H(f)->t != nil);
 	freeptrs(f, D2H(f)->t);
 
@@ -694,24 +620,22 @@ OP(ret)
 }
 OP(iload)
 {
-	char *n;
+	char *n = string2c(R.s->pstring);
+	Module *m = R.M->m;
 	Import *ldt;
-	Module *m;
-	Modlink *ml, **mp, *t;
+	Modlink *ml;
 
-	n = string2c(S(s));
-	m = R.M->m;
 	if(!(m->rt & HASLDT)) {
 		error("obsolete dis");
 	}
-	ldt = m->ldt[W(m)];
+	ldt = m->ldt[R.m->disint]; /* TODO: check index range */
 
 	if(strcmp(n, "$self") == 0) {
 		m->ref++;
 		ml = linkmod(m, ldt, 0);
 		if(ml != H) {
 			ml->MP = R.M->MP;
-			D2H(ml->MP)->ref++;
+			ADDREF(ml->MP);
 		}
 	}
 	else {
@@ -719,41 +643,36 @@ OP(iload)
 		ml = linkmod(m, ldt, 1);
 	}
 
-	mp = R.d; /* FIXME dirty hack */
-	t = *mp;
-	*mp = ml;
-	destroy(t);
+	destroy(R.d->pmodlink);
+	R.d->pmodlink = ml;
 }
 OP(mcall)
 {
-	Heap *h;
 	Prog *p;
-	Frame *f;
+	Frame *f = R.s->pframe;
 	Linkpc *l;
-	Modlink *ml;
+	Modlink *ml = R.d->pmodlink;
 	int o;
 
-	ml = *(Modlink**)R.d;
 	if(ml == H)
 		error(exModule);
-	f = T(s);
+
 	f->lr = R.PC;
 	f->fp = R.FP;
 	f->mr = R.M;
 
 	R.FP = f;
 	R.M = ml;
-	h = D2H(ml);
-	h->ref++;
+	ADDREF(ml);
 
-	o = W(m);
+	o = R.m->disint;
 	if(o >= 0)
-		l = &ml->links[o].u;
+		l = &ml->links[o].u;   /* TODO: check index range */
 	else
-		l = &ml->m->ext[-o-1].u;
+		l = &ml->m->ext[-o-1].u;   /* TODO: check index range */
 	if(ml->prog == nil) {
 		l->runt(f);
-		h->ref--;
+		D2H(ml)->ref--;
 		R.M = f->mr;
 		R.FP = f->fp;
 
@@ -776,46 +695,42 @@ OP(mcall)
 }
 OP(lena)
 {
-	WORD l;
-	Array *a;
+	Array *a = R.s->parray;
+	DISINT l = 0;
 
-	a = A(s);
-	l = 0;
 	if(a != H)
 		l = a->len;
-	W(d) = l;
+	R.d->disint = l;
 }
 OP(lenl)
 {
-	WORD l;
-	List *a;
+	List *a = R.s->plist;
+	DISINT l = 0;
 
-	a = L(s);
-	l = 0;
 	while(a != H) {
 		l++;
 		a = a->tail;
 	}
-	W(d) = l;
+	R.d->disint = l;
 }
 static int
 cgetb(Channel *c, void *v)
 {
-	Array *a;
+	Array *a = c->buf;
 	void *w;
 
-	if((a = c->buf) == H)
+	if(a == H)
 		return 0;
 	if(c->size > 0){
-		w = a->data+c->front*a->t->size;
+		w = a->data + c->front*a->t->size;
 		c->front++;
 		if(c->front == c->buf->len)
 			c->front = 0;
 		c->size--;
 		R.s = w;
-		R.m = &c->mid;
+		R.m = (Disdata*) &c->mid;
 		R.d = v;
-		c->mover();
+		c->mover(); /* FIXME */
 		if(a->t->np){
 			freeptrs(w, a->t);
 			initmem(a->t, w);
@@ -827,10 +742,10 @@ cgetb(Channel *c, void *v)
 static int
 cputb(Channel *c, void *v)
 {
-	Array *a;
-	WORD len, r;
+	Array *a = c->buf;
+	DISINT len, r;
 
-	if((a = c->buf) == H)
+	if(a == H)
 		return 0;
 	len = c->buf->len;
 	if(c->size < len){
@@ -839,9 +754,9 @@ cputb(Channel *c, void *v)
 			r -= len;
 		c->size++;
 		R.s = v;
-		R.m = &c->mid;
-		R.d = a->data+r*a->t->size;
-		c->mover();
+		R.m = (Disdata*) &c->mid;
+		R.d = (Disdata*) (a->data + r * a->t->size);
+		c->mover(); /* FIXME: args passed via R */
 		return 1;
 	}
 	return 0;
@@ -912,10 +827,9 @@ cqdelp(Progq **q, Prog *p)
 }
 OP(isend)
 {
-	Channel *c;
+	Channel *c = R.d->pchannel;
  	Prog *p;
 
-	c = C(d);
 	if(c == H)
 		error(exNilref);
 
@@ -936,21 +850,20 @@ OP(isend)
 
 	cqdel(&c->recv);
 	if(p->state == Palt)
-		altdone(p->R.s, p, c, 1);
+		altdone(&p->R.s->alt, p, c, 1);
 
 	R.m = &c->mid;
 	R.d = p->ptr;
 	p->ptr = nil;
-	c->mover();
+	c->mover();  /* FIXME: args passed via R */
 	addrun(p);
 	R.t = 0;
 }
 OP(irecv)
 {
-	Channel *c;
+	Channel *c = R.s->pchannel;
 	Prog *p;
 
-	c = C(s);
 	if(c == H)
 		error(exNilref);
 
@@ -971,7 +884,7 @@ OP(irecv)
 
 	cqdel(&c->send);
 	if(p->state == Palt)
-		altdone(p->R.s, p, c, 0);
+		altdone(&p->R.s->alt, p, c, 0);
 
 	if(c->buf != H){
 		cgetb(c, R.d);
@@ -982,7 +895,7 @@ OP(irecv)
 		R.m = &c->mid;
 		R.s = p->ptr;
 		p->ptr = nil;
-		c->mover();
+		c->mover(); /* FIXME */
 	}
 	addrun(p);
 	R.t = 0;
@@ -1003,11 +916,10 @@ csendalt(Channel *c, void *ip, Type *t, int len)
 		}
 		c->buf = H2D(Array*, heaparray(t, len));
 	}
-
 	rsav = R;
 	R.s = ip;
 	R.d = &c;
-	isend();
+	isend(); /* FIXME */
 	R = rsav;
 	freeptrs(ip, t);
 	return 1;
@@ -1016,10 +928,9 @@ csendalt(Channel *c, void *ip, Type *t, int len)
 List*
 cons(ulong size, List **lp)
 {
-	Heap *h;
+	Heap *h = nheap(offsetof(List,data) + size);
 	List *lv, *l;
 
-	h = nheap(sizeof(List) + size - sizeof(((List*)0)->data));
 	h->t = &Tlist;
 	Tlist.ref++;
 	l = H2D(List*, h);
@@ -1036,140 +947,136 @@ cons(ulong size, List **lp)
 }
 OP(consb)
 {
-	List *l;
+	List *l = cons(sizeof(DISBYTE), &R.d->plist);
 
-	l = cons(IBY2WD, R.d);
-	*(BYTE*)l->data = B(s);
+	l->data.disbyte = R.s->disbyte;
 }
 OP(consw)
 {
-	List *l;
+	List *l = cons(sizeof(DISINT), &R.d->plist);
 
-	l = cons(IBY2WD, R.d);
-	*(WORD*)l->data = W(s);
+	l->data.disint = R.s->disint;
 }
 OP(consl)
 {
-	List *l;
+	List *l = cons(sizeof(DISBIG), &R.d->plist);
 
-	l = cons(IBY2LG, R.d);
-	*(LONG*)l->data = V(s);
+	l->data.disbig = R.s->disbig;
 }
 OP(consp)
 {
-	List *l;
-	Heap *h;
-	WORD *sv;
+	List *l = cons(sizeof(void*), &R.d->plist);
+	void *sv = R.s->pvoid;
 
-	l = cons(IBY2WD, R.d);
-	sv = P(s);
 	if(sv != H) {
-		h = D2H(sv);
-		h->ref++;
-		Setmark(h);
+		ADDREF(sv);
+		Setmark(D2H(sv));
 	}
 	l->t = &Tptr;
 	Tptr.ref++;
-	*(WORD**)l->data = sv;
+	l->data.pvoid = sv;
 }
 OP(consf)
 {
 	List *l;
 
-	l = cons(sizeof(REAL), R.d);
-	*(REAL*)l->data = F(s);
+	l = cons(sizeof(DISREAL), &R.d->plist);
+	l->data.disreal = R.s->disreal;
 }
 OP(consm)
 {
-	int v;
-	List *l;
-
-	v = W(m);
-	l = cons(v, R.d);
-	memmove(l->data, R.s, v);
+	DISINT v = R.m->disint;
+	List *l = cons(v, &R.d->plist);
+	memcpy(&l->data, R.s, v);
 }
 OP(consmp)
 {
-	List *l;
-	Type *t;
+	Type *t = R.M->type[R.m->disint];  /* TODO: check index range */
+	List *l = cons(t->size, &R.d->plist);
 
-	t = R.M->type[W(m)];
-	l = cons(t->size, R.d);
 	incmem(R.s, t);
-	memmove(l->data, R.s, t->size);
+	memcpy(&l->data, R.s, t->size);
 	l->t = t;
 	t->ref++;
 }
 OP(headb)
 {
-	List *l;
+	List *l = R.s->plist;
 
-	l = L(s);
-	B(d) = *(BYTE*)l->data;
+	if(l == H)
+		error(exNilref);
+	R.d->disbyte = l->data.disbyte;
 }
 OP(headw)
 {
-	List *l;
+	List *l = R.s->plist;
 
-	l = L(s);
-	W(d) = *(WORD*)l->data;
+	if(l == H)
+		error(exNilref);
+	R.d->disint = l->data.disint;
 }
 OP(headl)
 {
-	List *l;
+	List *l = R.s->plist;
 
-	l = L(s);
-	V(d) = *(LONG*)l->data;
+	if(l == H)
+		error(exNilref);
+	R.d->disbig = l->data.disbig;
 }
 OP(headp)
 {
-	List *l;
+	List *l = R.s->plist;
 
-	l = L(s);
-	R.s = l->data;
-	movp();
+	if(l == H)
+		error(exNilref);
+	R.s = &l->data;
+	movp(); /* FIXME: args passed via R  */
 }
 OP(headf)
 {
-	List *l;
+	List *l = R.s->plist;
 
-	l = L(s);
-	F(d) = *(REAL*)l->data;
+	if(l == H)
+		error(exNilref);
+	R.d->disreal = l->data.disreal;
 }
 OP(headm)
 {
-	List *l;
+	List *l = R.s->plist;
 
-	l = L(s);
-	memmove(R.d, l->data, W(m));
+	if(l == H)
+		error(exNilref);
+	memcpy(R.d, &l->data, R.m->disint);
 }
 OP(headmp)
 {
-	List *l;
+	List *l = R.s->plist;
 
-	l = L(s);
-	R.s = l->data;
-	movmp();
+	if(l == H)
+		error(exNilref);
+	R.s = &l->data;
+	movmp(); /* FIXME: args passed via R  */
 }
 OP(tail)
 {
-	List *l;
+	List *l = R.s->plist;
 
-	l = L(s);
-	R.s = &l->tail;
-	movp();
+	if(l == H)
+		error(exNilref);
+	R.s = (Disdata*) &l->tail;
+	movp(); /* FIXME: args passed via R  */
 }
 OP(slicea)
 {
 	Type *t;
 	Heap *h;
-	Array *at, *ss, *ds;
+	Array *ss, *ds;
 	int v, n, start;
 
-	v = W(m);
-	start = W(s);
+	v = R.m->disint;
+	start = R.s->disint;
 	n = v - start;
-	ds = A(d);
+	ds = R.d->parray;
 
 	if(ds == H) {
 		if(n == 0)
@@ -1189,19 +1096,16 @@ OP(slicea)
 
 	if(ds->root != H) {			/* slicing a slice */
 		ds = ds->root;
-		h = D2H(ds);
-		h->ref++;
-		at = A(d);
-		A(d) = ss;
+		ADDREF(ds);
+		destroy(R.d->parray);
+		R.d->parray = ss;
 		ss->root = ds;
-		destroy(at);
 	}
 	else {
-		h = D2H(ds);
 		ss->root = ds;
-		A(d) = ss;
+		R.d->parray = ss;
 	}
-	Setmark(h);
+	Setmark(D2H(ds));
 }
 OP(slicela)
 {
@@ -1210,9 +1114,9 @@ OP(slicela)
 	Array *ss, *ds;
 	uchar *sp, *dp, *ep;
 
-	ss = A(s);
-	dl = W(m);
-	ds = A(d);
+	ss = R.s->parray;
+	dl = R.m->disint;
+	ds = R.d->parray;
 	if(ss == H)
 		return;
 	if(ds == H)
@@ -1263,11 +1167,10 @@ OP(nbalt)
 }
 OP(tcmp)
 {
-	void *s, *d;
+	const void * const s = R.s->pvoid;
+	const void * const d = R.d->pvoid;
 
-	s = T(s);
-	d = T(d);
-	if(s != H && (d == H || D2H(s)->t != D2H(d)->t))
+	if(s != H && (d == H || D2H(s)->t != D2H(d)->t)) /* wow */
 		error(exTcheck);
 }
 OP(eclr)
@@ -1281,136 +1184,134 @@ OP(badop)
 OP(iraise)
 {
 	void *v;
-	Heap *h;
 	Prog *p;
 
 
 	p = currun();
-	v = T(s);
+	v = R.s->pvoid;
 	if(v == H)
 		error(exNilref);
 	p->exval = v;
-	h = D2H(v);
-	h->ref++;
-	if(h->t == &Tstring)
+	ADDREF(v);
+	if(D2H(v)->t == &Tstring)
 		error(string2c((String*)v));
 	else
-		error(string2c(*(String**)v));
+		error(string2c(*(String**)v)); /* FIXME: OMG */
 }
 OP(mulx)
 {
-	WORD p;
-	LONG r;
+	DISINT p;
+	DISBIG r;
 
-	p = Dtmp;
-	r = (LONG)W(m)*(LONG)W(s);
+	p = R.FP->dtmp;
+	r = (DISBIG)R.m->disint*(DISBIG)R.s->disint;
 	if(p >= 0)
 		r <<= p;
 	else
 		r >>= (-p);
-	W(d) = (WORD)r;
+	R.d->disint = (DISINT)r;
 }
 OP(divx)
 {
-	WORD p;
-	LONG s;
+	DISINT p;
+	DISBIG s;
 
-	p = Dtmp;
-	s = (LONG)W(m);
+	p = R.FP->dtmp;
+	s = (DISBIG)R.m->disint;
 	if(p >= 0)
 		s <<= p;
 	else
 		s >>= (-p);
-	s /= (LONG)W(s);
-	W(d) = (WORD)s;
+	s /= (DISBIG)R.s->disint;
+	R.d->disint = (DISINT)s;
 }
 OP(cvtxx)
 {
-	WORD p;
-	LONG r;
+	DISINT p;
+	DISBIG r;
 
-	p = W(m);
-	r = (LONG)W(s);
+	p = R.m->disint;
+	r = (DISBIG)R.s->disint;
 	if(p >= 0)
 		r <<= p;
 	else
 		r >>= (-p);
-	W(d) = (WORD)r;
+	R.d->disint = (DISINT)r;
 }
 OP(mulx0)
 {
-	WORD x, y, p, a;
-	LONG r;
+	DISINT x, y, p, a;
+	DISBIG r;
 
-	x = W(m);
-	y = W(s);
-	p = Dtmp;
-	a = Stmp;
+	x = R.m->disint;
+	y = R.s->disint;
+	p = R.FP->dtmp;
+	a = R.FP->stmp;
 	if(x == 0 || y == 0){
-		W(d) = 0;
+		R.d->disint = 0;
 		return;
 	}
-	r = (LONG)x*(LONG)y;
+	r = (DISBIG)x*(DISBIG)y;
 	if(p >= 0)
 		r <<= p;
 	else
 		r >>= (-p);
-	r /= (LONG)a;
-	W(d) = (WORD)r;
+	r /= (DISBIG)a;
+	R.d->disint = (DISINT)r;
 }
 OP(divx0)
 {
-	WORD x, y, p, b;
-	LONG s;
+	DISINT x, y, p, b;
+	DISBIG s;
 
-	x = W(m);
-	y = W(s);
-	p = Dtmp;
-	b = Stmp;
+	x = R.m->disint;
+	y = R.s->disint;
+	p = R.FP->dtmp;
+	b = R.FP->stmp;
 	if(x == 0){
-		W(d) = 0;
+		R.d->disint = 0;
 		return;
 	}
-	s = (LONG)b*(LONG)x;
+	s = (DISBIG)b*(DISBIG)x;
 	if(p >= 0)
 		s <<= p;
 	else
 		s >>= (-p);
-	s /= (LONG)y;
-	W(d) = (WORD)s;
+	s /= (DISBIG)y;
+	R.d->disint = (DISINT)s;
 }
 OP(cvtxx0)
 {
-	WORD x, p, a;
-	LONG r;
+	DISINT x, p, a;
+	DISBIG r;
 
-	x = W(s);
-	p = W(m);
-	a = Stmp;
+	x = R.s->disint;
+	p = R.m->disint;
+	a = R.FP->stmp;
 	if(x == 0){
-		W(d) = 0;
+		R.d->disint = 0;
 		return;
 	}
-	r = (LONG)x;
+	r = (DISBIG)x;
 	if(p >= 0)
 		r <<= p;
 	else
 		r >>= (-p);
-	r /= (LONG)a;
-	W(d) = (WORD)r;
+	r /= (DISBIG)a;
+	R.d->disint = (DISINT)r;
 }
 OP(mulx1)
 {
-	WORD x, y, p, a, v;
+	DISINT x, y, p, a, v;
 	int vnz, wnz;
-	LONG w, r;
+	DISBIG w, r;
 
-	x = W(m);
-	y = W(s);
-	p = Dtmp;
-	a = Stmp;
+	x = R.m->disint;
+	y = R.s->disint;
+	p = R.FP->dtmp;
+	a = R.FP->stmp;
 	if(x == 0 || y == 0){
-		W(d) = 0;
+		R.d->disint = 0;
 		return;
 	}
 	vnz = p&2;
@@ -1426,29 +1327,29 @@ OP(mulx1)
 	if(wnz){
 		if((!vnz && (x > 0 && y < 0 || x < 0 && y > 0)) ||
 		(vnz && (x > 0 && y > 0 || x < 0 && y < 0)))
-			w = ((LONG)1<<(-p)) - 1;
+			w = ((DISBIG)1<<(-p)) - 1;
 	}
-	r = (LONG)x*(LONG)y + w;
+	r = (DISBIG)x*(DISBIG)y + w;
 	if(p >= 0)
 		r <<= p;
 	else
 		r >>= (-p);
-	r += (LONG)v;
-	r /= (LONG)a;
-	W(d) = (WORD)r;
+	r += (DISBIG)v;
+	r /= (DISBIG)a;
+	R.d->disint = (DISINT)r;
 }
 OP(divx1)
 {
-	WORD x, y, p, b, v;
+	DISINT x, y, p, b, v;
 	int vnz, wnz;
-	LONG w, s;
+	DISBIG w, s;
 
-	x = W(m);
-	y = W(s);
-	p = Dtmp;
-	b = Stmp;
+	x = R.m->disint;
+	y = R.s->disint;
+	p = R.FP->dtmp;
+	b = R.FP->stmp;
 	if(x == 0){
-		W(d) = 0;
+		R.d->disint = 0;
 		return;
 	}
 	vnz = p&2;
@@ -1463,27 +1364,27 @@ OP(divx1)
 	}
 	if(wnz){
 		if(x <= 0)
-			w = ((LONG)1<<(-p)) - 1;
+			w = ((DISBIG)1<<(-p)) - 1;
 	}
-	s = (LONG)b*(LONG)x + w;
+	s = (DISBIG)b*(DISBIG)x + w;
 	if(p >= 0)
 		s <<= p;
 	else
 		s >>= (-p);
-	s /= (LONG)y;
-	W(d) = (WORD)s + v;
+	s /= (DISBIG)y;
+	R.d->disint = (DISINT)s + v;
 }
 OP(cvtxx1)
 {
-	WORD x, p, a, v;
+	DISINT x, p, a, v;
 	int vnz, wnz;
-	LONG w, r;
+	DISBIG w, r;
 
-	x = W(s);
-	p = W(m);
-	a = Stmp;
+	x = R.s->disint;
+	p = R.m->disint;
+	a = R.FP->stmp;
 	if(x == 0){
-		W(d) = 0;
+		R.d->disint = 0;
 		return;
 	}
 	vnz = p&2;
@@ -1498,90 +1399,78 @@ OP(cvtxx1)
 	}
 	if(wnz){
 		if(!vnz && x < 0 || vnz && x > 0)
-			w = ((LONG)1<<(-p)) - 1;
+			w = ((DISBIG)1<<(-p)) - 1;
 	}
-	r = (LONG)x + w;
+	r = (DISBIG)x + w;
 	if(p >= 0)
 		r <<= p;
 	else
 		r >>= (-p);
-	r += (LONG)v;
-	r /= (LONG)a;
-	W(d) = (WORD)r;
+	r += (DISBIG)v;
+	r /= (DISBIG)a;
+	R.d->disint = (DISINT)r;
 }
 /*
 OP(cvtxx)
 {
 	REAL v;
 
-	v = (REAL)W(s)*F(m);
+	v = (REAL)R.s->disint*R.m->disreal;
 	v = v < 0 ? v-0.5: v+0.5;
-	W(d) = (WORD)v;
+	R.d->disint = (WORD)v;
 }
 */
 OP(cvtfx)
 {
-	REAL v;
+	DISREAL v;
 
-	v = F(s)*F(m);
+	v = R.s->disreal*R.m->disreal;
 	v = v < 0 ? v-0.5: v+0.5;
-	W(d) = (WORD)v;
+	R.d->disint = (DISINT)v;
 }
 OP(cvtxf)
 {
-	F(d) = (REAL)W(s)*F(m);
+	R.d->disreal = (DISREAL)R.s->disint*R.m->disreal;
 }
 
 OP(self)
 {
-	Modlink *ml, **mp, *t;
+	Modlink *ml = R.M;
 
-	ml = R.M;
-	D2H(ml)->ref++;
-	mp = R.d;
-	t = *mp;
-	*mp = ml;
-	destroy(t);
+	ADDREF(ml);
+
+	destroy(R.d->pmodlink);
+	R.d->pmodlink = ml;
 }
 
 void
 destroystack(REG *reg)
 {
-	/* BUG */
-#if STACK
-	Type *t;
-	Frame *f, *fp;
-	Modlink *m;
-	Stkext *sx;
-	uchar *ex;
+	/* BUG: free frames as well */
+	/* TODO mark Frame::mp and Frame::fp in Type::map */
+	Frame *f;
+	Type* t;
+	print("destroystack begin:\n");
+	for(f = reg->FP; f != nil; f = f->fp)
+	{
+		assert(D2H(f)->t!=nil);
+		assert(D2H(f)->t->destructor == &freeheap);
 
-	ex = reg->EX;
-	reg->EX = nil;
-	while(ex != nil) {
-		sx = (Stkext*)ex;
-		fp = sx->reg.tos.fr;
-		do {
-			f = (Frame*)reg->FP;
-			if(f == nil)
-				break;
-			reg->FP = f->fp;
-			t = f->t;
-			if(t == nil)
-				t = sx->reg.TR;
-			m = f->mr;
-			if (t->np)
-				freeptrs(f, t);
-			if(m != nil) {
-				destroy(reg->M);
-				reg->M = m;
-			}
-		} while(f != fp);
-		ex = sx->reg.EX;
-		free(sx);
+		print("Frame:\t");PRINT_TYPE(D2H(f)->t); print("\n");
+		/*{Type*t=D2H(f)->t; int i;
+		print("<%02X:", t->np); for(i=0; i<t->np; i++) print("%02X", t->map[i]);
+		print(">\n");
+		}*/
+
+		freeptrs(f, D2H(f)->t);
+		if(f->mr != nil) {
+			destroy(reg->M);
+			reg->M = f->mr;
+		}
 	}
-#endif
 	destroy(reg->M);
 	reg->M = H;	/* for devprof */
+	print(":destroystack end\n");
 }
 Prog*
 isave(void)
@@ -1603,9 +1492,7 @@ irestore(Prog *p)
 void
 movtmp(void)		/* Used by send & receive */
 {
-	Type *t;
-
-	t = (Type*)W(m);
+	Type *t = R.m->ptype;
 
 	incmem(R.s, t);
 	if (t->np)
@@ -1643,7 +1530,8 @@ opinit(void)
 void statebefore(char* o, int n, uchar op, Inst* modprog)
 {
 #define CURM (R.M->m->name)
-#define I(r) (*(Inst**)R.r - modprog)
+#define I(r) (R.r->pinst - modprog)
+#define	Alen(r)	(R.r->parray==H?0:R.r->parray->len)
 
 	o[0] = '\0';
 	switch(op)
@@ -1655,110 +1543,110 @@ void statebefore(char* o, int n, uchar op, Inst* modprog)
 	case IRUNT:
 	case IRET:	break;
 	case ICVTBW:   	// monadic ops
-	case IMOVB: 	snprint(o,n,"%d", B(s)); break;
-	case ICVTSW:	snprint(o,n,"%d", SH(s)); break;
+	case IMOVB: 	snprint(o,n,"%d", R.s->disbyte); break;
+	case ICVTSW:	snprint(o,n,"%d", R.s->disint16); break;
 	case ICVTWB:
 	case ICVTWS:
 	case ICVTWL:
 	case ICVTWF:
 	case ICVTWC:
-	case IMOVW: 	snprint(o,n,"%d", W(s)); break;
+	case IMOVW: 	snprint(o,n,"%d", R.s->disint); break;
 	case ICVTLF:
 	case ICVTLW:
 	case ICVTLC:
-	case IMOVL: 	snprint(o,n,"0x%llX", V(s)); break;
+	case IMOVL: 	snprint(o,n,"0x%llX", R.s->disbig); break;
 	case ICVTCL:
 	case ICVTCA:
 	case ICVTCW:
 	case ICVTCF:
-	case ILENC: 	snprint(o,n,"\"%s\"", string2c(S(s))); break;
+	case ILENC: 	snprint(o,n,"\"%s\"", string2c(R.s->pstring)); break;
 	case ICVTFR:
 	case ICVTFW:
 	case ICVTFL:
 	case ICVTFC:
 	case INEGF:
-	case IMOVF: 	snprint(o,n,"%f", F(s)); break;
-	case ICVTRF:	snprint(o,n,"%f", SR(s)); break;
+	case IMOVF: 	snprint(o,n,"%f", R.s->disreal); break;
+	case ICVTRF:	snprint(o,n,"%f", R.s->disreal32); break;
 	case ICVTAC:
-	case ILENA: 	snprint(o,n,"Array[%d]@%p", Alen(s), A(s)); break;
+	case ILENA: 	snprint(o,n,"Array[%d]@%p", Alen(s), R.s->parray); break;
 	case ILEA:	snprint(o,n,"%p", R.s); break;
 	case IALT:	/* tbd: show structure bihing the pointer */
 	case INBALT:	/* tbd: show structure bihing the pointer */
 	case IRAISE:    /* tbd: show structure bihing the pointer */
-	case IMOVP: 	snprint(o,n,"%p", T(s)); break;
-	case IFRAME:	snprint(o,n,"Type_%s_%d", CURM, W(s)); break;
-	case IBEQB:	snprint(o,n,"if(%d == %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break;  // diadic and triadic
-	case IBNEB:	snprint(o,n,"if(%d != %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break;
-	case IBLTB:	snprint(o,n,"if(%d <  %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break;
-	case IBLEB:	snprint(o,n,"if(%d <= %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break;
-	case IBGTB:	snprint(o,n,"if(%d >  %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break;
-	case IBGEB:	snprint(o,n,"if(%d >= %d) jmp %s_%uX", B(s), B(m), CURM, I(d)); break;
-	case IBEQW:	snprint(o,n,"if(%d == %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break;
-	case IBNEW:	snprint(o,n,"if(%d != %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break;
-	case IBLTW:	snprint(o,n,"if(%d <  %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break;
-	case IBLEW:	snprint(o,n,"if(%d <= %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break;
-	case IBGTW:	snprint(o,n,"if(%d >  %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break;
-	case IBGEW:	snprint(o,n,"if(%d >= %d) jmp %s_%uX", W(s), W(m), CURM, I(d)); break;
-	case IBEQL:	snprint(o,n,"if(0x%llX == 0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break;
-	case IBNEL:	snprint(o,n,"if(0x%llX != 0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break;
-	case IBLTL:	snprint(o,n,"if(0x%llX <  0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break;
-	case IBLEL:	snprint(o,n,"if(0x%llX <= 0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break;
-	case IBGTL:	snprint(o,n,"if(0x%llX >  0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break;
-	case IBGEL:	snprint(o,n,"if(0x%llX >= 0x%llX) jmp %s_%uX", V(s), V(m), CURM, I(d)); break;
-	case IBEQF:	snprint(o,n,"if(%f == %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break;
-	case IBNEF:	snprint(o,n,"if(%f != %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break;
-	case IBLTF:	snprint(o,n,"if(%f <  %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break;
-	case IBLEF:	snprint(o,n,"if(%f <= %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break;
-	case IBGTF:	snprint(o,n,"if(%f >  %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break;
-	case IBGEF:	snprint(o,n,"if(%f >= %f) jmp %s_%uX", F(s), F(m), CURM, I(d)); break;
-	case IBEQC:	snprint(o,n,"if(\"%s\" == \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break;
-	case IBNEC:	snprint(o,n,"if(\"%s\" != \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break;
-	case IBLTC:	snprint(o,n,"if(\"%s\" <  \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break;
-	case IBLEC:	snprint(o,n,"if(\"%s\" <= \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break;
-	case IBGTC:	snprint(o,n,"if(\"%s\" >  \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break;
-	case IBGEC:	snprint(o,n,"if(\"%s\" >= \"%s\") jmp %s_%uX", string2c(S(s)), string2c(S(m)), CURM, I(d)); break;
-	case IADDB:	snprint(o,n,"%d + %d", B(m), B(s)); break;
-	case IADDW:	snprint(o,n,"%d + %d", W(m), W(s)); break;
-	case IADDL:	snprint(o,n,"0x%llX + 0x%llX", V(m), V(s)); break;
-	case IADDF:	snprint(o,n,"%f + %f", F(m), F(s)); break;
-	case IADDC: 	snprint(o,n,"\"%s\" + \"%s\"", string2c(S(m)), string2c(S(s))); break;
-	case ISUBB:	snprint(o,n,"%d - %d", B(m), B(s)); break;
-	case ISUBW:	snprint(o,n,"%d - %d", W(m), W(s)); break;
-	case ISUBL:	snprint(o,n,"0x%llX - 0x%llX", V(m), V(s)); break;
-	case ISUBF:	snprint(o,n,"%f - %f", F(m), F(s)); break;
-	case IMULB:	snprint(o,n,"%d * %d", B(m), B(s)); break;
-	case IMULW:	snprint(o,n,"%d * %d", W(m), W(s)); break;
-	case IMULL:	snprint(o,n,"0x%llX * 0x%llX", V(m), V(s)); break;
-	case IMULF:	snprint(o,n,"%f * %f", F(m), F(s)); break;
-	case IDIVB:	snprint(o,n,"%d / %d", B(m), B(s)); break;
-	case IDIVW:	snprint(o,n,"%d / %d", W(m), W(s)); break;
-	case IDIVL:	snprint(o,n,"0x%llX / 0x%llX", V(m), V(s)); break;
-	case IDIVF:	snprint(o,n,"%f / %f", F(m), F(s)); break;
-	case IANDB:	snprint(o,n,"%d & %d", B(m), B(s)); break;
-	case IANDW:	snprint(o,n,"%d & %d", W(m), W(s)); break;
-	case IANDL:	snprint(o,n,"0x%llX & 0x%llX", V(m), V(s)); break;
-	case IORB:	snprint(o,n,"%d | %d", B(m), B(s)); break;
-	case IORW:	snprint(o,n,"%d | %d", W(m), W(s)); break;
-	case IORL:	snprint(o,n,"0x%llX | 0x%llX", V(m), V(s)); break;
-	case IXORB:	snprint(o,n,"%d ^ %d", B(m), B(s)); break;
-	case IXORW:	snprint(o,n,"%d ^ %d", W(m), W(s)); break;
-	case IXORL:	snprint(o,n,"0x%llX ^ 0x%llX", V(m), V(s)); break;
-	case IMODB:	snprint(o,n,"%d %% %d", B(m), B(s)); break;
-	case IMODW:	snprint(o,n,"%d %% %d", W(m), W(s)); break;
-	case IMODL:	snprint(o,n,"0x%llX %% 0x%llX", V(m), V(s)); break;
-	case ISHLB:	snprint(o,n,"%d << %d", B(m), W(s)); break;
-	case ISHLW:	snprint(o,n,"%d << %d", W(m), W(s)); break;
-	case ISHLL:	snprint(o,n,"0x%llX << %d", V(m), W(s)); break;
-	case ISHRB:	snprint(o,n,"%d >> %d", B(m), W(s)); break;
-	case ISHRW:	snprint(o,n,"%d >> %d", W(m), W(s)); break;
-	case ISHRL:	snprint(o,n,"0x%llX >> %d", V(m), W(s)); break;
-	case ILSRW:	snprint(o,n,"%ud >>> %d", UW(m), W(s)); break;
-	case ILSRL:	snprint(o,n,"0x%lluX >>> %d", UV(m), W(s)); break;
-	case IEXPW:	snprint(o,n,"%d %d", W(m), W(s)); break;
-	case IEXPL:	snprint(o,n,"0x%llX %d", V(m), W(s)); break;
-	case IEXPF:	snprint(o,n,"%f %d", F(m), W(s)); break;
-	case ICVTXF:	snprint(o,n,"%f %d", F(m), W(s)); break;
-	case ICVTFX:	snprint(o,n,"%f %f", F(m), F(s)); break;
+	case IMOVP: 	snprint(o,n,"%p", R.s->pvoid); break;
+	case IFRAME:	snprint(o,n,"Type_%s_%d", CURM, R.s->disint); break;
+	case IBEQB:	snprint(o,n,"if(%d == %d) jmp %s_%uX", R.s->disbyte, R.m->disbyte, CURM, I(d)); break;  // diadic and triadic
+	case IBNEB:	snprint(o,n,"if(%d != %d) jmp %s_%uX", R.s->disbyte, R.m->disbyte, CURM, I(d)); break;
+	case IBLTB:	snprint(o,n,"if(%d <  %d) jmp %s_%uX", R.s->disbyte, R.m->disbyte, CURM, I(d)); break;
+	case IBLEB:	snprint(o,n,"if(%d <= %d) jmp %s_%uX", R.s->disbyte, R.m->disbyte, CURM, I(d)); break;
+	case IBGTB:	snprint(o,n,"if(%d >  %d) jmp %s_%uX", R.s->disbyte, R.m->disbyte, CURM, I(d)); break;
+	case IBGEB:	snprint(o,n,"if(%d >= %d) jmp %s_%uX", R.s->disbyte, R.m->disbyte, CURM, I(d)); break;
+	case IBEQW:	snprint(o,n,"if(%d == %d) jmp %s_%uX", R.s->disint, R.m->disint, CURM, I(d)); break;
+	case IBNEW:	snprint(o,n,"if(%d != %d) jmp %s_%uX", R.s->disint, R.m->disint, CURM, I(d)); break;
+	case IBLTW:	snprint(o,n,"if(%d <  %d) jmp %s_%uX", R.s->disint, R.m->disint, CURM, I(d)); break;
+	case IBLEW:	snprint(o,n,"if(%d <= %d) jmp %s_%uX", R.s->disint, R.m->disint, CURM, I(d)); break;
+	case IBGTW:	snprint(o,n,"if(%d >  %d) jmp %s_%uX", R.s->disint, R.m->disint, CURM, I(d)); break;
+	case IBGEW:	snprint(o,n,"if(%d >= %d) jmp %s_%uX", R.s->disint, R.m->disint, CURM, I(d)); break;
+	case IBEQL:	snprint(o,n,"if(0x%llX == 0x%llX) jmp %s_%uX", R.s->disbig, R.m->disbig, CURM, I(d)); break;
+	case IBNEL:	snprint(o,n,"if(0x%llX != 0x%llX) jmp %s_%uX", R.s->disbig, R.m->disbig, CURM, I(d)); break;
+	case IBLTL:	snprint(o,n,"if(0x%llX <  0x%llX) jmp %s_%uX", R.s->disbig, R.m->disbig, CURM, I(d)); break;
+	case IBLEL:	snprint(o,n,"if(0x%llX <= 0x%llX) jmp %s_%uX", R.s->disbig, R.m->disbig, CURM, I(d)); break;
+	case IBGTL:	snprint(o,n,"if(0x%llX >  0x%llX) jmp %s_%uX", R.s->disbig, R.m->disbig, CURM, I(d)); break;
+	case IBGEL:	snprint(o,n,"if(0x%llX >= 0x%llX) jmp %s_%uX", R.s->disbig, R.m->disbig, CURM, I(d)); break;
+	case IBEQF:	snprint(o,n,"if(%f == %f) jmp %s_%uX", R.s->disreal, R.m->disreal, CURM, I(d)); break;
+	case IBNEF:	snprint(o,n,"if(%f != %f) jmp %s_%uX", R.s->disreal, R.m->disreal, CURM, I(d)); break;
+	case IBLTF:	snprint(o,n,"if(%f <  %f) jmp %s_%uX", R.s->disreal, R.m->disreal, CURM, I(d)); break;
+	case IBLEF:	snprint(o,n,"if(%f <= %f) jmp %s_%uX", R.s->disreal, R.m->disreal, CURM, I(d)); break;
+	case IBGTF:	snprint(o,n,"if(%f >  %f) jmp %s_%uX", R.s->disreal, R.m->disreal, CURM, I(d)); break;
+	case IBGEF:	snprint(o,n,"if(%f >= %f) jmp %s_%uX", R.s->disreal, R.m->disreal, CURM, I(d)); break;
+	case IBEQC:	snprint(o,n,"if(\"%s\" == \"%s\") jmp %s_%uX", string2c(R.s->pstring), string2c(R.m->pstring), CURM, I(d)); break;
+	case IBNEC:	snprint(o,n,"if(\"%s\" != \"%s\") jmp %s_%uX", string2c(R.s->pstring), string2c(R.m->pstring), CURM, I(d)); break;
+	case IBLTC:	snprint(o,n,"if(\"%s\" <  \"%s\") jmp %s_%uX", string2c(R.s->pstring), string2c(R.m->pstring), CURM, I(d)); break;
+	case IBLEC:	snprint(o,n,"if(\"%s\" <= \"%s\") jmp %s_%uX", string2c(R.s->pstring), string2c(R.m->pstring), CURM, I(d)); break;
+	case IBGTC:	snprint(o,n,"if(\"%s\" >  \"%s\") jmp %s_%uX", string2c(R.s->pstring), string2c(R.m->pstring), CURM, I(d)); break;
+	case IBGEC:	snprint(o,n,"if(\"%s\" >= \"%s\") jmp %s_%uX", string2c(R.s->pstring), string2c(R.m->pstring), CURM, I(d)); break;
+	case IADDB:	snprint(o,n,"%d + %d", R.m->disbyte, R.s->disbyte); break;
+	case IADDW:	snprint(o,n,"%d + %d", R.m->disint, R.s->disint); break;
+	case IADDL:	snprint(o,n,"0x%llX + 0x%llX", R.m->disbig, R.s->disbig); break;
+	case IADDF:	snprint(o,n,"%f + %f", R.m->disreal, R.s->disreal); break;
+	case IADDC: 	snprint(o,n,"\"%s\" + \"%s\"", string2c(R.m->pstring), string2c(R.s->pstring)); break;
+	case ISUBB:	snprint(o,n,"%d - %d", R.m->disbyte, R.s->disbyte); break;
+	case ISUBW:	snprint(o,n,"%d - %d", R.m->disint, R.s->disint); break;
+	case ISUBL:	snprint(o,n,"0x%llX - 0x%llX", R.m->disbig, R.s->disbig); break;
+	case ISUBF:	snprint(o,n,"%f - %f", R.m->disreal, R.s->disreal); break;
+	case IMULB:	snprint(o,n,"%d * %d", R.m->disbyte, R.s->disbyte); break;
+	case IMULW:	snprint(o,n,"%d * %d", R.m->disint, R.s->disint); break;
+	case IMULL:	snprint(o,n,"0x%llX * 0x%llX", R.m->disbig, R.s->disbig); break;
+	case IMULF:	snprint(o,n,"%f * %f", R.m->disreal, R.s->disreal); break;
+	case IDIVB:	snprint(o,n,"%d / %d", R.m->disbyte, R.s->disbyte); break;
+	case IDIVW:	snprint(o,n,"%d / %d", R.m->disint, R.s->disint); break;
+	case IDIVL:	snprint(o,n,"0x%llX / 0x%llX", R.m->disbig, R.s->disbig); break;
+	case IDIVF:	snprint(o,n,"%f / %f", R.m->disreal, R.s->disreal); break;
+	case IANDB:	snprint(o,n,"%d & %d", R.m->disbyte, R.s->disbyte); break;
+	case IANDW:	snprint(o,n,"%d & %d", R.m->disint, R.s->disint); break;
+	case IANDL:	snprint(o,n,"0x%llX & 0x%llX", R.m->disbig, R.s->disbig); break;
+	case IORB:	snprint(o,n,"%d | %d", R.m->disbyte, R.s->disbyte); break;
+	case IORW:	snprint(o,n,"%d | %d", R.m->disint, R.s->disint); break;
+	case IORL:	snprint(o,n,"0x%llX | 0x%llX", R.m->disbig, R.s->disbig); break;
+	case IXORB:	snprint(o,n,"%d ^ %d", R.m->disbyte, R.s->disbyte); break;
+	case IXORW:	snprint(o,n,"%d ^ %d", R.m->disint, R.s->disint); break;
+	case IXORL:	snprint(o,n,"0x%llX ^ 0x%llX", R.m->disbig, R.s->disbig); break;
+	case IMODB:	snprint(o,n,"%d %% %d", R.m->disbyte, R.s->disbyte); break;
+	case IMODW:	snprint(o,n,"%d %% %d", R.m->disint, R.s->disint); break;
+	case IMODL:	snprint(o,n,"0x%llX %% 0x%llX", R.m->disbig, R.s->disbig); break;
+	case ISHLB:	snprint(o,n,"%d << %d", R.m->disbyte, R.s->disint); break;
+	case ISHLW:	snprint(o,n,"%d << %d", R.m->disint, R.s->disint); break;
+	case ISHLL:	snprint(o,n,"0x%llX << %d", R.m->disbig, R.s->disint); break;
+	case ISHRB:	snprint(o,n,"%d >> %d", R.m->disbyte, R.s->disint); break;
+	case ISHRW:	snprint(o,n,"%d >> %d", R.m->disint, R.s->disint); break;
+	case ISHRL:	snprint(o,n,"0x%llX >> %d", R.m->disbig, R.s->disint); break;
+	case ILSRW:	snprint(o,n,"%ud >>> %d", (DISUINT)R.m->disint, R.s->disint); break;
+	case ILSRL:	snprint(o,n,"0x%lluX >>> %d", (DISUBIG)R.m->disbig, R.s->disint); break;
+	case IEXPW:	snprint(o,n,"%d %d", R.m->disint, R.s->disint); break;
+	case IEXPL:	snprint(o,n,"0x%llX %d", R.m->disbig, R.s->disint); break;
+	case IEXPF:	snprint(o,n,"%f %d", R.m->disreal, R.s->disint); break;
+	case ICVTXF:	snprint(o,n,"%f %d", R.m->disreal, R.s->disint); break;
+	case ICVTFX:	snprint(o,n,"%f %f", R.m->disreal, R.s->disreal); break;
 	case ICVTXX:
 	case ICVTXX0:
 	case ICVTXX1:
@@ -1767,46 +1655,46 @@ void statebefore(char* o, int n, uchar op, Inst* modprog)
 	case IMULX1:
 	case IDIVX:
 	case IDIVX0:
-	case IDIVX1:	snprint(o,n,"%d %d", W(m), W(s)); break;
+	case IDIVX1:	snprint(o,n,"%d %d", R.m->disint, R.s->disint); break;
 	case IINDF:
 	case IINDB:
 	case IINDW:
 	case IINDL:
-	case IINDX:	snprint(o,n,"Array[%d]@%p [%d]", Alen(s), A(s), W(d)); break;
-	case IINDC:     snprint(o,n,"\"%s\" [%d]", string2c(S(s)), W(m)); break;
-	case IINSC:	snprint(o,n,"\"%s\" [%d] = %d", string2c(S(d)), W(m), W(s)); break;
-	case ISLICEA: 	snprint(o,n,"Array[%d]@%p [%d:%d]", Alen(d), A(d), W(s), W(m)); break;
-	case ISLICEC: 	snprint(o,n,"\"%s\" [%d:%d]", string2c(S(d)), W(s), W(m)); break;
-	case ISLICELA: 	snprint(o,n,"Array[%d]@%p [%d:] = Array[%d]@%p", Alen(d), A(d), W(m), Alen(s), A(s)); break;
+	case IINDX:	snprint(o,n,"Array[%d]@%p [%d]", Alen(s), R.s->parray, R.d->disint); break;
+	case IINDC:     snprint(o,n,"\"%s\" [%d]", string2c(R.s->pstring), R.m->disint); break;
+	case IINSC:	snprint(o,n,"\"%s\" [%d] = %d", string2c(R.d->pstring), R.m->disint, R.s->disint); break;
+	case ISLICEA: 	snprint(o,n,"Array[%d]@%p [%d:%d]", Alen(d), R.d->parray, R.s->disint, R.m->disint); break;
+	case ISLICEC: 	snprint(o,n,"\"%s\" [%d:%d]", string2c(R.d->pstring), R.s->disint, R.m->disint); break;
+	case ISLICELA: 	snprint(o,n,"Array[%d]@%p [%d:] = Array[%d]@%p", Alen(d), R.d->parray, R.m->disint, Alen(s), R.s->parray); break;
 	case IMSPAWN:
-	case IMCALL:	snprint(o,n,"%s.%d Frame@%p FP=Frame@%p", ((Modlink*)T(d))->m->name, W(m), (Frame*)T(s), R.FP); break;
-	case IMFRAME:	snprint(o,n,"%s.%d", ((Modlink*)T(s))->m->name, W(m)); break;
+	case IMCALL:	snprint(o,n,"%s.%d Frame@%p FP=Frame@%p", R.d->pmodlink->m->name, R.m->disint, R.s->pframe, R.FP); break;
+	case IMFRAME:	snprint(o,n,"%s.%d", R.s->pmodlink->m->name, R.m->disint); break;
 	case ISPAWN:
-	case ICALL: 	snprint(o,n,"%s_%uX Frame@%p FP=Frame@%p", CURM, I(d), (Frame*)T(s), R.FP); break;
+	case ICALL: 	snprint(o,n,"%s_%uX Frame@%p FP=Frame@%p", CURM, I(d), R.s->pframe, R.FP); break;
 	case IJMP: 	snprint(o,n,"%s_%uX", CURM, I(d)); break;
-	case IGOTO:	snprint(o,n,"%s_%uX", CURM, (WORD*)((WORD)R.d + (W(s) * IBY2WD))); break;
+	case IGOTO:	snprint(o,n,"%s_%uX", CURM, (DISINT*)((DISINT)R.d + (R.s->disint * sizeof(DISINT)))); break;
 	case IMOVPC:	snprint(o,n,"%s_%uX", CURM, I(s)); break;
 	case INEW:
-	case INEWZ:	snprint(o,n,"%d", W(s)); break;
-	case IMNEWZ:	snprint(o,n,"Type_%s_%d", ((Modlink*)T(s))->m->name, W(m)); break;
+	case INEWZ:	snprint(o,n,"%d", R.s->disint); break;
+	case IMNEWZ:	snprint(o,n,"Type_%s_%d", R.s->pmodlink->m->name, R.m->disint); break;
 	case INEWA:
-	case INEWAZ:	snprint(o,n,"Type_%s_%d [%d]", CURM, W(m), W(s)); break;
+	case INEWAZ:	snprint(o,n,"Type_%s_%d [%d]", CURM, R.m->disint, R.s->disint); break;
 	case INEWCB:	// new channel
 	case INEWCW:
 	case INEWCF:
 	case INEWCP:
 	case INEWCL:
-	case INEWCM: 	snprint(o,n,"[%d]", W(s)); break;
-	case INEWCMP:	snprint(o,n,"Type_%s_%d", CURM, W(s)); break;
-	case ISEND:	snprint(o,n,"Channel@%p <-= %p", C(d), T(s)); break;
-	case IRECV:	snprint(o,n,"Channel@%p", C(s)); break;
-	case ICONSB:	snprint(o,n,"%d :: List@%p", B(s), L(d)); break;	// list
-	case ICONSW:	snprint(o,n,"%d :: List@%p", W(s), L(d)); break;
-	case ICONSF:	snprint(o,n,"%f :: List@%p", F(s), L(d)); break;
-	case ICONSL:	snprint(o,n,"0x%llx :: List@%p", V(s), L(d)); break;
-	case ICONSP:	snprint(o,n,"%p :: List@%p", T(s), L(d)); break;
-	case ICONSM:	snprint(o,n,"%p [%d] :: List@%p", T(s), W(m), L(d)); break;
-	case ICONSMP:	snprint(o,n,"Type_%s_%d@%p :: List@%p", CURM, W(m), T(s), L(d)); break;
+	case INEWCM: 	snprint(o,n,"[%d]", R.s->disint); break;
+	case INEWCMP:	snprint(o,n,"Type_%s_%d", CURM, R.s->disint); break;
+	case ISEND:	snprint(o,n,"Channel@%p <-= %p", R.d->pchannel, R.s->pvoid); break;
+	case IRECV:	snprint(o,n,"Channel@%p", R.s->pchannel); break;
+	case ICONSB:	snprint(o,n,"%d :: List@%p", R.s->disbyte, R.d->plist); break;	// list
+	case ICONSW:	snprint(o,n,"%d :: List@%p", R.s->disint, R.d->plist); break;
+	case ICONSF:	snprint(o,n,"%f :: List@%p", R.s->disreal, R.d->plist); break;
+	case ICONSL:	snprint(o,n,"0x%llx :: List@%p", R.s->disbig, R.d->plist); break;
+	case ICONSP:	snprint(o,n,"%p :: List@%p", R.s->pvoid, R.d->plist); break;
+	case ICONSM:	snprint(o,n,"%p [%d] :: List@%p", R.s->pvoid, R.m->disint, R.d->plist); break;
+	case ICONSMP:	snprint(o,n,"Type_%s_%d@%p :: List@%p", CURM, R.m->disint, R.s->pvoid, R.d->plist); break;
 	case ITAIL:
 	case ILENL:
 	case IHEADB:
@@ -1814,15 +1702,15 @@ void statebefore(char* o, int n, uchar op, Inst* modprog)
 	case IHEADP:
 	case IHEADF:
 	case IHEADL:
-	case IHEADMP:   snprint(o,n,"List@%p", L(s)); break;
-	case IHEADM:	snprint(o,n,"List@%p [%d]", L(s), W(m)); break;
-	case IMOVM:	snprint(o,n,"memmove(%p, %p, %d)", R.d, R.s, W(m)); break;
-	case IMOVMP:	snprint(o,n,"Type_%s_%d@%p", CURM, W(m), R.s); break;
-	case ITCMP:	snprint(o,n,"%p %p", T(m), T(s)); break;
-	case ILOAD:	snprint(o,n,"\"%s\" %d", string2c(S(s)), W(m)); break;
-	case ICASE:	snprint(o,n,"%d %p", W(s), T(d)); break;               /* tbd: show structure bihing the pointer */
-	case ICASEC:	snprint(o,n,"\"%s\" %p", string2c(S(s)), T(d)); break; /* tbd: show structure bihing the pointer */
-	case ICASEL:	snprint(o,n,"0x%llX %p", V(s), T(d)); break;           /* tbd: show structure bihing the pointer */
+	case IHEADMP:   snprint(o,n,"List@%p", R.s->plist); break;
+	case IHEADM:	snprint(o,n,"List@%p [%d]", R.s->plist, R.m->disint); break;
+	case IMOVM:	snprint(o,n,"memmove(%p, %p, %d)", R.d, R.s, R.m->disint); break;
+	case IMOVMP:	snprint(o,n,"Type_%s_%d@%p", CURM, R.m->disint, R.s); break;
+	case ITCMP:	snprint(o,n,"%p %p", R.m->pvoid, R.s->pvoid); break;
+	case ILOAD:	snprint(o,n,"\"%s\" %d", string2c(R.s->pstring), R.m->disint); break;
+	case ICASE:	snprint(o,n,"%d %p", R.s->disint, R.d->pvoid); break;               		/* FIXME: show structure bihing the pointer */
+	case ICASEC:	snprint(o,n,"\"%s\" %p", string2c(R.s->pstring), R.d->pvoid); break;	/* FIXME: show structure bihing the pointer */
+	case ICASEL:	snprint(o,n,"0x%llX %p", R.s->disbig, R.d->pvoid); break;		/* FIXME: show structure bihing the pointer */
 	}
 }
 
@@ -1837,13 +1725,13 @@ void stateafter(char* o, int n, uchar op)
 //	snprint(o,n," => %s_%uX", (f&&f->mr&&f->mr->m)?f->mr->m->name:"", f?f->lr:-1 /*- f->mr->m->prog*/);
 //	}
 //	break;
-	case IINDF:	snprint(o,n," => %f", F(m)); break; // result in middle
-	case IINDB:     snprint(o,n," => %d", B(m)); break;
-	case IINDW:     snprint(o,n," => %d", W(m)); break;
-	case IINDL:	snprint(o,n," => 0x%llx", V(m)); break;
-	case IINDX:	snprint(o,n," => %p", T(m)); break;
+	case IINDF:	snprint(o,n," => %f", R.m->disreal); break; // result in middle
+	case IINDB:     snprint(o,n," => %d", R.m->disbyte); break;
+	case IINDW:     snprint(o,n," => %d", R.m->disint); break;
+	case IINDL:	snprint(o,n," => 0x%llx", R.m->disbig); break;
+	case IINDX:	snprint(o,n," => %p", R.m->pvoid); break;
 	case ILOAD:	// module
-	case ISELF:	snprint(o,n," => Module(%s)", T(d)==H?"nil":((Modlink*)T(d))->m->name); break;
+	case ISELF:	snprint(o,n," => Module(%s)", R.d->pmodlink==H?"nil":R.d->pmodlink->m->name); break;
 	case INEW:	// pointer
 	case INEWZ:
 	case IMNEWZ:
@@ -1854,7 +1742,7 @@ void stateafter(char* o, int n, uchar op)
 	case IHEADMP:
 	case IHEADM:
 	case IRECV:
-	case IMOVPC:	snprint(o,n," => %p", T(d)); break;
+	case IMOVPC:	snprint(o,n," => %p", R.d->pvoid); break;
 	case ICONSB:	// list
 	case ICONSW:
 	case ICONSF:
@@ -1862,19 +1750,19 @@ void stateafter(char* o, int n, uchar op)
 	case ICONSP:
 	case ICONSM:
 	case ICONSMP:
-	case ITAIL:	snprint(o,n," => List@%p", L(d)); break;
+	case ITAIL:	snprint(o,n," => List@%p", R.d->plist); break;
 	case INEWA:	// array
 	case INEWAZ:
 	case ICVTCA:
-	case ISLICEA: 	snprint(o,n," => Array[%d]@%p", Alen(d), A(d)); break;
+	case ISLICEA: 	snprint(o,n," => Array[%d]@%p", Alen(d), R.d->parray); break;
 	case INEWCB:    // channel
 	case INEWCW:
 	case INEWCF:
 	case INEWCP:
 	case INEWCL:
 	case INEWCM:
-	case INEWCMP:	snprint(o,n," => Channel@%p", C(d)); break;
-	case ICVTFR:	snprint(o,n," => %f", SR(d)); break; // short float
+	case INEWCMP:	snprint(o,n," => Channel@%p", R.d->pchannel); break;
+	case ICVTFR:	snprint(o,n," => %f", R.d->disreal32); break; // short float
 	case ICVTRF:	// float
 	case ICVTWF:
 	case ICVTLF:
@@ -1887,7 +1775,7 @@ void stateafter(char* o, int n, uchar op)
 	case IDIVF:
 	case ICVTXF:
 	case IEXPF:
-	case IHEADF:	snprint(o,n," => %f", F(d)); 	break;
+	case IHEADF:	snprint(o,n," => %f", R.d->disreal); 	break;
 	case ICVTWB:	// byte
 	case IMOVB:
 	case IADDB:
@@ -1900,8 +1788,8 @@ void stateafter(char* o, int n, uchar op)
 	case IMODB:
 	case ISHLB:
 	case ISHRB:
-	case IHEADB:	snprint(o,n," => %d", B(d)); 	break;
-	case ICVTWS:	snprint(o,n," => %d", SH(d)); 	break; // short
+	case IHEADB:	snprint(o,n," => %d", R.d->disbyte); 	break;
+	case ICVTWS:	snprint(o,n," => %d", R.d->disint16); 	break; // short
 	case IINDC:	// int
 	case ILENC:
 	case ILENL:
@@ -1925,7 +1813,7 @@ void stateafter(char* o, int n, uchar op)
 	case IEXPW:
 	case IHEADW:
 	case IALT:
-	case INBALT:	snprint(o,n," => %d", W(d));	break;
+	case INBALT:	snprint(o,n," => %d", R.d->disint);	break;
 	case ICVTFX:	// X?
 	case IMULX:
 	case IMULX0:
@@ -1935,7 +1823,7 @@ void stateafter(char* o, int n, uchar op)
 	case IDIVX1:
 	case ICVTXX:
 	case ICVTXX0:
-	case ICVTXX1:	snprint(o,n," => %d", W(d));	break;
+	case ICVTXX1:	snprint(o,n," => %d", R.d->disint);	break;
 	case ICVTFL:	// big
 	case ICVTWL:
 	case ICVTCL:
@@ -1952,15 +1840,15 @@ void stateafter(char* o, int n, uchar op)
 	case ISHRL:
 	case ILSRL:
 	case IEXPL:
-	case IHEADL:	snprint(o,n," => 0x%llx", V(d));break;
+	case IHEADL:	snprint(o,n," => 0x%llx", R.d->disbig);break;
 	case ICVTLC:	// string
 	case ICVTAC:
 	case ICVTWC:
 	case ICVTFC:
 	case ISLICEC:
-	case IADDC:	snprint(o,n," => \"%s\"", string2c(S(d))); 	break;
+	case IADDC:	snprint(o,n," => \"%s\"", string2c(R.d->pstring)); 	break;
 	case IMFRAME:
-	case IFRAME:	snprint(o,n," => Frame@%p", (Frame*)T(d)); 	break;
+	case IFRAME:	snprint(o,n," => Frame@%p", R.d->pframe); 	break;
 	}
 }
 #endif

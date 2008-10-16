@@ -38,15 +38,15 @@ struct FD
 void
 sysinit(void)
 {
-	TFD = dtype(freeFD, sizeof(FD), FDmap, sizeof(FDmap));
-	TFileIO = dtype(freeFileIO, Sys_FileIO_size, FileIOmap, sizeof(FileIOmap));
+	TFD = dtype(freeFD, sizeof(FD), FDmap, sizeof(FDmap), "Sys->FD");
+	TFileIO = dtype(freeFileIO, Sys_FileIO_size, FileIOmap, sizeof(FileIOmap), "Sys->FileIO");
 
 	/* Support for devsrv.c */
-	FioTread = dtype(freeheap, Sys_FileIO_read_size, rmap, sizeof(rmap));
-	FioTwrite = dtype(freeheap, Sys_FileIO_write_size, wmap, sizeof(wmap));
+	FioTread = dtype(freeheap, Sys_FileIO_read_size, rmap, sizeof(rmap), "Sys->read");
+	FioTwrite = dtype(freeheap, Sys_FileIO_write_size, wmap, sizeof(wmap), "Sys->write");
 
 	/* Support for dirread */
-	Tdir = dtype(freeheap, Sys_Dir_size, dmap, sizeof(dmap));
+	Tdir = dtype(freeheap, Sys_Dir_size, dmap, sizeof(dmap), "Sys->dir");
 }
 
 void
@@ -195,7 +195,7 @@ Sys_dup(void *fp)
 
 	f = fp;
 	release();
-	*f->ret = kdup(f->old, f->new);	
+	*f->ret = kdup(f->old, f->new);
 	acquire();
 }
 
@@ -260,7 +260,7 @@ Sys_read(void *fp)
 	n = f->n;
 	if(f->buf == (Array*)H || n < 0) {
 		*f->ret = 0;
-		return;		
+		return;
 	}
 	if(n > f->buf->len)
 		n = f->buf->len;
@@ -280,7 +280,7 @@ Sys_readn(void *fp)
 	n = f->n;
 	if(f->buf == (Array*)H || n < 0) {
 		*f->ret = 0;
-		return;		
+		return;
 	}
 	if(n > f->buf->len)
 		n = f->buf->len;
@@ -309,7 +309,7 @@ Sys_pread(void *fp)
 	n = f->n;
 	if(f->buf == (Array*)H || n < 0) {
 		*f->ret = 0;
-		return;		
+		return;
 	}
 	if(n > f->buf->len)
 		n = f->buf->len;
@@ -340,7 +340,7 @@ Sys_write(void *fp)
 	n = f->n;
 	if(f->buf == (Array*)H || n < 0) {
 		*f->ret = 0;
-		return;		
+		return;
 	}
 	if(n > f->buf->len)
 		n = f->buf->len;
@@ -360,7 +360,7 @@ Sys_pwrite(void *fp)
 	n = f->n;
 	if(f->buf == (Array*)H || n < 0) {
 		*f->ret = 0;
-		return;		
+		return;
 	}
 	if(n > f->buf->len)
 		n = f->buf->len;
@@ -826,7 +826,7 @@ Sys_pctl(void *fp)
 		lock(&ofg->l);
 		/* file descriptors to preserve */
 		for(l = f->movefd; l != H; l = l->tail) {
-			fd = *(int*)l->data;
+			fd = l->data.disint;
 			if(fd >= 0 && fd <= ofg->maxfd) {
 				c = ofg->fd[fd];
 				if(c != nil && fd < nfg->nfd && nfg->fd[fd] == nil) {
@@ -847,7 +847,7 @@ Sys_pctl(void *fp)
 		fg = dupfgrp(ofg);
 		/* file descriptors to close */
 		for(l = f->movefd; l != H; l = l->tail)
-			kclose(*(int*)l->data);
+			kclose(l->data.disint);
 		o->fgrp = fg;
 		closefgrp(ofg);
 	}
@@ -1034,9 +1034,9 @@ crecv(Channel *c, void *ip)
 	}
 
 	rsav = R;
-	R.s = &c;
+	R.s = (Disdata*) &c;
 	R.d = ip;
-	irecv();
+	irecv(); /* FIXME: args passed via R  */
 	R = rsav;
 }
 
@@ -1055,7 +1055,7 @@ csend(Channel *c, void *ip)
 
 	rsav = R;
 	R.s = ip;
-	R.d = &c;
-	isend();
+	R.d = (Disdata*) &c;
+	isend(); /* FIXME: args passed via R  */
 	R = rsav;
 }

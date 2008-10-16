@@ -205,14 +205,14 @@ newSigAlg(SigAlgVec *vec)
 	sa->vec = vec;
 	return sa;
 }
-
+/* ==freeheap
 static void
 freeSigAlg(Heap *h, int swept)
 {
 	if(!swept)
 		freeheap(h, 0);
 }
-
+*/
 SigAlgVec*
 findsigalg(char *name)
 {
@@ -305,9 +305,8 @@ newSK(SigAlg *sa, String *owner, int increfsa)
 	k = H2D(SK*, h);
 	k->x.sa = (Keyring_SigAlg*)sa;
 	if(increfsa) {
-		h = D2H(sa);
-		h->ref++;
-		Setmark(h);
+		ADDREF(sa);
+		Setmark(D2H(sa));
 	}
 	k->x.owner = owner;
 	k->key = 0;
@@ -525,9 +524,8 @@ newPK(SigAlg *sa, String *owner, int increfsa)
 	k = H2D(PK*, h);
 	k->x.sa = (Keyring_SigAlg*)sa;
 	if(increfsa) {
-		h = D2H(sa);
-		h->ref++;
-		Setmark(h);
+		ADDREF(sa);
+		Setmark(D2H(sa));
 	}
 	k->x.owner = owner;
 	k->key = 0;
@@ -536,20 +534,22 @@ newPK(SigAlg *sa, String *owner, int increfsa)
 
 void
 pkimmutable(PK *k)
-{
+{ /* BUG
 	poolimmutable(D2H(k));
 	poolimmutable(D2H(k->x.sa));
 	poolimmutable(D2H(k->x.sa->name));
 	poolimmutable(D2H(k->x.owner));
+	*/
 }
 
 void
 pkmutable(PK *k)
-{
+{ /* BUG
 	poolmutable(D2H(k));
 	poolmutable(D2H(k->x.sa));
 	poolmutable(D2H(k->x.sa->name));
 	poolmutable(D2H(k->x.owner));
+	*/
 }
 
 void
@@ -702,24 +702,24 @@ Keyring_strtopk(void *fp)
 
 void
 certimmutable(Certificate *c)
-{
+{ /* BUG
 	poolimmutable(D2H(c));
 	poolimmutable(D2H(c->x.signer));
 	poolimmutable(D2H(c->x.ha));
 	poolimmutable(D2H(c->x.sa));
-	poolimmutable(D2H(c->x.sa->name));
+	poolimmutable(D2H(c->x.sa->name)); */
 }
 
 void
 certmutable(Certificate *c)
-{
+{ /* BUG
 	poolmutable(D2H(c));
 	poolmutable(D2H(c->x.signer));
-	poolmutable(D2H(c->x.ha));
+	poolmutable(D2H(c->x.ha)); */
 	Setmark(D2H(c->x.sa));
-	poolmutable(D2H(c->x.sa));
+/* BUG	poolmutable(D2H(c->x.sa)); */
 	Setmark(D2H(c->x.sa->name));
-	poolmutable(D2H(c->x.sa->name));
+/* BUG	poolmutable(D2H(c->x.sa->name)); */
 }
 
 Certificate*
@@ -732,9 +732,8 @@ newCertificate(SigAlg *sa, String *ha, String *signer, long exp, int increfsa)
 	c = H2D(Certificate*, h);
 	c->x.sa = (Keyring_SigAlg*)sa;
 	if(increfsa) {
-		h = D2H(sa);
-		h->ref++;
-		Setmark(h);
+		ADDREF(sa);
+		Setmark(D2H(sa));
 	}
 	c->x.signer = signer;
 	c->x.ha = ha;
@@ -1182,8 +1181,8 @@ DigestState_copy(void *fp)
 
 	if(f->d != H){
 		h = heap(TDigestState);
-		ds = H2D(XDigestState*, h); 	
-		memmove(&ds->state, &((XDigestState*)f->d)->state, sizeof(ds->state)); 
+		ds = H2D(XDigestState*, h);
+		memmove(&ds->state, &((XDigestState*)f->d)->state, sizeof(ds->state));
 		*f->ret = (Keyring_DigestState*)ds;
 	}
 }
@@ -1217,7 +1216,7 @@ keyring_digest_x(Array *buf, int n, Array *digest, int dlen, Keyring_DigestState
 		ds = H2D(XDigestState*, h);
 		memset(&ds->state, 0, sizeof(ds->state));
 	} else {
-		D2H(state)->ref++;
+		ADDREF(state);
 		ds = (XDigestState*)state;
 	}
 
@@ -1300,7 +1299,7 @@ keyring_hmac_x(Array *data, int n, Array *key, Array *digest, int dlen, Keyring_
 		ds = H2D(XDigestState*, h);
 		memset(&ds->state, 0, sizeof(ds->state));
 	} else {
-		D2H(state)->ref++;
+		ADDREF(state);
 		ds = (XDigestState*)state;
 	}
 
@@ -1816,7 +1815,7 @@ out:
 		if(f->setid)
 			setid(string2c(f->ret->t0), 1);
 	}
-	
+
 	/* free resources */
 	if(hispk != H){
 		pkmutable(hispk);
@@ -2027,34 +2026,27 @@ keyringmodinit(void)
 	extern SigAlgVec* rsainit(void);
 	extern SigAlgVec* dsainit(void);
 
-	TIPint = dtype(freeIPint, sizeof(IPint), IPintmap, sizeof(IPintmap));
-	TSigAlg = dtype(freeSigAlg, sizeof(SigAlg), SigAlgmap, sizeof(SigAlgmap));
-	TSK = dtype(freeSK, sizeof(SK), SKmap, sizeof(SKmap));
-	TPK = dtype(freePK, sizeof(PK), PKmap, sizeof(PKmap));
-	TCertificate = dtype(freeCertificate, sizeof(Certificate), Certificatemap,
-		sizeof(Certificatemap));
-	TDigestState = dtype(freeheap, sizeof(XDigestState), DigestStatemap,
-		sizeof(DigestStatemap));
-	TAESstate = dtype(freeheap, sizeof(XAESstate), AESstatemap,
-		sizeof(AESstatemap));
-	TDESstate = dtype(freeheap, sizeof(XDESstate), DESstatemap,
-		sizeof(DESstatemap));
-	TIDEAstate = dtype(freeheap, sizeof(XIDEAstate), IDEAstatemap,
-		sizeof(IDEAstatemap));
-	TBFstate = dtype(freeheap, sizeof(XBFstate), BFstatemap,
-		sizeof(BFstatemap));
-	TRC4state = dtype(freeheap, sizeof(XRC4state), RC4statemap,
-		sizeof(RC4statemap));
-	TAuthinfo = dtype(freeheap, sizeof(Keyring_Authinfo), Authinfomap, sizeof(Authinfomap));
-	TDSAsk = dtype(freeheap, sizeof(Keyring_DSAsk), DSAskmap, sizeof(DSAskmap));
-	TDSApk = dtype(freeheap, sizeof(Keyring_DSApk), DSApkmap, sizeof(DSApkmap));
-	TDSAsig = dtype(freeheap, sizeof(Keyring_DSAsig), DSAsigmap, sizeof(DSAsigmap));
-	TEGsk = dtype(freeheap, sizeof(Keyring_EGsk), EGskmap, sizeof(EGskmap));
-	TEGpk = dtype(freeheap, sizeof(Keyring_EGpk), EGpkmap, sizeof(EGpkmap));
-	TEGsig = dtype(freeheap, sizeof(Keyring_EGsig), EGsigmap, sizeof(EGsigmap));
-	TRSAsk = dtype(freeheap, sizeof(Keyring_RSAsk), RSAskmap, sizeof(RSAskmap));
-	TRSApk = dtype(freeheap, sizeof(Keyring_RSApk), RSApkmap, sizeof(RSApkmap));
-	TRSAsig = dtype(freeheap, sizeof(Keyring_RSAsig), RSAsigmap, sizeof(RSAsigmap));
+	TIPint = dtype(freeIPint, sizeof(IPint), IPintmap, sizeof(IPintmap), "Keyring->IPint");
+	TSigAlg = dtype(freeheap/*freeSigAlg*/, sizeof(SigAlg), SigAlgmap, sizeof(SigAlgmap), "Keyring->SigAlg");
+	TSK = dtype(freeSK, sizeof(SK), SKmap, sizeof(SKmap), "Keyring->SK");
+	TPK = dtype(freePK, sizeof(PK), PKmap, sizeof(PKmap), "Keyring->PK");
+	TCertificate = dtype(freeCertificate, sizeof(Certificate), Certificatemap, sizeof(Certificatemap), "Keyring->Certificate");
+	TDigestState = dtype(freeheap, sizeof(XDigestState), DigestStatemap, sizeof(DigestStatemap), "Keyring->DigestState");
+	TAESstate = dtype(freeheap, sizeof(XAESstate), AESstatemap, sizeof(AESstatemap), "Keyring->AESstate");
+	TDESstate = dtype(freeheap, sizeof(XDESstate), DESstatemap, sizeof(DESstatemap), "Keyring->DESstate");
+	TIDEAstate = dtype(freeheap, sizeof(XIDEAstate), IDEAstatemap, sizeof(IDEAstatemap), "Keyring->IDEAstate");
+	TBFstate = dtype(freeheap, sizeof(XBFstate), BFstatemap, sizeof(BFstatemap), "Keyring->BFstate");
+	TRC4state = dtype(freeheap, sizeof(XRC4state), RC4statemap, sizeof(RC4statemap), "Keyring->RC4state");
+	TAuthinfo = dtype(freeheap, sizeof(Keyring_Authinfo), Authinfomap, sizeof(Authinfomap), "Keyring->Authinfo");
+	TDSAsk = dtype(freeheap, sizeof(Keyring_DSAsk), DSAskmap, sizeof(DSAskmap), "Keyring->DSAsk");
+	TDSApk = dtype(freeheap, sizeof(Keyring_DSApk), DSApkmap, sizeof(DSApkmap), "Keyring->DSApk");
+	TDSAsig = dtype(freeheap, sizeof(Keyring_DSAsig), DSAsigmap, sizeof(DSAsigmap), "Keyring->DSAsig");
+	TEGsk = dtype(freeheap, sizeof(Keyring_EGsk), EGskmap, sizeof(EGskmap), "Keyring->EGsk");
+	TEGpk = dtype(freeheap, sizeof(Keyring_EGpk), EGpkmap, sizeof(EGpkmap), "Keyring->EGpk");
+	TEGsig = dtype(freeheap, sizeof(Keyring_EGsig), EGsigmap, sizeof(EGsigmap), "Keyring->EGsig");
+	TRSAsk = dtype(freeheap, sizeof(Keyring_RSAsk), RSAskmap, sizeof(RSAskmap), "Keyring->RSAsk");
+	TRSApk = dtype(freeheap, sizeof(Keyring_RSApk), RSApkmap, sizeof(RSApkmap), "Keyring->RSApk");
+	TRSAsig = dtype(freeheap, sizeof(Keyring_RSAsig), RSAsigmap, sizeof(RSAsigmap), "Keyring->RSAsig");
 
 	if((sav = elgamalinit()) != nil)
 		algs[nalg++] = sav;

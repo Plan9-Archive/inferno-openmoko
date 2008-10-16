@@ -226,7 +226,7 @@ proggen(Chan *c, char *name, Dirtab *tab, int ntab, int s, Dir *dp)
 }
 
 static Chan*
-progattach(char *spec)
+progattach(const char *spec)
 {
 	return devattach('p', spec);
 }
@@ -238,7 +238,7 @@ progwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-progstat(Chan *c, uchar *db, int n)
+progstat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, 0, 0, proggen);
 }
@@ -282,27 +282,27 @@ progopen(Chan *c, int omode)
 	case Qexception:
 		break;
 	case Qwait:
-		c->aux = qopen(1024, Qmsg, nil, nil);
-		if(c->aux == nil)
+		c->aux.queue = qopen(1024, Qmsg, nil, nil);
+		if(c->aux.queue == nil)
 			error(Enomem);
-		o->childq = c->aux;
+		o->childq = c->aux.queue;
 		break;
 	case Qns:
-		c->aux = malloc(sizeof(Mntwalk));
-		if(c->aux == nil)
+		c->aux.mntwalk = (Mntwalk*)malloc(sizeof(Mntwalk));
+		if(c->aux.mntwalk == nil)
 			error(Enomem);
 		break;
 	case Qheap:
 		if(SECURE || o->pgrp->privatemem || omode != ORDWR)
 			error(Eperm);
-		c->aux = malloc(sizeof(Heapqry));
-		if(c->aux == nil)
+		c->aux.heapqry = (Heapqry*)malloc(sizeof(Heapqry));
+		if(c->aux.heapqry == nil)
 			error(Enomem);
 		break;
 	case Qdbgctl:
 		if(SECURE || o->pgrp->privatemem || omode != ORDWR)
 			error(Eperm);
-		ctl = malloc(sizeof(Progctl));
+		ctl = (Progctl*)malloc(sizeof(Progctl));
 		if(ctl == nil)
 			error(Enomem);
 		ctl->q = qopen(1024, Qmsg, nil, nil);
@@ -312,7 +312,7 @@ progopen(Chan *c, int omode)
 		}
 		ctl->bpts = nil;
 		ctl->ref = 1;
-		c->aux = ctl;
+		c->aux.progctl = ctl;
 		break;
 	}
 	if(p->state != Pexiting)
@@ -327,7 +327,7 @@ progopen(Chan *c, int omode)
 }
 
 static int
-progwstat(Chan *c, uchar *db, int n)
+progwstat(Chan *c, char *db, int n)
 {
 	Dir d;
 	Prog *p;
@@ -391,12 +391,12 @@ progclose(Chan *c)
 	switch(QID(c->qid)) {
 	case Qns:
 	case Qheap:
-		free(c->aux);
+		free(c->aux.heapqry);
 		break;
 	case Qdbgctl:
 		if((c->flag & COPEN) == 0)
 			return;
-		ctl = c->aux;
+		ctl = c->aux.progctl;
 		acquire();
 		closedbgctl(ctl, progpid(PID(c->qid)));
 		release();
@@ -409,13 +409,13 @@ progclose(Chan *c)
 			if(f == nil)
 				break;
 			o = f->osenv;
-			if(o->waitq == c->aux)
+			if(o->waitq == c->aux.queue)
 				o->waitq = nil;
-			if(o->childq == c->aux)
+			if(o->childq == c->aux.queue)
 				o->childq = nil;
 		}
 		release();
-		qfree(c->aux);
+		qfree(c->aux.queue);
 	}
 }
 
@@ -604,7 +604,7 @@ calldepth(REG *reg)
 static int
 progheap(Heapqry *hq, char *va, int count, ulong offset)
 {
-	WORD *w;
+	DISINT *w;
 	void *p;
 	List *hd;
 	Array *a;
@@ -614,7 +614,7 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 	Channel *c;
 	ulong addr;
 	String *ss;
-	union { REAL r; LONG l; WORD w[2]; } rock;
+	union { DISREAL r; DISBIG l; DISINT w[2]; } rock;
 	int i, s, n, len, signed_off;
 	Type *t;
 
@@ -627,30 +627,30 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 		case 'W':
 			if(addr & 3)
 				return -1;
-			n += snprint(va+n, count-n, "%d\n", *(WORD*)addr);
-			s = sizeof(WORD);
+			n += snprint(va+n, count-n, "%d\n", *(DISINT*)addr);
+			s = sizeof(DISINT);
 			break;
 		case 'B':
-			n += snprint(va+n, count-n, "%d\n", *(BYTE*)addr);
-			s = sizeof(BYTE);
+			n += snprint(va+n, count-n, "%d\n", *(DISBYTE*)addr);
+			s = sizeof(DISBYTE);
 			break;
 		case 'V':
 			if(addr & 3)
 				return -1;
-			w = (WORD*)addr;
+			w = (DISINT*)addr;
 			rock.w[0] = w[0];
 			rock.w[1] = w[1];
 			n += snprint(va+n, count-n, "%lld\n", rock.l);
-			s = sizeof(LONG);
+			s = sizeof(DISBIG);
 			break;
 		case 'R':
 			if(addr & 3)
 				return -1;
-			w = (WORD*)addr;
+			w = (DISINT*)addr;
 			rock.w[0] = w[0];
 			rock.w[1] = w[1];
 			n += snprint(va+n, count-n, "%g\n", rock.r);
-			s = sizeof(REAL);
+			s = sizeof(DISREAL);
 			break;
 		case 'I':
 			if(addr & 3)
@@ -672,7 +672,7 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 			if(p != H)
 				fmt = "%lux\n";
 			n += snprint(va+n, count-n, fmt, p);
-			s = sizeof(WORD);
+			s = sizeof(DISINT);
 			break;
 		case 'L':
 			if(addr & 3)
@@ -680,8 +680,8 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 			hd = *(List**)addr;
 			if(hd == H || D2H(hd)->t != &Tlist)
 				return -1;
-			n += snprint(va+n, count-n, "%lux.%lux\n", (ulong)&hd->tail, (ulong)hd->data);
-			s = sizeof(WORD);
+			n += snprint(va+n, count-n, "%p.%p\n", &hd->tail, &hd->data);
+			s = sizeof(DISINT);
 			break;
 		case 'A':
 			if(addr & 3)
@@ -692,9 +692,9 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 			else {
 				if(D2H(a)->t != &Tarray)
 					return -1;
-				n += snprint(va+n, count-n, "%d.%lux\n", a->len, (ulong)a->data);
+				n += snprint(va+n, count-n, "%d.%p\n", a->len, a->data);
 			}
-			s = sizeof(WORD);
+			s = sizeof(DISINT);
 			break;
 		case 'C':
 			if(addr & 3)
@@ -721,7 +721,7 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 			ml = *(Modlink**)addr;
 			fmt = ml == H ? "nil\n" : "%lux\n";
 			n += snprint(va+n, count-n, fmt, ml->MP);
-			s = sizeof(WORD);
+			s = sizeof(DISINT);
 			break;
 		case 'c':
 			if(addr & 3)
@@ -755,7 +755,7 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 	return n;
 }
 
-WORD
+DISINT
 modstatus(REG *r, char *ptr, int len)
 {
 	Inst *PC;
@@ -765,12 +765,12 @@ modstatus(REG *r, char *ptr, int len)
 		f = r->FP;
 		snprint(ptr, len, "%s[%s]", f->mr->m->name, r->M->m->name);
 		if(f->mr->compiled)
-			return (WORD)f->lr;
+			return (DISINT)f->lr;
 		return f->lr - f->mr->prog;
 	}
 	memmove(ptr, r->M->m->name, len);
 	if(r->M->compiled)
-		return (WORD)r->PC;
+		return (DISINT)r->PC;
 	PC = r->PC;
 	/* should really check for blocked states */
 	if(PC > r->M->prog)
@@ -809,24 +809,24 @@ progtime(ulong msec, char *buf, char *ebuf)
 }
 
 static long
-progread(Chan *c, void *va, long n, vlong offset)
+progread(Chan *c, char *va, long n, vlong offset)
 {
 	int i;
 	Prog *p;
 	Osenv *o;
 	Mntwalk *mw;
 	ulong grpid;
-	char *a = va;
+	/*char *a = va;*/
 	Progctl *ctl;
 	char mbuf[64], timebuf[12];
 	char flag[10];
 
 	if(c->qid.type & QTDIR)
-		return devdirread(c, a, n, 0, 0, proggen);
+		return devdirread(c, va, n, 0, 0, proggen);
 
 	switch(QID(c->qid)){
 	case Qdbgctl:
-		ctl = c->aux;
+		ctl = c->aux.progctl;
 		return qread(ctl->q, va, n);
 	case Qstatus:
 		acquire();
@@ -856,7 +856,7 @@ progread(Chan *c, void *va, long n, vlong offset)
 		release();
 		return readstr(offset, va, n, up->genbuf);
 	case Qwait:
-		return qread(c->aux, va, n);
+		return qread(c->aux.queue, va, n);
 	case Qns:
 		acquire();
 		if(waserror()){
@@ -866,7 +866,7 @@ progread(Chan *c, void *va, long n, vlong offset)
 		p = progpid(PID(c->qid));
 		if(p == nil)
 			error(Ethread);
-		mw = c->aux;
+		mw = c->aux.mntwalk;
 		if(mw->cddone){
 			poperror();
 			release();
@@ -876,18 +876,18 @@ progread(Chan *c, void *va, long n, vlong offset)
 		mntscan(mw, o->pgrp);
 		if(mw->mh == 0) {
 			mw->cddone = 1;
-			i = snprint(a, n, "cd %s\n", o->pgrp->dot->name->s);
+			i = snprint(va, n, "cd %s\n", o->pgrp->dot->name->s);
 			poperror();
 			release();
 			return i;
 		}
 		int2flag(mw->cm->mflag, flag);
 		if(strcmp(mw->cm->to->name->s, "#M") == 0){
-			i = snprint(a, n, "mount %s %s %s %s\n", flag,
+			i = snprint(va, n, "mount %s %s %s %s\n", flag,
 				mw->cm->to->mchan->name->s,
 				mw->mh->from->name->s, mw->cm->spec? mw->cm->spec : "");
 		}else
-			i = snprint(a, n, "bind %s %s %s\n", flag,
+			i = snprint(va, n, "bind %s %s %s\n", flag,
 				mw->cm->to->name->s, mw->mh->from->name->s);
 		poperror();
 		release();
@@ -932,7 +932,7 @@ progread(Chan *c, void *va, long n, vlong offset)
 			release();
 			nexterror();
 		}
-		n = progheap(c->aux, va, n, offset);
+		n = progheap(c->aux.heapqry, va, n, offset);
 		if(n == -1)
 			error(Emisalign);
 		poperror();
@@ -1007,7 +1007,7 @@ mntscan(Mntwalk *mw, Pgrp *pg)
 }
 
 static long
-progwrite(Chan *c, void *va, long n, vlong offset)
+progwrite(Chan *c, const char *va, long n, vlong offset)
 {
 	Prog *p, *f;
 	Heapqry *hq;
@@ -1086,13 +1086,13 @@ progwrite(Chan *c, void *va, long n, vlong offset)
 				i = strtoul(cb->f[0]+4, nil, 0);
 			else
 				i = strtoul(cb->f[1], nil, 0);
-			dbgstep(c->aux, p, i);
+			dbgstep(c->aux.progctl, p, i);
 			break;
 		case CDtoret:
 			f = currun();
 			i = calldepth(&p->R);
 			while(f->kill == nil) {
-				dbgstep(c->aux, p, 1024);
+				dbgstep(c->aux.progctl, p, 1024);
 				if(i > calldepth(&p->R))
 					break;
 			}
@@ -1100,22 +1100,22 @@ progwrite(Chan *c, void *va, long n, vlong offset)
 		case CDcont:
 			f = currun();
 			while(f->kill == nil)
-				dbgstep(c->aux, p, 1024);
+				dbgstep(c->aux.progctl, p, 1024);
 			break;
 		case CDstart:
 			dbgstart(p);
 			break;
 		case CDstop:
-			ctl = c->aux;
+			ctl = c->aux.progctl;
 			ctl->stop = 1;
 			break;
 		case CDunstop:
-			ctl = c->aux;
+			ctl = c->aux.progctl;
 			ctl->stop = 0;
 			break;
 		case CDbpt:
 			pc = strtoul(cb->f[3], nil, 10);
-			ctl = c->aux;
+			ctl = c->aux.progctl;
 			if(strcmp(cb->f[1], "set") == 0)
 				ctl->bpts = setbpt(ctl->bpts, cb->f[2], pc);
 			else if(strcmp(cb->f[1], "del") == 0)
@@ -1141,7 +1141,7 @@ progwrite(Chan *c, void *va, long n, vlong offset)
 			i = sizeof(buf)-1;
 		memmove(buf, va, i);
 		buf[i] = '\0';
-		hq = c->aux;
+		hq = c->aux.heapqry;
 		hq->addr = strtoul(buf, &b, 0);
 		if(*b == '+')
 			hq->module = strtoul(b, &b, 0);
@@ -1166,7 +1166,7 @@ setbpt(Bpt *bpts, char *path, int pc)
 	Bpt *b;
 
 	n = strlen(path);
-	b = mallocz(sizeof *b + n, 0);
+	b = (Bpt *)mallocz(sizeof *b + n, 0);
 	if(b == nil)
 		return bpts;
 	b->pc = pc;
@@ -1234,7 +1234,7 @@ dbgstart(Prog *p)
 static int
 xecdone(void *vc)
 {
-	Progctl *ctl = vc;
+	Progctl *ctl = (Progctl *)vc;
 
 	return ctl->debugger == nil;
 }
@@ -1329,7 +1329,7 @@ dbgaddrun(Prog *p)
 static int
 bdone(void *vp)
 {
-	Prog *p = vp;
+	Prog *p = (Prog *)vp;
 
 	return p->addrun == nil;
 }

@@ -1255,7 +1255,7 @@ devlogfsserverwrite(Devlogfs *d, void *buf, long n)
 }
 
 static long
-devlogfsread(Chan *c, void *buf, long n, vlong off)
+devlogfsread(Chan *c, char *buf, long n, vlong off)
 {
 	int instance, qid, qt;
 
@@ -1308,7 +1308,7 @@ devlogfsread(Chan *c, void *buf, long n, vlong off)
 }
 
 static long
-devlogfswrite(Chan *c, void *buf, long n, vlong off)
+devlogfswrite(Chan *c, const char *buf, long n, vlong off)
 {
 	char cmd[64], *realfields[6];
 	int i;

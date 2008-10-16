@@ -10,7 +10,7 @@ newpgrp(void)
 {
 	Pgrp *p;
 
-	p = malloc(sizeof(Pgrp));
+	p = mallocz(sizeof(Pgrp), 1);
 	if(p == nil)
 		error(Enomem);
 	p->r.ref = 1;
@@ -109,7 +109,7 @@ pgrpcpy(Pgrp *to, Pgrp *from)
 				m->copy = n;
 				pgrpinsert(&order, m);
 				*link = n;
-				link = &n->next;	
+				link = &n->next;
 			}
 			runlock(&f->lock);
 		}

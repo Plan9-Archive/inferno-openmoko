@@ -43,7 +43,7 @@ struct Fsinfo
 	ushort	checksec;
 	Fsdir*	de;	/* non-nil for saved entry from last dirread at offset */
 };
-#define	FS(c)	((Fsinfo*)(c)->aux)
+#define	FS(c)	((c)->aux.fsinfo)
 
 /*
  * info about a user or group
@@ -58,7 +58,7 @@ struct Fsinfo
 struct User
 {
 	QLock	lk;		/* locks the gotgroup and group fields */
-	SID	*sid;
+	PSID	sid;
 	Rune	*name;
 	Rune	*dom;
 	int	type;		/* the type of sid, ie SidTypeUser, SidTypeAlias, ... */
@@ -86,11 +86,11 @@ struct Stat
 /*
  * some "well-known" sids
  */
-static	SID	*creatorowner;
-static	SID	*creatorgroup;
-static	SID	*everyone;
-static	SID	*ntignore;
-static	SID	*ntroot;	/* user who is supposed to run emu as a server */
+static	PSID	creatorowner;
+static	PSID	creatorgroup;
+static	PSID	everyone;
+static	PSID	ntignore;
+static	PSID	ntroot;	/* user who is supposed to run emu as a server */
 
 /*
  * all users we ever see end up in this table
@@ -154,8 +154,7 @@ static char Etoolong[] = "file name too long";
  * these lan manager functions are not supplied
  * on windows95, so we have to load the dll by hand
  */
-static struct {
-	NET_API_STATUS (NET_API_FUNCTION *UserGetLocalGroups)(
+typedef NET_API_STATUS (NET_API_FUNCTION *TUserGetLocalGroups)(
 		LPWSTR servername,
 		LPWSTR username,
 		DWORD level,
@@ -164,7 +163,7 @@ static struct {
 		DWORD prefmaxlen,
 		LPDWORD entriesread,
 		LPDWORD totalentries);
-	NET_API_STATUS (NET_API_FUNCTION *UserGetGroups)(
+typedef NET_API_STATUS (NET_API_FUNCTION *TUserGetGroups)(
 		LPWSTR servername,
 		LPWSTR username,
 		DWORD level,
@@ -172,24 +171,29 @@ static struct {
 		DWORD prefmaxlen,
 		LPDWORD entriesread,
 		LPDWORD totalentries);
-	NET_API_STATUS (NET_API_FUNCTION *GetAnyDCName)(
+typedef NET_API_STATUS (NET_API_FUNCTION *TGetAnyDCName)(
 		LPCWSTR ServerName,
 		LPCWSTR DomainName,
 		LPBYTE *Buffer);
-	NET_API_STATUS (NET_API_FUNCTION *ApiBufferFree)(LPVOID Buffer);
+typedef NET_API_STATUS (NET_API_FUNCTION *TApiBufferFree)(LPVOID Buffer);
+static struct {
+	TUserGetLocalGroups	UserGetLocalGroups;
+	TUserGetGroups		UserGetGroups;
+	TGetAnyDCName		GetAnyDCName;
+	TApiBufferFree		ApiBufferFree;
 } net;
 
 extern	int		nth2fd(HANDLE);
 extern	HANDLE		ntfd2h(int);
 static	int		cnisroot(Cname*);
 static	int		fsisroot(Chan*);
-static	int		okelem(char*, int);
+static	int		okelem(const char*, int);
 static	int		fsexist(char*, Qid*);
-static	char*	fspath(Cname*, char*, char*, char*);
-static	Cname*	fswalkpath(Cname*, char*, int);
+static	char*		fspath(Cname*, const char*, char*, const char*);
+static	Cname*		fswalkpath(Cname*, const char*, int);
 static	char*	fslastelem(Cname*);
-static	long		fsdirread(Chan*, uchar*, int, vlong);
-static	ulong		fsqidpath(char*);
+static	long		fsdirread(Chan*, char*, int, vlong);
+static	ulong		fsqidpath(const char*);
 static	int		fsomode(int);
 static	int		fsdirset(char*, int, WIN32_FIND_DATA*, char*, Chan*, int isdir);
 static 	int		fsdirsize(WIN32_FIND_DATA*, char*, Chan*);
@@ -205,18 +209,18 @@ static	SECURITY_DESCRIPTOR* secsd(char*, char[SD_ROCK]);
 static	int		secsdhasperm(SECURITY_DESCRIPTOR*, ulong, Rune*);
 static	int		secsdstat(SECURITY_DESCRIPTOR*, Stat*, Rune*);
 static	SECURITY_DESCRIPTOR* secmksd(char[SD_ROCK], Stat*, ACL*, int);
-static	SID		*dupsid(SID*);
-static	int		ismembersid(Rune*, User*, SID*);
+static	PSID		dupsid(PSID);
+static	int		ismembersid(Rune*, User*, PSID);
 static	int		ismember(User*, User*);
-static	User		*sidtouser(Rune*, SID*);
+static	User		*sidtouser(Rune*, PSID);
 static	User		*domnametouser(Rune*, Rune*, Rune*);
 static	User		*nametouser(Rune*, Rune*);
 static	User		*unametouser(Rune*, char*);
 static	void		addgroups(User*, int);
-static	User		*mkuser(SID*, int, Rune*, Rune*);
+static	User		*mkuser(PSID, int, Rune*, Rune*);
 static	Rune		*domsrv(Rune *, Rune[MAX_PATH]);
-static	Rune		*filesrv(char*);
-static	int		fsacls(char*);
+static	Rune		*filesrv(const char*);
+static	int		fsacls(const char*);
 static	User		*secuser(void);
 
 	int		runeslen(Rune*);
@@ -392,14 +396,13 @@ fsinit(void)
 }
 
 Chan*
-fsattach(char *spec)
+fsattach(const char *spec)
 {
 	Chan *c;
 	static int devno;
 	static Lock l;
-	char *drive = (char *)spec;
 
-	if (!emptystr(drive) && (drive[1] != ':' || drive[2] != '\0'))
+	if (!emptystr(spec) && !(spec[1] == ':' && spec[2] == '\0'))
 		error(Ebadspec);
 
 	c = devattach('U', spec);
@@ -407,10 +410,10 @@ fsattach(char *spec)
 	c->dev = devno++;
 	unlock(&l);
 	c->qid = rootqid;
-	c->aux = smalloc(sizeof(Fsinfo));
+	c->aux.fsinfo = (Fsinfo*)smalloc(sizeof(Fsinfo));
 	FS(c)->srv = ntsrv;
 	if(!emptystr(spec)) {
-		char *s = smalloc(strlen(spec)+1);
+		char *s = (char*)smalloc(strlen(spec)+1);
 		strcpy(s, spec);
 		FS(c)->spec = s;
 		FS(c)->srv = filesrv(spec);
@@ -442,7 +445,7 @@ fswalk(Chan *c, Chan *nc, char **name, int nname)
 
 	alloc = 0;
 	current = nil;
-	wq = smalloc(sizeof(Walkqid)+(nname-1)*sizeof(Qid));
+	wq = (Walkqid*)smalloc(sizeof(Walkqid)+(nname-1)*sizeof(Qid));
 	if(waserror()){
 		if(alloc && wq->clone != nil)
 			cclose(wq->clone);
@@ -526,7 +529,7 @@ fswalk(Chan *c, Chan *nc, char **name, int nname)
 			cclose(wq->clone);
 		wq->clone = nil;
 	}else if(wq->clone){
-		nc->aux = smalloc(sizeof(Fsinfo));
+		nc->aux.fsinfo = (Fsinfo*)smalloc(sizeof(Fsinfo));
 		nc->type = c->type;
 		FS(nc)->spec = FS(c)->spec;
 		FS(nc)->srv = FS(c)->srv;
@@ -586,7 +589,7 @@ fsopen(Chan *c, int mode)
 		if (winfileclash(path))
 			error(Eexist);
 		wpath = widen(path);
-		h = CreateFile(wpath, m, FILE_SHARE_READ|FILE_SHARE_WRITE|file_share_delete, 0, cflag, aflag, 0);
+		h = CreateFileW(wpath, m, FILE_SHARE_READ|FILE_SHARE_WRITE|file_share_delete, 0, cflag, aflag, 0);
 		free(wpath);
 		if(h == INVALID_HANDLE_VALUE)
 			oserror();
@@ -600,7 +603,7 @@ fsopen(Chan *c, int mode)
 }
 
 void
-fscreate(Chan *c, char *name, int mode, ulong perm)
+fscreate(Chan *c, const char *name, int mode, ulong perm)
 {
 	Stat st;
 	HANDLE h;
@@ -741,7 +744,7 @@ fslseek(HANDLE h, vlong offset)
 }
 
 long
-fsread(Chan *c, void *va, long n, vlong offset)
+fsread(Chan *c, char *va, long n, vlong offset)
 {
 	DWORD n2;
 	HANDLE h;
@@ -770,7 +773,7 @@ fsread(Chan *c, void *va, long n, vlong offset)
 }
 
 long
-fswrite(Chan *c, void *va, long n, vlong offset)
+fswrite(Chan *c, const char *va, long n, vlong offset)
 {
 	DWORD n2;
 	HANDLE h;
@@ -794,7 +797,7 @@ fswrite(Chan *c, void *va, long n, vlong offset)
 }
 
 int
-fsstat(Chan *c, uchar *buf, int n)
+fsstat(Chan *c, char *buf, int n)
 {
 	WIN32_FIND_DATA data;
 	char path[MAX_PATH];
@@ -857,7 +860,7 @@ fsstat(Chan *c, uchar *buf, int n)
 }
 
 int
-fswstat(Chan *c, uchar *buf, int n)
+fswstat(Chan *c, char *buf, int n)
 {
 	int wsd;
 	Dir dir;
@@ -1157,7 +1160,7 @@ fsremove(Chan *c)
  * are not prepared to handle
  */
 static int
-okelem(char *elem, int nodots)
+okelem(const char *elem, int nodots)
 {
 	int c, dots;
 
@@ -1189,9 +1192,10 @@ fsisroot(Chan *c)
 }
 
 static char*
-fspath(Cname *c, char *ext, char *path, char *spec)
+fspath(Cname *c, const char *ext, char *path, const char *spec)
 {
-	char *p, *last, *rootd;
+	char *p, *last;
+	const char *rootd;
 	int extlen = 0;
 
 	rootd = spec != nil ? spec : rootdir;
@@ -1232,7 +1236,7 @@ fspath(Cname *c, char *ext, char *path, char *spec)
 extern void cleancname(Cname*);
 
 static Cname *
-fswalkpath(Cname *c, char *name, int dup)
+fswalkpath(Cname *c, const char *name, int dup)
 {
 	if(dup)
 		c = newcname(c->s);
@@ -1275,7 +1279,7 @@ fsdirent(Chan *c, char *path, Fsdir *data)
 
 	h = ntfd2h(FS(c)->fd);
 	if(data == nil)
-		data = smalloc(sizeof(*data));
+		data = (Fsdir*)smalloc(sizeof(Fsdir));
 	if(FS(c)->offset == 0){
 		if(h != INVALID_HANDLE_VALUE)
 			FindClose(h);
@@ -1300,7 +1304,7 @@ fsdirent(Chan *c, char *path, Fsdir *data)
 }
 
 static long
-fsdirread(Chan *c, uchar *va, int count, vlong offset)
+fsdirread(Chan *c, char *va, int count, vlong offset)
 {
 	int i, r;
 	char path[MAX_PATH], *p;
@@ -1355,7 +1359,7 @@ fsdirread(Chan *c, uchar *va, int count, vlong offset)
 }
 
 static ulong
-fsqidpath(char *p)
+fsqidpath(const char *p)
 {
 	ulong h;
 	int c;
@@ -1596,16 +1600,16 @@ secinit(void)
 		return;
 	}
 
-	net.UserGetGroups = (void*)GetProcAddress(lib, "NetUserGetGroups");
+	net.UserGetGroups = (TUserGetGroups)GetProcAddress(lib, "NetUserGetGroups");
 	if(net.UserGetGroups == 0)
 		panic("bad netapi32 library");
-	net.UserGetLocalGroups = (void*)GetProcAddress(lib, "NetUserGetLocalGroups");
+	net.UserGetLocalGroups = (TUserGetLocalGroups)GetProcAddress(lib, "NetUserGetLocalGroups");
 	if(net.UserGetLocalGroups == 0)
 		panic("bad netapi32 library");
-	net.GetAnyDCName = (void*)GetProcAddress(lib, "NetGetAnyDCName");
+	net.GetAnyDCName = (TGetAnyDCName)GetProcAddress(lib, "NetGetAnyDCName");
 	if(net.GetAnyDCName == 0)
 		panic("bad netapi32 library");
-	net.ApiBufferFree = (void*)GetProcAddress(lib, "NetApiBufferFree");
+	net.ApiBufferFree = (TApiBufferFree)GetProcAddress(lib, "NetApiBufferFree");
 	if(net.ApiBufferFree == 0)
 		panic("bad netapi32 library");
 
@@ -1709,10 +1713,10 @@ secstat(Dir *dir, char *file, Rune *srv)
 	if(ok){
 		dir->mode = st.mode;
 		n = runenlen(st.owner->name, runeslen(st.owner->name));
-		dir->uid = smalloc(n+1);
+		dir->uid = (char*)smalloc(n+1);
 		runestoutf(dir->uid, st.owner->name, n+1);
 		n = runenlen(st.group->name, runeslen(st.group->name));
-		dir->gid = smalloc(n+1);
+		dir->gid = (char*)smalloc(n+1);
 		runestoutf(dir->gid, st.group->name, n+1);
 	}
 	return ok;
@@ -1795,7 +1799,7 @@ secsd(char *file, char sdrock[SD_ROCK])
 		free(wpath);
 		return nil;
 	}
-	sd = malloc(need);
+	sd = (SECURITY_DESCRIPTOR*)malloc(need);
 	if(sd == nil) {
 		free(wpath);
 		error(Enomem);
@@ -1814,9 +1818,9 @@ secsdstat(SECURITY_DESCRIPTOR *sd, Stat *st, Rune *srv)
 {
 	ACL *acl;
 	BOOL hasacl, b;
-	ACE_HEADER *aceh;
+	/*LPVOID aceh;*/
 	User *owner, *group;
-	SID *sid, *osid, *gsid;
+	PSID sid, osid, gsid;
 	ACCESS_ALLOWED_ACE *ace;
 	int i, allow, deny, *p, m;
 	ACL_SIZE_INFORMATION size;
@@ -1838,17 +1842,18 @@ secsdstat(SECURITY_DESCRIPTOR *sd, Stat *st, Rune *srv)
 	 * first pass through acl finds group
 	 */
 	for(i = 0; i < size.AceCount; i++){
-		if(!GetAce(acl, i, &aceh))
+		if(!GetAce(acl, i, (LPVOID*)&ace))
 			continue;
-		if(aceh->AceFlags & INHERIT_ONLY_ACE)
+		/*ace = (ACCESS_ALLOWED_ACE*)aceh;*/
+
+		if(ace->Header.AceFlags & INHERIT_ONLY_ACE)
 			continue;
 
-		if(aceh->AceType != ACCESS_ALLOWED_ACE_TYPE
-		&& aceh->AceType != ACCESS_DENIED_ACE_TYPE)
+		if(ace->Header.AceType != ACCESS_ALLOWED_ACE_TYPE
+		&& ace->Header.AceType != ACCESS_DENIED_ACE_TYPE)
 			continue;
 
-		ace = (ACCESS_ALLOWED_ACE*)aceh;
-		sid = (SID*)&ace->SidStart;
+		sid = (PSID)&ace->SidStart;
 		if(EqualSid(sid, creatorowner) || EqualSid(sid, creatorgroup))
 			continue;
 
@@ -1879,19 +1884,19 @@ secsdstat(SECURITY_DESCRIPTOR *sd, Stat *st, Rune *srv)
 		allow = 0777;
 	deny = 0;
 	for(i = 0; i < size.AceCount; i++){
-		if(!GetAce(acl, i, &aceh))
+		if(!GetAce(acl, i, (LPVOID*)&ace))
 			continue;
-		if(aceh->AceFlags & INHERIT_ONLY_ACE)
+		/*ace = (ACCESS_ALLOWED_ACE*)aceh;*/
+		if(ace->Header.AceFlags & INHERIT_ONLY_ACE)
 			continue;
 
-		if(aceh->AceType == ACCESS_ALLOWED_ACE_TYPE)
+		if(ace->Header.AceType == ACCESS_ALLOWED_ACE_TYPE)
 			p = &allow;
-		else if(aceh->AceType == ACCESS_DENIED_ACE_TYPE)
+		else if(ace->Header.AceType == ACCESS_DENIED_ACE_TYPE)
 			p = &deny;
 		else
 			continue;
 
-		ace = (ACCESS_ALLOWED_ACE*)aceh;
 		sid = (SID*)&ace->SidStart;
 		if(EqualSid(sid, creatorowner) || EqualSid(sid, creatorgroup))
 			continue;
@@ -1924,7 +1929,7 @@ secsdhasperm(SECURITY_DESCRIPTOR *sd, ulong access, Rune *srv)
 	User *u;
 	ACL *acl;
 	BOOL hasacl, b;
-	ACE_HEADER *aceh;
+	/*LPVOID aceh;*/
 	SID *sid, *osid, *gsid;
 	int i, allow, deny, *p, m;
 	ACCESS_ALLOWED_ACE *ace;
@@ -1944,19 +1949,19 @@ secsdhasperm(SECURITY_DESCRIPTOR *sd, ulong access, Rune *srv)
 	if(!GetAclInformation(acl, &size, sizeof(size), AclSizeInformation))
 		return 0;
 	for(i = 0; i < size.AceCount; i++){
-		if(!GetAce(acl, i, &aceh))
+		if(!GetAce(acl, i, (LPVOID*)&ace))
 			continue;
-		if(aceh->AceFlags & INHERIT_ONLY_ACE)
+		/*ace = (ACCESS_ALLOWED_ACE*)aceh;*/
+		if(ace->Header.AceFlags & INHERIT_ONLY_ACE)
 			continue;
 
-		if(aceh->AceType == ACCESS_ALLOWED_ACE_TYPE)
+		if(ace->Header.AceType == ACCESS_ALLOWED_ACE_TYPE)
 			p = &allow;
-		else if(aceh->AceType == ACCESS_DENIED_ACE_TYPE)
+		else if(ace->Header.AceType == ACCESS_DENIED_ACE_TYPE)
 			p = &deny;
 		else
 			continue;
 
-		ace = (ACCESS_ALLOWED_ACE*)aceh;
 		sid = (SID*)&ace->SidStart;
 		if(EqualSid(sid, creatorowner) || EqualSid(sid, creatorgroup))
 			continue;
@@ -2009,13 +2014,13 @@ secmksd(char *sdrock, Stat *st, ACL *dacl, int isdir)
 
 	if(isdir){
 		/* hack to add inherit flags */
-		if(!GetAce(dacl, 1, &aceh))
+		if(!GetAce(dacl, 1, (LPVOID*)&aceh))
 			return nil;
 		aceh->AceFlags |= OBJECT_INHERIT_ACE|CONTAINER_INHERIT_ACE;
-		if(!GetAce(dacl, 2, &aceh))
+		if(!GetAce(dacl, 2, (LPVOID*)&aceh))
 			return nil;
 		aceh->AceFlags |= OBJECT_INHERIT_ACE|CONTAINER_INHERIT_ACE;
-		if(!GetAce(dacl, 3, &aceh))
+		if(!GetAce(dacl, 3, (LPVOID*)&aceh))
 			return nil;
 		aceh->AceFlags |= OBJECT_INHERIT_ACE|CONTAINER_INHERIT_ACE;
 	}
@@ -2027,7 +2032,7 @@ secmksd(char *sdrock, Stat *st, ACL *dacl, int isdir)
 		if(!AddAccessAllowedAce(dacl, ACL_REVISION, RMODE|WMODE|XMODE, fsuser->sid))
 			return nil;
 		if(isdir){
-			if(!GetAce(dacl, 4, &aceh))
+			if(!GetAce(dacl, 4, (LPVOID*)&aceh))
 				return nil;
 			aceh->AceFlags |= OBJECT_INHERIT_ACE|CONTAINER_INHERIT_ACE;
 		}
@@ -2047,7 +2052,7 @@ secmksd(char *sdrock, Stat *st, ACL *dacl, int isdir)
  * just make it easier to deal with user identities
  */
 static User*
-sidtouser(Rune *srv, SID *s)
+sidtouser(Rune *srv, PSID s)
 {
 	SID_NAME_USE type;
 	Rune aname[100], dname[100];
@@ -2120,7 +2125,7 @@ unametouser(Rune *srv, char *name)
  * make a user structure and add it to the global cache.
  */
 static User*
-mkuser(SID *sid, int type, Rune *name, Rune *dom)
+mkuser(PSID sid, int type, Rune *name, Rune *dom)
 {
 	User *u;
 
@@ -2146,7 +2151,7 @@ mkuser(SID *sid, int type, Rune *name, Rune *dom)
 		break;
 	}
 
-	u = malloc(sizeof(User));
+	u = (User*)malloc(sizeof(User));
 	if(u == nil){
 		qunlock(&users.lk);
 		return 0;
@@ -2174,7 +2179,7 @@ mkuser(SID *sid, int type, Rune *name, Rune *dom)
  * which might be a group.
  */
 static int
-ismembersid(Rune *srv, User *u, SID *gsid)
+ismembersid(Rune *srv, User *u, PSID gsid)
 {
 	User *g;
 
@@ -2253,7 +2258,7 @@ addgroups(User *u, int force)
 			gu = domnametouser(srv, grp[i].grui0_name, u->dom);
 			if(gu == 0)
 				continue;
-			g = malloc(sizeof(Gmem));
+			g = (Gmem*)malloc(sizeof(Gmem));
 			if(g == nil)
 				error(Enomem);
 			g->user = gu;
@@ -2271,7 +2276,7 @@ addgroups(User *u, int force)
 			gu = domnametouser(srv, loc[i].lgrui0_name, u->dom);
 			if(gu == NULL)
 				continue;
-			g = malloc(sizeof(Gmem));
+			g = (Gmem*)malloc(sizeof(Gmem));
 			if(g == nil)
 				error(Enomem);
 			g->user = gu;
@@ -2282,10 +2287,10 @@ addgroups(User *u, int force)
 	}
 }
 
-static SID*
-dupsid(SID *sid)
+static PSID
+dupsid(PSID sid)
 {
-	SID *nsid;
+	PSID nsid;
 	int n;
 
 	n = GetLengthSid(sid);
@@ -2299,11 +2304,12 @@ dupsid(SID *sid)
  * return the name of the server machine for file
  */
 static Rune*
-filesrv(char *file)
+filesrv(const char *file)
 {
-	int n;
+	DWORD n;
 	Rune *srv;
-	char *p, uni[MAX_PATH], mfile[MAX_PATH];
+	const char *p;
+	char uni[MAX_PATH], mfile[MAX_PATH];
 	wchar_t vol[3];
 
 	strcpy(mfile, file);
@@ -2332,7 +2338,7 @@ filesrv(char *file)
 	memmove(uni, file, n);
 	uni[n] = '\0';
 
-	srv = malloc((n + 1) * sizeof(Rune));
+	srv = (Rune*)malloc((n + 1) * sizeof(Rune));
 	if(srv == nil)
 		panic("filesrv: no memory");
 	utftorunes(srv, uni, n+1);
@@ -2343,7 +2349,7 @@ filesrv(char *file)
  * does the file system support acls?
  */
 static int
-fsacls(char *file)
+fsacls(const char *file)
 {
 	char *p;
 	DWORD flags;
@@ -2411,7 +2417,7 @@ runesdup(Rune *r)
 	Rune *s;
 
 	n = runeslen(r) + 1;
-	s = malloc(n * sizeof(Rune));
+	s = (Rune *)malloc(n * sizeof(Rune));
 	if(s == nil)
 		error(Enomem);
 	memmove(s, r, n * sizeof(Rune));

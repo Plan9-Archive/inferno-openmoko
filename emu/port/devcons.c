@@ -80,7 +80,7 @@ vlong	timeoffset;
 
 extern int	dflag;
 
-static int	sysconwrite(void*, ulong);
+static int	sysconwrite(const char*, ulong);
 extern char**	rebootargv;
 
 static struct
@@ -182,7 +182,7 @@ iseve(void)
 }
 
 static Chan*
-consattach(char *spec)
+consattach(const char *spec)
 {
 	static int kp;
 
@@ -200,7 +200,7 @@ conswalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-consstat(Chan *c, uchar *db, int n)
+consstat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, contab, nelem(contab), devgen);
 }
@@ -281,7 +281,7 @@ consclose(Chan *c)
 }
 
 static long
-consread(Chan *c, void *va, long n, vlong offset)
+consread(Chan *c, char *va, long n, vlong offset)
 {
 	ulong l;
 	int i, send;
@@ -333,7 +333,7 @@ consread(Chan *c, void *va, long n, vlong offset)
 		return readstr(offset, va, n, buf);
 
 	case Qdrivers:
-		p = malloc(READSTR);
+		p = (char*)malloc(READSTR);
 		if(p == nil)
 			error(Enomem);
 		l = 0;
@@ -349,7 +349,7 @@ consread(Chan *c, void *va, long n, vlong offset)
 		return n;
 
 	case Qmemory:
-		return poolread(va, n, offset);
+		return 0; /* BUG poolread(va, n, offset); */
 
 	case Qnull:
 		return 0;
@@ -429,9 +429,10 @@ consread(Chan *c, void *va, long n, vlong offset)
 }
 
 static long
-conswrite(Chan *c, void *va, long n, vlong offset)
+conswrite(Chan *c, const char *va, long n, vlong offset)
 {
-	char buf[128], *a, ch;
+	char buf[128], ch;
+	const char *a;
 	int x;
 
 	if(c->qid.type & QTDIR)
@@ -482,7 +483,7 @@ conswrite(Chan *c, void *va, long n, vlong offset)
 	case Qkeyboard:
 		for(x=0; x<n; ) {
 			Rune r;
-			x += chartorune(&r, &((char*)va)[x]);
+			x += chartorune(&r, va+x);
 			gkbdputc(gkbdq, r);
 		}
 		break;
@@ -574,7 +575,7 @@ conswrite(Chan *c, void *va, long n, vlong offset)
 }
 
 static int
-sysconwrite(void *va, ulong count)
+sysconwrite(const char *va, ulong count)
 {
 	Cmdbuf *cb;
 	int e;
@@ -631,7 +632,7 @@ static	ulong	randn;
 static void
 seedrand(void)
 {
-	randomread((void*)&randn, sizeof(randn));
+	randomread((char*)&randn, sizeof(randn));
 }
 
 int

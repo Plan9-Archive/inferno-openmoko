@@ -24,8 +24,8 @@ extern int		so_accept(int, unsigned long*, unsigned short*);
 extern int		so_getservbyname(char*, char*, char*);
 extern int		so_gethostbyname(char*, char**, int);
 extern int		so_gethostbyaddr(char*, char**, int);
-extern int		so_recv(int, void*, int, void*, int);
-extern int		so_send(int, void*, int, void*, int);
+extern int		so_recv(int, char*, int, void*, int);
+extern int		so_send(int, const char*, int, const void*, int);
 extern void		so_close(int);
 extern int		so_hangup(int, int);
 extern void		so_setsockopt(int, int, int);
@@ -33,18 +33,25 @@ extern int		so_mustbind(int, int);
 extern void		so_keepalive(int, int);
 
 
-extern void		hnputl(void *p, unsigned long v);
-extern void		hnputs(void *p, unsigned short v);
-extern unsigned long	nhgetl(void *p);
-extern unsigned short	nhgets(void *p);
-extern unsigned long	parseip(uchar *to, char *from);
-extern int	parsemac(uchar *to, char *from, int len);
-extern char*	v4parseip(uchar*, char*);
+#define nhgets	GBIT16BE
+#define nhgetl	GBIT32BE
+#define hnputs	PBIT16BE
+#define hnputl	PBIT32BE
+
+
+//extern void		hnputl(void *p, unsigned long v);
+//extern void		hnputs(void *p, unsigned short v);
+//extern unsigned long	nhgetl(void *p);
+//extern unsigned short	nhgets(void *p);
+extern unsigned long	parseip(char to[16], const char *from);
+extern size_t	parsemac(char *to, const char *from, size_t len);
+extern const char*v4parseip(char to[4], const char *from);
+
 extern int		bipipe(int[]);
 
-extern int	isv4(uchar*);
-extern void	v4tov6(uchar *v6, uchar *v4);
-extern int	v6tov4(uchar *v4, uchar *v6);
+extern int	isv4(const char v6[16]);
+extern void	v4tov6(char v6[16], const char v4[4]);
+extern int	v6tov4(char v4[4], const char v6[16]);
 extern int	eipfmt(Fmt*);
 
 #define	ipmove(x, y) memmove(x, y, IPaddrlen)
@@ -59,6 +66,6 @@ extern uchar v4prefix[IPaddrlen];
 extern uchar IPallbits[IPaddrlen];
 
 extern void	arpadd(char*, char*, int);
-extern int	arpwrite(char*, int);
+extern int	arpwrite(const char*, int);
 
 extern	int	Fsproto(Fs*, Proto*);

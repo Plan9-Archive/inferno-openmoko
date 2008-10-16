@@ -1,7 +1,7 @@
 #include "lib9.h"
 
 int
-utfnlen(char *s, long m)
+utfnlen(const char *s, long m)
 {
 	int c;
 	long n;

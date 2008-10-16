@@ -71,8 +71,8 @@ tkmodinit(void)
 	builtinmod("$Tk", Tkmodtab, Tkmodlen);
 	fmtinstall('v', tkeventfmt);			/* XXX */
 
-	fakeTkTop = dtype(tkfreetop, sizeof(TkTop), TktypeMap, sizeof(TktypeMap));
-	fakeTkTop->mark = tkmarktop;
+	fakeTkTop = dtype(tkfreetop, sizeof(TkTop), TktypeMap, sizeof(TktypeMap), "Tk->top");
+	fakeTkTop->fnmark = tkmarktop;
 
 	tksorttable();
 }
@@ -96,10 +96,10 @@ Tk_toplevel(void *a)
 
 	h = heapz(fakeTkTop);
 	t = H2D(TkTop*, h);
-	poolimmutable(h);
+	 /* BUG poolimmutable(h); */
 
 	t->dd = f->d;
-	D2H(t->dd)->ref++;
+	ADDREF(t->dd);
 
 	t->execdepth = -1;
 	t->display = disp;
@@ -142,7 +142,7 @@ Tk_toplevel(void *a)
 	t->windows = tk;
 	t->root = tk;
 	Setmark(h);
-	poolmutable(h);
+	/* BUG poolmutable(h); */
 	t->wreq = cnewc(&Tptr, movp, 8);
 	*f->ret = (Tk_Toplevel*)t;
 }
@@ -577,9 +577,8 @@ Tk_namechan(void *a)
 	destroy(v->value);
 	v->value = f->c;
 	unlockctxt(t->ctxt);
-	h = D2H(v->value);
-	h->ref++;
-	Setmark(h);
+	ADDREF(v->value);
+	Setmark(D2H(v->value));
 	// poolimmutable((void *)h);
 	retstr("", f->ret);
 }
@@ -715,7 +714,7 @@ tkaddpanelimage(TkTop *t, Draw_Image *di, Image **i)
 	if (pi == nil)
 		return TkNomem;
 	pi->image = di;
-	D2H(di)->ref++;
+	ADDREF(di);
 	pi->ref = 1;
 	pi->link = t->panelimages;
 	t->panelimages = pi;
@@ -1038,7 +1037,7 @@ tktopimagedptr(TkTop *top, Draw_Image *di)
 	}
 	if(di == H)
 		return;
-	D2H(di)->ref++;
+	ADDREF(di);
 	top->di = di;
 }
 
@@ -1083,7 +1082,7 @@ tksetwindrawimage(Tk *tk, Draw_Image *di)
 		unlockdisplay(i->display);
 
 	if(!same){
-		D2H(di)->ref++;
+		ADDREF(di);
 		if(tk->name){
 			name = tk->name->name;
 			if(name[0] == '.' && name[1] == '\0')

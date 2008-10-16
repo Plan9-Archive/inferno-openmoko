@@ -82,12 +82,10 @@ bad:
 }
 
 long
-kchanio(void *vc, void *buf, int n, int mode)
+kchanio(Chan *c, void *buf, int n, int mode)
 {
 	int r;
-	Chan *c;
 
-	c = vc;
 	if(waserror())
 		return -1;
 
@@ -564,7 +562,7 @@ unionread(Chan *c, void *va, long n)
 				c->umc = cclone(mount->to);
 				c->umc = devtab[c->umc->type]->open(c->umc, OREAD);
 			}
-	
+
 			nr = devtab[c->umc->type]->read(c->umc, va, n, c->umc->offset);
 			if(nr < 0)
 				nr = 0;	/* dev.c can return -1 */
@@ -764,7 +762,7 @@ kseek(int fd, vlong off, int whence)
 }
 
 void
-validstat(uchar *s, int n)
+validstat(char *s, int n)
 {
 	int m;
 	char buf[64];

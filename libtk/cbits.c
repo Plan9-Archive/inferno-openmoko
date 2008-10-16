@@ -3,7 +3,6 @@
 #include "tk.h"
 #include "canvs.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
 
 /* Bitmap Options (+ means implemented)
 	+anchor
@@ -21,17 +20,17 @@ struct TkCbits
 static
 TkOption bitopts[] =
 {
-	"anchor",	OPTstab,	O(TkCbits, anchor),	tkanchor,
-	"bitmap",	OPTbmap,	O(TkCbits, bitmap),	nil,
+	"anchor",	OPTstab,	offsetof(TkCbits, anchor),	tkanchor,
+	"bitmap",	OPTbmap,	offsetof(TkCbits, bitmap),	nil,
 	nil
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	O(TkCitem, tags),	nil,
-	"background",	OPTcolr,	O(TkCitem, env),	IAUX(TkCbackgnd),
-	"foreground",	OPTcolr,	O(TkCitem, env),	IAUX(TkCforegnd),
+	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
+	"background",	OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCbackgnd),
+	"foreground",	OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCforegnd),
 	nil
 };
 
@@ -96,7 +95,7 @@ tkcvsbitcreat(Tk* tk, char *arg, char **val)
 		tkcvsfreeitem(i);
 		return e;
 	}
-	
+
 	e = tkcaddtag(tk, i, 1);
 	if(e != nil) {
 		tkcvsfreeitem(i);

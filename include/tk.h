@@ -78,7 +78,7 @@ enum
 	TkGt,
 	TkNeq,
 
-	
+
 	OPTdist		= 0,	/* Distance; aux is offset of TkEnv* */
 	OPTstab,		/* String->Constant table; aux is TkStab array */
 	OPTtext,		/* Text string */
@@ -265,7 +265,7 @@ struct TkOption
 struct TkOptab
 {
 	void*		ptr;
-	TkOption*	optab;	
+	TkOption*	optab;
 };
 
 enum
@@ -488,7 +488,7 @@ struct TkMethod
 {
 	char*		name;
 	TkCmdtab*	cmd;
-	void		(*free)(Tk*);
+	void		(*fnfree)(Tk*);
 	char*	(*draw)(Tk*, Point);
 	void		(*geom)(Tk*);
 	void		(*getimgs)(Tk*, Image**, Image**);

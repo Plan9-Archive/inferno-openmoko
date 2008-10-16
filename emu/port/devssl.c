@@ -14,8 +14,14 @@ struct OneWay
 	QLock	q;
 	QLock	ctlq;
 
-	void	*state;		/* encryption state */
-	int	slen;			/* secret data length */
+	/*void	*state;		/* encryption state */
+	union {
+		IDEAstate *idea;
+		DESstate *des;
+		RC4state *rc4;
+		void* ptr;
+	} state;
+	size_t	slen;			/* secret data length */
 	uchar	*secret;	/* secret */
 	ulong	mid;		/* message id */
 };
@@ -54,7 +60,7 @@ struct Dstate
 	/* for SSL format */
 	int	max;			/* maximum unpadded data per msg */
 	int	maxpad;			/* maximum padded data per msg */
-	
+
 	/* input side */
 	OneWay	in;
 	Block	*processed;
@@ -74,8 +80,8 @@ enum
 	Maxdstate=	1<<10,
 };
 
-Lock	dslock;
-int	dshiwat;
+Lock	dslock = {0};
+int	dshiwat = 0;
 int	maxdstate = 20;
 Dstate** dstate;
 
@@ -95,15 +101,15 @@ enum{
 #define CONV(x) 	(((ulong)(x).path >> 4)&(Maxdstate-1))
 #define QID(c, y) 	(((c)<<4) | (y))
 
-static char*	encalgs;
-static char*	hashalgs;
+static char*	encalgs = 0;
+static char*	hashalgs = 0;
 
 void producerand(void);
 
 static void alglistinit(void);
 static void	ensure(Dstate*, Block**, int);
 static void	consume(Block**, uchar*, int);
-static void	setsecret(OneWay*, uchar*, int);
+static void	setsecret(OneWay*, const char*, int);
 static Block*	encryptb(Dstate*, Block*, int);
 static Block*	decryptb(Dstate*, Block*);
 static Block*	digestb(Dstate*, Block*, int);
@@ -195,13 +201,13 @@ sslgen(Chan *c, char *dname, Dirtab *d, int nd, int s, Dir *dp)
 static void
 sslinit(void)
 {
-	if((dstate = malloc(sizeof(Dstate*) * maxdstate)) == 0)
+	if((dstate = (Dstate**)malloc(sizeof(Dstate*) * maxdstate)) == 0)
 		panic("sslinit");
 	alglistinit();
 }
 
 static Chan *
-sslattach(char *spec)
+sslattach(const char *spec)
 {
 	Chan *c;
 
@@ -219,7 +225,7 @@ sslwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-sslstat(Chan *c, uchar *db, int n)
+sslstat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, 0, 0, sslgen);
 }
@@ -292,7 +298,7 @@ sslopen(Chan *c, int omode)
 }
 
 static int
-sslwstat(Chan *c, uchar *db, int n)
+sslwstat(Chan *c, char *db, int n)
 {
 	Dir *dir;
 	Dstate *s;
@@ -304,7 +310,7 @@ sslwstat(Chan *c, uchar *db, int n)
 	if(strcmp(s->user, up->env->user) != 0)
 		error(Eperm);
 
-	dir = smalloc(sizeof(Dir)+n);
+	dir = (Dir*)smalloc(sizeof(Dir)+n);
 	m = convM2D(db, n, &dir[0], (char*)&dir[1]);
 	if(m == 0){
 		free(dir);
@@ -351,8 +357,8 @@ sslclose(Chan *c)
 		free(s->user);
 		free(s->in.secret);
 		free(s->out.secret);
-		free(s->in.state);
-		free(s->out.state);
+		free(s->in.state.ptr);
+		free(s->out.state.ptr);
 		free(s);
 	}
 }
@@ -569,11 +575,10 @@ sslbread(Chan *c, long n, ulong offset)
 }
 
 static long
-sslread(Chan *c, void *a, long n, vlong offset)
+sslread(Chan *c, char *a, long n, vlong offset)
 {
 	volatile struct { Block *b; } b;
 	Block *nb;
-	uchar *va;
 	int i;
 	char buf[128];
 
@@ -596,10 +601,9 @@ sslread(Chan *c, void *a, long n, vlong offset)
 	}
 
 	n = 0;
-	va = a;
 	for(nb = b.b; nb; nb = nb->next){
 		i = BLEN(nb);
-		memmove(va+n, nb->rp, i);
+		memmove(a+n, nb->rp, i);
 		n += i;
 	}
 
@@ -729,10 +733,10 @@ sslbwrite(Chan *c, Block *b, ulong offset)
 }
 
 static void
-setsecret(OneWay *w, uchar *secret, int n)
+setsecret(OneWay *w, const char *secret, int n)
 {
 	free(w->secret);
-	w->secret = mallocz(n, 0);
+	w->secret = (char*)mallocz(n, 0);
 	if(w->secret == nil)
 		error(Enomem);
 	memmove(w->secret, secret, n);
@@ -742,15 +746,14 @@ setsecret(OneWay *w, uchar *secret, int n)
 static void
 initIDEAkey(OneWay *w)
 {
-
-	free(w->state);
-	w->state = malloc(sizeof(IDEAstate));
-	if(w->state == nil)
+	free(w->state.idea);
+	w->state.idea = (IDEAstate*)malloc(sizeof(IDEAstate));
+	if(w->state.idea == nil)
 		error(Enomem);
 	if(w->slen >= 24)
-		setupIDEAstate(w->state, w->secret, w->secret+16);
+		setupIDEAstate(w->state.idea, w->secret, w->secret+16);
 	else if(w->slen >= 16)
-		setupIDEAstate(w->state, w->secret, 0);
+		setupIDEAstate(w->state.idea, w->secret, 0);
 	else
 		error("secret too short");
 }
@@ -758,15 +761,14 @@ initIDEAkey(OneWay *w)
 static void
 initDESkey(OneWay *w)
 {
-
-	free(w->state);
-	w->state = malloc(sizeof(DESstate));
-	if (!w->state)
+	free(w->state.des);
+	w->state.des = (DESstate*)malloc(sizeof(DESstate));
+	if (!w->state.des)
 		error(Enomem);
 	if(w->slen >= 16)
-		setupDESstate(w->state, w->secret, w->secret+8);
+		setupDESstate(w->state.des, w->secret, w->secret+8);
 	else if(w->slen >= 8)
-		setupDESstate(w->state, w->secret, 0);
+		setupDESstate(w->state.des, w->secret, 0);
 	else
 		error("secret too short");
 }
@@ -789,14 +791,14 @@ initDESkey_40(OneWay *w)
 		key[6] &= 0x0f;
 	}
 
-	free(w->state);
-	w->state = malloc(sizeof(DESstate));
-	if (!w->state)
+	free(w->state.des);
+	w->state.des = (DESstate*)malloc(sizeof(DESstate));
+	if (!w->state.des)
 		error(Enomem);
 	if(w->slen >= 16)
-		setupDESstate(w->state, key, w->secret+8);
+		setupDESstate(w->state.des, key, w->secret+8);
 	else if(w->slen >= 8)
-		setupDESstate(w->state, key, 0);
+		setupDESstate(w->state.des, key, 0);
 	else
 		error("secret too short");
 }
@@ -804,11 +806,11 @@ initDESkey_40(OneWay *w)
 static void
 initRC4key(OneWay *w)
 {
-	free(w->state);
-	w->state = malloc(sizeof(RC4state));
-	if (!w->state)
+	free(w->state.rc4);
+	w->state.rc4 = (RC4state*)malloc(sizeof(RC4state));
+	if (!w->state.rc4)
 		error(Enomem);
-	setupRC4state(w->state, w->secret, w->slen);
+	setupRC4state(w->state.rc4, w->secret, w->slen);
 }
 
 /*
@@ -823,11 +825,11 @@ initRC4key_40(OneWay *w)
 	if(slen > 5)
 		slen = 5;
 
-	free(w->state);
-	w->state = malloc(sizeof(RC4state));
-	if (!w->state)
+	free(w->state.rc4);
+	w->state.rc4 = (RC4state*)malloc(sizeof(RC4state));
+	if (!w->state.rc4)
 		error(Enomem);
-	setupRC4state(w->state, w->secret, slen);
+	setupRC4state(w->state.rc4, w->secret, slen);
 }
 
 /*
@@ -842,11 +844,11 @@ initRC4key_128(OneWay *w)
 	if(slen > 16)
 		slen = 16;
 
-	free(w->state);
-	w->state = malloc(sizeof(RC4state));
-	if (!w->state)
+	free(w->state.rc4);
+	w->state.rc4 = (RC4state*)malloc(sizeof(RC4state));
+	if (!w->state.rc4)
 		error(Enomem);
-	setupRC4state(w->state, w->secret, slen);
+	setupRC4state(w->state.rc4, w->secret, slen);
 }
 
 typedef struct Hashalg Hashalg;
@@ -938,7 +940,7 @@ alglistinit(void)
 	n = 1;
 	for(e = encrypttab; e->name != nil; e++)
 		n += strlen(e->name) + 1;
-	encalgs = malloc(n);
+	encalgs = (char*)malloc(n);
 	if(encalgs == nil)
 		panic("sslinit");
 	n = 0;
@@ -954,7 +956,7 @@ alglistinit(void)
 	n = 1;
 	for(h = hashtab; h->name != nil; h++)
 		n += strlen(h->name) + 1;
-	hashalgs = malloc(n);
+	hashalgs = (char*)malloc(n);
 	if(hashalgs == nil)
 		panic("sslinit");
 	n = 0;
@@ -969,13 +971,14 @@ alglistinit(void)
 }
 
 static long
-sslwrite(Chan *c, void *a, long n, vlong offset)
+sslwrite(Chan *c, const char *a, long n, vlong offset)
 {
 	volatile struct { Dstate *s; } s;
 	volatile struct { Block *b; } b;
 	int m, t;
-	char *p, *np, *e, buf[32];
-	uchar *x;
+	char *np, *e, buf[32];
+	const char *p;
+	char *x;
 
 	s.s = dstate[CONV(c->qid)];
 	if(s.s == 0)
@@ -985,14 +988,14 @@ sslwrite(Chan *c, void *a, long n, vlong offset)
 	if(t == Qdata){
 		if(s.s->state == Sincomplete)
 			error(Ebadusefd);
-	
+
 		p = a;
 		e = p + n;
 		do {
 			m = e - p;
 			if(m > s.s->max)
 				m = s.s->max;
-	
+
 			b.b = allocb(m);
 			memmove(b.b->wp, p, m);
 			b.b->wp += m;
@@ -1030,12 +1033,14 @@ sslwrite(Chan *c, void *a, long n, vlong offset)
 		error(Ebadarg);
 	strncpy(buf, a, n);
 	buf[n] = 0;
-	p = strchr(buf, '\n');
+	{
+	char*p = strchr(buf, '\n');
 	if(p)
 		*p = 0;
 	p = strchr(buf, ' ');
 	if(p)
 		*p++ = 0;
+	}
 
 	if(strcmp(buf, "fd") == 0){
 		s.s->c = buftochan(p);
@@ -1102,7 +1107,7 @@ sslwrite(Chan *c, void *a, long n, vlong offset)
 			s.s->maxpad = s.s->max = (1<<15) - s.s->diglen - 1;
 	} else if(strcmp(buf, "secretin") == 0 && p != 0) {
 		m = (strlen(p)*3)/2;
-		x = smalloc(m);
+		x = (char*)smalloc(m);
 		if(waserror()){
 			free(x);
 			nexterror();
@@ -1113,7 +1118,7 @@ sslwrite(Chan *c, void *a, long n, vlong offset)
 		free(x);
 	} else if(strcmp(buf, "secretout") == 0 && p != 0) {
 		m = (strlen(p)*3)/2;
-		x = smalloc(m);
+		x = (char*)smalloc(m);
 		if(waserror()){
 			free(x);
 			nexterror();
@@ -1142,13 +1147,13 @@ encryptb(Dstate *s, Block *b, int offset)
 
 	switch(s->encryptalg){
 	case DESECB:
-		ds = s->out.state;
+		ds = s->out.state.des;
 		ep = b->rp + BLEN(b);
 		for(p = b->rp + offset; p < ep; p += 8)
 			block_cipher(ds->expanded, p, 0);
 		break;
 	case DESCBC:
-		ds = s->out.state;
+		ds = s->out.state.des;
 		ep = b->rp + BLEN(b);
 		for(p = b->rp + offset; p < ep; p += 8){
 			p2 = p;
@@ -1160,13 +1165,13 @@ encryptb(Dstate *s, Block *b, int offset)
 		}
 		break;
 	case IDEAECB:
-		is = s->out.state;
+		is = s->out.state.idea;
 		ep = b->rp + BLEN(b);
 		for(p = b->rp + offset; p < ep; p += 8)
 			idea_cipher(is->edkey, p, 0);
 		break;
 	case IDEACBC:
-		is = s->out.state;
+		is = s->out.state.idea;
 		ep = b->rp + BLEN(b);
 		for(p = b->rp + offset; p < ep; p += 8){
 			p2 = p;
@@ -1178,7 +1183,7 @@ encryptb(Dstate *s, Block *b, int offset)
 		}
 		break;
 	case RC4:
-		rc4(s->out.state, b->rp + offset, BLEN(b) - offset);
+		rc4(s->out.state.rc4, b->rp + offset, BLEN(b) - offset);
 		break;
 	}
 	return b;
@@ -1210,13 +1215,13 @@ decryptb(Dstate *s, Block *inb)
 		/* decrypt */
 		switch(s->encryptalg){
 		case DESECB:
-			ds = s->in.state;
+			ds = s->in.state.des;
 			ep = b->rp + BLEN(b);
 			for(p = b->rp; p < ep; p += 8)
 				block_cipher(ds->expanded, p, 1);
 			break;
 		case DESCBC:
-			ds = s->in.state;
+			ds = s->in.state.des;
 			ep = b->rp + BLEN(b);
 			for(p = b->rp; p < ep;){
 				memmove(tmp, p, 8);
@@ -1230,13 +1235,13 @@ decryptb(Dstate *s, Block *inb)
 			}
 			break;
 		case IDEAECB:
-			is = s->in.state;
+			is = s->in.state.idea;
 			ep = b->rp + BLEN(b);
 			for(p = b->rp; p < ep; p += 8)
 				idea_cipher(is->edkey, p, 1);
 			break;
 		case IDEACBC:
-			is = s->in.state;
+			is = s->in.state.idea;
 			ep = b->rp + BLEN(b);
 			for(p = b->rp; p < ep;){
 				memmove(tmp, p, 8);
@@ -1250,7 +1255,7 @@ decryptb(Dstate *s, Block *inb)
 			}
 			break;
 		case RC4:
-			rc4(s->in.state, b->rp, BLEN(b));
+			rc4(s->in.state.rc4, b->rp, BLEN(b));
 			break;
 		}
 	}
@@ -1384,7 +1389,7 @@ dsclone(Chan *ch)
 		if(newmax > Maxdstate)
 			newmax = Maxdstate;
 
-		np = realloc(dstate, sizeof(Dstate*) * newmax);
+		np = (Dstate **)realloc(dstate, sizeof(Dstate*) * newmax);
 		if(np == 0)
 			error(Enomem);
 		dstate = np;
@@ -1404,7 +1409,7 @@ dsnew(Chan *ch, Dstate **pp)
 	Dstate *s;
 	int t;
 
-	*pp = s = mallocz(sizeof(*s), 1);
+	*pp = s = (Dstate *)mallocz(sizeof(*s), 1);
 	if(s == nil)
 		error(Enomem);
 	if(pp - dstate >= dshiwat)

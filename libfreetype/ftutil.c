@@ -55,7 +55,7 @@
 
     if ( size > 0 )
     {
-      *P = memory->alloc( memory, size );
+      *P = memory->fnalloc( memory, size );
       if ( !*P )
       {
         FT_ERROR(( "FT_Alloc:" ));
@@ -101,7 +101,7 @@
       return FT_Err_Ok;
     }
 
-    Q = memory->realloc( memory, current, size, *P );
+    Q = memory->fnrealloc( memory, current, size, *P );
     if ( !Q )
       goto Fail;
 
@@ -131,7 +131,7 @@
 
     if ( P && *P )
     {
-      memory->free( memory, *P );
+      memory->fnfree( memory, *P );
       *P = 0;
     }
   }

@@ -31,10 +31,10 @@ void
 freetypemodinit(void)
 {
 	builtinmod("$Freetype", Freetypemodtab, Freetypemodlen);
-	TMatrix = dtype(freeheap, sizeof(Freetype_Matrix), Matrixmap, sizeof(Matrixmap));
-	TVector = dtype(freeheap, sizeof(Freetype_Vector), Vectormap, sizeof(Vectormap));
-	TFace = dtype(freeface, sizeof(Face), Facemap, sizeof(Facemap));
-	TGlyph = dtype(freeheap, sizeof(Freetype_Glyph), Glyphmap, sizeof(Glyphmap));
+	TMatrix = dtype(freeheap, sizeof(Freetype_Matrix), Matrixmap, sizeof(Matrixmap), "Freetype->Matrix" );
+	TVector = dtype(freeheap, sizeof(Freetype_Vector), Vectormap, sizeof(Vectormap), "Freetype->Vector" );
+	TFace = dtype(freeface, sizeof(Face), Facemap, sizeof(Facemap), "Freetype->Face" );
+	TGlyph = dtype(freeheap, sizeof(Freetype_Glyph), Glyphmap, sizeof(Glyphmap), "Freetype->Glyph" );
 }
 
 void

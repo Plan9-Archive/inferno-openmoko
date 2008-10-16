@@ -22,7 +22,7 @@ Dirtab snarftab[]={
 static QLock snarflock;	/* easiest to synchronise all access */
 
 static Chan*
-snarfattach(char *spec)
+snarfattach(const char *spec)
 {
 	return devattach('^', spec);
 }
@@ -34,7 +34,7 @@ snarfwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-snarfstat(Chan* c, uchar *db, int n)
+snarfstat(Chan* c, char *db, int n)
 {
 	return devstat(c, db, n, snarftab, nelem(snarftab), devgen);
 }
@@ -46,8 +46,8 @@ snarfopen(Chan* c, int omode)
 	if(c->qid.path == Qsnarf){
 		if(c->mode == ORDWR || c->mode == OWRITE){
 			qlock(&snarflock);
-			free(c->aux);
-			c->aux = nil;
+			free(c->aux.pchar);
+			c->aux.pchar = nil;
 			qunlock(&snarflock);
 		}
 	}
@@ -63,16 +63,16 @@ snarfclose(Chan* c)
 		/* this must be the last reference: no need to lock */
 		if(c->mode == ORDWR || c->mode == OWRITE){
 			if(!waserror()){
-				clipwrite(c->aux);
+				clipwrite(c->aux.pchar);
 				poperror();
 			}
 		}
-		free(c->aux);
+		free(c->aux.pchar);
 	}
 }
 
 static long
-snarfread(Chan* c, void* a, long n, vlong offset)
+snarfread(Chan* c, char* a, long n, vlong offset)
 {
 	void *p;
 
@@ -86,13 +86,13 @@ snarfread(Chan* c, void* a, long n, vlong offset)
 			nexterror();
 		}
 		if(offset == 0){
-			p = c->aux;
-			c->aux = nil;
+			p = c->aux.pchar;
+			c->aux.pchar = nil;
 			free(p);
-			c->aux = clipread();
+			c->aux.pchar = clipread();
 		}
-		if(c->aux != nil)
-			n = readstr(offset, a, n, c->aux);
+		if(c->aux.pchar != nil)
+			n = readstr(offset, a, n, c->aux.pchar);
 		else
 			n = 0;
 		poperror();
@@ -106,7 +106,7 @@ snarfread(Chan* c, void* a, long n, vlong offset)
 }
 
 static long
-snarfwrite(Chan* c, void* va, long n, vlong offset)
+snarfwrite(Chan* c, const char* va, long n, vlong offset)
 {
 	ulong l;
 	char *p;
@@ -120,14 +120,14 @@ snarfwrite(Chan* c, void* va, long n, vlong offset)
 			qunlock(&snarflock);
 			nexterror();
 		}
-		if(c->aux != nil)
-			l = strlen(c->aux);
+		if(c->aux.pchar != nil)
+			l = strlen(c->aux.pchar);
 		else
 			l = 0;
 		if(l+n > Maxsnarf)
 			error(Etoobig);
-		c->aux = realloc(c->aux, l+n+1);
-		if((p = c->aux) == nil)
+		p = c->aux.pchar = (char*)realloc(c->aux.pchar, l+n+1);
+		if(p == nil)
 			error(Enovmem);
 		memmove(p+l, va, n);
 		p[l+n] = 0;

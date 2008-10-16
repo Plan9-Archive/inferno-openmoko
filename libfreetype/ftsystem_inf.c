@@ -281,9 +281,9 @@ FT_Stream_Open( FT_Stream stream, const char*  filepathname)
     if ( memory )
     {
       memory->user    = 0;
-      memory->alloc   = ft_alloc;
-      memory->realloc = ft_realloc;
-      memory->free    = ft_free;
+      memory->fnalloc   = ft_alloc;
+      memory->fnrealloc = ft_realloc;
+      memory->fnfree    = ft_free;
 #ifdef FT_DEBUG_MEMORY
       ft_mem_debug_init( memory );
 #endif
@@ -301,7 +301,7 @@ FT_Stream_Open( FT_Stream stream, const char*  filepathname)
 #ifdef FT_DEBUG_MEMORY
     ft_mem_debug_done( memory );
 #endif
-    memory->free( memory, memory );
+    memory->fnfree( memory, memory );
   }
 
 

@@ -25,7 +25,7 @@ enum
 };
 
 int
-chartorune(Rune *rune, char *str)
+chartorune(Rune *rune, const char *str)
 {
 	int c, c1, c2;
 	long l;
@@ -81,7 +81,7 @@ bad:
 }
 
 int
-runetochar(char *str, Rune *rune)
+runetochar(char *str, const Rune *rune)
 {
 	long c;
 
@@ -126,7 +126,7 @@ runelen(long c)
 }
 
 int
-runenlen(Rune *r, int l)
+runenlen(const Rune *r, int l)
 {
 	int n;
 	long c;
@@ -146,7 +146,7 @@ runenlen(Rune *r, int l)
 }
 
 int
-fullrune(char *str, int n)
+fullrune(const char *str, int n)
 {
 	int c;
 

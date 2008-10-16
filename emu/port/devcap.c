@@ -72,7 +72,7 @@ capwatch(void *a)
 }
 
 static Chan *
-capattach(char *spec)
+capattach(const char *spec)
 {
 	return devattach(0x00A4, spec);	/* L'¤' */
 }
@@ -84,7 +84,7 @@ capwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-capstat(Chan *c, uchar *db, int n)
+capstat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, capdir, nelem(capdir), devgen);
 }
@@ -117,7 +117,7 @@ capclose(Chan *c)
 }
 
 static long
-capread(Chan *c, void *va, long n, vlong vl)
+capread(Chan *c, char *va, long n, vlong vl)
 {
 	USED(vl);
 	switch((ulong)c->qid.path){
@@ -132,13 +132,13 @@ capread(Chan *c, void *va, long n, vlong vl)
 }
 
 static int
-capwritehash(uchar *a, int l)
+capwritehash(const char *a, int l)
 {
 	Caps *c;
 
 	if(l != SHA1dlen)
 		return -1;
-	c = malloc(sizeof(*c));
+	c = (Caps *)malloc(sizeof(*c));
 	if(c == nil)
 		return -1;
 	memmove(c->hash, a, l);
@@ -155,7 +155,7 @@ capwritehash(uchar *a, int l)
 }
 
 static int
-capwriteuse(uchar *a, int len)
+capwriteuse(const char *a, int len)
 {
 	int n;
 	uchar digest[SHA1dlen];
@@ -198,7 +198,7 @@ capwriteuse(uchar *a, int len)
 }
 
 static long
-capwrite(Chan* c, void* buf, long n, vlong offset)
+capwrite(Chan* c, const char* buf, long n, vlong offset)
 {
 	USED(offset);
 	switch((ulong)c->qid.path){

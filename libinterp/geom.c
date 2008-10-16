@@ -83,7 +83,7 @@ Rect_canon(void *fp)
 {
 	F_Rect_canon *f;
 	Draw_Rect *ret;
-	WORD t;
+	DISINT t;
 
 	f = fp;
 
@@ -211,13 +211,10 @@ Rect_inrect(void *fp)
 void
 Rect_contains(void *fp)
 {
-	F_Rect_contains *f;
-	WORD x, y;
+	F_Rect_contains *f = fp;
+	DISINT x = f->p.x;
+	DISINT y = f->p.y;
 
-	f = fp;
-
-	x = f->p.x;
-	y = f->p.y;
 	*f->ret = x >= f->r.min.x && x < f->r.max.x
 		&& y >= f->r.min.y && y < f->r.max.y;
 }
@@ -225,14 +222,10 @@ Rect_contains(void *fp)
 void
 Rect_addpt(void *fp)
 {
-	F_Rect_addpt *f;
-	Draw_Rect *ret;
-	WORD n;
+	F_Rect_addpt *f = fp;
+	Draw_Rect *ret = f->ret;
+	DISINT n = f->p.x;
 
-	f = fp;
-
-	ret = f->ret;
-	n = f->p.x;
 	ret->min.x = f->r.min.x + n;
 	ret->max.x = f->r.max.x + n;
 	n = f->p.y;
@@ -243,14 +236,10 @@ Rect_addpt(void *fp)
 void
 Rect_subpt(void *fp)
 {
-	WORD n;
-	F_Rect_subpt *f;
-	Draw_Rect *ret;
+	F_Rect_subpt *f = fp;
+	Draw_Rect *ret = f->ret;
+	DISINT n = f->p.x;
 
-	f = fp;
-
-	ret = f->ret;
-	n = f->p.x;
 	ret->min.x = f->r.min.x - n;
 	ret->max.x = f->r.max.x - n;
 	n = f->p.y;
@@ -261,14 +250,10 @@ Rect_subpt(void *fp)
 void
 Rect_inset(void *fp)
 {
-	WORD n;
-	Draw_Rect *ret;
-	F_Rect_inset *f;
+	F_Rect_inset *f = fp;
+	Draw_Rect *ret = f->ret;
+	DISINT n = f->n;
 
-	f = fp;
-
-	ret = f->ret;
-	n = f->n;
 	ret->min.x = f->r.min.x + n;
 	ret->min.y = f->r.min.y + n;
 	ret->max.x = f->r.max.x - n;

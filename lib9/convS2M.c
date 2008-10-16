@@ -44,10 +44,10 @@ stringsz(char *s)
 	return BIT16SZ+strlen(s);
 }
 
-uint
-sizeS2M(Fcall *f)
+size_t
+sizeS2M(const Fcall *f)
 {
-	uint n;
+	size_t n;
 	int i;
 
 	n = 0;
@@ -189,11 +189,11 @@ sizeS2M(Fcall *f)
 	return n;
 }
 
-uint
-convS2M(Fcall *f, uchar *ap, uint nap)
+size_t
+convS2M(const Fcall *f, char *ap, size_t nap)
 {
-	uchar *p;
-	uint i, size;
+	char *p;
+	size_t i, size;
 
 	size = sizeS2M(f);
 	if(size == 0)

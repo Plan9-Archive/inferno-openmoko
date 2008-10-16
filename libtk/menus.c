@@ -41,8 +41,6 @@ get notified of variable changes?
 	+yposition
 */
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 /* Layout constants */
 enum {
 	Sepheight	= 6,	/* Height of menu separator */
@@ -57,27 +55,27 @@ enum {
 static
 TkOption mbopts[] =
 {
-	"text",		OPTtext,	O(TkLabel, text),		nil,
-	"anchor",	OPTflag,	O(TkLabel, anchor),	tkanchor,
-	"underline",	OPTdist,	O(TkLabel, ul),		nil,
-	"justify",	OPTstab,	O(TkLabel, justify),	tkjustify,
-	"menu",		OPTtext,	O(TkLabel, menu),		nil,
-	"bitmap",	OPTbmap,	O(TkLabel, bitmap),		nil,
-	"image",	OPTimag,	O(TkLabel, img),		nil,
+	"text",		OPTtext,	offsetof(TkLabel, text),		nil,
+	"anchor",	OPTflag,	offsetof(TkLabel, anchor),	tkanchor,
+	"underline",	OPTdist,	offsetof(TkLabel, ul),		nil,
+	"justify",	OPTstab,	offsetof(TkLabel, justify),	tkjustify,
+	"menu",		OPTtext,	offsetof(TkLabel, menu),		nil,
+	"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap),		nil,
+	"image",	OPTimag,	offsetof(TkLabel, img),		nil,
 	nil
 };
 
 static
 TkOption choiceopts[] =
 {
-	"variable",	OPTtext,	O(TkLabel, variable),	nil,
-	"values",	OPTlist,	O(TkLabel, values), nil,
-	"command", OPTtext, O(TkLabel, command), nil,
+	"variable",	OPTtext,	offsetof(TkLabel, variable),	nil,
+	"values",	OPTlist,	offsetof(TkLabel, values), nil,
+	"command", OPTtext, offsetof(TkLabel, command), nil,
 	nil
 };
 
 static
-TkEbind mbbindings[] = 
+TkEbind mbbindings[] =
 {
 	{TkEnter,		"%W tkMBenter %s"},
 	{TkLeave,		"%W tkMBleave"},
@@ -222,7 +220,7 @@ tkmkmenubutton(TkTop *t, char *arg, char **ret, int type, TkOption *opts)
 		else
 			tkl->text = strdup(NOCHOICE);
 	}
-	tksettransparent(tk, 
+	tksettransparent(tk,
 		tkhasalpha(tk->env, TkCbackgnd) ||
 		tkhasalpha(tk->env, TkCselectbgnd) ||
 		tkhasalpha(tk->env, TkCactivebgnd));
@@ -319,7 +317,7 @@ tkmenubutconf(Tk *tk, char *arg, char **val)
 			}
 		}
 	}
-	tksettransparent(tk, 
+	tksettransparent(tk,
 		tkhasalpha(tk->env, TkCbackgnd) ||
 		tkhasalpha(tk->env, TkCselectbgnd) ||
 		tkhasalpha(tk->env, TkCactivebgnd));
@@ -568,7 +566,7 @@ tkchoicebutget(Tk *tk, char *arg, char **val)
 	TkLabel *tkl = TKobj(TkLabel, tk);
 	char *buf, **v;
 	int gotarg;
-	
+
 	if (tkl->nvalues == 0)
 		return nil;
 	buf = mallocz(Tkmaxitem, 0);
@@ -641,7 +639,7 @@ tkfindchoicemenu(Tk *tkb)
 static
 TkOption menuopt[] =
 {
-	"postcommand",	OPTtext,	O(TkWin, postcmd),		nil,
+	"postcommand",	OPTtext,	offsetof(TkWin, postcmd),		nil,
 	nil,
 };
 
@@ -717,7 +715,7 @@ freemenu(Tk *top)
 static
 TkOption mopt[] =
 {
-	"menu",		OPTtext,	O(TkLabel, menu),		nil,
+	"menu",		OPTtext,	offsetof(TkLabel, menu),		nil,
 	nil,
 };
 
@@ -735,7 +733,7 @@ tkbuildmopt(TkOptab *tko, int n, Tk *tk)
 		tko[n].ptr = TKobj(TkLabel, tk);
 		tko[n++].optab = mopt;
 		goto norm;
-	case TKradiobutton:	
+	case TKradiobutton:
 		tko[n].ptr = TKobj(TkLabel, tk);
 		tko[n++].optab = tkradopts;
 		goto norm;
@@ -747,7 +745,7 @@ tkbuildmopt(TkOptab *tko, int n, Tk *tk)
 	norm:
 		tko[n].ptr = TKobj(TkLabel, tk);
 		tko[n].optab = tkbutopts;
-		break;	
+		break;
 	}
 }
 
@@ -864,7 +862,7 @@ menuadd(Tk *menu, char *arg, int where)
 	TkTop *t;
 	TkLabel *tkl;
 	char buf[Tkmaxitem];
-	
+
 	t = menu->env->top;
 	arg = tkword(t, arg, buf, buf+sizeof(buf), nil);
 	configure = 1;
@@ -915,7 +913,7 @@ menuadd(Tk *menu, char *arg, int where)
 		if (tkc != nil)
 			tkfreeobj(tkc);
 		return e;
-	}	
+	}
 
 	appenditem(menu, tkc, where);
 	layout(menu);
@@ -980,7 +978,7 @@ tkmenudel(Tk *tk, int y)
 		}
 		l = &tk->next;
 	}
-	return 0;	
+	return 0;
 }
 
 static char*
@@ -1125,7 +1123,7 @@ static char*
 tkmenuadd(Tk *tk, char *arg, char **val)
 {
 	USED(val);
-	return menuadd(tk, arg, -1);	
+	return menuadd(tk, arg, -1);
 }
 
 static char*
@@ -1241,7 +1239,7 @@ tkmenuactivate(Tk *tk, char *arg, char **val)
 	TkWin *tkw;
 	int index;
 	char *buf;
-	
+
 	USED(val);
 	buf = mallocz(Tkmaxitem, 0);
 	if(buf == nil)

@@ -47,4 +47,5 @@ extern	void	kerrstr(char*, uint);
 extern	int	kiounit(int);
 extern	void	kwerrstr(char *, ...);
 extern	void	kgerrstr(char*, uint);
-extern	long	kchanio(void*, void*, int, int);
+typedef struct Chan Chan;
+extern	long	kchanio(Chan*, void*, int, int);

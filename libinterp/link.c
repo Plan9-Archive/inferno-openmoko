@@ -5,12 +5,11 @@
 #include <kernel.h>
 
 static void
-newlink(Link *l, char *fn, int sig, Type *t)
+newlink(Link *l, const char *fn, int sig, Type *t)
 {
-	l->name = malloc(strlen(fn)+1);
+	l->name = strdup(fn);
 	if(l->name == nil)
 		error(exNomem);
-	strcpy(l->name, fn);
 	l->sig = sig;
 	l->frame = t;
 }

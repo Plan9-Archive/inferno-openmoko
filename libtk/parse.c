@@ -3,8 +3,6 @@
 #include "draw.h"
 #include "tk.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 static char* pdist(TkTop*, TkOption*, void*, char**, char*, char*);
 static char* pstab(TkTop*, TkOption*, void*, char**, char*, char*);
 static char* ptext(TkTop*, TkOption*, void*, char**, char*, char*);
@@ -59,7 +57,7 @@ tkskip(char *s, char *bl)
 			if(*p == *s)
 				break;
 		if(*p == '\0')
-			return s;	
+			return s;
 		s++;
 	}
 	return s;
@@ -257,7 +255,7 @@ tkparse(TkTop *t, char *str, TkOptab *ot, TkName **nl)
 					;
 				f->link = n;
 			}
-		}		
+		}
 	}
 
 	if(e != nil && nl != nil)
@@ -492,7 +490,7 @@ pnndist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 		OPTION(place, int, o->offset) = oldv;
 		return TkBadvl;
 	}
-	return e;	
+	return e;
 }
 
 static char*
@@ -516,11 +514,11 @@ psize(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	 */
 	if(strcmp(buf+1, "width") == 0) {
 		tk->flag |= Tksetwidth;
-		off = O(Tk, req.width);
+		off = offsetof(Tk, req.width);
 	}
 	else {
 		tk->flag |= Tksetheight;
-		off = O(Tk, req.height);
+		off = offsetof(Tk, req.height);
 	}
 	OPTION(place, int, off) = TKF2I(d);
 	return nil;
@@ -823,7 +821,7 @@ tkparsecolor(char *buf, ulong *rgba)
 		len -= alen;
 	} else
 		alpha = 0xff;
-	
+
 	if (*buf == '#') {
 		switch(len) {
 		case 4:			/* #RGB */
@@ -882,7 +880,7 @@ pcolr(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 		if(e != nil)
 			return e;
 	}
-		
+
 	env = tkdupenv(&OPTION(place, TkEnv*, o->offset));
 	if(env == nil)
 		return TkNomem;
@@ -922,7 +920,7 @@ pwinp(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	if(*buf == '\0')
 		return TkOparg;
 	*str = p;
-	
+
 	f = tklook(t, buf, 0);
 	if(f == nil){
 		tkerr(t, buf);
@@ -1009,7 +1007,7 @@ pnnfrac(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 		OPTION(place, int, o->offset) = oldv;
 		return TkBadvl;
 	}
-	return e;	
+	return e;
 
 }
 
@@ -1033,9 +1031,9 @@ ptabs(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 		return TkNomem;
 	eibuf = ibuf + Tkmaxitem;
 	tspec.env = OPTION(place, TkEnv*, AUXI(o->aux));
-	opd.offset = O(Tabspec, dist);
-	opd.aux = IAUX(O(Tabspec, env));
-	opj.offset = O(Tabspec, dist);
+	opd.offset = offsetof(Tabspec, dist);
+	opd.aux = IAUX(offsetof(Tabspec, env));
+	opj.offset = offsetof(Tabspec, dist);
 	opj.aux = tktabjust;
 	tabprev = nil;
 	tabfirst = nil;

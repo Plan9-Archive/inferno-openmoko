@@ -156,7 +156,7 @@ static	Rectangle	flushrect;
 static	int		waste;
 static	DScreen*	dscreen;
 extern	void		flushmemscreen(Rectangle);
-	void		drawmesg(Client*, void*, int);
+	void		drawmesg(Client*, const char*, int);
 	void		drawuninstall(Client*, int);
 	void		drawfreedimage(DImage*);
 	Client*		drawclientofpath(ulong);
@@ -288,7 +288,7 @@ drawrefactive(void *a)
 {
 	Client *c;
 
-	c = a;
+	c = (Client *)a;
 	return c->refreshme || c->refresh!=0;
 }
 
@@ -304,17 +304,15 @@ drawrefreshscreen(DImage *l, Client *client)
 
 static
 void
-drawrefresh(Memimage *l, Rectangle r, void *v)
+drawrefresh(Memimage *l, Rectangle r, Refx *x)
 {
-	Refx *x;
 	DImage *d;
 	Client *c;
 	Refresh *ref;
 
 	USED(l);
-	if(v == 0)
+	if(x == 0)
 		return;
-	x = v;
 	c = x->client;
 	d = x->dimage;
 	for(ref=c->refresh; ref; ref=ref->next)
@@ -322,7 +320,7 @@ drawrefresh(Memimage *l, Rectangle r, void *v)
 			combinerect(&ref->r, r);
 			return;
 		}
-	ref = malloc(sizeof(Refresh));
+	ref = (Refresh*)malloc(sizeof(Refresh));
 	if(ref){
 		ref->dimage = d;
 		ref->r = r;
@@ -499,7 +497,7 @@ drawinstall(Client *client, int id, Memimage *i, DScreen *dscreen)
 {
 	DImage *d;
 
-	d = malloc(sizeof(DImage));
+	d = (DImage *)malloc(sizeof(DImage));
 	if(d == 0)
 		return 0;
 	d->id = id;
@@ -522,19 +520,19 @@ drawinstallscreen(Client *client, DScreen *d, int id, DImage *dimage, DImage *df
 	Memscreen *s;
 	CScreen *c;
 
-	c = malloc(sizeof(CScreen));
+	c = (CScreen *)malloc(sizeof(CScreen));
 	if(dimage && dimage->image && dimage->image->chan == 0)
 		panic("bad image %p in drawinstallscreen", dimage->image);
 
 	if(c == 0)
 		return 0;
 	if(d == 0){
-		d = malloc(sizeof(DScreen));
+		d = (DScreen *)malloc(sizeof(DScreen));
 		if(d == 0){
 			free(c);
 			return 0;
 		}
-		s = malloc(sizeof(Memscreen));
+		s = (Memscreen *)malloc(sizeof(Memscreen));
 		if(s == 0){
 			free(c);
 			free(d);
@@ -712,7 +710,7 @@ drawaddname(Client *client, DImage *di, int n, char *str)
 	for(; name<ename; name++)
 		if(drawcmp(name->name, str, n) == 0)
 			error(Enameused);
-	t = smalloc((sdraw.nname+1)*sizeof(DName));
+	t = (DName*)smalloc((sdraw.nname+1)*sizeof(DName));
 	memmove(t, sdraw.name, sdraw.nname*sizeof(DName));
 	free(sdraw.name);
 	sdraw.name = t;
@@ -737,7 +735,7 @@ drawnewclient(void)
 			break;
 	}
 	if(i == sdraw.nclient){
-		cp = malloc((sdraw.nclient+1)*sizeof(Client*));
+		cp = (Client**)malloc((sdraw.nclient+1)*sizeof(Client*));
 		if(cp == 0)
 			return 0;
 		memmove(cp, sdraw.client, sdraw.nclient*sizeof(Client*));
@@ -746,7 +744,7 @@ drawnewclient(void)
 		sdraw.nclient++;
 		cp[i] = 0;
 	}
-	cl = malloc(sizeof(Client));
+	cl = (Client*)malloc(sizeof(Client));
 	if(cl == 0)
 		return 0;
 	memset(cl, 0, sizeof(Client));
@@ -806,7 +804,7 @@ drawclient(Chan *c)
 }
 
 Memimage*
-drawimage(Client *client, uchar *a)
+drawimage(Client *client, const char *a)
 {
 	DImage *d;
 
@@ -817,7 +815,7 @@ drawimage(Client *client, uchar *a)
 }
 
 void
-drawrectangle(Rectangle *r, uchar *a)
+drawrectangle(Rectangle *r, const char *a)
 {
 	r->min.x = BGLONG(a+0*4);
 	r->min.y = BGLONG(a+1*4);
@@ -826,7 +824,7 @@ drawrectangle(Rectangle *r, uchar *a)
 }
 
 void
-drawpoint(Point *p, uchar *a)
+drawpoint(Point *p, const char *a)
 {
 	p->x = BGLONG(a+0*4);
 	p->y = BGLONG(a+1*4);
@@ -892,7 +890,7 @@ deletescreenimage(void)
 }
 
 Chan*
-drawattach(char *spec)
+drawattach(const char *spec)
 {
 	qlock(&sdraw.q);
 	if(!initscreenimage()){
@@ -912,7 +910,7 @@ drawwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-drawstat(Chan *c, uchar *db, int n)
+drawstat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, 0, 0, drawgen);
 }
@@ -1017,10 +1015,10 @@ drawclose(Chan *c)
 }
 
 long
-drawread(Chan *c, void *a, long n, vlong off)
+drawread(Chan *c, char *a, long n, vlong off)
 {
 	Client *cl;
-	uchar *p;
+	char *p;
 	Refresh *r;
 	DImage *di;
 	Memimage *i;
@@ -1121,7 +1119,7 @@ drawread(Chan *c, void *a, long n, vlong off)
 			n -= 5*4;
 		}
 		cl->refreshme = 0;
-		n = p-(uchar*)a;
+		n = p-a;
 	}
 	qunlock(&sdraw.q);
 	poperror();
@@ -1142,7 +1140,7 @@ drawwakeall(void)
 }
 
 static long
-drawwrite(Chan *c, void *a, long n, vlong off)
+drawwrite(Chan *c, const char *a, long n, vlong off)
 {
 	Client *cl;
 	ulong offset = off;
@@ -1221,8 +1219,8 @@ drawwrite(Chan *c, void *a, long n, vlong off)
 	return n;
 }
 
-uchar*
-drawcoord(uchar *p, uchar *maxp, int oldx, int *newx)
+const uchar*
+drawcoord(const uchar *p, const uchar *maxp, int oldx, int *newx)
 {
 	int b, x;
 
@@ -1247,7 +1245,7 @@ drawcoord(uchar *p, uchar *maxp, int oldx, int *newx)
 }
 
 static void
-printmesg(char *fmt, uchar *a, int plsprnt)
+printmesg(char *fmt, const char *a, int plsprnt)
 {
 /* was unreacheable
 	char buf[256];
@@ -1299,10 +1297,11 @@ printmesg(char *fmt, uchar *a, int plsprnt)
 }
 
 void
-drawmesg(Client *client, void *av, int n)
+drawmesg(Client *client, const char *a, int n)
 {
 	int c, op, repl, m, y, dstid, scrnid, ni, ci, j, nw, e0, e1, ox, oy, esize, oesize, doflush;
-	uchar *u, *a, refresh;
+	const char *u;
+	uchar refresh;
 	char *fmt;
 	ulong value, chan;
 	Rectangle r, clipr;
@@ -1318,7 +1317,7 @@ drawmesg(Client *client, void *av, int n)
 	CScreen *cs;
 	Refreshfn reffn;
 
-	a = av;
+	/*a = av;*/
 	m = 0;
 	fmt = nil;
 	if(waserror()){
@@ -1380,7 +1379,7 @@ drawmesg(Client *client, void *av, int n)
 				if(reffn){
 					refx = nil;
 					if(reffn == drawrefresh){
-						refx = malloc(sizeof(Refx));
+						refx = (Refx *)malloc(sizeof(Refx));
 						if(refx == 0){
 							drawuninstall(client, dstid);
 							error(Edrawmem);
@@ -1544,7 +1543,7 @@ drawmesg(Client *client, void *av, int n)
 			if(ni<=0 || ni>4096)
 				error("bad font size (4096 chars max)");
 			free(font->fchar);	/* should we complain if non-zero? */
-			font->fchar = malloc(ni*sizeof(FChar));
+			font->fchar = (FChar*)malloc(ni*sizeof(FChar));
 			if(font->fchar == 0)
 				error(Enomem);
 			memset(font->fchar, 0, ni*sizeof(FChar));
@@ -1641,7 +1640,7 @@ drawmesg(Client *client, void *av, int n)
 			if(di == 0)
 				error("draw: cannot happen");
 			di->vers = dn->vers;
-			di->name = smalloc(j+1);
+			di->name = (char*)smalloc(j+1);
 			di->fromname = dn->dimage;
 			di->fromname->ref++;
 			memmove(di->name, a+6, j);
@@ -1735,7 +1734,7 @@ drawmesg(Client *client, void *av, int n)
 			drawpoint(&sp, a+23);
 			drawpoint(&p, a+31);
 			ni++;
-			pp = malloc(ni*sizeof(Point));
+			pp = (Point*)malloc(ni*sizeof(Point));
 			if(pp == nil)
 				error(Enomem);
 			doflush = 0;
@@ -1800,7 +1799,7 @@ drawmesg(Client *client, void *av, int n)
 			c = bytesperline(r, i->depth);
 			c *= Dy(r);
 			free(client->readdata);
-			client->readdata = mallocz(c, 0);
+			client->readdata = (char*)mallocz(c, 0);
 			if(client->readdata == nil)
 				error("readimage malloc failed");
 			client->nreaddata = memunload(i, r, client->readdata, c);
@@ -1908,7 +1907,7 @@ drawmesg(Client *client, void *av, int n)
 			m += nw*4;
 			if(n < m)
 				error(Eshortdraw);
-			lp = malloc(nw*sizeof(Memimage*));
+			lp = (Memimage**)malloc(nw*sizeof(Memimage*));
 			if(lp == 0)
 				error(Enomem);
 			if(waserror()){
@@ -1967,7 +1966,7 @@ drawmesg(Client *client, void *av, int n)
 }
 
 int
-drawlsetrefresh(ulong qidpath, int id, void *reffn, void *refx)
+drawlsetrefresh(ulong qidpath, int id, Refreshfn reffn, void *refx)
 {
 	DImage *d;
 	Memimage *i;

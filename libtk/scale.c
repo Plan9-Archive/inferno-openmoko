@@ -4,8 +4,6 @@
 #include "tk.h"
 #include "keyboard.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 typedef struct TkScale TkScale;
 struct TkScale
 {
@@ -43,22 +41,22 @@ enum {
 static
 TkOption opts[] =
 {
-	"bigincrement",		OPTnnfrac,	O(TkScale, bigi),	nil,
-	"digits",		OPTdist,	O(TkScale, digits),	nil,
-	"from",			OPTfrac,	O(TkScale, from),	nil,
-	"to",			OPTfrac,	O(TkScale, to),		nil,
-	"length",		OPTdist,	O(TkScale, len),	nil,
-	"resolution",		OPTnnfrac,	O(TkScale, res),	nil,
+	"bigincrement",		OPTnnfrac,	offsetof(TkScale, bigi),	nil,
+	"digits",		OPTdist,	offsetof(TkScale, digits),	nil,
+	"from",			OPTfrac,	offsetof(TkScale, from),	nil,
+	"to",			OPTfrac,	offsetof(TkScale, to),		nil,
+	"length",		OPTdist,	offsetof(TkScale, len),	nil,
+	"resolution",		OPTnnfrac,	offsetof(TkScale, res),	nil,
 	"showrange",	OPTignore,	0,	nil,
-	"showvalue",		OPTstab,	O(TkScale, sv),		tkbool,
-	"jump",		OPTstab, O(TkScale, jump),	tkbool,
-	"sliderlength",		OPTdist,	O(TkScale, sl),		nil,
-	"sliderrelief",		OPTstab,	O(TkScale, relief),	tkrelief,
-	"tickinterval",		OPTfrac,	O(TkScale, tick),	nil,
-	"tick",		OPTfrac,	O(TkScale, tick),	nil,
-	"label",		OPTtext,	O(TkScale, label),	nil,
-	"command",		OPTtext,	O(TkScale, command),	nil,
-	"orient",		OPTstab,	O(TkScale, orient),	tkorient,
+	"showvalue",		OPTstab,	offsetof(TkScale, sv),		tkbool,
+	"jump",		OPTstab, offsetof(TkScale, jump),	tkbool,
+	"sliderlength",		OPTdist,	offsetof(TkScale, sl),		nil,
+	"sliderrelief",		OPTstab,	offsetof(TkScale, relief),	tkrelief,
+	"tickinterval",		OPTfrac,	offsetof(TkScale, tick),	nil,
+	"tick",		OPTfrac,	offsetof(TkScale, tick),	nil,
+	"label",		OPTtext,	offsetof(TkScale, label),	nil,
+	"command",		OPTtext,	offsetof(TkScale, command),	nil,
+	"orient",		OPTstab,	offsetof(TkScale, orient),	tkorient,
 	nil
 };
 
@@ -67,7 +65,7 @@ static char trough2[] = "trough2";
 static char slider[]  = "slider";
 
 static
-TkEbind b[] = 
+TkEbind b[] =
 {
 	{TkMotion,		"%W tkScaleMotion %x %y"},
 	{TkButton1P|TkMotion,	"%W tkScaleDrag %x %y"},
@@ -347,7 +345,7 @@ tkscalehoriz(Tk *tk, Image *i)
 	p.y = sr.min.y;
 	q = p;
 	q.x += tks->sl/2 + 1;
-	q.y++; 
+	q.y++;
 	if(tk->flag & Tkactivated) {
 		r2.min = p;
 		r2.max.x = p.x+sl;
@@ -382,7 +380,7 @@ tkscalehoriz(Tk *tk, Image *i)
 		p.x = tks->pixmin;
 	if(p.x+w > tks->pixmax)
 		p.x = tks->pixmax - w;
-	
+
 	string(i, p, tkgc(e, fgnd), ZP, e->font, sv);
 }
 
@@ -717,7 +715,7 @@ tkscaleset(Tk *tk, char *arg, char **val)
 		return e;
 	tkscalecheckvalue(tk);
 	tk->dirty = tkrect(tk, 1);
-	return nil;		
+	return nil;
 }
 
 /* tkScaleMotion %x %y */

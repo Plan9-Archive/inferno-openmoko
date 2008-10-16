@@ -135,7 +135,7 @@ mousexy(void)
 
 
 static Chan*
-pointerattach(char* spec)
+pointerattach(const char* spec)
 {
 	return devattach('m', spec);
 }
@@ -152,7 +152,7 @@ pointerwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-pointerstat(Chan* c, uchar *db, int n)
+pointerstat(Chan* c, char *db, int n)
 {
 	return devstat(c, db, n, pointertab, nelem(pointertab), devgen);
 }
@@ -196,7 +196,7 @@ pointerclose(Chan* c)
 }
 
 static long
-pointerread(Chan* c, void* a, long n, vlong off)
+pointerread(Chan* c, char* a, long n, vlong off)
 {
 	Pointer mt;
 	char buf[1+4*12+1];
@@ -228,9 +228,9 @@ pointerread(Chan* c, void* a, long n, vlong off)
 }
 
 static long
-pointerwrite(Chan* c, void* va, long n, vlong off)
+pointerwrite(Chan* c, const char* va, long n, vlong off)
 {
-	char *a = va;
+	char *a;
 	char buf[128];
 	int b, x, y;
 	Drawcursor cur;

@@ -4,6 +4,7 @@
 #include "raise.h"
 #if STACK
 
+#define O offsetof
 #define DOT			((ulong)code)
 
 #define	RESCHED 1	/* check for interpreter reschedule */
@@ -679,7 +680,7 @@ static void
 comcase(Inst *i, int w)
 {
 	int l;
-	WORD *t, *e;
+	DISINT *t, *e;
 
 	if(w != 0) {
 		opwld(i, Oldw, RAX);		// v
@@ -688,7 +689,7 @@ comcase(Inst *i, int w)
 		rbra(macro[MacCASE], Ojmp);
 	}
 
-	t = (WORD*)(mod->origmp+i->d.ind+4);
+	t = (DISINT*)(mod->origmp+i->d.ind+4);
 	l = t[-1];
 
 	/* have to take care not to relocate the same table twice -
@@ -716,9 +717,9 @@ static void
 comcasel(Inst *i)
 {
 	int l;
-	WORD *t, *e;
+	DISINT *t, *e;
 
-	t = (WORD*)(mod->origmp+i->d.ind+8);
+	t = (DISINT*)(mod->origmp+i->d.ind+8);
 	l = t[-2];
 	if(pass == 0) {
 		if(l >= 0)
@@ -887,7 +888,7 @@ static void
 comp(Inst *i)
 {
 	int r;
-	WORD *t, *e;
+	DISINT *t, *e;
 	char buf[64];
 
 	if(0) {
@@ -1316,7 +1317,7 @@ comp(Inst *i)
 		if(pass == 0)
 			break;
 
-		t = (WORD*)(mod->origmp+i->d.ind);
+		t = (DISINT*)(mod->origmp+i->d.ind);
 		e = t + t[-1];
 		t[-1] = 0;
 		while(t < e) {
@@ -1817,7 +1818,7 @@ comd(Type *t)
 				modrm(Oldw, j, RFP, RAX);
 				rbra(macro[MacFRP], Ocall);
 			}
-			j += sizeof(WORD*);
+			j += sizeof(DISINT*);
 		}
 	}
 	genb(Oret);
@@ -1835,7 +1836,7 @@ comi(Type *t)
 		for(m = 0x80; m != 0; m >>= 1) {
 			if(c & m)
 				modrm(Ostw, j, RCX, RAX);
-			j += sizeof(WORD*);
+			j += sizeof(DISINT*);
 		}
 	}
 	genb(Oret);

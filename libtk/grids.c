@@ -8,8 +8,6 @@
  * - grid columnconfigure/rowconfigure accepts a list of indexes?
  */
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 typedef struct TkGridparam TkGridparam;
 typedef struct TkBeamparam TkBeamparam;
 
@@ -35,28 +33,28 @@ struct TkBeamparam{
 static
 TkOption opts[] =
 {
-	"padx",		OPTnndist,	O(TkGridparam, pad.x),	nil,
-	"pady",		OPTnndist,	O(TkGridparam, pad.y),	nil,
-	"ipadx",	OPTnndist,	O(TkGridparam, ipad.x),	nil,
-	"ipady",	OPTnndist,	O(TkGridparam, ipad.y),	nil,
-	"in",		OPTwinp,		O(TkGridparam, in),		nil,
-	"row",	OPTtext,		O(TkGridparam, row), nil,
-	"column",	OPTtext,		O(TkGridparam, col), nil,
-	"rowspan",	OPTnndist,	O(TkGridparam, span.y), nil,
-	"columnspan",	OPTnndist,	O(TkGridparam, span.x), nil,
-	"sticky",	OPTsticky,		O(TkGridparam, sticky), nil,
+	"padx",		OPTnndist,	offsetof(TkGridparam, pad.x),	nil,
+	"pady",		OPTnndist,	offsetof(TkGridparam, pad.y),	nil,
+	"ipadx",	OPTnndist,	offsetof(TkGridparam, ipad.x),	nil,
+	"ipady",	OPTnndist,	offsetof(TkGridparam, ipad.y),	nil,
+	"in",		OPTwinp,		offsetof(TkGridparam, in),		nil,
+	"row",	OPTtext,		offsetof(TkGridparam, row), nil,
+	"column",	OPTtext,		offsetof(TkGridparam, col), nil,
+	"rowspan",	OPTnndist,	offsetof(TkGridparam, span.y), nil,
+	"columnspan",	OPTnndist,	offsetof(TkGridparam, span.x), nil,
+	"sticky",	OPTsticky,		offsetof(TkGridparam, sticky), nil,
 	nil
 };
 
 static
 TkOption beamopts[] =
 {
-	"minsize",		OPTnndist,	O(TkBeamparam, minsize),	nil,
-	"maxsize",	OPTnndist,	O(TkBeamparam, maxsize),	nil,
-	"weight",		OPTnndist,	O(TkBeamparam, weight),	nil,
-	"pad",		OPTnndist,	O(TkBeamparam, pad),		nil,
-	"name",		OPTtext,		O(TkBeamparam, name),		nil,
-	"equalise",	OPTstab,		O(TkBeamparam, equalise),	tkbool,
+	"minsize",		OPTnndist,	offsetof(TkBeamparam, minsize),	nil,
+	"maxsize",	OPTnndist,	offsetof(TkBeamparam, maxsize),	nil,
+	"weight",		OPTnndist,	offsetof(TkBeamparam, weight),	nil,
+	"pad",		OPTnndist,	offsetof(TkBeamparam, pad),		nil,
+	"name",		OPTtext,		offsetof(TkBeamparam, name),		nil,
+	"equalise",	OPTstab,		offsetof(TkBeamparam, equalise),	tkbool,
 	nil
 };
 
@@ -501,7 +499,7 @@ tkgridconfigure(TkTop *t, TkGridparam *p, TkName *names)
 			return TkIstop;
 		if(tkp->parent != nil)
 			return TkWpack;
-	
+
 		/*
 		 * unpacking now does give an non-reversible side effect
 		 * ifthere's an error encountered later, but also means
@@ -609,7 +607,7 @@ tkgridconfigure(TkTop *t, TkGridparam *p, TkName *names)
 					if(cells[j][i].tk != nil)
 						return TkBadgridcell;
 			pos.x = i;
-			break; 
+			break;
 		}
 	}
 
@@ -654,7 +652,7 @@ tkgridconfigure(TkTop *t, TkGridparam *p, TkName *names)
 				tksetbits(tkf, Tksubsub);
 			tkgridsetopt(p, tkf);
 			pos.x = i;
-			break; 
+			break;
 		}
 	}
 	tkpackqit(p->in);
@@ -930,7 +928,7 @@ tkgridslaves(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
 				fmt = " %s";
 			}
 		}
-	}		
+	}
 
 	return nil;
 }
@@ -1337,19 +1335,19 @@ tkgrid(TkTop *t, char *arg, char **val)
 		tko[0].ptr = p;
 		tko[0].optab = opts;
 		tko[1].ptr = nil;
-	
+
 		p->span.x = 1;
 		p->span.y = 1;
 		p->pad.x = p->pad.y = p->ipad.x = p->ipad.y = -1;
 		p->sticky = -1;
-	
+
 		names = nil;
 		e = tkparse(t, arg, tko, &names);
 		if(e != nil){
 			free(p);
 			return e;
 		}
-	
+
 		e = tkgridconfigure(t, p, names);
 		free(p->row);
 		free(p->col);
@@ -1504,7 +1502,7 @@ tkgridder(Tk *master)
 	if(req.x != master->req.width || req.y != master->req.height)
 	if((master->flag & Tknoprop) == 0){
 		if(master->geom != nil){
-			master->geom(master, master->act.x, master->act.y, 
+			master->geom(master, master->act.x, master->act.y,
 					req.x, req.y);
 		} else{
 			master->req.width = req.x;

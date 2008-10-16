@@ -250,7 +250,7 @@ rgb2hsv(int r, int g, int b, int *h, int *s, int *v)
 		*h = 0;	/* undefined */
 	} else {
 		delta = max - min;
-		if (r == max) 
+		if (r == max)
 			*h = (g - b)*255 / delta;
 		else if (g == max)
 			*h = (2*255) + ((b - r)*255) / delta;
@@ -533,7 +533,7 @@ tkfreeobj(Tk *tk)
 	if (tk == blinkw)
 		blinkw = nil;
 	tkextnfreeobj(tk);
-	tkmethod[tk->type]->free(tk);
+	tkmethod[tk->type]->fnfree(tk);
 	tkputenv(tk->env);
 	tkfreebind(tk->binds);
 	if(tk->name != nil)
@@ -632,7 +632,7 @@ tklook(TkTop *t, char *wp, int parent)
 			free(p);
 			return t->root;
 		}
-		*q = '\0';	
+		*q = '\0';
 	} else
 		p = wp;
 
@@ -758,10 +758,10 @@ tkdrawrelief(Image *i, Tk *tk, Point o, int color, int rlf)
 		break;
 	case TKsunken:
 		tkbevel(i, o, w, h, bd, d, l);
-		break;	
+		break;
 	case TKraised:
 		tkbevel(i, o, w, h, bd, l, d);
-		break;	
+		break;
 	case TKgroove:
 		t = d;
 		d = l;
@@ -813,7 +813,7 @@ tkstringsize(Tk *tk, char *text)
 	if(locked)
 		unlockdisplay(d);
 
-	return p;	
+	return p;
 }
 
 static char*
@@ -832,7 +832,7 @@ tkul(Image *i, Point o, Image *col, int ul, Font *f, char *text)
 	r.min.x = r.max.x - r.min.x;
 	r.min.y = r.max.y - 1;
 	r.max.y += 2;
-	draw(i, r, col, nil, ZP);	
+	draw(i, r, col, nil, ZP);
 
 	return nil;
 }
@@ -1227,7 +1227,7 @@ tkanchorpoint(Rectangle r, Point size, int anchor)
 		p.x += dx;
 	return p;
 }
-	
+
 static char*
 tkunits(char c, int *d, TkEnv *e)
 {
@@ -1358,7 +1358,7 @@ tkfprint(char *v, int frac)
 		fscale /= 10;
 	}
 	*v = '\0';
-	return v;	
+	return v;
 }
 
 char*
@@ -1541,13 +1541,13 @@ tksinglecmd(TkTop *t, char *arg, char **val)
 	while(bot <= top) {
 		int rc;
 		new = (bot + top)/2;
-		rc = strcmp(cmdmain[new].name, buf); 
+		rc = strcmp(cmdmain[new].name, buf);
 		if(!rc) {
 			e = cmdmain[new].fn(t, arg, val);
 			break;
 		}
 
-		if(rc < 0) 
+		if(rc < 0)
 			bot = new + 1;
 		else
 			top = new - 1;

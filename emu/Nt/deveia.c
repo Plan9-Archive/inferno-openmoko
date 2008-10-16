@@ -175,10 +175,10 @@ eiainit(void)
 	// allocate directory table and eia structure
 	// for each active port.
 	ndir = Nqid*nports+1;
-	dp = eiadir = calloc(ndir, sizeof(Dirtab));
+	dp = eiadir = (Dirtab*)calloc(ndir, sizeof(Dirtab));
 	if(dp == 0)
 		panic("eiainit");
-	eia = calloc(nports, sizeof(Eia));
+	eia = (Eia*)calloc(nports, sizeof(Eia));
 	if(eia == 0) {
 		free(dp);
 		panic("eiainit");
@@ -215,7 +215,7 @@ eiainit(void)
 }
 
 static Chan*
-eiaattach(char *spec)
+eiaattach(const char *spec)
 {
 	if(eiadir == nil)
 		error(Enodev);
@@ -230,7 +230,7 @@ eiawalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-eiastat(Chan *c, uchar *db, int n)
+eiastat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, eiadir, ndir, devgen);
 }
@@ -282,7 +282,7 @@ eiaclose(Chan *c)
 }
 
 static long
-eiaread(Chan *c, void *buf, long n, vlong offset)
+eiaread(Chan *c, char *buf, long n, vlong offset)
 {
 	DWORD cnt;
 	int port = NETID(c->qid.path);
@@ -316,13 +316,13 @@ eiaread(Chan *c, void *buf, long n, vlong offset)
 }
 
 static long
-eiawrite(Chan *c, void *buf, long n, vlong offset)
+eiawrite(Chan *c, const char *buf, long n, vlong offset)
 {
 	DWORD cnt;
 	char cmd[Maxctl];
 	int port = NETID(c->qid.path);
 	BOOL good;
-	uchar *data;
+	const char *data;
 
 	if(c->qid.type & QTDIR)
 		error(Eperm);
@@ -330,7 +330,7 @@ eiawrite(Chan *c, void *buf, long n, vlong offset)
 	switch(NETTYPE(c->qid.path)) {
 	case Ndataqid:
 		cnt = 0;
-		data = (uchar*)buf;
+		data = buf;
 		// if WriteFile times out (i.e. return true; cnt<n) then
 		// allow osleave() to check for an interrupt otherwise try
 		// to send the unsent data.
@@ -343,7 +343,7 @@ eiawrite(Chan *c, void *buf, long n, vlong offset)
 			data += cnt;
 			n -= cnt;
 		}
-		return (data-(uchar*)buf);
+		return data-buf;
 	case Nctlqid:
 		if(n >= sizeof(cmd))
 			n = sizeof(cmd)-1;
@@ -356,7 +356,7 @@ eiawrite(Chan *c, void *buf, long n, vlong offset)
 }
 
 static int
-eiawstat(Chan *c, uchar *dp, int n)
+eiawstat(Chan *c, char *dp, int n)
 {
 	Dir d;
 	int i;

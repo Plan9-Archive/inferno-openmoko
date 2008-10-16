@@ -689,7 +689,7 @@ tinyfsclose(Chan *c)
 }
 
 static long
-tinyfsread(Chan *c, void *a, long n, vlong offset)
+tinyfsread(Chan *c, char *a, long n, vlong offset)
 {
 	volatile struct { Tfs *fs; } rock;
 	Tfile *f;
@@ -763,7 +763,7 @@ tinyfsread(Chan *c, void *a, long n, vlong offset)
  *  be lost.  They should be recovered next fsinit.
  */
 static long
-tinyfswrite(Chan *c, void *a, long n, vlong offset)
+tinyfswrite(Chan *c, const char *a, long n, vlong offset)
 {
 	Tfile *f;
 	int last, next, i, finger, off, used;

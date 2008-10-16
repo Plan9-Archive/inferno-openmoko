@@ -7,7 +7,7 @@
  * if we ever get bitmaps with ldepth > 3, because the
  * colormap will have to be written in chunks
  */
-
+#if 0
 void
 writecolmap(Display *d, RGB *m)
 {
@@ -16,7 +16,7 @@ writecolmap(Display *d, RGB *m)
 	ulong r, g, b;
 
 	sprint(buf, "/dev/draw/%d/colormap", d->dirno);
-	fd = open(buf, OWRITE);
+	fd = open(buf, OWRITE); /* Win32:will not work */
 	if(fd < 0)
 		drawerror(d, "wrcolmap: open colormap failed");
 	t = malloc(8192);
@@ -35,3 +35,4 @@ writecolmap(Display *d, RGB *m)
 	if(i != n)
 		drawerror(d, "wrcolmap: bad write");
 }
+#endif

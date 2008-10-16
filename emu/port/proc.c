@@ -8,11 +8,11 @@ newproc(void)
 {
 	Proc *p;
 
-	p = malloc(sizeof(Proc));
+	p = mallocz(sizeof(Proc), 1);
 	if(p == nil)
 		return nil;
 
-	p->type = Unknown;
+	p->type = PUnknown;
 	p->killed = 0;
 	p->swipend = 0;
 	p->env = &p->defenv;

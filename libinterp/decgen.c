@@ -22,14 +22,6 @@ main(void)
 	print("#include \"interp.h\"\n\n");
 	print("#include \"raise.h\"\n\n");
 
-	/*print("#define DIND(reg, xxx) (uchar*)((*(ulong*)(R.reg+R.PC->xxx.i.f))+R.PC->xxx.i.s)\n");*/
-
-	print("#define DIND(target, reg, xxx){\\\n");
-	print(" ulong ul = *(ulong*)(((uchar*)R.reg)+R.PC->xxx.i.f);\\\n");
-	print(" if((ulong)H==ul) {error(exNilref);}\\\n");
-	print(" R.target = (uchar*)(ul+R.PC->xxx.i.s);\\\n");
-	print("}\n");
-
 	for(i = 0; i < 256; i++)
 		decgen(i);
 
@@ -49,31 +41,37 @@ decgen(int addr)
 
 	switch(USRC(addr)) {
 	case AMP:
-		print("\tR.s = ((uchar*)R.MP)+R.PC->s.ind;\n");
+		print("\tR.s = (Disdata*) ((char*)R.MP + R.PC->s.ind);\n");
 		break;
 	case AFP:
-		print("\tR.s = ((uchar*)R.FP)+R.PC->s.ind;\n");
+		print("\tR.s = (Disdata*) ((char*)R.FP + R.PC->s.ind);\n");
 		break;
 	case AIMM:
-		print("\tR.s = (uchar*)&R.PC->s.imm;\n");
+		print("\tR.s = (Disdata*) &R.PC->s.imm;\n");
 		break;
 	case AMP|AIND:
 		if(SOFTMMU) {
-			print("R.s = ((uchar*)R.MP)+R.PC->s.i.f\n");
-			print("R.s = *(WORD**)R.s\n");
-			print("R.s = (uchar*)R.s + R.PC->s.i.s\n");
+			print("R.s = (Disdata*) ((char*)R.MP + R.PC->s.i.f)\n");
+			print("R.s = R.s->pdisdata\n");
+			print("R.s = (Disdata*) ((char*)R.s + R.PC->s.i.s)\n");
 		}
-		else
-			print("\tDIND(s, MP, s);\n");
+		else {
+			print("\t{char* x = *(char**) ( (char*)R.MP + R.PC->s.i.f);\n");
+			print("\t if(H==x) error(exNilref);\n");
+			print("\t R.s = (Disdata*) (x + R.PC->s.i.s);}\n");
+		}
 		break;
 	case AFP|AIND:
 		if(SOFTMMU) {
-			print("R.s = ((uchar*)R.FP)+R.PC->s.i.f\n");
-			print("R.s = *(WORD**)R.s\n");
-			print("R.s = (uchar*)R.s + R.PC->s.i.s\n");
+			print("R.s = (Disdata*) ((char*)R.FP + R.PC->s.i.f)\n");
+			print("R.s = R.s->pdisdata\n");
+			print("R.s = (Disdata*) ((char*)R.s + R.PC->s.i.s)\n");
 		}
-		else
-			print("\tDIND(s, FP, s);\n");
+		else {
+			print("\t{char* x = *(char**) ( (char*)R.FP + R.PC->s.i.f);\n");
+			print("\t if(H==x) error(exNilref);\n");
+			print("\t R.s = (Disdata*) (x + R.PC->s.i.s);}\n");
+		}
 		break;
 	}
 	nodst = 0;
@@ -82,31 +80,37 @@ decgen(int addr)
 		nodst = 1;
 		break;
 	case AMP:
-		print("\tR.d = ((uchar*)R.MP)+R.PC->d.ind;\n");
+		print("\tR.d = (Disdata*) ((char*)R.MP + R.PC->d.ind);\n");
 		break;
 	case AFP:
-		print("\tR.d = ((uchar*)R.FP)+R.PC->d.ind;\n");
+		print("\tR.d = (Disdata*) ((char*)R.FP + R.PC->d.ind);\n");
 		break;
 	case AIMM:
-		print("\tR.d = (uchar*)&R.PC->d.imm;\n");
+		print("\tR.d = (Disdata*) &R.PC->d.imm;\n");
 		break;
 	case AMP|AIND:
 		if(SOFTMMU) {
-			print("R.d = ((uchar*)R.MP)+R.PC->d.i.f\n");
+			print("R.d = (Disdata*) ((char*)R.MP + R.PC->d.i.f)\n");
 			print("R.d = *(WORD**)R.d\n");
-			print("R.d = (uchar*)R.d + R.PC->d.i.s\n");
+			print("R.d = (Disdata*) ((char*)R.d + R.PC->d.i.s)\n");
 		}
-		else
-			print("\tDIND(d, MP, d);\n");
+		else {
+			print("\t{char* x = *(char**) ( (char*)R.MP + R.PC->d.i.f);\n");
+			print("\t if(H==x) error(exNilref);\n");
+			print("\t R.d = (Disdata*) (x + R.PC->d.i.s);}\n");
+		}
 		break;
 	case AFP|AIND:
 		if(SOFTMMU) {
-			print("R.d = ((uchar*)R.FP)+R.PC->d.i.f\n");
+			print("R.d = (Disdata*) ((char*)R.FP + R.PC->d.i.f)\n");
 			print("R.d = *(WORD**)R.d\n");
-			print("R.d = (uchar*)R.d + R.PC->d.i.s\n");
+			print("R.d = (Disdata*) ((char*)R.d + R.PC->d.i.s)\n");
 		}
-		else
-			print("\tDIND(d, FP, d);\n");
+		else {
+			print("\t{char* x = *(char**) ( (char*)R.FP + R.PC->d.i.f);\n");
+			print("\t if(H==x) error(exNilref);\n");
+			print("\t R.d = (Disdata*) (x + R.PC->d.i.s);}\n");
+		}
 		break;
 	}
 
@@ -115,15 +119,15 @@ decgen(int addr)
 	case AXNON:
 		print("\tR.m = R.d;\n");
 		break;
-	case AXIMM:
-		print("\tR.t = (short)R.PC->reg;\n");
-		print("\tR.m = &R.t;\n");
+	case AXIMM: /*???*/
+		print("\tR.t = (short) R.PC->reg;\n");
+		print("\tR.m = (Disdata*) &R.t;\n");
 		break;
 	case AXINF:
-		print("\tR.m = ((uchar*)R.FP)+R.PC->reg;\n");
+		print("\tR.m = (Disdata*) ((char*)R.FP + R.PC->reg);\n");
 		break;
 	case AXINM:
-		print("\tR.m = ((uchar*)R.MP)+R.PC->reg;\n");
+		print("\tR.m = (Disdata*) ((char*)R.MP + R.PC->reg);\n");
 		break;
 	}
 	print("}\n");

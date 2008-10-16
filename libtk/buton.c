@@ -3,7 +3,7 @@
 #include "tk.h"
 #include "label.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
+/*#define	O(t, e)		((long)(&((t*)0)->e))*/
 
 /* Widget Commands (+ means implemented)
 	+cget
@@ -21,31 +21,31 @@ enum {
 
 TkOption tkbutopts[] =
 {
-	"text",		OPTtext,	O(TkLabel, text),	nil,
-	"label",	OPTtext,	O(TkLabel, text),	nil,
-	"underline",	OPTdist,	O(TkLabel, ul),		nil,
-	"justify",	OPTstab,	O(TkLabel, justify),	tkjustify,
-	"anchor",	OPTflag,	O(TkLabel, anchor),	tkanchor,
-	"command",	OPTtext,	O(TkLabel, command),	nil,
-	"bitmap",	OPTbmap,	O(TkLabel, bitmap),	nil,
-	"image",	OPTimag,	O(TkLabel, img),	nil,
+	"text",		OPTtext,	offsetof(TkLabel, text),	nil,
+	"label",	OPTtext,	offsetof(TkLabel, text),	nil,
+	"underline",	OPTdist,	offsetof(TkLabel, ul),		nil,
+	"justify",	OPTstab,	offsetof(TkLabel, justify),	tkjustify,
+	"anchor",	OPTflag,	offsetof(TkLabel, anchor),	tkanchor,
+	"command",	OPTtext,	offsetof(TkLabel, command),	nil,
+	"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap),	nil,
+	"image",	OPTimag,	offsetof(TkLabel, img),	nil,
 	nil
 };
 
 TkOption tkcbopts[] =
 {
-	"variable",	OPTtext,	O(TkLabel, variable),	nil,
-	"indicatoron",	OPTstab,	O(TkLabel, indicator),	tkbool,
-	"onvalue",	OPTtext,	O(TkLabel, value),	nil,
-	"offvalue",	OPTtext,	O(TkLabel, offvalue), nil,
+	"variable",	OPTtext,	offsetof(TkLabel, variable),	nil,
+	"indicatoron",	OPTstab,	offsetof(TkLabel, indicator),	tkbool,
+	"onvalue",	OPTtext,	offsetof(TkLabel, value),	nil,
+	"offvalue",	OPTtext,	offsetof(TkLabel, offvalue), nil,
 	nil,
 };
 
 TkOption tkradopts[] =
 {
-	"variable",	OPTtext,	O(TkLabel, variable),	nil,
-	"value",	OPTtext,	O(TkLabel, value), nil,
-	"indicatoron",	OPTstab,	O(TkLabel, indicator),	tkbool,
+	"variable",	OPTtext,	offsetof(TkLabel, variable),	nil,
+	"value",	OPTtext,	offsetof(TkLabel, value), nil,
+	"indicatoron",	OPTstab,	offsetof(TkLabel, indicator),	tkbool,
 	nil,
 };
 
@@ -61,7 +61,7 @@ TkEbind bb[] =
 };
 
 static
-TkEbind cb[] = 
+TkEbind cb[] =
 {
 	{TkEnter,		"%W configure -state active"},
 	{TkLeave,		"%W configure -state normal"},

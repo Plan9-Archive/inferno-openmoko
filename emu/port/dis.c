@@ -34,7 +34,7 @@ uvlong	gcpartial = 0;
 int	keepbroken = 1; /* kill broken processes or leave them for debugger */
 
 
-static Prog*	proghash[64];
+static Prog*	proghash[64] = {0};
 
 static Progs*	delgrp(Prog*);
 static void	addgrp(Prog*, Prog*);
@@ -119,12 +119,11 @@ execatidle(void)
 Prog*
 newprog(Prog *p, Modlink *m)
 {
-	Heap *h;
 	Prog *n, **ph;
 	Osenv *on, *op;
 	static int pidnum; /* TODO: 4G is enough for unique id? */
 
-	n = malloc(sizeof(Prog)+sizeof(Osenv));
+	n = (Prog *)malloc(sizeof(Prog)+sizeof(Osenv));
 	if(n == 0){
 		if(p == nil)
 			panic("no memory");
@@ -159,9 +158,8 @@ newprog(Prog *p, Modlink *m)
 	n->flags = 0;
 	n->exval = H;
 
-	h = D2H(m);
-	h->ref++;
-	Setmark(h);
+	ADDREF(m);
+	Setmark(D2H(m));
 	n->R.M = m;
 	n->R.MP = m->MP;
 	if(m->MP != H)
@@ -234,7 +232,7 @@ delprog(Prog *p, char *msg)
 		if(p->link == nil)
 			isched.runtl = nil;
 	}
-	p->state = 0xdeadbeef;
+	p->state = Pdeadbeef;
 	free(o->user);
 	if(p->killstr)
 		free(p->killstr);
@@ -308,7 +306,7 @@ exprog(Prog *p, char *exc)
 	/* similar code to killprog but not quite */
 	switch(p->state) {
 	case Palt:
-		altdone(p->R.s, p, nil, -1);
+		altdone((Alt*)p->R.s, p, nil, -1);
 		break;
 	case Psend:
 		cqdelp(&p->chan->send, p);
@@ -332,7 +330,7 @@ exprog(Prog *p, char *exc)
 		addrun(p);
 	if(p->kill == nil){
 		if(p->killstr == nil){
-			p->killstr = malloc(ERRMAX);
+			p->killstr = (char*)malloc(ERRMAX);
 			if(p->killstr == nil){
 				p->kill = Enomem;
 				return 1;
@@ -344,6 +342,9 @@ exprog(Prog *p, char *exc)
 	return 1;
 }
 
+/**
+ * Propagate exception
+ */
 static void
 propex(Prog *p, char *estr)
 {
@@ -391,7 +392,7 @@ killprog(Prog *p, char *cause)
 
 	switch(p->state) {
 	case Palt:
-		altdone(p->R.s, p, nil, -1);
+		altdone((Alt*)p->R.s, p, nil, -1);
 		break;
 	case Psend:
 		cqdelp(&p->chan->send, p);
@@ -452,7 +453,7 @@ newgrp(Prog *p)
 
 	if(p->group != nil && p->group->id == p->pid)
 		return;
-	g = malloc(sizeof(*g));
+	g = (Progs*)malloc(sizeof(*g));
 	if(g == nil)
 		error(Enomem);
 	p->flags &= ~(Ppropagate|Pnotifyleader);
@@ -565,7 +566,7 @@ killgrp(Prog *p, char *msg)
 		else
 			npid++;
 	/* use pids not Prog* because state can change during killprog */
-	pids = malloc(npid*sizeof(int));
+	pids = (int*)malloc(npid*sizeof(int));
 	if(pids == nil)
 		error(Enomem);
 	npid = 0;
@@ -624,7 +625,7 @@ addprog(Proc *p)
 {
 	Prog *n;
 
-	n = malloc(sizeof(Prog));
+	n = (Prog*)mallocz(sizeof(Prog), 1);
 	if(n == nil)
 		panic("no memory");
 	p->prog = n;
@@ -644,7 +645,7 @@ cwakeme(Prog *p)
 static int
 cdone(void *vp)
 {
-	Prog *p = vp;
+	Prog *p = (Prog *)vp;
 
 	return p->addrun == nil || p->kill != nil;
 }
@@ -694,7 +695,7 @@ addrun(Prog *p)
 }
 
 Prog*
-delrun(int state)
+delrun(enum ProgState state)
 {
 	Prog *p;
 
@@ -729,7 +730,7 @@ delrunq(Prog *p)
 }
 
 Prog*
-delruntail(int state)
+delruntail(enum ProgState state)
 {
 	Prog *p;
 
@@ -768,7 +769,7 @@ schedmod(Module *m)
 	}
 
 	p = newprog(nil, ml);
-	D2H(ml)->ref--;
+	DELREF(ml);
 	p->R.PC = m->entry;
 
 	f = H2D(Frame*,heapz(m->entryt));
@@ -925,9 +926,19 @@ progexit(void)
 	char *estr, msg[ERRMAX+2*KNAMELEN];
 
 	estr = up->env->errstr;
-	broken = 0;
-	if(estr[0] != '\0' && strcmp(estr, Eintr) != 0 && strncmp(estr, "fail:", 5) != 0)
+	if(estr[0] == '\0' ||
+		strcmp(estr, Eintr) == 0 ||
+		strncmp(estr, "fail:", 5) == 0)
+	{
+		// ""
+		// "interrupted"
+		// "fail:*"
+		broken = 0;
+	} else
+	{
 		broken = 1;
+	}
+
 
 	r = up->iprog;
 	if(r != nil)
@@ -965,7 +976,7 @@ progexit(void)
 		dbgexit(r, broken, estr);
 		broken = 1;
 		/* must force it to break if in debug */
-	}else if(broken && (!keepbroken || strncmp(estr, "out of memory", 13)==0 || memusehigh()))
+	}else if(broken && (!keepbroken || strncmp(estr, "out of memory", 13)==0 /* BUG|| memusehigh()*/))
 		broken = 0;	/* don't want them or short of memory */
 
 	if(broken){
@@ -1146,14 +1157,14 @@ vmachine(void *a)
 			up->env = &up->defenv;
 		}
 		if(isched.runhd != nil)
-		if((++gccounter&0xFF) == 0 || memlow()) {
-			gcbusy++;
-			up->type = BusyGC;
-			pushrun(up->prog);
-			rungc(isched.head);
-			up->type = Interp;
-			delrunq(up->prog);
-		}
+			if((++gccounter&0xFF) == 0 /* BUG || memlow()*/) {
+				gcbusy++;
+				up->type = BusyGC;
+				pushrun(up->prog);
+				rungc(isched.head);
+				up->type = Interp;
+				delrunq(up->prog);
+			}
 	}
 }
 

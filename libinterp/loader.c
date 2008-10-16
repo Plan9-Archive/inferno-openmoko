@@ -18,9 +18,9 @@ loadermodinit(void)
 {
 	sysinit();
 	builtinmod("$Loader", Loadermodtab, Loadermodlen);
-	Tinst = dtype(freeheap, sizeof(Loader_Inst), Instmap, sizeof(Instmap));
-	Tdesc = dtype(freeheap, sizeof(Loader_Typedesc), Tdescmap, sizeof(Tdescmap));
-	Tlink = dtype(freeheap, sizeof(Loader_Link), Tlinkmap, sizeof(Tlinkmap));
+	Tinst = dtype(freeheap, sizeof(Loader_Inst), Instmap, sizeof(Instmap), "Loader->inst");
+	Tdesc = dtype(freeheap, sizeof(Loader_Typedesc), Tdescmap, sizeof(Tdescmap), "Loader->desc");
+	Tlink = dtype(freeheap, sizeof(Loader_Link), Tlinkmap, sizeof(Tlinkmap), "Loader->link");
 }
 
 static void
@@ -128,7 +128,7 @@ Loader_link(void *a)
 	Array *ar;
 	Loader_Link *ll;
 	F_Loader_link *f;
-	
+
 	f = a;
 	destroy(*f->ret);
 	*f->ret = H;
@@ -219,7 +219,6 @@ Loader_tdesc(void *a)
 void
 Loader_newmod(void *a)
 {
-	Heap *h;
 	Module *m;
 	Array *ia;
 	Modlink *ml;
@@ -257,11 +256,10 @@ Loader_newmod(void *a)
 		goto bad;
 	}
 	m->origmp = (uchar*)f->data;
-	h = D2H(f->data);
-	h->ref++;
-	Setmark(h);
-	m->type[0] = h->t;
-	h->t->ref++;
+	ADDREF(f->data);
+	Setmark(D2H(f->data));
+	m->type[0] = D2H(f->data)->t;
+	D2H(f->data)->t->ref++;
 
 	ia = f->inst;
 	m->nprog = ia->len;
@@ -326,7 +324,7 @@ Loader_tnew(void *a)
 		ar->data = nil;
 	}
 
-	t = dtype(freeheap, f->size, ar->data, ar->len);
+	t = dtype(freeheap, f->size, ar->data, ar->len, "(Loader_tnew)");
 	if(t == nil)
 		return;
 
@@ -388,7 +386,7 @@ Loader_dnew(void *a)
 	Heap *h;
 	Array *ar, az;
 	Type *t;
- 
+
         f = a;
         *f->ret = H;
         if(f->map == H)
@@ -399,7 +397,7 @@ Loader_dnew(void *a)
                 ar->len = 0;
                 ar->data = nil;
         }
-        t = dtype(freeheap, f->size, ar->data, ar->len);
+        t = dtype(freeheap, f->size, ar->data, ar->len, "(Loader_dnew)");
         if(t == nil) {
                 kwerrstr(exNomem);
                 return;
@@ -411,7 +409,7 @@ Loader_dnew(void *a)
 		kwerrstr(exNomem);
 		return;
         }
-		
+
 	*f->ret=H2D(Loader_Niladt*, h);
 }
 

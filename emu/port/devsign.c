@@ -303,7 +303,7 @@ signclose(Chan *c)
 }
 
 static long
-signread(Chan *c, void *va, long n, vlong offset)
+signread(Chan *c, char *va, long n, vlong offset)
 {
 	char *buf, *p;
 	SigAlgVec *sa;
@@ -349,7 +349,7 @@ signread(Chan *c, void *va, long n, vlong offset)
 }
 
 static long
-signwrite(Chan *c, void *va, long n, vlong offset)
+signwrite(Chan *c, const char *va, long n, vlong offset)
 {
 	char *buf;
 	Skeyset *sigs;

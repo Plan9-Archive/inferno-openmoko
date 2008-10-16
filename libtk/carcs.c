@@ -3,7 +3,6 @@
 #include "tk.h"
 #include "canvs.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
 typedef void	(*Drawfn)(Image*, Point, int, int, Image*, int);
 
 /* Arc Options (+ means implemented)
@@ -11,7 +10,7 @@ typedef void	(*Drawfn)(Image*, Point, int, int, Image*, int);
 	+fill
 	+outline
 	 outlinestipple
-	+start 
+	+start
 	+stipple
 	+style (+pieslice chord +arc)
 	+tags
@@ -36,7 +35,7 @@ enum Style
 	Arc
 };
 
-static 
+static
 TkStab tkstyle[] =
 {
 	"pieslice",	Pieslice,
@@ -48,20 +47,20 @@ TkStab tkstyle[] =
 static
 TkOption arcopts[] =
 {
-	"start",	OPTfrac,	O(TkCarc, start),	nil,
-	"extent",	OPTfrac,	O(TkCarc, extent),	nil,
-	"style",	OPTstab,	O(TkCarc, style),	tkstyle,
-	"width",	OPTnnfrac,	O(TkCarc, width),	nil,
-	"stipple",	OPTbmap,	O(TkCarc, stipple),	nil,
+	"start",	OPTfrac,	offsetof(TkCarc, start),	nil,
+	"extent",	OPTfrac,	offsetof(TkCarc, extent),	nil,
+	"style",	OPTstab,	offsetof(TkCarc, style),	tkstyle,
+	"width",	OPTnnfrac,	offsetof(TkCarc, width),	nil,
+	"stipple",	OPTbmap,	offsetof(TkCarc, stipple),	nil,
 	nil
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	O(TkCitem, tags),	nil,
-	"fill",		OPTcolr,	O(TkCitem, env),	IAUX(TkCfill),
-	"outline",	OPTcolr,	O(TkCitem, env),	IAUX(TkCforegnd),
+	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
+	"fill",		OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCfill),
+	"outline",	OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCforegnd),
 	nil
 };
 
@@ -117,7 +116,7 @@ tkcvsarccreat(Tk* tk, char *arg, char **val)
 		tkcvsfreeitem(i);
 		return e;
 	}
-	
+
 	e = tkcaddtag(tk, i, 1);
 	if(e != nil) {
 		tkcvsfreeitem(i);

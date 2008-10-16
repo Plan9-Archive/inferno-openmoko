@@ -54,9 +54,7 @@ IMPORTFILES=\
 	smprint.$O\
 	snprint.$O\
 	sprint.$O\
-	strdup.$O\
 	strecpy.$O\
-	sysfatal.$O\
 	tokenize.$O\
 	u16.$O\
 	u32.$O\

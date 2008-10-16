@@ -4,8 +4,6 @@
 #include "tk.h"
 #include "listb.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 /* Layout constants */
 enum {
 	Listpadx	= 2,	/* X padding of text in listboxes */
@@ -49,15 +47,15 @@ TkStab tkselmode[] =
 static
 TkOption opts[] =
 {
-	"xscrollcommand",	OPTtext,	O(TkListbox, xscroll),	nil,
-	"yscrollcommand",	OPTtext,	O(TkListbox, yscroll),	nil,
-	"selectmode",		OPTstab,	O(TkListbox, selmode),	tkselmode,
-	"selectborderwidth",	OPTnndist,	O(TkListbox, sborderwidth),	nil,
+	"xscrollcommand",	OPTtext,	offsetof(TkListbox, xscroll),	nil,
+	"yscrollcommand",	OPTtext,	offsetof(TkListbox, yscroll),	nil,
+	"selectmode",		OPTstab,	offsetof(TkListbox, selmode),	tkselmode,
+	"selectborderwidth",	OPTnndist,	offsetof(TkListbox, sborderwidth),	nil,
 	nil
 };
 
 static
-TkEbind b[] = 
+TkEbind b[] =
 {
 	{TkButton1P,		"%W tkListbButton1P %y"},
 	{TkButton1R,	"%W tkListbButton1R"},
@@ -687,7 +685,7 @@ tklistbget(Tk *tk, char *arg, char **val)
 		fmt = " %s";
 		e = e->link;
 	}
-	return nil;		
+	return nil;
 }
 
 char*
@@ -710,7 +708,7 @@ tklistbcursel(Tk *tk, char *arg, char **val)
 		}
 		indx++;
 	}
-	return nil;		
+	return nil;
 }
 
 static char*
@@ -1044,7 +1042,7 @@ TkCmdtab tklistcmd[] =
 	"index",		tklistbindex,
 	"insert",		tklistbinsert,
 	"nearest",		tklistbnearest,
-	"selection",		tklistbselection, 
+	"selection",		tklistbselection,
 	"see",			tklistbsee,
 	"size",			tklistbsize,
 	"xview",		tklistbxview,

@@ -7,7 +7,7 @@ extern Dirtab roottab[];
 extern int	rootmaxq;
 
 static Chan*
-rootattach(char *spec)
+rootattach(const char *spec)
 {
 	int i;
 	ulong len;
@@ -77,7 +77,7 @@ rootwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-rootstat(Chan *c, uchar *dp, int n)
+rootstat(Chan *c, char *dp, int n)
 {
 	int p;
 
@@ -104,10 +104,10 @@ rootclose(Chan *c)
 }
 
 static long	 
-rootread(Chan *c, void *buf, long n, vlong offset)
+rootread(Chan *c, char *buf, long n, vlong offset)
 {
 	ulong p, len;
-	uchar *data;
+	char *data;
 
 	p = c->qid.path;
 	if(c->qid.type & QTDIR)
@@ -117,13 +117,13 @@ rootread(Chan *c, void *buf, long n, vlong offset)
 		return 0;
 	if(offset+n > len)
 		n = len - offset;
-	data = rootdata[p].ptr;
+	data = rootdata[p].ptr->name;
 	memmove(buf, data+offset, n);
 	return n;
 }
 
 static long	 
-rootwrite(Chan *c, void *a, long n, vlong off)
+rootwrite(Chan *c, const char *a, long n, vlong off)
 {
 	USED(c); USED(a); USED(n); USED(off);
 	error(Eperm);

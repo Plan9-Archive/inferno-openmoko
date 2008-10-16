@@ -3,8 +3,6 @@
 #include "draw.h"
 #include "tk.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 char*	tkimgbmcreate(TkTop*, char*, int, char**);
 char*	tkimgbmdel(TkImg*);
 void	tkimgbmfree(TkImg*);
@@ -18,7 +16,7 @@ struct TkImgtype
 	char*	(*create)(TkTop*, char*, int, char**);
 	char*	(*delete)(TkImg*);
 	void	(*destroy)(TkImg*);
-} tkimgopts[] = 
+} tkimgopts[] =
 {
 	"bitmap",	tkimgbmcreate,		tkimgbmdel, 	tkimgbmfree,
 	nil,
@@ -45,8 +43,8 @@ tkname2img(TkTop *t, char *name)
 TkOption
 bitopt[] =
 {
-	"file",		OPTbmap,	O(Imgargs, fgimg),	nil,
-	"maskfile",	OPTbmap,	O(Imgargs, maskimg),	nil,
+	"file",		OPTbmap,	offsetof(Imgargs, fgimg),	nil,
+	"maskfile",	OPTbmap,	offsetof(Imgargs, maskimg),	nil,
 	nil
 };
 
@@ -165,7 +163,7 @@ tkimgbmcreate(TkTop *t, char *arg, int type, char **ret)
 
 	tki->link = t->imgs;
 	t->imgs = tki;
-	
+
 	if (tki->name != nil) {
 		e = tkvalue(ret, "%s", tki->name->name);
 		if(e == nil)
@@ -314,7 +312,7 @@ tkimgput(TkImg *tki)
 	if(--tki->ref > 0)
 		return;
 
-	tkimgopts[tki->type].destroy(tki);	
+	tkimgopts[tki->type].destroy(tki);
 }
 
 TkImg*

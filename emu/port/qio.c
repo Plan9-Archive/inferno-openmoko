@@ -19,7 +19,7 @@ struct Queue
 	int	dlen;		/* data bytes in queue */
 	int	limit;		/* max bytes in queue */
 	int	inilim;		/* initial limit */
-	int	state;
+	enum QueueState	state;
 	int	noblock;	/* true if writes return immediately when q full */
 	int	eof;		/* number of eofs read by user */
 
@@ -68,8 +68,8 @@ freeb(Block *b)
 	 * drivers which perform non cache coherent DMA manage their own buffer
 	 * pool of uncached buffers and provide their own free routine.
 	 */
-	if(b->free) {
-		b->free(b);
+	if(b->fnfree) {
+		b->fnfree(b);
 		return;
 	}
 
@@ -950,7 +950,7 @@ qremove(Queue *q)
  *  pointer to first unconsumed block.
  */
 Block*
-bl2mem(uchar *p, Block *b, int n)
+bl2mem(char *p, Block *b, int n)
 {
 	int i;
 	Block *next;
@@ -994,7 +994,7 @@ mem2bl(uchar *p, int len)
 			n = Maxatomic;
 
 		*l = b = allocb(n);
-		setmalloctag(b, (up->text[0]<<24)|(up->text[1]<<16)|(up->text[2]<<8)|up->text[3]);
+		/* BUG setmalloctag(b, (up->text[0]<<24)|(up->text[1]<<16)|(up->text[2]<<8)|up->text[3]); */
 		memmove(b->wp, p, n);
 		b->wp += n;
 		p += n;
@@ -1297,7 +1297,7 @@ qbwrite(Queue *q, Block *b)
 #pragma optimize("y", off) // for getcallerpc()
 #endif
 int
-qwrite(Queue *q, void *vp, int len)
+qwrite(Queue *q, const void *vp, int len)
 {
 	int n, sofar;
 	Block *b;
@@ -1310,7 +1310,7 @@ qwrite(Queue *q, void *vp, int len)
 			n = Maxatomic;
 
 		b = allocb(n);
-		setmalloctag(b, getcallerpc(&q));
+		/* BUG setmalloctag(b, getcallerpc(&q)); */
 		if(waserror()){
 			freeb(b);
 			nexterror();

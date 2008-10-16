@@ -370,7 +370,7 @@ eiaclose(Chan *c)
 }
 
 static long
-eiaread(Chan *c, void *buf, long n, vlong offset)
+eiaread(Chan *c, char *buf, long n, vlong offset)
 {
 	ssize_t cnt;
 	int port = NETID(c->qid.path);
@@ -396,7 +396,7 @@ eiaread(Chan *c, void *buf, long n, vlong offset)
 }
 
 static long
-eiawrite(Chan *c, void *buf, long n, vlong offset)
+eiawrite(Chan *c, const char *buf, long n, vlong offset)
 {
 	ssize_t cnt;
 	char cmd[Maxctl];

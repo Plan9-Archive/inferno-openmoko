@@ -215,17 +215,13 @@ enum
 	DEFSS = 9,	/* String share - not used yet */
 
 	DADEPTH = 4,		/* Array address stack size */
-
-	IBY2WD	= 4,
-	IBY2FT	= 8,
-	IBY2LG	= 8,
 };
 
 #define REGLINK	 (offsetof(Frame,lr)/IBY2WD)
 #define REGFRAME (offsetof(Frame,fp)/IBY2WD)
 #define REGMOD	 (offsetof(Frame,mr)/IBY2WD)
 //#define REGTYP	 (offsetof(Frame,t)/IBY2WD)
-#define REGRET	 4
+//#define REGRET	 4
 #define NREG	 5
 
 enum ModRtFlags

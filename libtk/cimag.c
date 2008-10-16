@@ -3,7 +3,6 @@
 #include "tk.h"
 #include "canvs.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
 
 /* Image Options (+ means implemented)
 	+anchor
@@ -21,15 +20,15 @@ struct TkCimag
 static
 TkOption imgopts[] =
 {
-	"anchor",	OPTstab,	O(TkCimag, anchor),	tkanchor,
-	"image",	OPTimag,	O(TkCimag, tki),	nil,
+	"anchor",	OPTstab,	offsetof(TkCimag, anchor),	tkanchor,
+	"image",	OPTimag,	offsetof(TkCimag, tki),	nil,
 	nil
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	O(TkCitem, tags),	nil,
+	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
 	nil
 };
 
@@ -94,7 +93,7 @@ tkcvsimgcreat(Tk* tk, char *arg, char **val)
 		tkcvsfreeitem(i);
 		return e;
 	}
-	
+
 	e = tkcaddtag(tk, i, 1);
 	if(e != nil) {
 		tkcvsfreeitem(i);

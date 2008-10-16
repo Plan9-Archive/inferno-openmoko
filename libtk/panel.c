@@ -2,8 +2,6 @@
 #include "draw.h"
 #include "tk.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 typedef struct TkPanel TkPanel;
 struct TkPanel
 {
@@ -17,7 +15,7 @@ struct TkPanel
 
 static TkOption tkpanelopts[] =
 {
-	"anchor",	OPTflag,	O(TkPanel, anchor),	tkanchor,
+	"anchor",	OPTflag,	offsetof(TkPanel, anchor),	tkanchor,
 	nil
 };
 
@@ -149,7 +147,7 @@ tkpanelview(Tk *tk)
 	int dx, dy;
 	Point view;
 	TkPanel *tkp = TKobj(TkPanel, tk);
-	
+
 	dx = tk->act.width - Dx(tkp->r);
 	dy = tk->act.height - Dy(tkp->r);
 

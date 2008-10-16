@@ -55,24 +55,22 @@ TkStab tkbuffer[] = {
 	nil
 };
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-#define OA(t, e)	((long)(((t*)0)->e))
 
 static
 TkOption opts[] =
 {
-	"closeenough",		OPTfrac,	O(TkCanvas, close),	nil,
-	"confine",		OPTfrac,	O(TkCanvas, confine),	nil,
-	"scrollregion",		OPTfrac,	OA(TkCanvas, scrollr),	IAUX(4),
-	"xscrollincrement",	OPTfrac,	O(TkCanvas, xscrolli),	nil,
-	"yscrollincrement",	OPTfrac,	O(TkCanvas, yscrolli),	nil,
-	"xscrollcommand",	OPTtext,	O(TkCanvas, xscroll),	nil,
-	"yscrollcommand",	OPTtext,	O(TkCanvas, yscroll),	nil,
-	"width",		OPTnnfrac,	O(TkCanvas, width),	nil,
-	"height",		OPTnnfrac,	O(TkCanvas, height),	nil,
-	"buffer",		OPTstab,	O(TkCanvas, buffer),		tkbuffer,
-	"buffered",		OPTstab,	O(TkCanvas, buffer),	tkbool,	/* backwards compatibility */
-	"selectborderwidth",	OPTnndist, O(TkCanvas, sborderwidth), nil,
+	"closeenough",		OPTfrac,	offsetof(TkCanvas, close),	nil,
+	"confine",		OPTfrac,	offsetof(TkCanvas, confine),	nil,
+	"scrollregion",		OPTfrac,	offsetof(TkCanvas, scrollr),	IAUX(4),
+	"xscrollincrement",	OPTfrac,	offsetof(TkCanvas, xscrolli),	nil,
+	"yscrollincrement",	OPTfrac,	offsetof(TkCanvas, yscrolli),	nil,
+	"xscrollcommand",	OPTtext,	offsetof(TkCanvas, xscroll),	nil,
+	"yscrollcommand",	OPTtext,	offsetof(TkCanvas, yscroll),	nil,
+	"width",		OPTnnfrac,	offsetof(TkCanvas, width),	nil,
+	"height",		OPTnnfrac,	offsetof(TkCanvas, height),	nil,
+	"buffer",		OPTstab,	offsetof(TkCanvas, buffer),	tkbuffer,
+	"buffered",		OPTstab,	offsetof(TkCanvas, buffer),	tkbool,	/* backwards compatibility */
+	"selectborderwidth",	OPTnndist,	offsetof(TkCanvas, sborderwidth), nil,
 	nil
 };
 
@@ -320,7 +318,7 @@ tkcvsfreeitem(TkCitem *i)
 	d = i->env->top->display;
 
 	locked = lockdisplay(d);
-	tkcimethod[i->type].free(i);
+	tkcimethod[i->type].fnfree(i);
 	if(locked)
 		unlockdisplay(d);
 

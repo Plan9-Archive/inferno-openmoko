@@ -193,7 +193,7 @@ ip2gen(Chan *c, int i, Dir *dp)
 		mkqid(&q, QID(PROTO(c->qid), 0, Qstats), 0, QTFILE);
 		devdir(c, q, "stats", 0, network, 0444, dp);
 		return 1;
-	}	
+	}
 	return -1;
 }
 
@@ -320,7 +320,7 @@ newproto(char *name, int type, int maxconv)
 {
 	Proto *p;
 
-	p = smalloc(sizeof(*p));
+	p = (Proto *)smalloc(sizeof(*p));
 	p->name = name;
 	p->stype = type;
 	p->ipproto = type+1;	/* temporary */
@@ -332,7 +332,7 @@ newproto(char *name, int type, int maxconv)
 void
 ipinit(void)
 {
-	ipfs[0] = malloc(sizeof(Fs));
+	ipfs[0] = (Fs*)mallocz(sizeof(Fs), 1);
 	if(ipfs[0] == nil)
 		panic("no memory for IP stack");
 
@@ -347,7 +347,7 @@ ipinit(void)
 }
 
 Chan *
-ipattach(char *spec)
+ipattach(const char *spec)
 {
 	Chan *c;
 
@@ -368,7 +368,7 @@ ipwalk(Chan* c, Chan *nc, char **name, int nname)
 }
 
 static int
-ipstat(Chan *c, uchar *db, int n)
+ipstat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, 0, 0, ipgen);
 }
@@ -537,18 +537,17 @@ ipclose(Chan *c)
 }
 
 static long
-ipread(Chan *ch, void *a, long n, vlong off)
+ipread(Chan *ch, char *a, long n, vlong off)
 {
 	int r;
 	Conv *c;
 	Proto *x;
-	char *p, *s;
+	char *s;
 	Fs *f;
 	ulong offset = off;
 
 	f = ipfs[ch->dev];
 
-	p = a;
 	switch(TYPE(ch->qid)) {
 	default:
 		error(Eperm);
@@ -562,27 +561,27 @@ ipread(Chan *ch, void *a, long n, vlong off)
 		return readstr(off, a, n, f->ndb);
 	case Qctl:
 		sprint(up->genbuf, "%lud", CONV(ch->qid));
-		return readstr(offset, p, n, up->genbuf);
+		return readstr(offset, a, n, up->genbuf);
 	case Qremote:
 		x = f->p[PROTO(ch->qid)];
 		c = x->conv[CONV(ch->qid)];
 		sprint(up->genbuf, "%I!%d\n", c->raddr, c->rport);
-		return readstr(offset, p, n, up->genbuf);
+		return readstr(offset, a, n, up->genbuf);
 	case Qlocal:
 		x = f->p[PROTO(ch->qid)];
 		c = x->conv[CONV(ch->qid)];
 		sprint(up->genbuf, "%I!%d\n", c->laddr, c->lport);
-		return readstr(offset, p, n, up->genbuf);
+		return readstr(offset, a, n, up->genbuf);
 	case Qstatus:
 		x = f->p[PROTO(ch->qid)];
 		c = x->conv[CONV(ch->qid)];
-		s = smalloc(Statelen);
+		s = (char*) smalloc(Statelen);
 		if(waserror()){
 			free(s);
 			nexterror();
 		}
 		snprint(s, Statelen, "%s\n", ipstates[c->state]);
-		n = readstr(offset, p, n, s);
+		n = readstr(offset, a, n, s);
 		poperror();
 		free(s);
 		return n;
@@ -594,8 +593,7 @@ ipread(Chan *ch, void *a, long n, vlong off)
 		if(c->headers) {
 			if(n < c->headers)
 				error(Ebadarg);
-			p = a;
-			r = so_recv(c->sfd, p + c->headers, n - c->headers, p, c->headers);
+			r = so_recv(c->sfd, a + c->headers, n - c->headers, a, c->headers);
 			if(r > 0)
 				r += c->headers;
 		} else
@@ -808,11 +806,10 @@ bindctlmsg(Proto *x, Conv *c, Cmdbuf *cb)
 }
 
 static long
-ipwrite(Chan *ch, void *a, long n, vlong off)
+ipwrite(Chan *ch, const char *a, long n, vlong off)
 {
 	Conv *c;
 	Proto *x;
-	char *p;
 	Cmdbuf *cb;
 	Fs *f;
 
@@ -834,8 +831,7 @@ ipwrite(Chan *ch, void *a, long n, vlong off)
 		if(c->headers) {
 			if(n < c->headers)
 				error(Eshort);
-			p = a;
-			n = so_send(c->sfd, p + c->headers, n - c->headers, p, c->headers);
+			n = so_send(c->sfd, a + c->headers, n - c->headers, a, c->headers);
 			if(n >= 0)
 				n += c->headers;
 		} else
@@ -925,7 +921,7 @@ ipwrite(Chan *ch, void *a, long n, vlong off)
 }
 
 static int
-ipwstat(Chan *c, uchar *dp, int n)
+ipwstat(Chan *c, char *dp, int n)
 {
 	Dir *d;
 	Conv *cv;
@@ -942,7 +938,7 @@ ipwstat(Chan *c, uchar *dp, int n)
 		break;
 	}
 
-	d = smalloc(sizeof(*d)+n);
+	d = (Dir *)smalloc(sizeof(*d)+n);
 	if(waserror()){
 		free(d);
 		nexterror();
@@ -997,7 +993,7 @@ protoclone(Proto *p, char *user, int nfd)
 		maxconv = 2 * p->nc;
 		if(maxconv > MAXCONV)
 			maxconv = MAXCONV;
-		np = realloc(p->conv, sizeof(Conv*) * maxconv);
+		np = (Conv **)realloc(p->conv, sizeof(Conv*) * maxconv);
 		if(np == nil)
 			error(Enomem);
 		p->conv = np;
@@ -1031,7 +1027,7 @@ newconv(Proto *p, Conv **pp)
 {
 	Conv *c;
 
-	*pp = c = malloc(sizeof(Conv));
+	*pp = c = (Conv *)malloc(sizeof(Conv));
 	if(c == 0)
 		error(Enomem);
 	qlock(&c->l);
@@ -1043,7 +1039,7 @@ newconv(Proto *p, Conv **pp)
 }
 
 int
-arpwrite(char *s, int len)
+arpwrite(const char *s, int len)
 {
 	int n;
 	char *f[4], buf[256];
@@ -1102,7 +1098,7 @@ Fsproto(Fs *f, Proto *p)
 
 	p->qid.type = QTDIR;
 	p->qid.path = QID(f->np, 0, Qprotodir);
-	p->conv = malloc(sizeof(Conv*)*(p->nc+1));
+	p->conv = (Conv**)malloc(sizeof(Conv*)*(p->nc+1));
 	if(p->conv == nil)
 		panic("Fsproto");
 

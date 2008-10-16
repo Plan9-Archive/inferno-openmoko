@@ -532,12 +532,11 @@ Filling:
 
 
 long
-audio_file_write(Chan *c, void *va, long count, vlong offset)
+audio_file_write(Chan *c, const char *va, long count, vlong offset)
 {
 	MMRESULT status;
 	WAVEHDR *hHdr = (WAVEHDR *) NULL;
 	char *hData = NULL;
-	char *p = (char *) va;
 	long ba;
 	long bufsz;
 	long chunk;
@@ -590,7 +589,7 @@ Drain:
 	if (!hHdr)
 		error(Enomem);
 
-	hData = malloc(chunk);
+	hData = (char*)malloc(chunk);
 	if (!hData) {
 		free(hHdr);
 		error(Enomem);
@@ -603,7 +602,7 @@ Drain:
 	/*
 	 * copy user data into write Q
 	 */
-	memmove(hData, p+total, chunk);
+	memmove(hData, va+total, chunk);
 
 	hHdr->lpData = hData;
 	hHdr->dwBufferLength = chunk;
@@ -709,7 +708,7 @@ waveOutProc(HWAVEOUT hwo, UINT uMsg, DWORD dwOutstance, DWORD dwParam1, DWORD dw
 }
 
 long
-audio_ctl_write(Chan *c, void *va, long count, vlong offset)
+audio_ctl_write(Chan *c, const char *va, long count, vlong offset)
 {
 	WAVEFORMATEX format;
 	Audio_t tmpav = av;

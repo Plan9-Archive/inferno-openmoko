@@ -13,7 +13,7 @@ enum
 	Cbr,
 };
 
-struct 
+struct
 {
 	char*	event;
 	int	mask;
@@ -21,7 +21,7 @@ struct
 } etab[] =
 {
 	"Motion",		TkMotion,	Cmask,
-	"Double",		TkDouble,	Cmask,	
+	"Double",		TkDouble,	Cmask,
 	"Map",			TkMap,		Cmask,
 	"Unmap",		TkUnmap,	Cmask,
 	"Destroy",		TkDestroy, Cmask,
@@ -41,17 +41,17 @@ struct
 static
 TkOption tkcurop[] =
 {
-	"x",		OPTdist,	O(TkCursor, p.x),	nil,
-	"y",		OPTdist,	O(TkCursor, p.y),	nil,
-	"bitmap",	OPTbmap,	O(TkCursor, bit),	nil,
-	"image",	OPTimag,	O(TkCursor, img),	nil,
-	"default",	OPTbool,	O(TkCursor, def),	nil,
+	"x",		OPTdist,	offsetof(TkCursor, p.x),	nil,
+	"y",		OPTdist,	offsetof(TkCursor, p.y),	nil,
+	"bitmap",	OPTbmap,	offsetof(TkCursor, bit),	nil,
+	"image",	OPTimag,	offsetof(TkCursor, img),	nil,
+	"default",	OPTbool,	offsetof(TkCursor, def),	nil,
 	nil
 };
 
 static
 TkOption focusopts[] = {
-	"global",			OPTbool,	0,	nil,
+	"global",	OPTbool,	0,	nil,
 	nil
 };
 
@@ -101,11 +101,11 @@ tkseqparse(char *seq)
 
 	while(*seq && *seq != '>') {
 		seq = tkseqitem(buf, seq);
-	
-		for(i = 0; i < nelem(etab); i++)	
+
+		for(i = 0; i < nelem(etab); i++)
 			if(strcmp(buf, etab[i].event) == 0)
 				break;
-	
+
 		if(i >= nelem(etab)) {
 			seq = tkextnparseseq(buf, seq, &event);
 			if (seq == nil) {
@@ -114,8 +114,8 @@ tkseqparse(char *seq)
 			}
 			continue;
 		}
-	
-	
+
+
 		switch(etab[i].action) {
 		case Cmask:
 			event |= etab[i].mask;
@@ -129,7 +129,7 @@ tkseqparse(char *seq)
 			if(r <= '~')
 				r &= 0x1f;
 			event |= TkKey|TKKEY(r);
-			break;	
+			break;
 		case Ckey:
 			seq = tkseqkey(&r, seq);
 			if(r != 0)
@@ -308,7 +308,7 @@ tkcmdbind(Tk *tk, int event, char *s, void *data)
 			c += snprint(c, len, "%.4X", TKKEY(event));
 			break;
 		case 'W':
-		        if (tk->name != nil) 
+		        if (tk->name != nil)
 			  c += snprint(c, len, "%s", tk->name->name);
 			break;
 		}
@@ -614,7 +614,7 @@ tkfocus(TkTop *top, char *arg, char **ret)
 	tko[1].ptr = nil;
 
 	global = 0;
-	
+
 	names = nil;
 	e = tkparse(top, arg, tko, &names);
 	if (e != nil)
@@ -833,7 +833,7 @@ tkdestroy(TkTop *t, char *arg, char **ret)
 			continue;
 		if(tk->flag & Tkwindow) {
 			tkunmap(tk);
-			if((tk->name != nil) 
+			if((tk->name != nil)
 			   && (strcmp(tk->name->name, ".") == 0))
 				tk->flag &= ~Tkdestroy;
 			else
@@ -866,7 +866,7 @@ tkdestroy(TkTop *t, char *arg, char **ret)
 			*l = next;
 			continue;
 		}
-		l = &TKobj(TkWin, tk)->next;		
+		l = &TKobj(TkWin, tk)->next;
 	}
 	l = &t->root;
 	for(tk = t->root; tk; tk = next) {
@@ -963,7 +963,7 @@ tkcursorcmd(TkTop *t, char *arg, char **ret)
 	c.p.y = Notset;
 	c.bit = nil;
 	c.img = nil;
-	
+
 	USED(ret);
 
 	c.def = 0;
@@ -989,7 +989,7 @@ tkcursorcmd(TkTop *t, char *arg, char **ret)
 	}
 	if(locked)
 		unlockdisplay(d);
-	return e;	
+	return e;
 }
 
 char *
@@ -1013,7 +1013,7 @@ tkbindings(TkTop *t, Tk *tk, TkEbind *b, int blen)
 		}
 		e = tkaction(&tk->binds, b[i].event, TkStatic, cmd, how);
 	}
-	
+
 	if(e != nil)
 		return e;
 

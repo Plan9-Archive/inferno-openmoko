@@ -10,7 +10,7 @@ enum
 };
 
 static int quanta = Quanta;
-static int gce, gct = 1;
+static int gce = 0, gct = 1;
 
 typedef struct Ptrhash Ptrhash;
 struct Ptrhash
@@ -19,29 +19,36 @@ struct Ptrhash
 	Ptrhash	*next;
 };
 
-	int	nprop;
-	int	gchalt;
+	int	nprop = 0;
+	int	gchalt = 0;
 /*extern	int	mflag;*/
 	int	mutator = 0;
 	int	gccolor = 3;
 
-	ulong	gcnruns;
-	ulong	gcsweeps;
-	ulong	gcbroken;
-	ulong	gchalted;
-	ulong	gcepochs;
-	uvlong	gcdestroys;
-	uvlong	gcinspects;
+	ulong	gcnruns = 0;
+	ulong	gcsweeps = 0;
+	ulong	gcbroken = 0;
+	ulong	gchalted = 0;
+	ulong	gcepochs = 0;
+	uvlong	gcdestroys = 0;
+	uvlong	gcinspects = 0;
 
 static	int	marker  = 1;
 static	int	sweeper = 2;
+/*
 static	Bhdr*	base;
 static	Bhdr*	limit;
-Bhdr*	ptr;
-static	int	visit;
-extern	Pool*	heapmem;
-static	Ptrhash	*ptrtab[PTRHASH];
-static	Ptrhash	*ptrfree;
+Bhdr*	ptr;*/
+static	int	visit = 0;
+static	Ptrhash	*ptrtab[PTRHASH] = {0};
+static	Ptrhash	*ptrfree = 0;
+enum
+{
+	MAGIC_A		= 0xa110c,		/* Allocated block */
+	MAGIC_F		= 0xbadc0c0a,		/* Free block */
+	MAGIC_E		= 0xdeadbabe,		/* End of arena */
+	MAGIC_I		= 0xabba		/* Block is immutable (hidden from gc) */
+};
 
 #define	HASHPTR(p)	(((ulong)(p) >> 6) & (PTRHASH - 1))
 
@@ -108,14 +115,14 @@ markheap(Type *t, void *vw)
 	Heap *h;
 	uchar *p;
 	int i, c, m;
-	WORD **w, **q;
+	DISINT **w, **q;
 	Type *t1;
 
 	if(t == nil || t->np == 0)
 		return;
 
 	markdepth++;
-	w = (WORD**)vw;
+	w = (DISINT**)vw;
 	p = t->map;
 	for(i = 0; i < t->np; i++) {
 		c = *p++;
@@ -129,7 +136,7 @@ markheap(Type *t, void *vw)
 						gce--;
 						h->color = mutator;
 						if((t1 = h->t) != nil)
-							t1->mark(t1, H2D(void*, h));
+							t1->fnmark(t1, H2D(void*, h));
 					}
 				}
 				q++;
@@ -179,14 +186,14 @@ marklist(Type *t, void *vw)
 
 	USED(t);
 	l = vw;
-	markheap(l->t, l->data);
+	markheap(l->t, &l->data); /*?*/
 	while(visit > 0) {
 		l = l->tail;
 		if(l == H)
 			return;
 		h = D2H(l);
 		Setmark(h);
-		markheap(l->t, l->data);
+		markheap(l->t, &l->data);
 		visit--;
 	}
 	l = l->tail;
@@ -265,11 +272,9 @@ rootset(Prog *root)
 }
 
 static int
-okbhdr(Bhdr *b)
+oktag(int tag)
 {
-	if(b == nil)
-		return 0;
-	switch(b->magic) {
+	switch(tag) {
 	case MAGIC_A:
 	case MAGIC_F:
 	case MAGIC_E:
@@ -302,7 +307,7 @@ domflag(Heap *h)
 void
 rungc(Prog *p)
 {
-print("rungc\n");
+/*print("rungc pid=%d\n", p->pid);/**/
 /*
 	Type *t;
 	Heap *h;

@@ -154,9 +154,9 @@ FT_BEGIN_HEADER
   struct  FT_MemoryRec_
   {
     void*            user;
-    FT_Alloc_Func    alloc;
-    FT_Free_Func     free;
-    FT_Realloc_Func  realloc;
+    FT_Alloc_Func    fnalloc;
+    FT_Free_Func     fnfree;
+    FT_Realloc_Func  fnrealloc;
   };
 
 

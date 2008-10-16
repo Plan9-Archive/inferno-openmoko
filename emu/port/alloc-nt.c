@@ -241,6 +241,7 @@ void	poolwalk(Pool* pool, poolwalk_callback callback)
 	int err;
 	Bhdr* b;
 
+
 	print(	"name\t%s\n"
 		"alloc\t%lld\t%lld\n"
 		"free\t%lld\t%lld\n"
@@ -296,11 +297,12 @@ void	poolwalk(Pool* pool, poolwalk_callback callback)
 	if (err != ERROR_NO_MORE_ITEMS) {
 		panic("poolwalk: HeapWalk aborted with error %d", err);
 	}
-	if(!HeapUnlock(pool->handle))
-		panic("poolwalk: cannot unlock the heap %d", GetLastError());
 	print("\n");
 	print("walked\t%d\n", nblock);
 	print("\n");
+	assert(nblock == pool->nalloc-pool->nfree);
+	if(!HeapUnlock(pool->handle))
+		panic("poolwalk: cannot unlock the heap %d", GetLastError());
 }
 
 

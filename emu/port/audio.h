@@ -44,7 +44,7 @@ struct Audio_t {
 #define AUDIO_CMD_MAXNUM 32
 
 void audio_info_init(Audio_t*);
-int audioparse(char*, int n, Audio_t*);
+int audioparse(const char*, int n, Audio_t*);
 
 enum
 {
@@ -57,8 +57,8 @@ enum
 void	audio_file_init(void);
 void	audio_file_open(Chan*, int);
 long	audio_file_read(Chan*, void*, long, vlong);
-long	audio_file_write(Chan*, void*, long, vlong);
-long	audio_ctl_write(Chan*, void*, long, vlong);
+long	audio_file_write(Chan*, const void*, long, vlong);
+long	audio_ctl_write(Chan*, const void*, long, vlong);
 void	audio_file_close(Chan*);
 
 typedef struct _svp_t {

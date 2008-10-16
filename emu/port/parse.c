@@ -6,7 +6,7 @@
  * Generous estimate of number of fields, including terminal nil pointer
  */
 static int
-ncmdfield(char *p, int n)
+ncmdfield(const char *p, int n)
 {
 	int white, nwhite;
 	char *ep;
@@ -31,7 +31,7 @@ ncmdfield(char *p, int n)
  *  parse a command written to a device
  */
 Cmdbuf*
-parsecmd(char *p, int n)
+parsecmd(const char *p, int n)
 {
 	Cmdbuf *volatile cb;
 	int nf;

@@ -4,7 +4,6 @@
 #include "tk.h"
 #include "canvs.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
 
 /* Rectangle Options (+ means implemented)
 	+fill
@@ -24,17 +23,17 @@ struct TkCrect
 static
 TkOption rectopts[] =
 {
-	"width",	OPTnnfrac,	O(TkCrect, width),	nil,
-	"stipple",	OPTbmap,	O(TkCrect, stipple),	nil,
+	"width",	OPTnnfrac,	offsetof(TkCrect, width),	nil,
+	"stipple",	OPTbmap,	offsetof(TkCrect, stipple),	nil,
 	nil
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	O(TkCitem, tags),	nil,
-	"fill",		OPTcolr,	O(TkCitem, env),	IAUX(TkCfill),
-	"outline",	OPTcolr,	O(TkCitem, env),	IAUX(TkCforegnd),
+	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
+	"fill",		OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCfill),
+	"outline",	OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCforegnd),
 	nil
 };
 

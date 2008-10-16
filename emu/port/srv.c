@@ -26,9 +26,9 @@ Srv_iph2a(void *fp)
 	char *hostv[10];
 	void *r;
 
-	f = fp;
+	f = (F_Srv_iph2a*)fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (List*)H;
 	destroy(r);
 	release();
 	qlock(&dbq);
@@ -52,14 +52,14 @@ Srv_iph2a(void *fp)
 		memmove(ss->Sascii, hostv[i], n);
 		free(hostv[i]);
 
-		hpt = nheap(sizeof(List) + IBY2WD);
+		hpt = nheap(sizeof(List) + sizeof(String*));
 		hpt->t = &Tlist;
 		hpt->t->ref++;
 		nl = H2D(List*, hpt);
 		nl->t = &Tptr;
 		Tptr.ref++;
 		nl->tail = (List*)H;
-		*(String**)nl->data = ss;
+		nl->data.pstring = ss;
 
 		*h = nl;
 		h = &nl->tail;
@@ -78,9 +78,9 @@ Srv_ipa2h(void *fp)
 	char *hostv[10];
 	void *r;
 
-	f = fp;
+	f = (F_Srv_ipa2h*)fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (List*)H;
 	destroy(r);
 	release();
 	qlock(&dbq);
@@ -104,14 +104,14 @@ Srv_ipa2h(void *fp)
 		memmove(ss->Sascii, hostv[i], n);
 		free(hostv[i]);
 
-		hpt = nheap(sizeof(List) + IBY2WD);
+		hpt = nheap(sizeof(List) + sizeof(String*));
 		hpt->t = &Tlist;
 		hpt->t->ref++;
 		nl = H2D(List*, hpt);
 		nl->t = &Tptr;
 		Tptr.ref++;
 		nl->tail = (List*)H;
-		*(String**)nl->data = ss;
+		nl->data.pstring = ss;
 
 		*h = nl;
 		h = &nl->tail;
@@ -127,9 +127,9 @@ Srv_ipn2p(void *fp)
 	F_Srv_ipn2p *f;
 	void *r;
 
-	f = fp;
+	f = (F_Srv_ipn2p*)fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (String*)H;
 	destroy(r);
 	release();
 	qlock(&dbq);

@@ -125,7 +125,7 @@ nprocs(void)
 }
 
 static Chan*
-archattach(char* spec)
+archattach(const char* spec)
 {
 	return devattach('a', spec);
 }
@@ -151,12 +151,12 @@ archopen(Chan* c, int omode)
 static void
 archclose(Chan* c)
 {
-	if((ulong)c->qid.path == Qregquery && c->aux != nil)
-		free(c->aux);
+	if((ulong)c->qid.path == Qregquery && c->aux.value != nil)
+		free(c->aux.value);
 }
 
 static long
-archread(Chan* c, void* a, long n, vlong offset)
+archread(Chan* c, char* a, long n, vlong offset)
 {
 	char *p;
 	Value *v;
@@ -171,7 +171,7 @@ archread(Chan* c, void* a, long n, vlong offset)
 		l = 0;
 		if((ulong)c->qid.path == Qcputype)
 			l = 4;
-		p = smalloc(READSTR);
+		p = (char*)smalloc(READSTR);
 		if(waserror()){
 			free(p);
 			nexterror();
@@ -182,10 +182,10 @@ archread(Chan* c, void* a, long n, vlong offset)
 		free(p);
 		break;
 	case Qregquery:
-		v = c->aux;
+		v = c->aux.value;
 		if(v == nil)
 			return 0;
-		p = smalloc(READSTR);
+		p = (char*)smalloc(READSTR);
 		if(waserror()){
 			free(p);
 			nexterror();
@@ -240,13 +240,13 @@ archread(Chan* c, void* a, long n, vlong offset)
 		}
 		poperror();
 		free(p);
-		c->aux = nil;
+		c->aux.value = nil;
 		free(v);
 		break;
 	case Qhostmem:
 		mem.dwLength = sizeof(mem);
 		GlobalMemoryStatus(&mem);	/* GlobalMemoryStatusEx isn't on NT */
-		p = smalloc(READSTR);
+		p = (char*)smalloc(READSTR);
 		if(waserror()){
 			free(p);
 			nexterror();
@@ -267,7 +267,7 @@ archread(Chan* c, void* a, long n, vlong offset)
 }
 
 static long
-archwrite(Chan* c, void* a, long n, vlong offset)
+archwrite(Chan* c, const char* a, long n, vlong offset)
 {
 	Value *v;
 	int i;
@@ -277,9 +277,9 @@ archwrite(Chan* c, void* a, long n, vlong offset)
 	if((ulong)c->qid.path != Qregquery)
 		error(Eperm);
 	USED(offset);
-	if(c->aux != nil){
-		free(c->aux);
-		c->aux = nil;
+	if(c->aux.value != nil){
+		free(c->aux.value);
+		c->aux.value = nil;
 	}
 	cb = parsecmd(a, n);
 	if(waserror()){
@@ -306,7 +306,7 @@ archwrite(Chan* c, void* a, long n, vlong offset)
 	v = getregistry(roots[i].root, key, item);
 	if(v == nil)
 		error(up->env->errstr);
-	c->aux = v;
+	c->aux.value = v;
 	poperror();
 	free(item);
 	poperror();
@@ -371,7 +371,7 @@ getregistry(HKEY root, Rune *keyname, Rune *name)
 	res = RegQueryValueEx(key, name, NULL, &dtype, NULL, &n);
 	if(res != ERROR_SUCCESS)
 		regerr(res);
-	val = smalloc(sizeof(Value)+n);
+	val = (Value*)smalloc(sizeof(Value)+n);
 	if(waserror()){
 		free(val);
 		nexterror();
@@ -402,7 +402,7 @@ getregistry(HKEY root, Rune *keyname, Rune *name)
 		errorf("unsupported registry type: %d", dtype);
 		return nil;	/* for compiler */
 	}
-	res = RegQueryValueEx(key, name, NULL, NULL, vp, &n);
+	res = RegQueryValueEx(key, name, NULL, NULL, (LPBYTE)vp, &n);
 	if(res != ERROR_SUCCESS)
 		regerr(res);
 	poperror();

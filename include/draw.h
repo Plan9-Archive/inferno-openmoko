@@ -16,6 +16,7 @@ typedef struct	RGB RGB;
 typedef struct	Refreshq Refreshq;
 typedef struct	Screen Screen;
 typedef struct	Subfont Subfont;
+typedef struct	Chan Chan;
 
 #pragma varargck	type	"R"	Rectangle
 #pragma varargck	type	"P"	Point
@@ -193,9 +194,9 @@ struct Display
 	void		*qlock;
 	int		locking;	/*program is using lockdisplay */
 	int		dirno;
-	void		*datachan;
-	void		*refchan;
-	void		*ctlchan;
+	Chan		*datachan;
+	Chan		*refchan;
+	Chan		*ctlchan;
 	int		imageid;
 	int		local;
 	int		depth;
@@ -500,7 +501,9 @@ extern Subfont*	_getsubfont(Display*, char*);
 extern Subfont*	getdefont(Display*);
 extern int	lockdisplay(Display*);
 extern void	unlockdisplay(Display*);
-extern int	drawlsetrefresh(ulong, int, void*, void*);
+typedef struct	Memimage Memimage;
+typedef void (*Refreshfn)(Memimage*, Rectangle, void*); /* from memlayer.h */
+extern int	drawlsetrefresh(ulong, int, Refreshfn, void*);
 
 /* Compositing operator utility */
 extern void	_setdrawop(Display*, Drawop);
@@ -519,10 +522,10 @@ extern	Rectangle	ZR;
 extern	int	_cursorfd;
 extern	int	_drawdebug;	/* set to 1 to see errors from flushimage */
 
-#define	BGSHORT(p)		(((p)[0]<<0) | ((p)[1]<<8))
-#define	BGLONG(p)		((BGSHORT(p)<<0) | (BGSHORT(p+2)<<16))
-#define	BPSHORT(p, v)		((p)[0]=(v), (p)[1]=((v)>>8))
-#define	BPLONG(p, v)		(BPSHORT(p, (v)), BPSHORT(p+2, (v)>>16))
+#define	BGSHORT GBIT16
+#define	BGLONG  GBIT32
+#define	BPSHORT PBIT16
+#define	BPLONG  PBIT32
 
 /*
  * Compressed image file parameters

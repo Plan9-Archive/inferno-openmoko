@@ -267,7 +267,7 @@ dlclose(Chan *c)
 }
 
 static long
-dlread(Chan *c, void *a, long n, vlong voffset)
+dlread(Chan *c, char *a, long n, vlong voffset)
 {
 	switch((ulong)c->qid.path){
 	case Qdir:
@@ -283,7 +283,7 @@ dlread(Chan *c, void *a, long n, vlong voffset)
 }
 
 static long
-dlwrite(Chan *c, void *a, long n, vlong voffset)
+dlwrite(Chan *c, const char *a, long n, vlong voffset)
 {
 	Cmdbuf *cmd;
 	Cmdtab *ct;

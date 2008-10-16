@@ -1,11 +1,12 @@
-typedef uchar		BYTE;		/* 8  bits */
-typedef int		WORD;		/* 32 bits */
-typedef unsigned int	UWORD;		/* 32 bits */
-typedef vlong		LONG;		/* 64 bits */
-typedef uvlong		ULONG;		/* 64 bits */
-typedef double		REAL;		/* 64 double IEEE754 */
-typedef short		SHORT;		/* 16 bits */
-typedef float		SREAL;		/* 32 float IEEE754 */
+typedef unsigned char		DISBYTE;	/* 8  bits */
+typedef int			DISINT;		/* 32 bits */
+typedef unsigned int		DISUINT;	/* 32 bits, only for >> */
+typedef long long		DISBIG;		/* 64 bits */
+typedef unsigned long long	DISUBIG;	/* 64 bits, only for >> */
+typedef double			DISREAL;	/* 64 double IEEE754 */
+typedef short			DISINT16;	/* 16 bits */
+typedef float			DISREAL32;	/* 32 float IEEE754 */
+/*typedef void*			DISPOINTER;	/* for sizeof */
 
 enum ProgState
 {
@@ -17,6 +18,7 @@ enum ProgState
 	Prelease,			/* interpreter released */
 	Pexiting,			/* exit because of kill or error */
 	Pbroken,			/* thread crashed */
+	Pdeadbeef = 0xdeadbeef, /**/
 };
 
 enum
@@ -32,7 +34,8 @@ enum
 	STRUCTALIGN = sizeof(int)	/* must be >=2 because of Strings */
 };
 
-enum ProgFlags
+typedef int ProgFlags;
+enum
 {
 	Ppropagate = 1<<0,
 	Pnotifyleader = 1<<1,
@@ -65,14 +68,57 @@ typedef struct Atidle	Atidle;
 typedef struct Altc	Altc;
 typedef struct Except	Except;
 typedef struct Handler	Handler;
+typedef struct Osenv	Osenv;
+typedef struct Prog	Prog;
+typedef struct SrvFile	SrvFile;
+typedef union Disdata Disdata;
+
+
+struct Altc
+{
+	Channel*	c;
+	void*		ptr;
+};
+
+
+struct Alt
+{
+	int		nsend;
+	int		nrecv;
+	Altc		ac[1];
+};
+
+
+union Disdata
+{
+	DISBYTE		disbyte;
+	DISINT		disint;
+	DISBIG		disbig;
+	DISREAL		disreal;
+	DISINT16	disint16;
+	DISREAL32	disreal32;
+	List*		plist;
+	Channel*	pchannel;
+	Array*		parray;
+	String*		pstring;
+	Frame*		pframe;
+	Inst*		pinst;
+	Type*		ptype;
+	Disdata*	pdisdata;
+	Modlink*	pmodlink;
+	void*		pvoid;
+	Alt		alt; 		/* not a pointer */
+};
 
 struct Frame
 {
-	Inst*		lr;	/* REGLINK isa.h */
-	Frame*		fp;	/* REGFP */ /* parent frame */
-	Modlink*	mr;	/* REGMOD */
-	Type*		_t_;	/* REGTYPE */
-	/* REGRET */
+	Inst*		lr;		/* REGLINK isa.h */
+	Frame*		fp;		/* REGFP */ /* parent frame */
+	Modlink*	mr;		/* REGMOD */
+	Type*		_t_;		/* REGTYPE */
+	DISINT		_regret_;	/* REGRET */
+	DISINT		stmp;		/* for fixed-point */
+	DISINT		dtmp;		/* for fixed-point */
 };
 
 /**
@@ -80,17 +126,18 @@ struct Frame
  */
 struct Array
 {
-	WORD	len;
+	DISINT	len;			/* num elements in data */
 	Type*	t;
 	Array*	root;
-	uchar*	data;
+	char*	data;			/* usually =this+1 */
 };
 
 struct List
 {
 	List*	tail;
 	Type*	t;
-	WORD	data[1];
+	Disdata	data; 	/* may be incomplete, less in size then sizeof(Disdata), refer t for actual sizeof */
+			/* custom type is in-place here, while Disdata in REG may be as pointer */
 };
 
 struct Channel
@@ -98,10 +145,13 @@ struct Channel
 	Array*		buf;		/* For buffered channels - must be first */
 	Progq*		send;		/* Queue of progs ready to send */
 	Progq*		recv;		/* Queue of progs ready to receive */
-	void*		aux;		/* Rock for devsrv */
+	/*void*		aux;		/* Rock for devsrv */
+	union {
+		SrvFile*srv;		/* devsrv */
+	} aux;
 	void		(*mover)(void);	/* Data mover */
 	union {
-		WORD	w;
+		DISINT	w;
 		Type*	t;
 	} mid;
 	int		front;		/* Front of buffered queue */
@@ -153,8 +203,8 @@ struct Link
 typedef union	Adr	Adr;
 union Adr
 {
-	WORD		imm;
-	WORD		ind;
+	DISINT		imm;
+	DISINT		ind;
 	Inst*		ins;
 	struct {
 		ushort	f;		/* First indirection */
@@ -171,30 +221,20 @@ struct Inst
 	Adr		d;
 };
 
-struct Altc
-{
-	Channel*	c;
-	void*		ptr;
-};
-
-struct Alt
-{
-	int		nsend;
-	int		nrecv;
-	Altc		ac[1];
-};
-
 struct Type
 {
 	int		ref;
-	void		(*free)(Heap*, int);
-	void		(*mark)(Type*, void*);
+	const char*	comment;	/* debugging */
+	void		(*destructor)(Heap*, int);	/* usually freeheap with exception for files and some special types */
+	void		(*fnmark)(Type*, void*);	/* markheap, tkmarktop */
 	int		size;
 	int		np;		/* map size in bytes, 0 if there is no pointers */
 	void*		destroy;	/* JITted code */
 	void*		initialize;	/* JITted code */
 	uchar		map[STRUCTALIGN];
 };
+#define PRINT_TYPE(t) {int i; print("<%s %d %02X:", t->comment, t->size, t->np); for(i=0; i<t->np; i++) print("%02X", t->map[i]); print(">"); }
+
 
 struct REG
 {
@@ -203,13 +243,18 @@ struct REG
 	Frame*		FP;		/* Frame pointer */
 	Modlink*	M;		/* Module */
 	int		IC;		/* Instruction count for this quanta */
+#if OBJTYPE!=386
 	Inst*		xpc;		/* Saved program counter */
-	void*		s;		/* Source */
-	void*		d;		/* Destination */
-	void*		m;		/* Middle */
-	WORD		t;		/* Middle temporary */
-	WORD		st;		/* Source temporary */
-	WORD		dt;		/* Destination temporary */
+#endif
+	/* are they need to be here? */
+	Disdata*	s;		/* Source */
+	Disdata*	d;		/* Destination */
+	Disdata*	m;		/* Middle */
+	DISINT		t;		/* Middle temporary */
+#if OBJTYPE!=386
+	DISINT		st;		/* Source temporary */
+	DISINT		dt;		/* Destination temporary */
+#endif
 };
 
 /**
@@ -235,24 +280,27 @@ struct Prog
 	Prog*		link;		/* Run queue */
 	Channel*	chan;		/* Channel pointer */
 	void*		ptr;		/* Channel data pointer */
+	/*union {
+		WORD*	pword;
+	} ptr;*/
 	enum ProgState	state;		/* Scheduler state */
 	char*		kill;		/* Set if prog should error */
 	char*		killstr;	/* kill string buffer when needed */
 	int		pid;		/* unique Prog id */
 	int		quanta;		/* time slice */
 	ulong		ticks;		/* time used */ /* TODO: emu never writes the variable */
-	enum ProgFlags	flags;		/* error recovery flags */
+	ProgFlags	flags;		/* error recovery flags */
 	Prog*		prev;
 	Prog*		next;
 	Prog*		pidlink;	/* next in pid hash chain */
 	Progs*		group;		/* process group */
 	Prog*		grpprev;	/* previous group member */
 	Prog*		grpnext;	/* next group member */
-	void*		exval;		/* current exception */
+	String*		exval;		/* current exception */
 	char*		exstr;		/* last exception */
 	void		(*addrun)(Prog*);
 	void		(*xec)(Prog*);
-	void*		osenv;
+	Osenv*		osenv;
 };
 
 struct Module
@@ -312,8 +360,8 @@ struct Modlink
  */
 struct Heap
 {
-	int		color;		/* Allocation color */
-	ulong		ref;
+	int		color /*: 2*/;		/* Allocation color */
+	int		ref;
 	Type*		t;
 	ulong		hprof;		/* heap profiling */
 };
@@ -347,12 +395,14 @@ struct Handler
 	Except*	etab;
 };
 
-#define H2D(t, x)	((t)(((uchar*)(x))+sizeof(Heap)))
-#define D2H(x)		((Heap*)(((uchar*)(x))-sizeof(Heap)))
+#define H2D(t, x)	((t)((Heap*)(x)+1))
+#define D2H(x)		((Heap*)(x)-1)
+#define ADDREF(x)	(++((Heap*)(x)-1)->ref)
+#define DELREF(x)	(--((Heap*)(x)-1)->ref)
 #define H		((void*)(-1))
 #define Setmark(h)	if((h)->color!=mutator) { (h)->color = propagator; nprop=1; }
-#define gclock()	gchalt++
-#define gcunlock()	gchalt--
+#define gclock()	(gchalt++)
+#define gcunlock()	(gchalt--)
 #define gcruns()	(gchalt == 0)
 
 extern	int	bflag;
@@ -402,9 +452,9 @@ extern	Prog*		currun(void);
 extern	void		dbgexit(Prog*, int, char*);
 extern	void		dbgxec(Prog*);
 extern	void		delprog(Prog*, char*);
-extern	Prog*		delrun(int);
+extern	Prog*		delrun(enum ProgState);
 extern	void		delrunq(Prog*);
-extern	Prog*		delruntail(int);
+extern	Prog*		delruntail(enum ProgState);
 extern	void		destroy(void*);
 extern	void		destroyimage(ulong);
 extern	void		destroylinks(Module*);
@@ -412,7 +462,7 @@ extern	void		destroystack(REG*);
 extern	void		drawmodinit(void);
 extern	int		dynldable(int);
 extern	void		loadermodinit(void);
-extern	Type*		dtype(void (*)(Heap*, int), int, uchar*, int);
+extern	Type*		dtype(void (*destructor)(Heap*, int), int, uchar*, int, const char*comment);
 extern	Module*		dupmod(Module*);
 extern	NORETURN	error(char*);
 extern	NORETURN	errorf(char*, ...);
@@ -429,11 +479,18 @@ extern	long		getdbreg();
 extern	int		gfltconv(Fmt*);
 extern	void		go(Module*);
 extern	int		handler(char*);
-extern	Heap*		heap(Type*);
-extern	Heap*		heaparray(Type*, int);
 extern	void		(*heapmonitor)(int, void*, ulong);
 extern	int		heapref(void*);
-extern	Heap*		heapz(Type*);
+
+extern	Heap*		v_heap(Type*, const char*, int, const char*);
+extern	Heap*		v_heaparray(Type*, int, const char*, int, const char*);
+extern	Heap*		v_heapz(Type*, const char*, int, const char*);
+extern	Heap*		v_nheap(int, const char*, int, const char*);
+#define heap(t)			v_heap(t, __FILE__, __LINE__, __FUNCTION__)
+#define heaparray(t, sz)	v_heaparray(t, sz, __FILE__, __LINE__, __FUNCTION__)
+#define heapz(t)		v_heapz(t, __FILE__, __LINE__, __FUNCTION__)
+#define nheap(n)		v_nheap(n, __FILE__, __LINE__, __FUNCTION__)
+
 extern	int		hmsize(void*);
 extern	void		incmem(void*, Type*);
 extern	void		initarray(Type*, Array*);
@@ -455,10 +512,10 @@ extern	void		markheap(Type*, void*);
 extern	void		marklist(Type*, void*);
 extern	void		markmodl(Type*, void*);
 extern	void		mathmodinit(void);
-extern	Array*		mem2array(void*, int);
+extern	Array*		mem2array(const void*, int);
 extern	void		mlink(Module*, Link*, uchar*, int, int, Type*);
 extern	void		modinit(void);
-extern	WORD		modstatus(REG*, char*, int);
+extern	DISINT		modstatus(REG*, char*, int);
 extern	void		movp(void);
 extern	void		movtmp(void);
 extern	void		movtmpsafe(void);
@@ -470,7 +527,6 @@ extern	void		newgrp(Prog*);
 extern	void		newmp(void*, void*, Type*);
 extern	Prog*		newprog(Prog*, Modlink*);
 extern	void		newstack(Prog*);
-extern	Heap*		nheap(int);
 extern	void		noptrs(Type*, void*);
 extern	int		nprog(void);
 extern	void		opinit(void);
@@ -508,8 +564,6 @@ extern	void		sysinit(void);
 extern	void		sysmodinit(void);
 extern	void		tellsomeone(Prog*, char*);
 extern	void		tkmodinit(void);
-extern	void		unextend(Frame*);
-extern	void		unframe(void);
 extern	void		unload(Module*);
 extern	int		verifysigner(uchar*, int, uchar*, ulong);
 extern	void		xec(Prog*);
@@ -523,13 +577,11 @@ extern	int		runeslen(Rune*, int);
 extern	String*		c2string(char*, int);
 extern	char*		string2c(String*);
 extern	List*		cons(ulong, List**);
-extern	String*		slicer(ulong, ulong, String*);
+extern	String*		slicer(ulong, ulong, const String*);
 extern	String*		addstring(String*, String*, int);
 extern	int		brpatch(Inst*, Module*);
 extern	void		readimagemodinit(void);
 
-#define	O(t,e)		((long)(&((t*)0)->e))
-#define	OA(t,e)		((long)(((t*)0)->e))
 
 #pragma	varargck	type	"D"	Inst*
 #pragma varargck argpos errorf 1

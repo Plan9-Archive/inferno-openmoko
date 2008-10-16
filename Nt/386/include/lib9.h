@@ -1,9 +1,8 @@
-#define _POSIX_SOURCE
 #include <stdlib.h>
 #include <stdarg.h>
 #include <errno.h>
 #include <string.h>
-#include "math.h"
+#include <math.h>
 #include <fcntl.h>
 #include <setjmp.h>
 #include <float.h>
@@ -11,6 +10,14 @@
 #include <process.h>
 #include <io.h>
 #include <direct.h>
+/*#include <stddef.h>*/
+
+#ifdef __cplusplus
+#define this _this
+#define new _new
+#define public _public
+#define export _export
+#endif
 
 #define	getwd	infgetwd
 
@@ -37,42 +44,43 @@ typedef struct Proc Proc;
  * 4146 unary - on unsigned type
  * 4996 `deprecated' functions: they often suggest non-portable replacements
  */
-#pragma warning( disable : 4305 4244 4102 4761 4018 4245 4244 4068 4090 4554 4146 4996)
+#pragma warning( disable : 4305 4244 4102 4761 4018 4245 4244 4068 4090 4554 4146 4996 4237)
 
 #define NORETURN __declspec(noreturn) void
 
-#define	nil		((void*)0)
+#define	nil		NULL
 
 typedef unsigned char	uchar;
 typedef unsigned int	uint;
 typedef unsigned long	ulong;
 typedef signed char	schar;
 typedef unsigned short	ushort;
-typedef unsigned short	Rune;
+typedef wchar_t		Rune;
 typedef long long	vlong;
 typedef unsigned long long	uvlong;
-typedef unsigned int u32int;
 typedef unsigned int	mpdigit;	/* for /sys/include/mp.h */
-typedef unsigned short u16int;
-typedef unsigned char u8int;
+typedef unsigned long long	u64int;
+typedef unsigned int		u32int;
+typedef unsigned short		u16int;
+typedef unsigned char		u8int;
 typedef unsigned long uintptr;
 
 #define	USED(x)		if(x){}else{}
 #define	SET(x)
 
-#undef nelem
+/*#undef nelem*/
 #define	nelem(x)	(sizeof(x)/sizeof((x)[0]))
-#undef offsetof
-#define	offsetof(s, m)	(ulong)(&(((s*)0)->m))
-#undef assert
-#define	assert(x)	((x)||(_assert("assert failed: %s:%d %s %s", __FILE__, __LINE__, __FUNCTION__, #x),0))
+/* freetype macroses are not happy with stddef.h  although they are completely equal */
+#define offsetof(s,m)   (size_t)&(((s *)0)->m)
+extern NORETURN panic(char *fmt, ...);
+
+#define	assert(x)	((x)||(panic("assert failed: %s:%d %s %s", __FILE__, __LINE__, __FUNCTION__, #x),0))
 
 /*
  * most mem and string routines are declared by ANSI/POSIX files above
  */
 
 extern	char*	strecpy(char*, char*, char*);
-extern	char*	strdup(const char*);
 extern	int	cistrncmp(char*, char*, int);
 extern	int	cistrcmp(char*, char*);
 extern	char*	cistrstr(char*, char*);
@@ -91,30 +99,30 @@ enum
 /*
  * rune routines
  */
-extern	int	runetochar(char*, Rune*);
-extern	int	chartorune(Rune*, char*);
+extern	int	runetochar(char*, const Rune*);
+extern	int	chartorune(Rune*, const char*);
 extern	int	runelen(long);
-extern	int	runenlen(Rune*, int);
-extern	int	fullrune(char*, int);
-extern	int	utflen(char*);
-extern	int	utfnlen(char*, long);
-extern	char*	utfrune(char*, long);
-extern	char*	utfrrune(char*, long);
-extern	char*	utfutf(char*, char*);
-extern	char*	utfecpy(char*, char*, char*);
+extern	int	runenlen(const Rune*, int);
+extern	int	fullrune(const char*, int);
+extern	int	utflen(const char*);
+extern	int	utfnlen(const char*, long);
+extern	const char*	utfrune(const char*, long);
+extern	const char*	utfrrune(const char*, long);
+extern	const char*	utfutf(const char*, const char*);
+extern	char*	utfecpy(char*, const char*, const char*);
 
-extern	Rune*	runestrcat(Rune*, Rune*);
-extern	Rune*	runestrchr(Rune*, Rune);
-extern	int	runestrcmp(Rune*, Rune*);
-extern	Rune*	runestrcpy(Rune*, Rune*);
-extern	Rune*	runestrncpy(Rune*, Rune*, long);
-extern	Rune*	runestrecpy(Rune*, Rune*, Rune*);
-extern	Rune*	runestrdup(Rune*);
-extern	Rune*	runestrncat(Rune*, Rune*, long);
-extern	int	runestrncmp(Rune*, Rune*, long);
-extern	Rune*	runestrrchr(Rune*, Rune);
-extern	long	runestrlen(Rune*);
-extern	Rune*	runestrstr(Rune*, Rune*);
+extern	Rune*		runestrcat(Rune*, const Rune*);
+extern	const Rune*	runestrchr(const Rune*, Rune);
+extern	int		runestrcmp(const Rune*, const Rune*);
+extern	Rune*		runestrcpy(Rune*, const Rune*);
+extern	Rune*		runestrncpy(Rune*, const Rune*, long);
+extern	Rune*		runestrecpy(Rune*, const Rune*, const Rune*);
+extern	Rune*		runestrdup(const Rune*);
+extern	Rune*		runestrncat(Rune*, const Rune*, long);
+extern	int		runestrncmp(Rune*, Rune*, long);
+extern	const Rune*	runestrrchr(const Rune*, Rune);
+extern	long		runestrlen(const Rune*);
+extern	const Rune*	runestrstr(const Rune*, const Rune*);
 
 extern	Rune	tolowerrune(Rune);
 extern	Rune	totitlerune(Rune);
@@ -128,17 +136,68 @@ extern	int	isupperrune(Rune);
 /*
  * malloc
  */
+#if 0
 extern	void*	malloc(size_t);
-extern	void*	mallocz(ulong, int);
+extern	void*	mallocz(size_t, int);
 extern	void	free(void*);
-extern	ulong	msize(void*);
+extern	size_t	msize(void*);
 extern	void*	calloc(size_t, size_t);
 extern	void*	realloc(void*, size_t);
-extern	void		setmalloctag(void*, ulong);
-extern	void		setrealloctag(void*, ulong);
-extern	ulong	getmalloctag(void*);
-extern	ulong	getrealloctag(void*);
-extern	void*	malloctopoolblock(void*);
+
+//extern	void	setmalloctag(void*, ulong);
+//extern	void	setrealloctag(void*, ulong);
+//extern	ulong	getmalloctag(void*);
+//extern	ulong	getrealloctag(void*);
+//extern	void*	malloctopoolblock(void*);
+#else
+extern	void*	v_kmalloc(size_t size, const char*, int, const char*);
+extern	void*	v_smalloc(size_t size, const char*, int, const char*);
+extern	void*	v_malloc(size_t size, const char*, int, const char*);
+extern	void*	v_mallocz(size_t size, int clr, const char*, int, const char*);
+extern	void	v_free(void *v, const char*, int, const char*);
+extern	void*	v_realloc(void *v, size_t size, const char*, int, const char*);
+extern	void*	v_calloc(size_t num, size_t size, const char*, int, const char*);
+extern	size_t	v_msize(void *v, const char*, int, const char*);
+extern	char*	v_strdup(const char*, const char*, int, const char*);
+
+#define kmalloc(size)		v_kmalloc(size, __FILE__, __LINE__, __FUNCTION__)
+#define smalloc(size)		v_smalloc(size, __FILE__, __LINE__, __FUNCTION__)
+#define malloc(size)		v_malloc(size, __FILE__, __LINE__, __FUNCTION__)
+#define mallocz(size, clr)	v_mallocz(size, clr, __FILE__, __LINE__, __FUNCTION__)
+#define free(v)			v_free(v, __FILE__, __LINE__, __FUNCTION__)
+#define realloc(v, size)	v_realloc(v, size, __FILE__, __LINE__, __FUNCTION__)
+#define calloc(num, size)	v_calloc(num, size, __FILE__, __LINE__, __FUNCTION__)
+#define msize(v)		v_msize(v, __FILE__, __LINE__, __FUNCTION__)
+#define strdup(v)		v_strdup(v, __FILE__, __LINE__, __FUNCTION__)
+
+#endif
+
+#define	GBIT8(p)	(*((const u8int *)(p)))
+#define	PBIT8(p,v)	(*((u8int *)(p)) = (v))
+#if OBJTYPE==386
+/*little endian and unaligned read/write*/
+/*may not work on ARM*/
+#define	GBIT16(p)	(*((const u16int*)(p)))
+#define	GBIT32(p)       (*((const u32int*)(p)))
+#define	GBIT64(p)	(*((const u64int*)(p)))
+#define	PBIT16(p,v)	(*((u16int*)(p)) = (v))
+#define	PBIT32(p,v)	(*((u32int*)(p)) = (v))
+#define	PBIT64(p,v)	(*((u64int*)(p)) = (v))
+#else
+#define	GBIT16(p)	(GBIT8(p)|(GBIT8(p+1)<<8))
+#define	GBIT32(p)       (GBIT16(p)|(GBIT16(p+2)<<16))
+#define	GBIT64(p)	(GBIT32(p)|(GBIT32(p+4)<<32))
+#define	PBIT16(p,v)	(PBIT8(p,v),PBIT8(p+1,(v)>>8),(v))
+#define	PBIT32(p,v)	(PBIT16(p,v),PBIT16(p+2,(v)>>16),(v))
+#define	PBIT64(p,v)	(PBIT32(p,v),PBIT32(p+4,(v)>>32),(v))
+#endif
+
+#define	GBIT16BE(p)	((GBIT8(p)<<8)|GBIT8(p+1))
+#define	GBIT32BE(p)	((GBIT16BE(p)<<16)|GBIT16BE(p+2))
+#define	GBIT64BE(p)	((GBIT32BE(p)<<32)|GBIT32BE(p+4))
+#define	PBIT16BE(p,v)	(PBIT8(p,(v)>>8),PBIT8(p+1,v),(v))
+#define	PBIT32BE(p,v)	(PBIT16BE(p,(v)>>16),PBIT16BE(p+2,v),(v))
+#define	PBIT64BE(p,v)	(PBIT32BE(p,(v)>>32),PBIT32BE(p+4,v),(v))
 
 /*
  * print routines
@@ -172,7 +231,7 @@ enum{
 	FmtLong		= FmtShort << 1,
 	FmtVLong	= FmtLong << 1,
 	FmtComma	= FmtVLong << 1,
-	FmtByte	= FmtComma << 1,
+	FmtByte		= FmtComma << 1,
 
 	FmtFlag		= FmtByte << 1
 };
@@ -303,14 +362,14 @@ extern	void	lock(Lock*);
 extern	void	unlock(Lock*);
 extern	int	canlock(Lock*);
 
-typedef struct QLock QLock;
+typedef
 struct QLock
 {
 	Lock	use;			/* to access Qlock structure */
 	Proc	*head;			/* next process waiting for object */
 	Proc	*tail;			/* last process waiting for object */
 	int	locked;			/* flag */
-};
+} QLock;
 
 extern	void	qlock(QLock*);
 extern	void	qunlock(QLock*);

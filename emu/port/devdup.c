@@ -39,7 +39,7 @@ dupgen(Chan *c, char *name, Dirtab *tab, int ntab, int s, Dir *dp)
 }
 
 static Chan*
-dupattach(char *spec)
+dupattach(const char *spec)
 {
 	return devattach('d', spec);
 }
@@ -51,7 +51,7 @@ dupwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-dupstat(Chan *c, uchar *db, int n)
+dupstat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, nil, 0, dupgen);
 }
@@ -97,14 +97,13 @@ dupclose(Chan *c)
 }
 
 static long
-dupread(Chan *c, void *va, long n, vlong offset)
+dupread(Chan *c, char *va, long n, vlong offset)
 {
-	char *a = va;
 	char buf[256];
 	int fd, twicefd;
 
 	if(c->qid.type == QTDIR)
-		return devdirread(c, a, n, nil, 0, dupgen);
+		return devdirread(c, va, n, nil, 0, dupgen);
 	twicefd = c->qid.path - 1;
 	fd = twicefd/2;
 	if(twicefd & 1){
@@ -123,7 +122,7 @@ dupread(Chan *c, void *va, long n, vlong offset)
 }
 
 static long
-dupwrite(Chan *c, void *a, long n, vlong o)
+dupwrite(Chan *c, const char *a, long n, vlong o)
 {
 	USED(c); USED(a); USED(n); USED(o);
 	panic("dupwrite");

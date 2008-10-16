@@ -3,7 +3,6 @@
 #include "tk.h"
 #include "canvs.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
 
 /* Line Options (+ means implemented)
 	+arrow
@@ -40,21 +39,21 @@ TkStab tkcapstyle[] =
 static
 TkOption lineopts[] =
 {
-	"arrow",	OPTstab,	O(TkCline, arrow),	tklines,
-	"arrowshape",	OPTfrac,	O(TkCline, shape[0]),	IAUX(3),
-	"width",	OPTnnfrac,	O(TkCline, width),	nil,
-	"stipple",	OPTbmap,	O(TkCline, stipple),	nil,
-	"smooth",	OPTstab,	O(TkCline, smooth),	tkbool,
-	"splinesteps",	OPTdist,	O(TkCline, steps),	nil,
-	"capstyle",	OPTstab,	O(TkCline, capstyle),	tkcapstyle,
+	"arrow",	OPTstab,	offsetof(TkCline, arrow),	tklines,
+	"arrowshape",	OPTfrac,	offsetof(TkCline, shape[0]),	IAUX(3),
+	"width",	OPTnnfrac,	offsetof(TkCline, width),	nil,
+	"stipple",	OPTbmap,	offsetof(TkCline, stipple),	nil,
+	"smooth",	OPTstab,	offsetof(TkCline, smooth),	tkbool,
+	"splinesteps",	OPTdist,	offsetof(TkCline, steps),	nil,
+	"capstyle",	OPTstab,	offsetof(TkCline, capstyle),	tkcapstyle,
 	nil
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	O(TkCitem, tags),	nil,
-	"fill",		OPTcolr,	O(TkCitem, env),	IAUX(TkCforegnd),
+	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
+	"fill",		OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCforegnd),
 	nil
 };
 

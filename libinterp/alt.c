@@ -4,7 +4,7 @@
 #include "raise.h"
 
 #define OP(fn)	void fn(void)
-#define W(p)	*((WORD*)(p))
+//#define W(p)	*((DISINT*)(p))
 
 #define CANGET(c)	((c)->size > 0)
 #define CANPUT(c)	((c)->buf != H && (c)->size < (c)->buf->len)
@@ -44,7 +44,7 @@ altmark(Channel *c, Prog *p)
  * Remove alt references to an array of channels
  */
 static void
-altunmark(Channel *c, WORD *ptr, Prog *p, int sr, Channel **sel, int dn)
+altunmark(Channel *c, DISINT *ptr, Prog *p, int sr, Channel **sel, int dn)
 {
 	int n;
 	Array *a;
@@ -59,7 +59,7 @@ altunmark(Channel *c, WORD *ptr, Prog *p, int sr, Channel **sel, int dn)
 		if(c != H && c->recv->prog)
 			cqdelp(&c->recv, p);
 		if(sr == 1 && *sel == c) {
-			W(p->R.d) = dn;
+			p->R.d->disint = dn;
 			p->ptr = ptr + 1;
 			ptr[0] = n;
 			*sel = nil;
@@ -152,7 +152,7 @@ altdone(Alt *a, Prog *p, Channel *sel, int sr)
 				cqdelp(&c->send, p);
 			if(sr == 0 && c == sel) {
 				p->ptr = ac->ptr;
-				W(p->R.d) = n;
+				p->R.d->disint = n;
 				sel = nil;
 			}
 		}
@@ -172,7 +172,7 @@ altdone(Alt *a, Prog *p, Channel *sel, int sr)
 					cqdelp(&c->recv, p);
 				if(sr == 1 && c == sel) {
 					p->ptr = ac->ptr;
-					W(p->R.d) = n;
+					p->R.d->disint = n;
 					sel = nil;
 				}
 			}
@@ -191,7 +191,7 @@ altcomm(Alt *a, int which)
 	Type *t;
 	Array *r;
 	int n, an;
-	WORD *ptr;
+	DISINT *ptr;
 	Altc *ac, *eac;
 	Channel *c, **ca, **ec;
 
@@ -201,10 +201,10 @@ altcomm(Alt *a, int which)
 	while(ac < eac) {
 		c = ac->c;
 		if((c->recv->prog != nil || CANPUT(c)) && which-- == 0) {
-			W(R.d) = n;
+			R.d->disint = n;
 			R.s = ac->ptr;
 			R.d = &c;
-			isend();
+			isend(); /* FIXME: pass via R */
 			return;
 		}
 		ac++;
@@ -223,12 +223,12 @@ altcomm(Alt *a, int which)
 			while(ca < ec) {
 				c = *ca;
 				if(c != H && (c->send->prog != nil || CANGET(c)) && which-- == 0) {
-					W(R.d) = n;
+					R.d->disint = n;
 					R.s = &c;
 					ptr = ac->ptr;
 					R.d = ptr + 1;
 					ptr[0] = an;
-					irecv();
+					irecv();  /* FIXME: pass via R */
 					return;
 				}
 				ca++;
@@ -237,11 +237,11 @@ altcomm(Alt *a, int which)
 		}
 		else
 		if((c->send->prog != nil || CANGET(c)) && which-- == 0) {
-			W(R.d) = n;
+			R.d->disint = n;
 			R.s = &c;
 			R.d = ac->ptr;
-			irecv();
-			return;	
+			irecv();  /* FIXME: pass via R */
+			return;
 		}
 		ac++;
 		n++;
@@ -255,7 +255,7 @@ altgone(Prog *p)
 	Alt *a;
 
 	if (p->state == Palt) {
-		a = p->R.s;
+		a = &p->R.s->alt;
 		altdone(a, p, nil, -1);
 		p->kill = "alt channel hungup";
 		addrun(p);
@@ -272,7 +272,7 @@ xecalt(int block)
 
 	p = currun();
 
-	a = R.s;
+	a = &R.s->alt;
 	nrdy = altrdy(a, p);
 	if(nrdy == 0) {
 		if(block) {
@@ -283,7 +283,7 @@ xecalt(int block)
 			R.t = 1;
 			return;
 		}
-		W(R.d) = a->nsend + a->nrecv;
+		R.d->disint = a->nsend + a->nrecv;
 		altdone(a, p, nil, -1);
 		return;
 	}

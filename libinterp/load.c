@@ -79,19 +79,23 @@ load(char *path)
 	return readmod(path, nil, 0);
 }
 
+/**
+ * Type constructor
+ */
 Type*
-dtype(void (*destroy)(Heap*, int), int size, uchar *map, int mapsize)
+dtype(void (*destructor)(Heap*, int), int size, uchar *map, int mapsize, const char*comment)
 {
 	Type *t;
 
 	t = malloc(sizeof(Type)+mapsize);
 	if(t != nil) {
 		t->ref = 1;
-		t->free = destroy;
-		t->mark = markheap;
+		t->destructor = destructor;
+		t->fnmark = markheap;
 		t->size = size;
 		t->np = mapsize;
-		memmove(t->map, map, mapsize);
+		t->comment = comment;
+		memcpy(t->map, map, mapsize);
 	}
 	return t;
 }
@@ -135,7 +139,7 @@ brpatch(Inst *ip, Module *m)
 	case ISPAWN:
 		if(ip->d.imm < 0 || ip->d.imm >= m->nprog)
 			return 0;
-		ip->d.imm = (WORD)&m->prog[ip->d.imm];
+		ip->d.imm = (DISINT)&m->prog[ip->d.imm]; /* DIXME: int/ptr cast */
 		break;
 	}
 	return 1;
@@ -151,7 +155,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 	Module *m;
 	Array *ary;
 	ulong ul[2];
-	WORD lo, hi;
+	DISINT lo, hi;
 	int lsize, id, v, entry, entryt, tnp, tsz, siglen;
 	int de, pc, i, n, isize, dsize, hsize, dasp;
 	uchar *mod, sm, *istream, **isp, *si, *addr, *dastack[DADEPTH];
@@ -273,6 +277,8 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 		goto bad;
 	}
 	for(i = 0; i < hsize; i++) {
+		char *comment = malloc(256); /* TODO: debug, remove later */
+		sprint(comment, "%s.%d", path, i);
 		id = operand(isp);
 		if(id > hsize) {
 			kwerrstr("heap id range");
@@ -284,7 +290,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 			kwerrstr("implausible Dis file");
 			goto bad;
 		}
-		pt = dtype(freeheap, tsz, istream, tnp);
+		pt = dtype(freeheap, tsz, istream, tnp, comment);
 		if(pt == nil) {
 			kwerrstr(exNomem);
 			goto bad;
@@ -328,24 +334,24 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 			break;
 		case DEFW:
 			for(i = 0; i < n; i++) {
-				*(WORD*)si = disw(isp);
-				si += sizeof(WORD);
+				*(DISINT*)si = disw(isp);
+				si += sizeof(DISINT);
 			}
 			break;
 		case DEFL:
 			for(i = 0; i < n; i++) {
 				hi = disw(isp);
 				lo = disw(isp);
-				*(LONG*)si = (LONG)hi << 32 | (LONG)(ulong)lo;
-				si += sizeof(LONG);
+				*(DISBIG*)si = (DISBIG)hi << 32 | (DISBIG)(ulong)lo;
+				si += sizeof(DISBIG);
 			}
 			break;
 		case DEFF:
 			for(i = 0; i < n; i++) {
 				ul[0] = disw(isp);
 				ul[1] = disw(isp);
-				*(REAL*)si = canontod(ul);
-				si += sizeof(REAL);
+				*(DISREAL*)si = canontod(ul);
+				si += sizeof(DISREAL);
 			}
 			break;
 		case DEFA:			/* Array */

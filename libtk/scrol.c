@@ -2,8 +2,6 @@
 #include "draw.h"
 #include "tk.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 /* Layout constants */
 enum {
 	Triangle	= 10,	/* Height of scroll bar triangle */
@@ -42,16 +40,16 @@ enum {
 static
 TkOption opts[] =
 {
-	"activerelief",	OPTstab,	O(TkScroll, activer),	tkrelief,
-	"command",	OPTtext,	O(TkScroll, cmd),	nil,
+	"activerelief",	OPTstab,	offsetof(TkScroll, activer),	tkrelief,
+	"command",	OPTtext,	offsetof(TkScroll, cmd),	nil,
 	"elementborderwidth",	OPTignore,	0,	nil,	/* deprecated */
-	"jump",	OPTstab,	O(TkScroll, jump),	tkbool,
-	"orient",	OPTstab,	O(TkScroll, orient),	tkorient,
+	"jump",	OPTstab,	offsetof(TkScroll, jump),	tkbool,
+	"orient",	OPTstab,	offsetof(TkScroll, orient),	tkorient,
 	nil
 };
 
 static
-TkEbind b[] = 
+TkEbind b[] =
 {
 	{TkLeave,		"%W activate {}"},
 	{TkEnter,		"%W activate [%W identify %x %y]"},
@@ -70,18 +68,18 @@ tkinitscroll(Tk *tk)
 	TkScroll *tks;
 
 	tks = TKobj(TkScroll, tk);
-	
+
 	gap = 2*tk->borderwidth;
 	if(tks->orient == Tkvertical) {
 		if(tk->req.width == 0)
 			tk->req.width = Triangle + gap;
-		if(tk->req.height == 0)	
+		if(tk->req.height == 0)
 			tk->req.height = 2*Triangle + gap + 6*Elembw;
 	}
 	else {
 		if(tk->req.width == 0)
 			tk->req.width = 2*Triangle + gap + 6*Elembw;
-		if(tk->req.height == 0)	
+		if(tk->req.height == 0)
 			tk->req.height = Triangle + gap;
 	}
 
@@ -387,7 +385,7 @@ tkdrawscrlb(Tk *tk, Point orig)
 	return nil;
 }
 
-/* Widget Commands (+ means implemented)	
+/* Widget Commands (+ means implemented)
 	+activate
 	+cget
 	+configure
@@ -510,7 +508,7 @@ tkscrolldelta(Tk *tk, char *arg, char **val)
 		delta = TKI2F(atoi(buf)) / l;
 	tkfprint(buf, delta);
 
-	return tkvalue(val, "%s", buf);	
+	return tkvalue(val, "%s", buf);
 }
 
 static char*
@@ -524,7 +522,7 @@ tkscrollget(Tk *tk, char *arg, char **val)
 	*v++ = ' ';
 	tkfprint(v, tks->bot);
 
-	return tkvalue(val, "%s", buf);	
+	return tkvalue(val, "%s", buf);
 }
 
 static char*
@@ -611,7 +609,7 @@ tkScrolBut2P(Tk *tk, char *arg, char **val)
 	TkTop *t;
 	char *e, buf[Tkmaxitem], fracbuf[Tkmaxitem];
 	TkScroll *tks = TKobj(TkScroll, tk);
-	
+
 
 	USED(val);
 	t = tk->env->top;
@@ -640,7 +638,7 @@ sbrepeat(Tk *tk, void *v, int cancelled)
 		tks->flag &= ~Autorepeat;
 		return;
 	}
-		
+
 	if(tks->cmd != nil && fmt != nil) {
 		snprint(buf, sizeof(buf), fmt, tks->cmd);
 		e = tkexec(tk->env->top, buf, nil);
@@ -673,7 +671,7 @@ tkScrolBut1P(Tk *tk, char *arg, char **val)
 		return TkBadvl;
 
 	pix = atoi(buf);
-	
+
 	tks->dragpix = pix;
 	tks->dragtop = tks->top;
 	tks->dragbot = tks->bot;

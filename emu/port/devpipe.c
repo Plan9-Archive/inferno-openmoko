@@ -63,20 +63,20 @@ pipeinit(void)
  *  create a pipe, no streams are created until an open
  */
 static Chan*
-pipeattach(char *spec)
+pipeattach(const char *spec)
 {
 	Pipe *p;
 	Chan *c;
 
 	c = devattach('|', spec);
-	p = malloc(sizeof(Pipe));
+	p = (Pipe*)malloc(sizeof(Pipe));
 	if(p == 0)
 		error(Enomem);
 	if(waserror()){
 		freepipe(p);
 		nexterror();
 	}
-	p->pipedir = malloc(sizeof(pipedir));
+	p->pipedir = (Dirtab*)malloc(sizeof(pipedir));
 	if (p->pipedir == 0)
 		error(Enomem);
 	memmove(p->pipedir, pipedir, sizeof(pipedir));
@@ -98,7 +98,7 @@ pipeattach(char *spec)
 	c->qid.path = NETQID(2*p->path, Qdir);
 	c->qid.vers = 0;
 	c->qid.type = QTDIR;
-	c->aux = p;
+	c->aux.pipe = p;
 	c->dev = 0;
 	return c;
 }
@@ -119,7 +119,7 @@ pipegen(Chan *c, char *name, Dirtab *tab, int ntab, int i, Dir *dp)
 	if(tab==0 || i>=ntab)
 		return -1;
 	tab += i;
-	p = c->aux;
+	p = c->aux.pipe;
 	switch(NETTYPE(tab->qid.path)){
 	case Qdata0:
 		len = qlen(p->q[0]);
@@ -145,7 +145,7 @@ pipewalk(Chan *c, Chan *nc, char **name, int nname)
 	Walkqid *wq;
 	Pipe *p;
 
-	p = c->aux;
+	p = c->aux.pipe;
 	wq = devwalk(c, nc, name, nname, p->pipedir, nelem(pipedir), pipegen);
 	if(wq != nil && wq->clone != nil && wq->clone != c){
 		qlock(&p->l);
@@ -166,13 +166,13 @@ pipewalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-pipestat(Chan *c, uchar *db, int n)
+pipestat(Chan *c, char *db, int n)
 {
 	Pipe *p;
 	Dir dir;
 	Dirtab *tab;
 
-	p = c->aux;
+	p = c->aux.pipe;
 	tab = p->pipedir;
 
 	switch(NETTYPE(c->qid.path)){
@@ -213,7 +213,7 @@ pipeopen(Chan *c, int omode)
 
 	openmode(omode);	/* check it */
 
-	p = c->aux;
+	p = c->aux.pipe;
 	qlock(&p->l);
 	if(waserror()){
 		qunlock(&p->l);
@@ -244,7 +244,7 @@ pipeclose(Chan *c)
 {
 	Pipe *p;
 
-	p = c->aux;
+	p = c->aux.pipe;
 	qlock(&p->l);
 
 	if(c->flag & COPEN){
@@ -290,11 +290,11 @@ pipeclose(Chan *c)
 }
 
 static long
-piperead(Chan *c, void *va, long n, vlong junk)
+piperead(Chan *c, char *va, long n, vlong junk)
 {
 	Pipe *p;
 
-	p = c->aux;
+	p = c->aux.pipe;
 
 	USED(junk);
 	switch(NETTYPE(c->qid.path)){
@@ -315,7 +315,7 @@ pipebread(Chan *c, long n, ulong offset)
 {
 	Pipe *p;
 
-	p = c->aux;
+	p = c->aux.pipe;
 
 	switch(NETTYPE(c->qid.path)){
 	case Qdata0:
@@ -332,7 +332,7 @@ pipebread(Chan *c, long n, ulong offset)
  *  the prog.
  */
 static long
-pipewrite(Chan *c, void *va, long n, vlong junk)
+pipewrite(Chan *c, const char *va, long n, vlong junk)
 {
 	Pipe *p;
 	Prog *r;
@@ -348,7 +348,7 @@ pipewrite(Chan *c, void *va, long n, vlong junk)
 		nexterror();
 	}
 
-	p = c->aux;
+	p = c->aux.pipe;
 
 	switch(NETTYPE(c->qid.path)){
 	case Qdata0:
@@ -385,7 +385,7 @@ pipebwrite(Chan *c, Block *bp, ulong junk)
 		nexterror();
 	}
 
-	p = c->aux;
+	p = c->aux.pipe;
 	switch(NETTYPE(c->qid.path)){
 	case Qdata0:
 		n = qbwrite(p->q[1], bp);
@@ -405,7 +405,7 @@ pipebwrite(Chan *c, Block *bp, ulong junk)
 }
 
 static int
-pipewstat(Chan *c, uchar *dp, int n)
+pipewstat(Chan *c, char *dp, int n)
 {
 	Dir *d;
 	Pipe *p;
@@ -413,10 +413,10 @@ pipewstat(Chan *c, uchar *dp, int n)
 
 	if (c->qid.type&QTDIR)
 		error(Eperm);
-	p = c->aux;
+	p = c->aux.pipe;
 	if(strcmp(up->env->user, p->user) != 0)
 		error(Eperm);
-	d = smalloc(sizeof(*d)+n);
+	d = (Dir*)smalloc(sizeof(*d)+n);
 	if(waserror()){
 		free(d);
 		nexterror();

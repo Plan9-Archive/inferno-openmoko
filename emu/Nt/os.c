@@ -1,12 +1,13 @@
-#define Unknown win_Unknown
 #define UNICODE
 #include	<windows.h>
 #include	<Lmcons.h>
 #include	<winsock.h>
-#undef Unknown
+
 #include	"dat.h"
 #include	"fns.h"
 #include	"error.h"
+#include	"interp.h" /* debug */
+
 
 #define	MAXSLEEPERS	1500 /* WTF */
 
@@ -14,16 +15,16 @@ extern	int	cflag;
 
 DWORD	PlatformId;
 DWORD	consolestate;
-static	char*	path;
+static	char*	path = 0;
 static	HANDLE	kbdh = INVALID_HANDLE_VALUE;
 static	HANDLE	conh = INVALID_HANDLE_VALUE;
 static	HANDLE	errh = INVALID_HANDLE_VALUE;
 static	int	donetermset = 0;
 static	int sleepers = 0;
 
-	wchar_t	*widen(char *s);
-	char		*narrowen(wchar_t *ws);
-	int		widebytes(wchar_t *ws);
+	Rune	*widen(char *s);
+	char		*narrowen(Rune *ws);
+	int		widebytes(Rune *ws);
 	int		runeslen(Rune*);
 	Rune*	runesdup(Rune*);
 	Rune*	utftorunes(Rune*, char*, int);
@@ -98,7 +99,7 @@ tramp(LPVOID p)
 	if(sflag == 0)
 		SetUnhandledExceptionFilter(&TrapHandler); /* Win2000+, does not work on NT4 and Win95 */
 #endif
-	up = p;
+	up = (Proc*)p;
 	up->func(up->arg);
 	pexit("", 0);
 	/* not reached */
@@ -108,7 +109,7 @@ tramp(LPVOID p)
 }
 
 int
-kproc(char *name, void (*func)(void*), void *arg, enum KProcFlags flags)
+kproc(const char *name, void (*func)(void*), void *arg, KProcFlags flags)
 {
 	DWORD h;
 	Proc *p;
@@ -220,9 +221,34 @@ readkbd(void)
 	return buf[0];
 }
 
+int fdheap;
+void heapview_callback( void* v, size_t size, int tag,
+	const char* file, int line, const char* function, const char* comment)
+{
+	if(file==nil) file = "";
+	if(function==nil) function = "";
+	if(comment==nil) comment = "";
+	print("%08p %8d %8x %s:%d %s %s", v, size, tag, file, line, function, comment);
+	PRINT_TYPE(((Heap*)v)->t);
+	print("\n");
+	/*fprint(fdheap, "%08p %8d %8x %s:%d %s %s\n", v, size, tag, file, line, function, comment);*/
+}
+
+
 NORETURN
 cleanexit(int x)
 {
+	if (x == 0) {
+#if 1
+		/*fdheap = create("heap.log", O_WRONLY|O_TRUNC|O_CREAT, 0666);*/
+		/*print("fdheap=%d\n", fdheap);*/
+		//poolwalk(mainmem, heapview_callback);
+		poolwalk(heapmem, heapview_callback);
+		//poolwalk(imagmem, heapview_callback);
+		/*print("close=%d\n", fdheap);*/
+		/*close(fdheap);*/
+#endif
+	}
 	termrestore();
 	ExitProcess(x);
 }
@@ -272,6 +298,7 @@ TrapHandler(LPEXCEPTION_POINTERS ureg)
 
 	code = ureg->ExceptionRecord->ExceptionCode;
 	pc = ureg->ContextRecord->Eip;
+	print("TrapHandler code=%08uX pc=%08uX\n", code, pc);
 
 	name = nil;
 	for(i = 0; i < nelem(ecodes); i++) {
@@ -358,7 +385,7 @@ libinit(char *imod)
 	DWORD lasterror, namelen;
 	OSVERSIONINFO os;
 	char sys[64], uname[64];
-	WCHAR wuname[UNLEN + 1];
+	Rune wuname[UNLEN + 1];
 	char *uns;
 
 	os.dwOSVersionInfoSize = sizeof(os);
@@ -451,17 +478,19 @@ close(int fd)
 }
 
 int
-read(int fd, void *buf, uint n)
+read(int fd, void *buf, size_t n)
 {
-	if(!ReadFile(ntfd2h(fd), buf, n, &n, NULL))
+	DWORD bytes = n;
+	if(!ReadFile(ntfd2h(fd), buf, bytes, &bytes, NULL))
 		return -1;
 	return n;
 }
 
 int
-write(int fd, void *buf, uint n)
+write(int fd, const void *buf, size_t n)
 {
 	HANDLE h;
+	DWORD bytes = n;
 
 	if(fd == 1 || fd == 2){
 		if(!donetermset)
@@ -472,11 +501,12 @@ write(int fd, void *buf, uint n)
 			h = errh;
 		if(h == INVALID_HANDLE_VALUE)
 			return -1;
-		if(!WriteFile(h, buf, n, &n, NULL))
+		if(!WriteFile(h, buf, bytes, &bytes, NULL))
 			return -1;
 		return n;
 	}
-	if(!WriteFile(ntfd2h(fd), buf, n, &n, NULL))
+	panic("write to hande=%d (and where it was open? we do not have working open/create on Windows)");
+	if(!WriteFile(ntfd2h(fd), buf, bytes, &bytes, NULL))
 		return -1;
 	return n;
 }
@@ -650,7 +680,8 @@ limbosleep(ulong milsec)
 void
 osyield(void)
 {
-	Sleep(0);
+	/*Sleep(0);*/
+	Sleep(1); /* Sleep(0) does not yield well? */
 }
 
 NORETURN
@@ -666,27 +697,27 @@ segflush(void *a, ulong n)
 	return 0;
 }
 
-wchar_t *
+Rune *
 widen(char *s)
 {
 	int n;
-	wchar_t *ws;
+	Rune *ws;
 
 	n = utflen(s) + 1;
-	ws = smalloc(n*sizeof(wchar_t));
+	ws = (Rune*)smalloc(n*sizeof(wchar_t));
 	utftorunes(ws, s, n);
 	return ws;
 }
 
 
 char *
-narrowen(wchar_t *ws)
+narrowen(Rune *ws)
 {
 	char *s;
 	int n;
 
 	n = widebytes(ws);
-	s = smalloc(n);
+	s = (char*)smalloc(n);
 	runestoutf(s, ws, n);
 	return s;
 }

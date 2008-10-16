@@ -46,11 +46,11 @@ gqid(uchar *p, uchar *ep, Qid *q)
  * main switch statement checks range and also can fall through
  * to test at end of routine.
  */
-uint
-convM2S(uchar *ap, uint nap, Fcall *f)
+size_t
+convM2S(const char *ap, size_t nap, Fcall *f)
 {
-	uchar *p, *ep;
-	uint i, size;
+	const char *p, *ep;
+	size_t i, size;
 
 	p = ap;
 	ep = p + nap;

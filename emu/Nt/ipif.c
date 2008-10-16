@@ -39,16 +39,14 @@ so_socket(int type)
 }
 
 int
-so_send(int sock, void *va, int len, void *hdr, int hdrlen)
+so_send(int sock, const char *va, int len, const char *h, int hdrlen)
 {
 	int r;
 	struct sockaddr sa;
 	struct sockaddr_in *sin;
-	char *h = hdr;
-
 
 	osenter();
-	if(hdr == 0)
+	if(h == 0)
 		r = send(sock, va, len, 0);
 	else {
 		memset(&sa, sizeof(sa), 0);
@@ -107,7 +105,7 @@ doselect(int sock)
 }
 
 int
-so_recv(int sock, void *va, int len, void *hdr, int hdrlen)
+so_recv(int sock, char *va, int len, void *hdr, int hdrlen)
 {
 	int r, l;
 	struct sockaddr sa;
@@ -311,7 +309,7 @@ int
 so_gethostbyname(char *host, char**hostv, int n)
 {
 	int i;
-	unsigned char buf[32], *p;
+	char buf[32], *p;
 	struct hostent *hp;
 
 	hp = gethostbyname(host);

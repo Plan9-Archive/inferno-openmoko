@@ -10,8 +10,8 @@ extern	char*	hosttype;
 extern	char*	cputype;
 extern	char*	tkfont;	/* for libtk/utils.c */
 extern	int	tkstylus;	/* libinterp/tk.c */
-extern	int	Xsize	= 480; /* screen width in pixels */
-extern	int	Ysize	= 640; /* screen height in pixels */
+int	Xsize	= 480; /* screen width in pixels */
+int	Ysize	= 640; /* screen height in pixels */
 
 int	xtblbit = 0;
 char	*eve = 0; /* superuser name */
@@ -85,7 +85,7 @@ geom(char *val)
 	if (*p != '\0') return 0;
 	return 1;
 }
-
+/* BUG
 static void
 poolopt(char *str)
 {
@@ -113,7 +113,7 @@ poolopt(char *str)
 	}
 	if(poolsetsize(var, x) == 0)
 		usage();
-}
+}*/
 
 static void
 option(int argc, char *argv[], void (*badusage)(void))
@@ -159,7 +159,7 @@ option(int argc, char *argv[], void (*badusage)(void))
 			usage();
 		break;
 	case 'p':		/* pool option */
-		poolopt(EARGF(badusage()));
+		 /* BUG poolopt(EARGF(badusage())); */
 		break;
 	case 'f':		/* Set font path */
 		tkfont = EARGF(badusage());
@@ -198,7 +198,7 @@ savestartup(int argc, char *argv[])
 	int i;
 
 	rebootargc = argc;
-	rebootargv = malloc((argc+1)*sizeof(char*));
+	rebootargv = (char**)malloc((argc+1)*sizeof(char*));
 	if(rebootargv == nil)
 		panic("can't save startup args");
 	for(i = 0; i < argc; i++) {
@@ -363,9 +363,12 @@ sysfatal(char *fmt, ...)
 	va_end(arg);
 }
 
+extern char exBounds[];
 NORETURN
 error(char *err)
 {
+	/*if(err==exBounds)
+		__asm int 3;*/
 //	o("error '%s'\n",err);
 	if(err != up->env->errstr && up->env->errstr != nil)
 		kstrcpy(up->env->errstr, err, ERRMAX);
@@ -416,22 +419,25 @@ enverror(void)
 }
 
 NORETURN
-panic(char *fmt, ...)
+panicv(char *fmt, va_list arg)
 {
-	va_list arg;
-	char buf[512];
-
-	va_start(arg, fmt);
-	vseprint(buf, buf+sizeof(buf), fmt, arg);
-	va_end(arg);
-	fprint(2, "panic: %s\n", buf);
+	fprint(2, "panic: ");
+	vfprint(2, fmt, arg);
 	if(sflag)
 	{
 		__asm int 3;
-		abort();
 	}
+	cleanexit(1);
+}
 
-	cleanexit(0);
+NORETURN
+panic(char *fmt, ...)
+{
+	va_list arg;
+
+	va_start(arg, fmt);
+	panicv(fmt, arg);
+	va_end(arg);
 }
 
 int
@@ -450,16 +456,6 @@ iprint(char *fmt, ...)
 	return 1;
 }
 
-NORETURN
-_assert(char *fmt, ...)
-{
-	va_list arg;
-  	va_start(arg, fmt);
-	vfprint(2, fmt, arg);
-  	va_end(arg);
-	abort();
-}
-
 
 NORETURN
 _oserror(void)
@@ -467,15 +463,3 @@ _oserror(void)
 	oserrstr(up->env->errstr, ERRMAX);
 	error(up->env->errstr);
 }
-/*
-void
-oserrorf(char* fmt, ...)
-{
-	va_list arg;
-  	va_start(arg, fmt);
-	vfprint(2, fmt, arg);
-  	va_end(arg);
-
-	oserrstr(up->env->errstr, ERRMAX);
-	error(up->env->errstr);
-}*/

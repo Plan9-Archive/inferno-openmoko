@@ -257,8 +257,8 @@ common:
 
 #define CLASS(p) ((*(uchar*)(p))>>6)
 
-char*
-v4parseip(uchar *to, char *from)
+const char*
+v4parseip(char to[4], const char *from)
 {
 	int i;
 	char *p;
@@ -292,7 +292,7 @@ v4parseip(uchar *to, char *from)
 }
 
 int
-isv4(uchar *ip)
+isv4(const char ip[16])
 {
 	return memcmp(ip, v4prefix, IPv4off) == 0;
 }
@@ -303,7 +303,7 @@ isv4(uchar *ip)
  *  up the usual case
  */
 void
-v4tov6(uchar *v6, uchar *v4)
+v4tov6(char v6[16], const char v4[4])
 {
 	v6[0] = 0;
 	v6[1] = 0;
@@ -324,7 +324,7 @@ v4tov6(uchar *v6, uchar *v4)
 }
 
 int
-v6tov4(uchar *v4, uchar *v6)
+v6tov4(char v4[4], const char v6[16])
 {
 	if(v6[0] == 0
 	&& v6[1] == 0
@@ -351,7 +351,7 @@ v6tov4(uchar *v4, uchar *v6)
 }
 
 ulong
-parseip(uchar *to, char *from)
+parseip(char to[16], const char *from)
 {
 	int i, elipsis = 0, v4 = 1;
 	ulong x;
@@ -386,7 +386,7 @@ parseip(uchar *to, char *from)
 		to[10] = to[11] = 0xff;
 		return nhgetl(to+12);
 	} else
-		return 6;
+		return 6; /* FIXME: not a good magic */
 }
 
 /*
@@ -394,7 +394,7 @@ parseip(uchar *to, char *from)
  *  style
  */
 ulong
-parseipmask(uchar *to, char *from)
+parseipmask(char *to, const char *from)
 {
 	ulong x;
 	int i;
@@ -423,7 +423,7 @@ parseipmask(uchar *to, char *from)
 }
 
 void
-maskip(uchar *from, uchar *mask, uchar *to)
+maskip(const char *from, const char *mask, char *to)
 {
 	int i;
 
@@ -461,11 +461,11 @@ defmask(uchar *ip)
 /*
  *  parse a hex mac address
  */
-int
-parsemac(uchar *to, char *from, int len)
+size_t
+parsemac(char *to, const char *from, size_t len)
 {
 	char nip[4];
-	char *p;
+	const char *p;
 	int i;
 
 	p = from;
@@ -485,13 +485,12 @@ parsemac(uchar *to, char *from, int len)
 	}
 	return i;
 }
-
+/*
 void
 hnputl(void *p, unsigned long v)
 {
-	unsigned char *a;
+	unsigned char *a = (unsigned char*)p;
 
-	a = p;
 	a[0] = v>>24;
 	a[1] = v>>16;
 	a[2] = v>>8;
@@ -501,9 +500,8 @@ hnputl(void *p, unsigned long v)
 void
 hnputs(void *p, unsigned short v)
 {
-	unsigned char *a;
+	unsigned char *a = (unsigned char *)p;
 
-	a = p;
 	a[0] = v>>8;
 	a[1] = v;
 }
@@ -511,15 +509,16 @@ hnputs(void *p, unsigned short v)
 unsigned long
 nhgetl(void *p)
 {
-	unsigned char *a;
-	a = p;
+	unsigned char *a = (unsigned char *)p;
+
 	return (a[0]<<24)|(a[1]<<16)|(a[2]<<8)|(a[3]<<0);
 }
 
 unsigned short
 nhgets(void *p)
 {
-	unsigned char *a;
-	a = p;
+	unsigned char *a = (unsigned char *)p;
+
 	return (a[0]<<8)|(a[1]<<0);
 }
+*/

@@ -4,8 +4,6 @@
 #include "tk.h"
 #include "label.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 /* Layout constants */
 enum {
 	CheckSpace = CheckButton + 2*CheckButtonBW + 2*ButtonBorder,
@@ -13,13 +11,13 @@ enum {
 
 TkOption tklabelopts[] =
 {
-	"text",		OPTtext,	O(TkLabel, text),	nil,
-	"label",	OPTtext,	O(TkLabel, text),	nil,
-	"underline",	OPTdist,	O(TkLabel, ul),		nil,
-	"justify",	OPTflag,	O(TkLabel, justify),	tkjustify,
-	"anchor",	OPTflag,	O(TkLabel, anchor),	tkanchor,
-	"bitmap",	OPTbmap,	O(TkLabel, bitmap),	nil,
-	"image",	OPTimag,	O(TkLabel, img),	nil,
+	"text",		OPTtext,	offsetof(TkLabel, text),	nil,
+	"label",	OPTtext,	offsetof(TkLabel, text),	nil,
+	"underline",	OPTdist,	offsetof(TkLabel, ul),		nil,
+	"justify",	OPTflag,	offsetof(TkLabel, justify),	tkjustify,
+	"anchor",	OPTflag,	offsetof(TkLabel, anchor),	tkanchor,
+	"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap),	nil,
+	"image",	OPTimag,	offsetof(TkLabel, img),	nil,
 	nil
 };
 
@@ -117,9 +115,9 @@ tksizelabel(Tk *tk)
 	Point p;
 	int w, h;
 	TkLabel *tkl;
-	
+
 	tkl = TKobj(TkLabel, tk);
-	if(tkl->anchor == 0)	
+	if(tkl->anchor == 0)
 		tkl->anchor = Tkcenter;
 
 	w = 0;
@@ -134,7 +132,7 @@ tksizelabel(Tk *tk)
 		w = Dx(tkl->bitmap->r) + 2*Bitpadx;
 		h = Dy(tkl->bitmap->r) + 2*Bitpady;
 	}
-	else 
+	else
 	if(tkl->text != nil) {
 		p = tkstringsize(tk, tkl->text);
 		w = p.x + 2*Textpadx;
@@ -221,7 +219,7 @@ tkfreelabel(Tk *tk)
 
 static void
 tktriangle(Point u, Image *i, TkEnv *e)
-{	
+{
 	int j;
 	Point p[3];
 
@@ -235,7 +233,7 @@ tktriangle(Point u, Image *i, TkEnv *e)
 	fillpoly(i, p, 3, ~0, tkgc(e, TkCbackgnddark), p[0]);
 	for(j = 0; j < 3; j++)
 		p[j].y -= 2;
-	
+
 	fillpoly(i, p, 3, ~0, tkgc(e, TkCbackgndlght), p[0]);
 }
 
@@ -403,7 +401,7 @@ tkdrawlabel(Tk *tk, Point orig)
 		u.x += Textpadx;
 		u.y += Textpady;
 		ct = tkgc(e, fgnd);
-		
+
 		p.y += (h - tkl->textheight) / 2;
 		o = tkdrawstring(tk, i, addpt(u, p), tkl->text, tkl->ul, ct, tkl->justify);
 		if(o != nil)

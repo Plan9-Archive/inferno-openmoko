@@ -17,8 +17,6 @@
 
 #define FLUSH() flushimage(tk->env->top->display, 1)
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 /* Layout constants */
 enum {
 	Textpadx	= 2,
@@ -48,8 +46,8 @@ struct TkDump
 static
 TkOption dumpopts[] =
 {
-	"sgml",		OPTbool,	O(TkDump, sgml),	nil,
-	"metrics",	OPTbool,	O(TkDump, metrics),	nil,
+	"sgml",		OPTbool,	offsetof(TkDump, sgml),	nil,
+	"metrics",	OPTbool,	offsetof(TkDump, metrics),	nil,
 	nil
 };
 
@@ -68,17 +66,17 @@ TkStab tkcompare[] =
 static
 TkOption textopts[] =
 {
-	"wrap",			OPTstab, O(TkText, opts[TkTwrap]),	tkwrap,
-	"spacing1",		OPTnndist, O(TkText, opts[TkTspacing1]),	(void *)O(Tk, env),
-	"spacing2",		OPTnndist, O(TkText, opts[TkTspacing2]),	(void *)O(Tk, env),
-	"spacing3",		OPTnndist, O(TkText, opts[TkTspacing3]),	(void *)O(Tk, env),
-	"tabs",			OPTtabs, O(TkText, tabs), 		(void *)O(Tk, env),
-	"xscrollcommand",	OPTtext, O(TkText, xscroll),		nil,
-	"yscrollcommand",	OPTtext, O(TkText, yscroll),		nil,
-	"insertwidth",		OPTnndist, O(TkText, inswidth),		nil,
-	"tagshare",		OPTwinp, O(TkText, tagshare),		nil,
-	"propagate",		OPTstab, O(TkText, propagate),	tkbool,
-	"selectborderwidth",	OPTnndist, O(TkText, sborderwidth), nil,
+	"wrap",			OPTstab, offsetof(TkText, opts[TkTwrap]),	tkwrap,
+	"spacing1",		OPTnndist, offsetof(TkText, opts[TkTspacing1]),	(void *)offsetof(Tk, env),
+	"spacing2",		OPTnndist, offsetof(TkText, opts[TkTspacing2]),	(void *)offsetof(Tk, env),
+	"spacing3",		OPTnndist, offsetof(TkText, opts[TkTspacing3]),	(void *)offsetof(Tk, env),
+	"tabs",			OPTtabs, offsetof(TkText, tabs), 		(void *)offsetof(Tk, env),
+	"xscrollcommand",	OPTtext, offsetof(TkText, xscroll),		nil,
+	"yscrollcommand",	OPTtext, offsetof(TkText, yscroll),		nil,
+	"insertwidth",		OPTnndist, offsetof(TkText, inswidth),		nil,
+	"tagshare",		OPTwinp, offsetof(TkText, tagshare),		nil,
+	"propagate",		OPTstab, offsetof(TkText, propagate),	tkbool,
+	"selectborderwidth",	OPTnndist, offsetof(TkText, sborderwidth), nil,
 	nil
 };
 
@@ -98,9 +96,9 @@ static TkEbind tktbinds[] = {
 	{TkKey|CNTL('b'),	"%W tkTextSetCursor insert-1c"},
 	{TkKey|Left,		"%W tkTextSetCursor insert-1c"},
 	{TkKey|CNTL('d'),	"%W delete insert"},
-	{TkKey|CNTL('e'),	"%W tkTextSetCursor {insert lineend}"}, 
-	{TkKey|End,		"%W tkTextSetCursor {insert lineend}"}, 
-	{TkKey|CNTL('>'),	"%W tkTextSetCursor {insert lineend}"}, 
+	{TkKey|CNTL('e'),	"%W tkTextSetCursor {insert lineend}"},
+	{TkKey|End,		"%W tkTextSetCursor {insert lineend}"},
+	{TkKey|CNTL('>'),	"%W tkTextSetCursor {insert lineend}"},
 	{TkKey|CNTL('f'),	"%W tkTextSetCursor insert+1c"},
 	{TkKey|Right,		"%W tkTextSetCursor insert+1c"},
 	{TkKey|CNTL('h'),	"%W tkTextDelIns -c"},
@@ -213,7 +211,7 @@ tktext(TkTop *t, char* arg, char **ret)
 
 	if(tkt->tabs == nil) {
 		tkt->tabs = malloc(sizeof(TkTtabstop));
-		if(tkt->tabs == nil) 
+		if(tkt->tabs == nil)
 			goto err;
 		tkt->tabs->pos = 8*tk->env->wzero;
 		tkt->tabs->justify = Tkleft;
@@ -612,7 +610,7 @@ tktdrawline(Image *i, Tk *tk, TkTline *l, Point deltait)
 			}
 			break;
 		case TkTmark:
-			if((it->imark != nil) 
+			if((it->imark != nil)
                            && strcmp(it->imark->name, "insert") == 0) {
 				cursorx = p.x - 1;
 			}
@@ -663,7 +661,7 @@ tktextcursordraw(Tk *tk, int color)
 	Image *i;
 
 	tkt = TKobj(TkText, tk);
-	
+
 	r = rectaddpt(tkt->cur_rec, subpt(tkt->deltaiv, tkt->deltatv));
 
 	/* check the cursor with widget boundary */
@@ -747,7 +745,7 @@ tktextcursor(Tk *tk, char* arg, char **ret)
  * Insert string s just before ins, but don't worry about geometry values.
  * Don't worry about doing wrapping correctly, but break long strings
  * into pieces to avoid bad behavior in the wrapping code of tktfixgeom.
- * If tagit != 0, use its tags, else use the intersection of tags of 
+ * If tagit != 0, use its tags, else use the intersection of tags of
  * non cont or mark elements just before and just after insertion point.
  * (At beginning and end of widget, just use the tags of one adjacent item).
  * Keep *ins up-to-date.
@@ -1038,7 +1036,7 @@ tktfixgeom(Tk *tk, TkTline *l1, TkTline *l2, int finalwidth)
 				it = l->next->items;
 				while(it->kind == TkTmark)
 					it = it->next;
-				
+
 				if(it->kind == TkTnewline || it->kind == TkTcontline) {
 					/* next line is empty; join it to this one by removing i */
 					ix.item = i;
@@ -1382,7 +1380,7 @@ tktprespace(Tk *tk, TkTline *l)
 	TkTitem *i;
 	TkEnv env;
 	int *opts;
-	
+
 	opts = mallocz(TkTnumopts*sizeof(int), 0);
 	if(opts == nil)
 		return 0;
@@ -1819,7 +1817,7 @@ tktview(Tk *tk, char *arg, char **val, int nl, int *posn, int max, int orient)
 			n = max;
 		*posn = n;
 	}
-	else	
+	else
 		return TkBadcm;
 
 	bot = max - (nl * 3 / 4);
@@ -2303,7 +2301,7 @@ tktextbutton1(Tk *tk, char *arg, char **val)
 	tktxyind(tk, p.x, p.y, &ix);
 	tkt->tflag &= ~TkTjustfoc;
 	c = tk->env->top->ctxt;
-	if(!(tk->flag&Tkdisabled) && c->tkkeygrab != tk 
+	if(!(tk->flag&Tkdisabled) && c->tkkeygrab != tk
                       && (tk->name != nil) && ix.item->kind != TkTwin) {
 		tkfocus(tk->env->top, tk->name->name, nil);
 		tkt->tflag |= TkTjustfoc;
@@ -2689,7 +2687,7 @@ tktextdump(Tk *tk, char *arg, char **val)
 				return e;
 			}
 		}
-		else {		
+		else {
 			ix2 = ix1;
 			tktadjustind(tkt, TkTbychar, &ix2);
 		}
@@ -2699,7 +2697,7 @@ tktextdump(Tk *tk, char *arg, char **val)
 	}
 	else
 		return TkBadix;
-	
+
 	if(tkdump.metrics != 0) {
 		fmtstrinit(&fmt);
 		if(fmtprint(&fmt, "%%Fonts\n") < 0)
@@ -2791,7 +2789,7 @@ tktextdump(Tk *tk, char *arg, char **val)
 				}
 				if(fmtprint(&fmt, " ") < 0)
 					return TkNomem;
-	
+
 			}
 			if(fmtprint(&fmt, "\n") < 0)
 				return TkNomem;

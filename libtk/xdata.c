@@ -2,8 +2,6 @@
 #include "draw.h"
 #include "tk.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 TkStab tkorient[] =
 {
 	"vertical",	Tkvertical,
@@ -98,7 +96,7 @@ TkStab tktabjust[] =
 	"left",		Tkleft,
 	"right",	Tkright,
 	"center",	Tkcenter,
-	"numeric",	Tknumeric,	
+	"numeric",	Tknumeric,
 	nil
 };
 
@@ -122,43 +120,43 @@ TkOption tkgeneric[] =
 {
  "actx",		OPTact,	0,	IAUX(0),
  "acty",		OPTact,	0,	IAUX(1),
- "actwidth",		OPTdist, O(Tk, act.width),	IAUX(O(Tk, env)),
- "actheight",		OPTdist, O(Tk, act.height),	IAUX(O(Tk, env)),
- "bd",			OPTnndist, O(Tk, borderwidth),	nil,
- "borderwidth",		OPTnndist, O(Tk, borderwidth),	nil,
- "highlightthickness",	OPTnndist, O(Tk, highlightwidth), nil,
- "height",		OPTsize, 0,			IAUX(O(Tk, env)),
- "width",		OPTsize, 0,			IAUX(O(Tk, env)),
- "relief",		OPTstab, O(Tk, relief),		tkrelief,
- "state",		OPTflag, O(Tk, flag),		tkstate,
- "font",		OPTfont, O(Tk, env),		nil,
- "foreground",		OPTcolr, O(Tk, env),		IAUX(TkCforegnd),
- "background",		OPTcolr, O(Tk, env),		IAUX(TkCbackgnd),
- "fg",			OPTcolr, O(Tk, env),		IAUX(TkCforegnd),
- "bg",			OPTcolr, O(Tk, env),		IAUX(TkCbackgnd),
- "selectcolor",		OPTcolr, O(Tk, env),		IAUX(TkCselect),
- "selectforeground",	OPTcolr, O(Tk, env),		IAUX(TkCselectfgnd),
- "selectbackground",	OPTcolr, O(Tk, env),		IAUX(TkCselectbgnd),
- "activeforeground",	OPTcolr, O(Tk, env),		IAUX(TkCactivefgnd),
- "activebackground",	OPTcolr, O(Tk, env),		IAUX(TkCactivebgnd),
- "highlightcolor",	OPTcolr, O(Tk, env),		IAUX(TkChighlightfgnd),
- "disabledcolor",	OPTcolr, O(Tk, env),		IAUX(TkCdisablefgnd),
- "padx",		OPTnndist, O(Tk, pad.x),		nil,
- "pady",		OPTnndist, O(Tk, pad.y),		nil,
- "takefocus",	OPTflag, O(Tk, flag),		tktakefocus,
+ "actwidth",		OPTdist, offsetof(Tk, act.width),	IAUX(offsetof(Tk, env)),
+ "actheight",		OPTdist, offsetof(Tk, act.height),	IAUX(offsetof(Tk, env)),
+ "bd",			OPTnndist, offsetof(Tk, borderwidth),	nil,
+ "borderwidth",		OPTnndist, offsetof(Tk, borderwidth),	nil,
+ "highlightthickness",	OPTnndist, offsetof(Tk, highlightwidth), nil,
+ "height",		OPTsize, 0,			IAUX(offsetof(Tk, env)),
+ "width",		OPTsize, 0,			IAUX(offsetof(Tk, env)),
+ "relief",		OPTstab, offsetof(Tk, relief),		tkrelief,
+ "state",		OPTflag, offsetof(Tk, flag),		tkstate,
+ "font",		OPTfont, offsetof(Tk, env),		nil,
+ "foreground",		OPTcolr, offsetof(Tk, env),		IAUX(TkCforegnd),
+ "background",		OPTcolr, offsetof(Tk, env),		IAUX(TkCbackgnd),
+ "fg",			OPTcolr, offsetof(Tk, env),		IAUX(TkCforegnd),
+ "bg",			OPTcolr, offsetof(Tk, env),		IAUX(TkCbackgnd),
+ "selectcolor",		OPTcolr, offsetof(Tk, env),		IAUX(TkCselect),
+ "selectforeground",	OPTcolr, offsetof(Tk, env),		IAUX(TkCselectfgnd),
+ "selectbackground",	OPTcolr, offsetof(Tk, env),		IAUX(TkCselectbgnd),
+ "activeforeground",	OPTcolr, offsetof(Tk, env),		IAUX(TkCactivefgnd),
+ "activebackground",	OPTcolr, offsetof(Tk, env),		IAUX(TkCactivebgnd),
+ "highlightcolor",	OPTcolr, offsetof(Tk, env),		IAUX(TkChighlightfgnd),
+ "disabledcolor",	OPTcolr, offsetof(Tk, env),		IAUX(TkCdisablefgnd),
+ "padx",		OPTnndist, offsetof(Tk, pad.x),		nil,
+ "pady",		OPTnndist, offsetof(Tk, pad.y),		nil,
+ "takefocus",	OPTflag, offsetof(Tk, flag),		tktakefocus,
  nil
 };
 
 TkOption tktop[] =
 {
-	"x",		OPTdist,	O(TkWin, req.x),		nil,
-	"y",		OPTdist,	O(TkWin, req.y),		nil,
+	"x",		OPTdist,	offsetof(TkWin, req.x),		nil,
+	"y",		OPTdist,	offsetof(TkWin, req.y),		nil,
 	nil
 };
 
 TkOption tktopdbg[] =
 {
-	"debug",	OPTbool,	O(TkTop, debug),	nil,
+	"debug",	OPTbool,	offsetof(TkTop, debug),	nil,
 	nil
 };
 
@@ -171,7 +169,7 @@ TkMethod *tkmethod[] =
 	&menubuttonmethod,	/* TKmenubutton */
 	&menumethod,	/* TKmenu */
 	&separatormethod,	/* TKseparator */
-	&cascademethod,	/* TKcascade */	
+	&cascademethod,	/* TKcascade */
 	&listboxmethod,	/* TKlistbox */
 	&scrollbarmethod,	/* TKscrollbar */
 	&textmethod,	/* TKtext */

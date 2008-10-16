@@ -101,6 +101,13 @@ enum
 	CCACHE	= 0x0080		/* client cache */
 };
 
+typedef struct Pipe Pipe;
+typedef struct Fsinfo Fsinfo;
+typedef struct SrvFile SrvFile;
+typedef struct Heapqry Heapqry;
+typedef struct Mntwalk Mntwalk;
+typedef struct Progctl Progctl;
+typedef struct Value Value;
 struct Chan
 {
 	Lock	l;
@@ -123,7 +130,19 @@ struct Chan
 	ulong	mountid;
 	Mntcache *mcp;			/* Mount cache pointer */
 	Mnt		*mux;		/* Mnt for clients using me for messages */
-	void*	aux;		/* device specific data */
+	/*void*	aux;*/
+	union {				/* device specific data */
+		Pipe*	pipe;		/* devpipe */
+		Fsinfo*	fsinfo;		/* devfs */
+		char*	pchar;		/* devsnarf */
+		int	i;		/* devprof */
+		SrvFile*srv;		/* devsrv */
+		Queue*	queue;		/* devprog */
+		Heapqry*heapqry;	/* devprog */
+		Mntwalk*mntwalk;	/* devprog */
+		Progctl*progctl;	/* devprog */
+		Value*	value;		/* devarch */
+	} aux;
 	Chan*	mchan;			/* channel to mounted server */
 	Qid	mqid;			/* qid of root of mount point */
 	Cname	*name;
@@ -143,18 +162,18 @@ struct Dev
 	char*	name;
 
 	void	(*init)(void);
-	Chan*	(*attach)(char*);
+	Chan*	(*attach)(const char*);
 	Walkqid*	(*walk)(Chan*, Chan*, char**, int);
-	int	(*stat)(Chan*, uchar*, int);
+	int	(*stat)(Chan*, char*, int);
 	Chan*	(*open)(Chan*, int);
-	void	(*create)(Chan*, char*, int, ulong);
+	void	(*create)(Chan*, const char*, int, ulong);
 	void	(*close)(Chan*);
-	long	(*read)(Chan*, void*, long, vlong);
+	long	(*read)(Chan*, char*, long, vlong);
 	Block*	(*bread)(Chan*, long, ulong);
-	long	(*write)(Chan*, void*, long, vlong);
+	long	(*write)(Chan*, const char*, long, vlong);
 	long	(*bwrite)(Chan*, Block*, ulong);
 	void	(*remove)(Chan*);
-	int	(*wstat)(Chan*, uchar*, int);
+	int	(*wstat)(Chan*, char*, int);
 };
 
 enum
@@ -168,11 +187,11 @@ struct Block
 {
 	Block*	next;
 	Block*	list;
-	uchar*	rp;			/* first unconsumed byte */
-	uchar*	wp;			/* first empty byte */
-	uchar*	lim;			/* 1 past the end of the buffer */
-	uchar*	base;			/* start of the buffer */
-	void	(*free)(Block*);
+	char*	rp;			/* first unconsumed byte */
+	char*	wp;			/* first empty byte */
+	char*	lim;			/* 1 past the end of the buffer */
+	char*	base;			/* start of the buffer */
+	void	(*fnfree)(Block*);
 	ulong	flag;
 };
 #define BLEN(s)	((s)->wp - (s)->rp)
@@ -358,6 +377,10 @@ struct Uqidtab
 /**
  * Kernel process' operating system environment
  */
+#ifdef _WIN32_WINNT
+	typedef struct User User; /* devfs.h */
+#endif
+typedef struct Progctl	Progctl;
 struct Osenv
 {
 	char*		syserrstr;	/* last error from a system call, errbuf0 or 1 */
@@ -371,17 +394,19 @@ struct Osenv
 	Rendez*		rend;		/* Synchro point */
 	Queue*		waitq;		/* Info about dead children */
 	Queue*		childq;		/* Info about children for debuggers */
-	void*		debug;		/* Debugging master */
+	Progctl*	debug;		/* Debugging master */
 	char*		user;		/* Inferno user name */
 	FPU		fpu;		/* Floating point thread state */
 	int		uid;		/* Numeric user id for host system */
 	int		gid;		/* Numeric group id for host system */
-	void*		ui;		/* User info for NT */
+#ifdef _WIN32_WINNT
+	User*		ui;		/* User info for NT */
+#endif
 };
 
-enum
+enum ProcType
 {
-	Unknown	= 0xdeadbabe,
+	PUnknown	= 0xdeadbabe,
 	IdleGC	= 0x16,
 	Interp	= 0x17,
 	BusyGC	= 0x18,
@@ -396,13 +421,14 @@ enum Syscalls
 	SYSCALL_SOCK_SELECT = 3
 };
 
+typedef struct Prog Prog;
 /**
  *	Kernel process
  *	Thread on Windows
  */
 struct Proc
 {
-	int		type;		/* interpreter or not */
+	enum ProcType	type;		/* interpreter or not */
 	char		text[KNAMELEN];
 	Proc*		qnext;		/* list of processes waiting on a Qlock */
 	long		pid;
@@ -423,8 +449,8 @@ struct Proc
 	char*		kstack;
 	void		(*func)(void*);	/* saved trampoline pointer for kproc */
 	void*		arg;		/* arg for invoked kproc function */
-	void*		iprog;		/* work for Prog after release */
-	void*		prog;		/* fake prog for slaves eg. exportfs */
+	Prog*		iprog;		/* work for Prog after release */
+	Prog*		prog;		/* fake prog for slaves eg. exportfs */
 	Osenv*		env;		/* effective operating system environment */
 	Osenv		defenv;		/* default env for slaves with no prog */
 	osjmpbuf	privstack;	/* private stack for making new kids */
@@ -437,7 +463,8 @@ struct Proc
 #define poperror()	up->nerr--
 #define	waserror()	(up->nerr++, ossetjmp(up->estack[up->nerr-1]))
 
-enum KProcFlags
+typedef int KProcFlags;
+enum
 {
 	KPDUPPG		= (1<<0),		/* Dup 'namespace, working dir and root' */
 	KPDUPFDG	= (1<<1),		/* Dup 'file descriptors' */
@@ -456,9 +483,9 @@ struct Procs
 struct Rootdata
 {
 	int	dotdot;
-	void	*ptr;
+	Dirtab*	ptr;
 	int	size;
-	int	*sizep;
+	int*	sizep;
 };
 
 extern	Dev*	devtab[];
@@ -510,9 +537,8 @@ struct Cmdtab
 };
 
 /* queue state bits,  Qmsg, Qcoalesce, and Qkick can be set in qopen */
-enum
+enum QueueState
 {
-	/* Queue.state */
 	Qstarve		= (1<<0),	/* consumer starved */
 	Qmsg		= (1<<1),	/* message stream */
 	Qclosed		= (1<<2),	/* queue has been closed/hungup */

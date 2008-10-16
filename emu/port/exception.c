@@ -44,7 +44,7 @@ void
 excinit(void)
 {
 	exstr = newstring(ERRMAX);
-	poolimmutable(D2H(exstr));
+	/* BUG poolimmutable(D2H(exstr)); */
 }
 
 static String*
@@ -54,7 +54,7 @@ newestring(char *estr)
 
 	if(waserror()){
 		setstr(exstr, estr);
-		D2H(exstr)->ref++;
+		ADDREF(exstr);
 		return exstr;
 	}
 	s = c2string(estr, strlen(estr));
@@ -91,8 +91,8 @@ handler(char *estr)
 	int str, ne;
 	ulong pc, newpc;
 	long eoff;
-	const Frame *f;
-	uchar **eadr;
+	Frame *f;
+	String ** eadr;
 	Type *zt;
 	Handler *h;
 	Except *e;
@@ -106,10 +106,12 @@ handler(char *estr)
 	p = currun();
 	if(*estr == 0 || p == nil)
 		return 0;
+
+	print("handler go on\n");
 	str = p->exval == H || D2H(p->exval)->t == &Tstring;
 	m = R.M;
 	if(m->compiled)
-		pc = (ulong)R.PC-(ulong)m->prog;
+		pc = (char*)R.PC-(char*)m->prog;
 	else
 		pc = R.PC-m->prog;
 	pc--;
@@ -135,7 +137,7 @@ handler(char *estr)
 		if(!str && f != R.FP){		/* becomes a string exception in immediate caller */
 			v = p->exval;
 			p->exval = *(String**)v;
-			D2H(p->exval)->ref++;
+			ADDREF(p->exval);
 			destroy(v);
 			str = 1;
 			continue;
@@ -159,7 +161,7 @@ found:
 
 		pc = modstatus(&R, name, sizeof(name));
 		n = 10+1+strlen(name)+1+strlen(estr)+1;
-		p->exstr = realloc(p->exstr, n);
+		p->exstr = (char*)realloc(p->exstr, n);
 		if(p->exstr != nil)
 			snprint(p->exstr, n, "%lud %s %s", pc, name, estr);
 	}
@@ -199,17 +201,17 @@ found:
 		freeptrs(f, zt);
 		initmem(zt, f);
 	}
-	eadr = (uchar**)((uchar*)f+eoff);
+	eadr = (String **)((char*)f+eoff);
 	destroy(*eadr);
 	*eadr = H;
 	if(p->exval == H)
-		*eadr = (uchar*)newestring(estr);	/* might fail */
+		*eadr = newestring(estr);	/* might fail */
 	else{
 		D2H(p->exval)->ref++;
 		*eadr = p->exval;
 	}
 	if(m->compiled)
-		R.PC = (Inst*)((ulong)m->prog+newpc);
+		R.PC = (Inst*)((char*)m->prog+newpc);
 	else
 		R.PC = m->prog+newpc;
 	memmove(&p->R, &R, sizeof(R));

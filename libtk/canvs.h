@@ -81,7 +81,7 @@ enum
 
 	TkCadd		= 0,
 	TkCfind,
-	
+
 	TkChash		= 32,
 
 	TkCarrowf	= (1<<0),
@@ -128,11 +128,11 @@ struct TkCimeth
 	char*	name;
 	char*	(*create)(Tk*, char *arg, char **val);
 	void	(*draw)(Image*, TkCitem*, TkEnv*);
-	void	(*free)(TkCitem*);
+	void	(*fnfree)(TkCitem*);
 	char*	(*coord)(TkCitem*, char*, int, int);
 	char*	(*cget)(TkCitem*, char*, char**);
 	char*	(*conf)(Tk*, TkCitem*, char*);
-	int		(*hit)(TkCitem*, Point);
+	int	(*hit)(TkCitem*, Point);
 };
 
 extern	TkCimeth	tkcimethod[];

@@ -131,7 +131,7 @@ tkclose(Chan* c)
 }
 
 static long
-tkread(Chan* c, void* a, long n, vlong offset)
+tkread(Chan* c, char* a, long n, vlong offset)
 {
 	USED(offset);
 	switch(c->qid.path & ~CHDIR){
@@ -147,7 +147,7 @@ tkread(Chan* c, void* a, long n, vlong offset)
 }
 
 static long
-tkwrite(Chan *c, void* a, long n, vlong offset)
+tkwrite(Chan *c, const char* a, long n, vlong offset)
 {
 	USED(c); USED(a); USED(n); USED(offset);
 	error(Ebadusefd);

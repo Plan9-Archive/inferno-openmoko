@@ -34,7 +34,7 @@ int
 vfprint(int fd, char *fmt, va_list args)
 {
 	Fmt f;
-	char buf[256];
+	char buf[256]; /* TODO */
 	int n;
 
 	fmtfdinit(&f, fd, buf, sizeof(buf));

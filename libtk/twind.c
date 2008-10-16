@@ -8,8 +8,6 @@
 #define imark u.mark
 #define iline u.line
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 static char* tktwincget(Tk*, char*, char**);
 static char* tktwinconfigure(Tk*, char*, char**);
 static char* tktwincreate(Tk*, char*, char**);
@@ -29,13 +27,13 @@ TkStab tkalign[] =
 static
 TkOption twinopts[] =
 {
-	"align",	OPTstab,	O(TkTwind, align),	tkalign,
-	"create",	OPTtext,	O(TkTwind, create),	nil,
-	"padx",		OPTnndist,	O(TkTwind, padx),	nil,
-	"pady",		OPTnndist,	O(TkTwind, pady),	nil,
-	"stretch",	OPTstab,	O(TkTwind, stretch),	tkbool,
-	"window",	OPTwinp,	O(TkTwind, sub),	nil,
-	"ascent",	OPTdist,	O(TkTwind, ascent), nil,
+	"align",	OPTstab,	offsetof(TkTwind, align),	tkalign,
+	"create",	OPTtext,	offsetof(TkTwind, create),	nil,
+	"padx",		OPTnndist,	offsetof(TkTwind, padx),	nil,
+	"pady",		OPTnndist,	offsetof(TkTwind, pady),	nil,
+	"stretch",	OPTstab,	offsetof(TkTwind, stretch),	tkbool,
+	"window",	OPTwinp,	offsetof(TkTwind, sub),	nil,
+	"ascent",	OPTdist,	offsetof(TkTwind, ascent), nil,
 	nil
 };
 
@@ -62,8 +60,8 @@ tktfindsubitem(Tk *sub, TkTindex *ix)
 		do {
 			if(ix->item->kind == TkTwin) {
 				isub = ix->item->iwin->sub;
-				if(isub != nil && 
-				   isub->name != nil && 
+				if(isub != nil &&
+				   isub->name != nil &&
 				   strcmp(isub->name->name, sub->name->name) == 0)
 				return 1;
 			}
@@ -208,7 +206,7 @@ tktwinchk(Tk *tk, TkTwind *w, Tk *oldsub)
 
 		if(sub->flag & Tkwindow)
 			return TkIstop;
-	
+
 		if(sub->master != nil || sub->parent != nil)
 			return TkWpack;
 
@@ -383,7 +381,7 @@ tktwinnames(Tk *tk, char *arg, char **val)
 	tktstartind(tkt, &ix);
 	fmt = "%s";
 	do {
-		if(ix.item->kind == TkTwin 
+		if(ix.item->kind == TkTwin
 		   && ix.item->iwin->sub != nil
                    && (ix.item->iwin->sub->name != nil)) {
 			e = tkvalue(val, fmt, ix.item->iwin->sub->name->name);

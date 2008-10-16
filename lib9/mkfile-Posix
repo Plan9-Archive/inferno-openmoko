@@ -2,6 +2,8 @@ TARGFILES=\
 	$IMPORTFILES\
 	create.$O\
 	seek.$O\
+	sysfatal.$O\
+	strdup.$O\
 	dirstat-posix.$O\
 	errstr-posix.$O\
 	getuser-posix.$O\

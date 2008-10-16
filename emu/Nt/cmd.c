@@ -73,8 +73,8 @@ ntquotedcmd(char **argv)
 	for(i=0,n=0; argv[i]; i++)
 		n += 2*strlen(argv[i]);
 	n++;
-	
-	cmd = malloc(n);
+
+	cmd = (char*)malloc(n);
 	if(cmd == nil)
 		return nil;
 	for(i=0,p=cmd; argv[i]; i++) {
@@ -212,7 +212,7 @@ Error:
 int
 oscmdwait(void *v, char *buf, int n)
 {
-	int status;
+	DWORD status;
 	HANDLE proc = (HANDLE)v;
 
 	/* need not worry about being interrupted */

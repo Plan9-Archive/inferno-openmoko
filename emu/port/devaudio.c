@@ -17,7 +17,7 @@ audioinit(void)
 }
 
 static Chan*
-audioattach(char *spec)
+audioattach(const char *spec)
 {
 	return devattach('A', spec);
 }
@@ -29,7 +29,7 @@ audiowalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-audiostat(Chan *c, uchar *db, int n)
+audiostat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, audiotab, nelem(audiotab), devgen);
 }
@@ -77,7 +77,7 @@ audioclose(Chan *c)
 static int ctlsummary(char*, int, Audio_t*);
 
 static long
-audioread(Chan *c, void *va, long count, vlong offset)
+audioread(Chan *c, char *va, long count, vlong offset)
 {
 	char *buf;
 	int n;
@@ -88,7 +88,7 @@ audioread(Chan *c, void *va, long count, vlong offset)
 	case Qaudio:
 		return audio_file_read(c, va, count, offset);
 	case Qaudioctl:
-		buf = smalloc(READSTR);
+		buf = (char*)smalloc(READSTR);
 		if(waserror()){
 			free(buf);
 			nexterror();
@@ -103,7 +103,7 @@ audioread(Chan *c, void *va, long count, vlong offset)
 }
 
 static long
-audiowrite(Chan *c, void *va, long count, vlong offset)
+audiowrite(Chan *c, const char *va, long count, vlong offset)
 {
 	switch(c->qid.path) {
 	case Qaudio:
@@ -119,7 +119,7 @@ static int str2val(svp_t*, char*, ulong*);
 static char* val2str(svp_t*, ulong);
 
 int
-audioparse(char* args, int len, Audio_t *t)
+audioparse(const char* args, int len, Audio_t *t)
 {
 	int i, n;
 	ulong v;

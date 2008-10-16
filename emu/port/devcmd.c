@@ -159,12 +159,12 @@ static void
 cmdinit(void)
 {
 	cmd.maxconv = 1000;
-	cmd.conv = mallocz(sizeof(Conv*)*(cmd.maxconv+1), 1);
+	cmd.conv = (Conv**)mallocz(sizeof(Conv*)*(cmd.maxconv+1), 1);
 	/* cmd.conv is checked by cmdattach, below */
 }
 
 static Chan *
-cmdattach(char *spec)
+cmdattach(const char *spec)
 {
 	Chan *c;
 
@@ -182,7 +182,7 @@ cmdwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-cmdstat(Chan *c, uchar *db, int n)
+cmdstat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, 0, 0, cmdgen);
 }
@@ -353,15 +353,14 @@ cmdclose(Chan *c)
 }
 
 static long
-cmdread(Chan *ch, void *a, long n, vlong offset)
+cmdread(Chan *ch, char *a, long n, vlong offset)
 {
 	Conv *c;
-	char *p, *cmds;
+	char *cmds;
 	int fd;
 
 	USED(offset);
 
-	p = a;
 	switch(TYPE(ch->qid)) {
 	default:
 		error(Eperm);
@@ -371,7 +370,7 @@ cmdread(Chan *ch, void *a, long n, vlong offset)
 		return devdirread(ch, a, n, 0, 0, cmdgen);
 	case Qctl:
 		sprint(up->genbuf, "%ld", CONV(ch->qid));
-		return readstr(offset, p, n, up->genbuf);
+		return readstr(offset, a, n, up->genbuf);
 	case Qstatus:
 		c = cmd.conv[CONV(ch->qid)];
 		cmds = "";
@@ -379,7 +378,7 @@ cmdread(Chan *ch, void *a, long n, vlong offset)
 			cmds = c->cmd->f[1];
 		snprint(up->genbuf, sizeof(up->genbuf), "cmd/%d %d %s %q %q\n",
 			c->x, c->inuse, c->state, c->dir, cmds);
-		return readstr(offset, p, n, up->genbuf);
+		return readstr(offset, a, n, up->genbuf);
 	case Qdata:
 	case Qstderr:
 		fd = 1;
@@ -409,7 +408,7 @@ cmdstarted(void *a)
 {
 	Conv *c;
 
-	c = a;
+	c = (Conv *)a;
 	return c->child != nil || c->error != nil || strcmp(c->state, "Execute") != 0;
 }
 
@@ -432,7 +431,7 @@ Cmdtab cmdtab[] = {
 };
 
 static long
-cmdwrite(Chan *ch, void *a, long n, vlong offset)
+cmdwrite(Chan *ch, const char *a, long n, vlong offset)
 {
 	int i, r;
 	Conv *c;
@@ -530,7 +529,7 @@ cmdwrite(Chan *ch, void *a, long n, vlong offset)
 }
 
 static int
-cmdwstat(Chan *c, uchar *dp, int n)
+cmdwstat(Chan *c, char *dp, int n)
 {
 	Dir *d;
 	Conv *cv;
@@ -541,7 +540,7 @@ cmdwstat(Chan *c, uchar *dp, int n)
 	case Qctl:
 	case Qdata:
 	case Qstderr:
-		d = malloc(sizeof(*d)+n);
+		d = (Dir*)malloc(sizeof(*d)+n);
 		if(d == nil)
 			error(Enomem);
 		if(waserror()){
@@ -576,7 +575,7 @@ cmdclone(char *user)
 	for(pp = cmd.conv; pp < ep; pp++) {
 		c = *pp;
 		if(c == nil) {
-			c = malloc(sizeof(Conv));
+			c = (Conv*)malloc(sizeof(Conv));
 			if(c == nil)
 				error(Enomem);
 			qlock(&c->l);
@@ -610,12 +609,11 @@ cmdclone(char *user)
 static void
 cmdproc(void *a)
 {
-	Conv *c;
+	Conv *c = (Conv *)a;
 	int n;
 	char status[ERRMAX];
 	void *t;
 
-	c = a;
 	qlock(&c->l);
 	if(Debug)
 		print("f[0]=%q f[1]=%q\n", c->cmd->f[0], c->cmd->f[1]);

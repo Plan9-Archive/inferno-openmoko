@@ -113,7 +113,7 @@ static struct {
 	ulong	lost;
 } memprof;
 
-extern	void	(*memmonitor)(int, ulong, ulong, ulong);
+/* BUG extern	void	(*memmonitor)(int, ulong, ulong, ulong); */
 extern	ulong	gcnruns;
 extern	ulong	gcsweeps;
 extern	ulong	gcbroken;
@@ -204,9 +204,11 @@ ismemdata(void *v)
 	return poolevents.full || poolevents.rd != poolevents.wr;
 }
 
-static char*
-memaudit(int pno, Bhdr *b)
+static void
+memaudit( void* v, size_t size, int tag,
+	const char* file, int line, const char* function, const char* comment)
 {
+	/* BUG
 	Pstate *p;
 
 	if(pno >= Npool)
@@ -241,6 +243,7 @@ memaudit(int pno, Bhdr *b)
 		return "bad magic number in block";
 	}
 	return nil;
+	*/
 }
 
 static void
@@ -253,7 +256,7 @@ mput4(uchar *m, ulong v)
 }
 
 static Chan*
-memattach(char *spec)
+memattach(const char *spec)
 {
 	return devattach('%', spec);
 }
@@ -265,7 +268,7 @@ memwalk(Chan *c, Chan *nc, char **name, int nname)
 }
 
 static int
-memstat(Chan *c, uchar *db, int n)
+memstat(Chan *c, char *db, int n)
 {
 	return devstat(c, db, n, memdir, nelem(memdir), devgen);
 }
@@ -273,6 +276,8 @@ memstat(Chan *c, uchar *db, int n)
 static Chan*
 memopen(Chan *c, int omode)
 {
+	return nil;
+	/* BUG
 	if(memmonitor != nil && c->qid.path != Qgc)
 		error(Einuse);
 	c = devopen(c, omode, memdir, nelem(memdir), devgen);
@@ -307,6 +312,7 @@ memopen(Chan *c, int omode)
 		break;
 	}
 	return c;
+	*/
 }
 
 static void
@@ -316,7 +322,7 @@ memclose(Chan *c)
 		return;
 	switch((ulong)c->qid.path) {
 	case Qevent:
-		memmonitor = nil;
+		/* BUG memmonitor = nil; */
 		poolevents.open = 0;
 		decref(&poolevents.inuse);
 		break;
@@ -325,14 +331,14 @@ memclose(Chan *c)
 		break;
 	case Qprof:
 		decref(&memprof.inuse);
-		memmonitor = nil;
+		/* BUG memmonitor = nil; */
 		break;
 	}
 
 }
 
 static long
-memread(Chan *c, void *va, long count, vlong offset)
+memread(Chan *c, char *va, long count, vlong offset)
 {
 	uchar *m;
 	char *e, *s;
@@ -355,6 +361,11 @@ memread(Chan *c, void *va, long count, vlong offset)
 		summary = 1;
 		/* fall through */
 	case Qstate:
+		poolwalk(mainmem, memaudit);
+		poolwalk(heapmem, memaudit);
+		poolwalk(imagmem, memaudit);
+		return 0;
+		/* BUG
 		if(offset == 0){
 			for(i=0; i<Npool; i++){
 				poolstate[i].ptr = &poolstate[i].state[3];
@@ -386,6 +397,7 @@ memread(Chan *c, void *va, long count, vlong offset)
 			}
 		}
 		return m-(uchar*)va;
+		*/
 	case Qevent:
 		while(!ismemdata(nil)){
 			poolevents.want = 1;
@@ -405,7 +417,7 @@ memread(Chan *c, void *va, long count, vlong offset)
 				poolevents.rd = 0;
 		}while(poolevents.rd != poolevents.wr);
 		poolevents.full = 0;
-		return m-(uchar*)va;
+		return m-va;
 	case Qprof:
 		if(offset == 0){
 			lock(&memprof.l);
@@ -422,9 +434,9 @@ memread(Chan *c, void *va, long count, vlong offset)
 			mput4(m+12, b->size);
 			m += 4*4;
 		}
-		return m-(uchar*)va;
+		return m-va;
 	case Qgc:
-		s = malloc(READSTR);
+		s = (char*)malloc(READSTR);
 		if(s == nil)
 			error(Enomem);
 		if(waserror()){
@@ -441,7 +453,7 @@ memread(Chan *c, void *va, long count, vlong offset)
 }
 
 static long
-memwrite(Chan *c, void *va, long count, vlong offset)
+memwrite(Chan *c, const char *va, long count, vlong offset)
 {
 	USED(offset);
 	USED(count);

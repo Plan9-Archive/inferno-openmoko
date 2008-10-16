@@ -3,8 +3,6 @@
 #include "tk.h"
 #include "canvs.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 /* Window Options (+ means implemented)
 	 +tags
 	 +width
@@ -16,17 +14,17 @@
 static
 TkOption windopts[] =
 {
-	"width",	OPTdist,	O(TkCwind, width),	nil,
-	"height",	OPTdist,	O(TkCwind, height),	nil,
-	"anchor",	OPTstab,	O(TkCwind, flags),	tkanchor,
-	"window",	OPTwinp,	O(TkCwind, sub),	nil,
+	"width",	OPTdist,	offsetof(TkCwind, width),	nil,
+	"height",	OPTdist,	offsetof(TkCwind, height),	nil,
+	"anchor",	OPTstab,	offsetof(TkCwind, flags),	tkanchor,
+	"window",	OPTwinp,	offsetof(TkCwind, sub),	nil,
 	nil
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	O(TkCitem, tags),	nil,
+	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
 	nil
 };
 
@@ -179,7 +177,7 @@ tkcvswindchk(Tk *tk, TkCwind *w, Tk *oldsub)
 		w->sub = oldsub;
 		if(sub == nil)
 			return nil;
-	
+
 		if(sub->flag & Tkwindow)
 			return TkIstop;
 
@@ -197,7 +195,7 @@ tkcvswindchk(Tk *tk, TkCwind *w, Tk *oldsub)
 		tksetbits(w->sub, Tksubsub);
 		sub->geom = tkcvswindgeom;
 		sub->destroyed = tkcvssubdestry;
-	
+
 		if(w->width == 0)
 			w->width = sub->req.width;
 		if(w->height == 0)

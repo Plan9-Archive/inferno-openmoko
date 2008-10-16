@@ -33,9 +33,9 @@ enum
 void
 prefabmodinit(void)
 {
-	TElement = dtype(freeheap, sizeof(PElement), elementmap, sizeof(elementmap));
-	TLayout = dtype(freeheap, Prefab_Layout_size, layoutmap, sizeof(layoutmap));
-	TCompound = dtype(freeprefabcompound, sizeof(PCompound), compoundmap, sizeof(compoundmap));
+	TElement = dtype(freeheap, sizeof(PElement), elementmap, sizeof(elementmap), "Prefab->Element");
+	TLayout = dtype(freeheap, Prefab_Layout_size, layoutmap, sizeof(layoutmap), "Prefab->Layout");
+	TCompound = dtype(freeprefabcompound, sizeof(PCompound), compoundmap, sizeof(compoundmap), "Prefab->Compound");
 	builtinmod("$Prefab", Prefabmodtab, Prefabmodlen);
 }
 
@@ -694,7 +694,7 @@ doselect(void *fp, int dotags)
 	F_Compound_select *f;
 	PCompound *pc;
 	PElement *pe;
-	WORD *val;
+	DISINT *val;
 	List *l;
 	Prefab_Element *t;
 	int i, lasti, ntag;
@@ -737,7 +737,7 @@ doselect(void *fp, int dotags)
 	else
 		highlight(pc, pe, i, 1);
 	/* val must be in shared memory, but stacks not shared */
-	val = malloc(sizeof(WORD));
+	val = malloc(sizeof(DISINT));
 	if(val == nil)
 		goto Bad;
 	for(;;){
@@ -781,7 +781,7 @@ doselect(void *fp, int dotags)
 			else
 				pe = element(pe, i, nil);
 			destroy(f->ret->t2);
-			D2H(pe)->ref++;
+			ADDREF(pe);
 			f->ret->t2 = &pe->e;
 			if(locked)
 				unlockdisplay(pc->display);

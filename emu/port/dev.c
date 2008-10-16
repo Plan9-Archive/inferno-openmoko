@@ -76,7 +76,7 @@ devshutdown(void)
 }
 
 Chan*
-devattach(int tc, char *spec)
+devattach(int tc, const char *spec)
 {
 	Chan *c;
 	char *buf;
@@ -128,7 +128,7 @@ devwalk(Chan *c, Chan *nc, char **name, int nname, Dirtab *tab, int ntab, Devgen
 		isdir(c);
 
 	alloc = 0;
-	wq = smalloc(sizeof(Walkqid)+(nname-1)*sizeof(Qid));
+	wq = (Walkqid*)smalloc(sizeof(Walkqid)+(nname-1)*sizeof(Qid));
 	if(waserror()){
 		if(alloc && wq->clone!=nil)
 			cclose(wq->clone);
@@ -210,7 +210,7 @@ Done:
 }
 
 int
-devstat(Chan *c, uchar *db, int n, Dirtab *tab, int ntab, Devgen *gen)
+devstat(Chan *c, char *db, int n, Dirtab *tab, int ntab, Devgen *gen)
 {
 	int i;
 	Dir dir;
@@ -371,7 +371,7 @@ devbwrite(Chan *c, Block *bp, ulong offset)
 }
 
 void
-devcreate(Chan *c, char *name, int mode, ulong perm)
+devcreate(Chan *c, const char *name, int mode, ulong perm)
 {
 	USED(c);
 	USED(name);
@@ -388,7 +388,7 @@ devremove(Chan *c)
 }
 
 int
-devwstat(Chan *c, uchar *dp, int n)
+devwstat(Chan *c, char *dp, int n)
 {
 	USED(c);
 	USED(dp);
@@ -398,7 +398,7 @@ devwstat(Chan *c, uchar *dp, int n)
 }
 
 int
-readstr(ulong off, char *buf, ulong n, char *str)
+readstr(ulong off, char *buf, ulong n, const char *str)
 {
 	int size;
 

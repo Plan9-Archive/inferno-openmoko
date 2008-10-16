@@ -3,8 +3,6 @@
 #include "tk.h"
 #include "canvs.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-
 typedef struct TkCpoly TkCpoly;
 struct TkCpoly
 {
@@ -37,20 +35,20 @@ TkStab tkwinding[] =
 static
 TkOption polyopts[] =
 {
-	"width",	OPTnnfrac,	O(TkCpoly, width),	nil,
-	"stipple",	OPTbmap,	O(TkCpoly, stipple),	nil,
-	"smooth",	OPTstab,	O(TkCpoly, smooth),	tkbool,
-	"splinesteps",	OPTdist,	O(TkCpoly, steps),	nil,
-	"winding",	OPTstab, O(TkCpoly, winding), tkwinding,
+	"width",	OPTnnfrac,	offsetof(TkCpoly, width),	nil,
+	"stipple",	OPTbmap,	offsetof(TkCpoly, stipple),	nil,
+	"smooth",	OPTstab,	offsetof(TkCpoly, smooth),	tkbool,
+	"splinesteps",	OPTdist,	offsetof(TkCpoly, steps),	nil,
+	"winding",	OPTstab, offsetof(TkCpoly, winding), tkwinding,
 	nil
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	O(TkCitem, tags),	nil,
-	"fill",		OPTcolr,	O(TkCitem, env),	IAUX(TkCfill),
-	"outline",	OPTcolr,	O(TkCitem, env),	IAUX(TkCforegnd),
+	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
+	"fill",		OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCfill),
+	"outline",	OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCforegnd),
 	nil
 };
 

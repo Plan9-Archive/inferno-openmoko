@@ -584,14 +584,14 @@ poolrealloc(Pool *p, void *v, ulong size)
 	return nv;
 }
 
-ulong
+size_t
 poolmsize(Pool *p, void *v)
 {
 	Bhdr *b;
 	ulong size;
 
 	if(v == nil)
-		return 0;
+		return -1;
 	lock(&p->l);
 	D2B(b, v);
 	size = b->size - BHDRSIZE;

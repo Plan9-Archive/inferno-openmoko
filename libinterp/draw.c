@@ -121,10 +121,10 @@ static int validrect(const Rectangle* r)
 void
 drawmodinit(void)
 {
-	TFont = dtype(freedrawfont, sizeof(DFont), fontmap, sizeof(fontmap));
-	TImage = dtype(freedrawimage, sizeof(DImage), imagemap, sizeof(imagemap));
-	TScreen = dtype(freedrawscreen, sizeof(DScreen), screenmap, sizeof(screenmap));
-	TDisplay = dtype(freedrawdisplay, sizeof(DDisplay), displaymap, sizeof(displaymap));
+	TFont = dtype(freedrawfont, sizeof(DFont), fontmap, sizeof(fontmap), "Draw->Font");
+	TImage = dtype(freedrawimage, sizeof(DImage), imagemap, sizeof(imagemap), "Draw->Image");
+	TScreen = dtype(freedrawscreen, sizeof(DScreen), screenmap, sizeof(screenmap), "Draw->Screen");
+	TDisplay = dtype(freedrawdisplay, sizeof(DDisplay), displaymap, sizeof(displaymap), "Draw->Display");
 	builtinmod("$Draw", Drawmodtab, Drawmodlen);
 }
 
@@ -420,14 +420,14 @@ Display_getwindow(void *fp)
 	if(screen != nil){
 		if(f->screen != H){
 			f->ret->t0 = f->screen;
-			D2H(f->screen)->ref++;
+			ADDREF(f->screen);
 		}else
 			f->ret->t0 = mkdrawscreen(screen, f->d);
 	}
 	if(image != nil){
 		if(f->image != H){
 			f->ret->t1 = f->image;
-			D2H(f->image)->ref++;
+			ADDREF(f->image);
 		}else
 			f->ret->t1 = mkdrawimage(image, f->ret->t0, f->d, nil);
 	}
@@ -1186,7 +1186,7 @@ Image_name(void *fp)
 		destroy(f->src->iname);
 		if(f->in){
 			f->src->iname = f->name;
-			D2H(f->name)->ref++;
+			ADDREF(f->name);
 		}else
 			f->src->iname = H;
 	}
@@ -1254,7 +1254,7 @@ Display_namedimage(void *fp)
 			unlockdisplay(d);
 	}else{
 		di->iname = f->name;
-		D2H(f->name)->ref++;
+		ADDREF(f->name);
 	}
 }
 
@@ -1319,11 +1319,11 @@ mkdrawscreen(Screen *s, Draw_Display *display)
 	ds = H2D(DScreen*, h);
 	ds->screen = s;
 	ds->drawscreen.fill = dfill;
-	D2H(dfill)->ref++;
+	ADDREF(dfill);
 	ds->drawscreen.image = dimage;
-	D2H(dimage)->ref++;
+	ADDREF(dimage);
 	ds->drawscreen.display = dimage->display;
-	D2H(dimage->display)->ref++;
+	ADDREF(dimage->display);
 	ds->drawscreen.id = s->id;
 	ds->dref = s->display->limbo;
 	ds->dref->ref++;
@@ -1349,11 +1349,11 @@ allocdrawscreen(Draw_Image *dimage, Draw_Image *dfill, int public)
 	ds = H2D(DScreen*, h);
 	ds->screen = s;
 	ds->drawscreen.fill = dfill;
-	D2H(dfill)->ref++;
+	ADDREF(dfill);
 	ds->drawscreen.image = dimage;
-	D2H(dimage)->ref++;
+	ADDREF(dimage);
 	ds->drawscreen.display = dimage->display;
-	D2H(dimage->display)->ref++;
+	ADDREF(dimage->display);
 	ds->drawscreen.id = s->id;
 	ds->dref = image->display->limbo;
 	ds->dref->ref++;
@@ -1410,7 +1410,7 @@ Display_publicscreen(void *fp)
 	ds->drawscreen.image =H;
 	ds->drawscreen.id = s->id;
 	ds->drawscreen.display = f->d;
-	D2H(f->d)->ref++;
+	ADDREF(f->d);
 	ds->dref = disp->limbo;
 	ds->dref->ref++;
 	*f->ret = &ds->drawscreen;
@@ -1493,11 +1493,11 @@ Font_build(void *fp)
 	dfont = H2D(DFont*, h);
 	dfont->font = font;
 	dfont->drawfont.name = f->name;
-	D2H(f->name)->ref++;
+	ADDREF(f->name);
 	dfont->drawfont.height = font->height;
 	dfont->drawfont.ascent = font->ascent;
 	dfont->drawfont.display = f->d;
-	D2H(f->d)->ref++;
+	ADDREF(f->d);
 	dfont->dref = disp->limbo;
 	dfont->dref->ref++;
 
@@ -1651,11 +1651,11 @@ Font_open(void *fp)
 	df = H2D(DFont*, h);
 	df->font = font;
 	df->drawfont.name = f->name;
-	D2H(f->name)->ref++;
+	ADDREF(f->name);
 	df->drawfont.height = font->height;
 	df->drawfont.ascent = font->ascent;
 	df->drawfont.display = f->d;
-	D2H(f->d)->ref++;
+	ADDREF(f->d);
 	df->dref = disp->limbo;
 	df->dref->ref++;
 	*f->ret = &df->drawfont;
@@ -1977,10 +1977,10 @@ mkdrawimage(Image *i, Draw_Screen *screen, Draw_Display *display, void *ref)
 	di->image = i;
 	di->drawimage.screen = screen;
 	if(screen != H)
-		D2H(screen)->ref++;
+		ADDREF(screen);
 	di->drawimage.display = display;
 	if(display != H)
-		D2H(display)->ref++;
+		ADDREF(display);
 	di->refreshptr = ref;
 
 	R2R(di->drawimage.r, i->r);
@@ -2190,7 +2190,7 @@ allocdrawimage(DDisplay *ddisplay, Draw_Rect r, ulong chan, Image *iimage, int r
 	di->drawimage.depth = chantodepth(chan);
 	di->drawimage.repl = repl;
 	di->drawimage.display = (Draw_Display*)ddisplay;
-	D2H(di->drawimage.display)->ref++;
+	ADDREF(di->drawimage.display);
 	di->drawimage.screen = H;
 	di->dref = ddisplay->display->limbo;
 	di->dref->ref++;

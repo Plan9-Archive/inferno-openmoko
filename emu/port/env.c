@@ -7,7 +7,7 @@ newegrp(void)
 {
 	Egrp	*e;
 
-	e = smalloc(sizeof(Egrp));
+	e = (Egrp*)smalloc(sizeof(Egrp));
 	if (e == nil)
 		error(Enomem);
 	e->r.ref = 1;
@@ -39,11 +39,11 @@ egrpcpy(Egrp *to, Egrp *from)
 	last = &to->entries;
 	qlock(&from->l);
 	for (e = from->entries; e != nil; e = e->next) {
-		ne = smalloc(sizeof(Evalue));
-		ne->var = smalloc(strlen(e->var)+1);
+		ne = (Evalue*)smalloc(sizeof(Evalue));
+		ne->var = (char*)smalloc(strlen(e->var)+1); /*TODO: strdup*/
 		strcpy(ne->var, e->var);
 		if (e->val) {
-			ne->val = smalloc(e->len);
+			ne->val = (char*)smalloc(e->len);
 			memmove(ne->val, e->val, e->len);
 			ne->len = e->len;
 		}
