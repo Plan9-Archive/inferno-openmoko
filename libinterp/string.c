@@ -4,14 +4,13 @@
 #include "raise.h"
 #include "pool.h"
 
-#define OP(fn)	void fn(void)
-extern REG R;
+#define OP(fn)	void fn(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr)
 
 OP(indc)
 {
 	int l;
-	ulong v = R.m->disint;
-	String *ss = R.s->pstring;
+	ulong v = rm->disint;
+	String *ss = rs->pstring;
 
 	if(ss == H)
 		error(exNilref);
@@ -27,7 +26,7 @@ OP(indc)
 			error(exBounds);
 		l = ss->Sascii[v];
 	}
-	R.d->disint = l;
+	rd->disint = l;
 }
 
 OP(insc)
@@ -36,9 +35,9 @@ OP(insc)
 	int l, r, expand;
 	String *ss, *ns;
 
-	r = R.s->disint;
-	v = R.m->disint;
-	ss = R.d->pstring;
+	r = rs->disint;
+	v = rm->disint;
+	ss = rd->pstring;
 
 	expand = r >= Runeself;
 
@@ -52,7 +51,7 @@ OP(insc)
 	}
 	else
 	if(D2H(ss)->ref > 1 || (expand && ss->len > 0))
-		ss = splitc(&R.d->pstring, expand);
+		ss = splitc(&rd->pstring, expand);
 
 	l = ss->len;
 	if(l < 0 || expand) {
@@ -94,9 +93,9 @@ r:
 			ss = ns;
 		}
 	}
-	if(ss != R.d->pstring) {
-		destroy(R.d->pstring);
-		R.d->pstring = ss;
+	if(ss != rd->pstring) {
+		destroy(rd->pstring);
+		rd->pstring = ss;
 	}
 }
 
@@ -134,10 +133,10 @@ slicer(ulong start, ulong v, const String *ds)
 
 OP(slicec)
 {
-	String *ns = slicer(R.s->disint, R.m->disint, R.d->pstring);
+	String *ns = slicer(rs->disint, rm->disint, rd->pstring);
 
-	destroy(R.d->pstring);
-	R.d->pstring = ns;
+	destroy(rd->pstring);
+	rd->pstring = ns;
 }
 
 void
@@ -218,11 +217,11 @@ addstring(String *s1, String *s2, int append)
 
 OP(addc)
 {
-	String *ns = addstring(R.m->pstring, R.s->pstring, R.m == R.d);
+	String *ns = addstring(rm->pstring, rs->pstring, rm == rd);
 
-	if(ns != R.d->pstring) {
-		destroy(R.d->pstring);
-		R.d->pstring = ns;
+	if(ns != rd->pstring) {
+		destroy(rd->pstring);
+		rd->pstring = ns;
 	}
 }
 
@@ -231,7 +230,7 @@ OP(cvtca)
 	int l;
 	Rune *r;
 	char *p;
-	String *ss = R.s->pstring;
+	String *ss = rs->pstring;
  	Array *a;
 
 	if(ss == H) {
@@ -249,60 +248,60 @@ OP(cvtca)
 	}
 	a = mem2array(ss->Sascii, ss->len);
 r:
-	destroy(R.d->parray);
-	R.d->parray = a;
+	destroy(rd->parray);
+	rd->parray = a;
 }
 
 OP(cvtac)
 {
-	Array *a = R.s->parray;
+	Array *a = rs->parray;
 	String *ds = H;
 
 	if(a != H)
 		ds = c2string((char*)a->data, a->len);
 
-	destroy(R.d->pstring);
-	R.d->pstring = ds;
+	destroy(rd->pstring);
+	rd->pstring = ds;
 }
 
 OP(lenc)
 {
 	int l = 0;
-	String *ss = R.s->pstring;
+	String *ss = rs->pstring;
 
 	if(ss != H) {
 		l = ss->len;
 		if(l < 0)
 			l = -l;
 	}
-	R.d->disint = l;
+	rd->disint = l;
 }
 
 OP(cvtcw)
 {
-	String *s = R.s->pstring;
+	String *s = rs->pstring;
 
 	if(s == H)
-		R.d->disint = 0;
+		rd->disint = 0;
 	else if(s->len < 0)
-		R.d->disint = strtol(string2c(s), nil, 10);
+		rd->disint = strtol(string2c(s), nil, 10);
 	else {
 		s->Sascii[s->len] = '\0';
-		R.d->disint = strtol(s->Sascii, nil, 10);
+		rd->disint = strtol(s->Sascii, nil, 10);
 	}
 }
 
 OP(cvtcf)
 {
-	String *s = R.s->pstring;
+	String *s = rs->pstring;
 
 	if(s == H)
-		R.d->disreal = 0.0;
+		rd->disreal = 0.0;
 	else if(s->len < 0)
-		R.d->disreal = strtod(string2c(s), nil);
+		rd->disreal = strtod(string2c(s), nil);
 	else {
 		s->Sascii[s->len] = '\0';
-		R.d->disreal = strtod(s->Sascii, nil);
+		rd->disreal = strtod(s->Sascii, nil);
 	}
 }
 
@@ -310,30 +309,30 @@ OP(cvtwc)
 {
 	String *ds = newstring(16);
 
-	ds->len = sprint(ds->Sascii, "%d", R.s->disint);
+	ds->len = sprint(ds->Sascii, "%d", rs->disint);
 
-	destroy(R.d->pstring);
-	R.d->pstring = ds;
+	destroy(rd->pstring);
+	rd->pstring = ds;
 }
 
 OP(cvtlc)
 {
 	String *ds = newstring(16);
 
-	ds->len = sprint(ds->Sascii, "%lld", R.s->disbig);
+	ds->len = sprint(ds->Sascii, "%lld", rs->disbig);
 
-	destroy(R.d->pstring);
-	R.d->pstring = ds;
+	destroy(rd->pstring);
+	rd->pstring = ds;
 }
 
 OP(cvtfc)
 {
 	String *ds = newstring(32);
 
-	ds->len = sprint(ds->Sascii, "%g", R.s->disreal);
+	ds->len = sprint(ds->Sascii, "%g", rs->disreal);
 
-	destroy(R.d->pstring);
-	R.d->pstring = ds;
+	destroy(rd->pstring);
+	rd->pstring = ds;
 }
 
 char*

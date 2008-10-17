@@ -1,4 +1,4 @@
-void	(*optab[256])(void) =
+void	(*optab[256])(Disdata*s, Disdata*m, Disdata*d, REG*rr) =
 {
 	badop,
 	alt,

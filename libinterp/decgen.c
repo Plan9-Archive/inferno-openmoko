@@ -21,15 +21,16 @@ main(void)
 	print("#include \"isa.h\"\n");
 	print("#include \"interp.h\"\n\n");
 	print("#include \"raise.h\"\n\n");
-	print("extern REG R;\n\n");
 
+	print("\nvoid dec(Dec* r, const Inst* PC, void* MP, Frame* FP) {\n");
+
+	print("switch(PC->add) {\n");
 	for(i = 0; i < 256; i++)
 		decgen(i);
-
-	print("\nvoid	(*dec[])(void) =\n{\n");
-	for(i = 0; i < 256; i++)
-		print("\tD%.2uX%c\n", i, i != 255 ? ',' : ' ');
 	print("};\n");
+
+	print("};\n");
+
 	return 0;
 }
 
@@ -38,17 +39,18 @@ decgen(int addr)
 {
 	int nodst;
 
-	print("static void\nD%.2uX(void)\n{\n", addr);
+//	print("static void \nD%.2uX(Dec*r, const Inst* PC, void* MP, Frame* FP)\n{\n", addr);
+	print("case %d:\n", addr);
 
 	switch(USRC(addr)) {
 	case AMP:
-		print("\tR.s = (Disdata*) ((char*)R.MP + R.PC->s.ind);\n");
+		print("\tr->s = (Disdata*) ((char*)MP + PC->s.ind);\n");
 		break;
 	case AFP:
-		print("\tR.s = (Disdata*) ((char*)R.FP + R.PC->s.ind);\n");
+		print("\tr->s = (Disdata*) ((char*)FP + PC->s.ind);\n");
 		break;
 	case AIMM:
-		print("\tR.s = (Disdata*) &R.PC->s.imm;\n");
+		print("\tr->s = (Disdata*) &PC->s.imm;\n");
 		break;
 	case AMP|AIND:
 		if(SOFTMMU) {
@@ -57,9 +59,9 @@ decgen(int addr)
 			print("R.s = (Disdata*) ((char*)R.s + R.PC->s.i.s)\n");
 		}
 		else {
-			print("\t{char* x = *(char**) ( (char*)R.MP + R.PC->s.i.f);\n");
+			print("\t{char* x = *(char**) ( (char*)MP + PC->s.i.f);\n");
 			print("\t if(H==x) error(exNilref);\n");
-			print("\t R.s = (Disdata*) (x + R.PC->s.i.s);}\n");
+			print("\t r->s = (Disdata*) (x + PC->s.i.s);}\n");
 		}
 		break;
 	case AFP|AIND:
@@ -69,9 +71,9 @@ decgen(int addr)
 			print("R.s = (Disdata*) ((char*)R.s + R.PC->s.i.s)\n");
 		}
 		else {
-			print("\t{char* x = *(char**) ( (char*)R.FP + R.PC->s.i.f);\n");
+			print("\t{char* x = *(char**) ( (char*)FP + PC->s.i.f);\n");
 			print("\t if(H==x) error(exNilref);\n");
-			print("\t R.s = (Disdata*) (x + R.PC->s.i.s);}\n");
+			print("\t r->s = (Disdata*) (x + PC->s.i.s);}\n");
 		}
 		break;
 	}
@@ -81,13 +83,13 @@ decgen(int addr)
 		nodst = 1;
 		break;
 	case AMP:
-		print("\tR.d = (Disdata*) ((char*)R.MP + R.PC->d.ind);\n");
+		print("\tr->d = (Disdata*) ((char*)MP + PC->d.ind);\n");
 		break;
 	case AFP:
-		print("\tR.d = (Disdata*) ((char*)R.FP + R.PC->d.ind);\n");
+		print("\tr->d = (Disdata*) ((char*)FP + PC->d.ind);\n");
 		break;
 	case AIMM:
-		print("\tR.d = (Disdata*) &R.PC->d.imm;\n");
+		print("\tr->d = (Disdata*) &PC->d.imm;\n");
 		break;
 	case AMP|AIND:
 		if(SOFTMMU) {
@@ -96,9 +98,9 @@ decgen(int addr)
 			print("R.d = (Disdata*) ((char*)R.d + R.PC->d.i.s)\n");
 		}
 		else {
-			print("\t{char* x = *(char**) ( (char*)R.MP + R.PC->d.i.f);\n");
+			print("\t{char* x = *(char**) ( (char*)MP + PC->d.i.f);\n");
 			print("\t if(H==x) error(exNilref);\n");
-			print("\t R.d = (Disdata*) (x + R.PC->d.i.s);}\n");
+			print("\t r->d = (Disdata*) (x + PC->d.i.s);}\n");
 		}
 		break;
 	case AFP|AIND:
@@ -108,9 +110,9 @@ decgen(int addr)
 			print("R.d = (Disdata*) ((char*)R.d + R.PC->d.i.s)\n");
 		}
 		else {
-			print("\t{char* x = *(char**) ( (char*)R.FP + R.PC->d.i.f);\n");
+			print("\t{char* x = *(char**) ( (char*)FP + PC->d.i.f);\n");
 			print("\t if(H==x) error(exNilref);\n");
-			print("\t R.d = (Disdata*) (x + R.PC->d.i.s);}\n");
+			print("\t r->d = (Disdata*) (x + PC->d.i.s);}\n");
 		}
 		break;
 	}
@@ -118,18 +120,18 @@ decgen(int addr)
 	if(nodst == 0)
 	switch(addr&ARM) {
 	case AXNON:
-		print("\tR.m = R.d;\n");
+		print("\tr->m = r->d;\n");
 		break;
-	case AXIMM: /*???*/
-		print("\tR.tt = (short) R.PC->reg;\n");
-		print("\tR.m = (Disdata*) &R.tt;\n");
+	case AXIMM:
+		print("\tr->tmp = (short) PC->reg;\n");
+		print("\tr->m = (Disdata*) &r->tmp;\n");
 		break;
 	case AXINF:
-		print("\tR.m = (Disdata*) ((char*)R.FP + R.PC->reg);\n");
+		print("\tr->m = (Disdata*) ((char*)FP + PC->reg);\n");
 		break;
 	case AXINM:
-		print("\tR.m = (Disdata*) ((char*)R.MP + R.PC->reg);\n");
+		print("\tr->m = (Disdata*) ((char*)MP + PC->reg);\n");
 		break;
 	}
-	print("}\n");
+	print("\tbreak;\n");
 }

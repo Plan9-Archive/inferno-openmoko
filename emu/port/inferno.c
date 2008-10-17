@@ -987,7 +987,6 @@ void
 crecv(Channel *c, void *ip)
 {
 	Prog *p;
-//	REG rsav;
 
 	if(c->send->prog == nil && c->size == 0) {
 		p = currun();
@@ -996,19 +995,14 @@ crecv(Channel *c, void *ip)
 		return;
 	}
 
-//	rsav = R;
-//	R.s = (Disdata*) &c;
-//	R.d = (Disdata*) ip;
 	if(_irecv(c, ip)) /* FIXME: args passed via R  */
 		R.IC = 1;
-//	R = rsav;
 }
 
 void
 csend(Channel *c, void *ip)
 {
  	Prog *p;
-//	REG rsav;
 
 	if(c->recv->prog == nil && (c->buf == H || c->size == c->buf->len)) {
 		p = currun();
@@ -1017,10 +1011,6 @@ csend(Channel *c, void *ip)
 		return;
 	}
 
-//	rsav = R;
-//	R.s = (Disdata*) ip;
-//	R.d = (Disdata*) &c;
 	if(_isend(c, ip)) /* FIXME: args passed via R  */
 		R.IC = 1;
-//	R = rsav;
 }

@@ -227,11 +227,11 @@ static	Rune		*filesrv(const char*);
 static	int		fsacls(const char*);
 static	User		*secuser(void);
 
-	int		runeslen(Rune*);
-	Rune*		runesdup(Rune*);
-	Rune*		utftorunes(Rune*, char*, int);
-	char*		runestoutf(char*, Rune*, int);
-	int		runescmp(Rune*, Rune*);
+	int		runeslen(const Rune*);
+	Rune*		runesdup(const Rune*);
+	Rune*		utftorunes(Rune*, const char*, int);
+	char*		runestoutf(char*, const Rune*, int);
+	int		runescmp(const Rune*, const Rune*);
 
 
 int
@@ -2415,7 +2415,7 @@ domsrv(Rune *dom, Rune srv[MAX_PATH])
 }
 
 Rune*
-runesdup(Rune *r)
+runesdup(const Rune *r)
 {
 	int n;
 	Rune *s;
@@ -2429,7 +2429,7 @@ runesdup(Rune *r)
 }
 
 int
-runeslen(Rune *r)
+runeslen(const Rune *r)
 {
 	int n;
 
@@ -2440,7 +2440,7 @@ runeslen(Rune *r)
 }
 
 char*
-runestoutf(char *p, Rune *r, int nc)
+runestoutf(char *p, const Rune *r, int nc)
 {
 	char *op, *ep;
 	int n, c;

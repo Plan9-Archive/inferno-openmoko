@@ -2,13 +2,13 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <string.h>
-#include <math.h>
+//#include <math.h>
 #include <fcntl.h>
 #include <setjmp.h>
 #include <float.h>
 #include <time.h>
 #include <process.h>
-#include <io.h>
+//#include <io.h>
 #include <direct.h>
 /*#include <stddef.h>*/
 
@@ -441,6 +441,10 @@ extern	void	wunlock(RWLock*);
  * network dialing
  */
 #define NETPATHLEN 40
+
+extern int close(int fd);
+extern int read(int fd, void *buf, size_t n);
+extern int write(int fd, const void *buf, size_t n);
 
 /*
  * system calls

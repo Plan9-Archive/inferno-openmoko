@@ -1366,10 +1366,12 @@ dbgblock(Prog *p)
 	if(ctl != nil)
 		qproduce(ctl->q, "run", 3);
 }
-extern REG R;
+
 void
 dbgxec(Prog *p)
 {
+#if 0
+	extern REG R;
 	Bpt *b;
 	Prog *kid;
 	Osenv *env;
@@ -1479,6 +1481,7 @@ save:
 	telldbg(env->debug, buf);
 	poperror();
 	closedbgctl(env->debug, p);
+#endif
 }
 
 Dev progdevtab = {

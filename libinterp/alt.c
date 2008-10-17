@@ -54,7 +54,6 @@ altunmark(Channel *c, DISINT *ptr, Prog *p, int sr, Channel **sel, int dn)
 		if(c != H && c->recv->prog)
 			cqdelp(&c->recv, p);
 		if(sr == 1 && *sel == c) {
-			/*p->R.d->disint = dn;*/
 			*p->iii = dn;
 			p->ptr = ptr + 1;
 			ptr[0] = n;
@@ -148,7 +147,6 @@ altdone(Alt *a, Prog *p, Channel *sel, int sr)
 				cqdelp(&c->send, p);
 			if(sr == 0 && c == sel) {
 				p->ptr = ac->ptr;
-				/*p->R.d->disint = n;*/
 				*p->iii = n;
 				sel = nil;
 			}
@@ -245,7 +243,6 @@ altgone(Prog *p)
 	Alt *a;
 
 	if (p->state == Palt) {
-		/*a = &p->R.s->alt;*/
 		a = p->aaa;
 		altdone(a, p, nil, -1);
 		p->kill = "alt channel hungup";
@@ -268,8 +265,8 @@ xecalt(int block, Alt *a, DISINT* ret)
 	if(nrdy == 0) {
 		if(block) {
 			delrun(Palt);
-			p->aaa = a;//p->R.s = (Disdata*) a;
-			p->iii = ret; //p->R.d = (Disdata*) ret;
+			p->aaa = a;
+			p->iii = ret;
 			return 1;
 		}
 		*ret = a->nsend + a->nrecv;

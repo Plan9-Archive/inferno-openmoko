@@ -246,13 +246,6 @@ struct REG
 	int		IC;		/* Instruction count for this quanta */
 #if OBJTYPE!=386
 	Inst*		xpc;		/* Saved program counter */
-#endif
-	/* are they need to be here? */
-	Disdata*	s;		/* Source */
-	Disdata*	d;		/* Destination */
-	Disdata*	m;		/* Middle */
-	DISINT		tt;		/* Middle temporary */
-#if OBJTYPE!=386
 	DISINT		st;		/* Source temporary */
 	DISINT		dt;		/* Destination temporary */
 #endif
@@ -424,9 +417,18 @@ extern	Type	Tlong;
 extern	Type	Treal;
 /*extern	REG	R;*/
 extern	String	snil;
-extern	void	(*optab[256])(void);
+extern	void	(*optab[256])(Disdata*s, Disdata*m, Disdata*d, REG*rr /*FP,MP,PC,IC*/);
 extern	void	(*comvec)(void);
-extern	void	(*dec[])(void);
+typedef struct Dec {
+	Disdata		*s,*m,*d;
+	DISINT 		tmp; 		/* */
+	} Dec;
+extern	void dec(
+	Dec*		dec,		/* return */
+	const Inst*	PC,		/* Program counter */
+	void*		MP,		/* Module data */
+	Frame*		FP		/* Frame pointer */
+	);
 extern	Module*	modules;
 extern	int	mutator;
 extern	int	nprop;
