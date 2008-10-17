@@ -306,7 +306,8 @@ exprog(Prog *p, char *exc)
 	/* similar code to killprog but not quite */
 	switch(p->state) {
 	case Palt:
-		altdone((Alt*)p->R.s, p, nil, -1);
+		/*altdone((Alt*)p->R.s, p, nil, -1);*/
+		altdone(p->aaa, p, nil, -1);
 		break;
 	case Psend:
 		cqdelp(&p->chan->send, p);
@@ -392,7 +393,8 @@ killprog(Prog *p, char *cause)
 
 	switch(p->state) {
 	case Palt:
-		altdone((Alt*)p->R.s, p, nil, -1);
+		/*altdone((Alt*)p->R.s, p, nil, -1);*/
+		altdone(p->aaa, p, nil, -1);
 		break;
 	case Psend:
 		cqdelp(&p->chan->send, p);

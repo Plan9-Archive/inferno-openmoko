@@ -278,6 +278,8 @@ struct Progs
 struct Prog
 {
 	REG		R;		/* Register set */
+	DISINT*		iii;		/* Alt */
+	Alt*		aaa;		/* Alt */
 	Prog*		link;		/* Run queue */
 	Channel*	chan;		/* Channel pointer */
 	void*		ptr;		/* Channel data pointer */

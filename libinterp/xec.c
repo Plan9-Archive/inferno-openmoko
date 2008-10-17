@@ -867,7 +867,8 @@ int _isend(Channel *c, void *v)
 
 	cqdel(&c->recv);
 	if(p->state == Palt)
-		altdone(&p->R.s->alt, p, c, 1);
+		/*altdone(&p->R.s->alt, p, c, 1);*/
+		altdone(p->aaa, p, c, 1);
 
 	c->mover(p->ptr, v, c);
 	p->ptr = nil;
@@ -902,7 +903,8 @@ int _irecv(Channel *c, void* v)
 
 	cqdel(&c->send);
 	if(p->state == Palt)
-		altdone(&p->R.s->alt, p, c, 0);
+		/*altdone(&p->R.s->alt, p, c, 0);*/
+		altdone(p->aaa, p, c, 0);
 
 	if(c->buf != H){
 		cgetb(c, v);

@@ -8,7 +8,7 @@ dev
 	mnt
 	pipe
 	prog
-	prof
+#	prof
 	srv
 	dup
 	ssl
