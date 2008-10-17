@@ -14,7 +14,7 @@ enum
 static void envremove(Chan*);
 
 static int
-envgen(Chan *c, char *name, Dirtab *d, int nd, int s, Dir *dp)
+envgen(Chan *c, const char *name, Dirtab *d, int nd, int s, Dir *dp)
 {
 	Egrp *eg;
 	Evalue *e;
@@ -48,7 +48,7 @@ envattach(const char *spec)
 }
 
 static Walkqid*
-envwalk(Chan *c, Chan *nc, char **name, int nname)
+envwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, 0, 0, envgen);
 }
@@ -66,7 +66,7 @@ envopen(Chan *c, int mode)
 {
 	Egrp *eg;
 	Evalue *e;
-	
+
 	if(c->qid.type & QTDIR) {
 		if(mode != OREAD)
 			error(Eperm);

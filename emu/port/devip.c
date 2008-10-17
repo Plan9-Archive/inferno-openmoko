@@ -243,7 +243,7 @@ ip1gen(Chan *c, int i, Dir *dp)
 }
 
 static int
-ipgen(Chan *c, char *name, Dirtab *tab, int x, int s, Dir *dp)
+ipgen(Chan *c, const char *name, Dirtab *tab, int x, int s, Dir *dp)
 {
 	Qid q;
 	Conv *cv;
@@ -362,7 +362,7 @@ ipattach(const char *spec)
 }
 
 static Walkqid*
-ipwalk(Chan* c, Chan *nc, char **name, int nname)
+ipwalk(Chan* c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, nil, 0, ipgen);
 }

@@ -8,7 +8,7 @@ newproc(void)
 {
 	Proc *p;
 
-	p = mallocz(sizeof(Proc), 1);
+	p = (Proc*)mallocz(sizeof(Proc), 1);
 	if(p == nil)
 		return nil;
 
@@ -162,9 +162,8 @@ osleave(void)
 void
 rptwakeup(void *o, void *ar)
 {
-	Rept *r;
+	Rept *r = (Rept *)ar;
 
-	r = ar;
 	if(r == nil)
 		return;
 	lock(&r->l);
@@ -176,8 +175,9 @@ rptwakeup(void *o, void *ar)
 static int
 rptactive(void *a)
 {
-	Rept *r = a;
+	Rept *r = (Rept *)a;
 	int i;
+
 	lock(&r->l);
 	i = r->active(r->o);
 	unlock(&r->l);
@@ -191,10 +191,10 @@ rproc(void *a)
 	ulong t;
 	int i;
 	void *o;
-	Rept *r;
+	Rept *r = (Rept *)a;
 
 	up->env->fgrp = newfgrp(nil);
-	r = a;
+
 	t = (ulong)r->t;
 
 Wait:
@@ -232,7 +232,7 @@ rptproc(char *s, int t, void *o, int (*active)(void*), int (*ck)(void*, int), vo
 {
 	Rept *r;
 
-	r = mallocz(sizeof(Rept), 1);
+	r = (Rept*)mallocz(sizeof(Rept), 1);
 	if(r == nil)
 		return nil;
 	r->t = t;

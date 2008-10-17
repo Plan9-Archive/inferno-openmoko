@@ -39,7 +39,7 @@ so_socket(int type)
 }
 
 int
-so_send(int sock, const char *va, int len, const char *h, int hdrlen)
+so_send(int sock, const char *va, int len, const void *h, int hdrlen)
 {
 	int r;
 	struct sockaddr sa;
@@ -53,17 +53,17 @@ so_send(int sock, const char *va, int len, const char *h, int hdrlen)
 		sin = (struct sockaddr_in*)&sa;
 		sin->sin_family = AF_INET;
 		switch(hdrlen){
-		case OUdphdrlenv4:
-			memmove(&sin->sin_addr, h,  4);
-			memmove(&sin->sin_port, h+8, 2);
+		case OUdphdrlenv4: /*12*/
+			memcpy(&sin->sin_addr, h,  4);
+			memcpy(&sin->sin_port, (const uchar*)h+8, 2);
 			break;
-		case OUdphdrlen:
-			v6tov4((uchar*)&sin->sin_addr, h);
-			memmove(&sin->sin_port, h+2*IPaddrlen, 2);	/* rport */
+		case OUdphdrlen: /*36*/
+			v6tov4((uchar*)&sin->sin_addr, (const uchar*)h);
+			memmove(&sin->sin_port, (const uchar*)h+2*IPaddrlen, 2);	/* rport */
 			break;
 		default:
-			v6tov4((uchar*)&sin->sin_addr, h);
-			memmove(&sin->sin_port, h+3*IPaddrlen, 2);
+			v6tov4((uchar*)&sin->sin_addr, (const uchar*)h);
+			memcpy(&sin->sin_port, (const uchar*)h+3*IPaddrlen, 2);
 			break;
 		}
 		r = sendto(sock, va, len, 0, &sa, sizeof(sa));
@@ -110,7 +110,7 @@ so_recv(int sock, char *va, int len, void *hdr, int hdrlen)
 	int r, l;
 	struct sockaddr sa;
 	struct sockaddr_in *sin;
-	char h[Udphdrlen];
+	uchar h[Udphdrlen];
 
 	osenter();
 	if(doselect(sock) < 0) {
@@ -131,11 +131,11 @@ so_recv(int sock, char *va, int len, void *hdr, int hdrlen)
 				memmove(h+2*IPv4addrlen, &sin->sin_port, 2);
 				break;
 			case OUdphdrlen:
-				v4tov6(h, (uchar*)&sin->sin_addr);
+				v4tov6(h, (const uchar*)&sin->sin_addr);
 				memmove(h+2*IPaddrlen, &sin->sin_port, 2);
 				break;
 			default:
-				v4tov6(h, (uchar*)&sin->sin_addr);
+				v4tov6(h, (const uchar*)&sin->sin_addr);
 				memmove(h+3*IPaddrlen, &sin->sin_port, 2);
 				break;
 			}
@@ -148,12 +148,12 @@ so_recv(int sock, char *va, int len, void *hdr, int hdrlen)
 				memmove(h+2*IPv4addrlen+2, &sin->sin_port, 2);
 				break;
 			case OUdphdrlen:
-				v4tov6(h+IPaddrlen, (uchar*)&sin->sin_addr);
+				v4tov6(h+IPaddrlen, (const uchar*)&sin->sin_addr);
 				memmove(h+2*IPaddrlen+2, &sin->sin_port, 2);
 				break;
 			default:
-				v4tov6(h+IPaddrlen, (uchar*)&sin->sin_addr);
-				v4tov6(h+2*IPaddrlen, (uchar*)&sin->sin_addr);	/* ifcaddr */
+				v4tov6(h+IPaddrlen, (const uchar*)&sin->sin_addr);
+				v4tov6(h+2*IPaddrlen, (const uchar*)&sin->sin_addr);	/* ifcaddr */
 				memmove(h+3*IPaddrlen+2, &sin->sin_port, 2);
 				break;
 			}

@@ -5,18 +5,18 @@
 #define	QP(l)	(Prog**)((char*)(l)+sizeof(QLock))
 
 void*
-libqlowner(void *l)
+libqlowner(QLock *q)
 {
-	return *QP(l);
+	return *QP(q);
 }
 
 void
-libqlock(void *l)
+libqlock(QLock *q)
 {
 	Prog *p;
-	QLock *q;
+	//QLock *q;
 
-	q = l;
+	//q = l;
 	p = currun();
 	if(p == nil)
 		abort();
@@ -26,39 +26,39 @@ libqlock(void *l)
 		qlock(q);
 		acquire();
 	}
-	*QP(l) = p;
+	*QP(q) = p;
 }
 
 void
-libqunlock(void *l)
+libqunlock(QLock *q)
 {
 	Prog *p;
-	QLock *q;
+	//QLock *q;
 
-	q = l;
+	//q = l;
 	p = currun();
 	if(p == nil)
 		abort();
-	if(*QP(l) != p)
+	if(*QP(q) != p)
 		abort();
 
-	*QP(l) = nil;
+	*QP(q) = nil;
 	qunlock(q);
 }
 
-void*
+QLock*
 libqlalloc(void)
 {
 	QLock *q;
 
-	q = mallocz(sizeof(QLock)+sizeof(Prog*), 1);
+	q = (QLock *)mallocz(sizeof(QLock)+sizeof(Prog*), 1);
 	return q;
 }
 
 void
-libqlfree(void *l)
+libqlfree(QLock *q)
 {
-	free(l);
+	free(q);
 }
 
 vlong
@@ -80,12 +80,12 @@ libread(int fd, void *buf, int n)
 }
 
 int
-libreadn(int fd, void *av, long n)
+libreadn(int fd, char *a, long n)
 {
-	char *a;
+	//char *a;
 	long m, t;
 
-	a = av;
+	//a = av;
 	t = 0;
 	release();
 	while(t < n){
@@ -155,7 +155,7 @@ libbind(char *s, char *t, int f)
 }
 
 void
-libchanclose(void *chan)
+libchanclose(Chan *chan)
 {
 	release();
 	cclose(chan);

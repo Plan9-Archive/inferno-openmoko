@@ -172,8 +172,13 @@ extern	char*	v_strdup(const char*, const char*, int, const char*);
 
 #endif
 
-#define	GBIT8(p)	(*((const u8int *)(p)))
-#define	PBIT8(p,v)	(*((u8int *)(p)) = (v))
+#define	GBIT8I(p,i)	(((const u8int *)(p))[i])
+#define	GBIT8(p)	GBIT8I(p,0)
+
+#define	PBIT8I(p,i,v)	(((u8int *)(p))[i] = (v))
+#define	PBIT8(p,v)	PBIT8I(p,0,v)
+
+
 #if OBJTYPE==386
 /*little endian and unaligned read/write*/
 /*may not work on ARM*/
@@ -184,20 +189,60 @@ extern	char*	v_strdup(const char*, const char*, int, const char*);
 #define	PBIT32(p,v)	(*((u32int*)(p)) = (v))
 #define	PBIT64(p,v)	(*((u64int*)(p)) = (v))
 #else
-#define	GBIT16(p)	(GBIT8(p)|(GBIT8(p+1)<<8))
-#define	GBIT32(p)       (GBIT16(p)|(GBIT16(p+2)<<16))
-#define	GBIT64(p)	(GBIT32(p)|(GBIT32(p+4)<<32))
-#define	PBIT16(p,v)	(PBIT8(p,v),PBIT8(p+1,(v)>>8),(v))
-#define	PBIT32(p,v)	(PBIT16(p,v),PBIT16(p+2,(v)>>16),(v))
-#define	PBIT64(p,v)	(PBIT32(p,v),PBIT32(p+4,(v)>>32),(v))
+#define	GBIT16I(p,i)	(GBIT8I(p,i)|(GBIT8I(p,(i)+1)<<8))
+#define	GBIT32I(p,i)	(GBIT16I(p,i)|(GBIT16I(p,(i)+2)<<16))
+#define	GBIT64I(p,i)	(GBIT32I(p,i)|(GBIT32(p,(i)+4)<<32))
+#define	GBIT16(p)	GBIT16I(p,0)
+#define	GBIT32(p)	GBIT32I(p,0)
+#define	GBIT64(p)	GBIT64I(p,0)
+#define	PBIT16I(p,i,v)	(PBIT8I(p,(i)+0,(v)>>0), \
+			PBIT8I(p,(i)+1,(v)>>8), \
+			(v))
+#define	PBIT32I(p,i,v)	(PBIT8I(p,(i)+0,(v)>>0), \
+			PBIT8I(p,(i)+1,(v)>>8), \
+			PBIT8I(p,(i)+2,(v)>>16), \
+			PBIT8I(p,(i)+3,(v)>>24), \
+			(v))
+#define	PBIT64I(p,i,v)	(PBIT8I(p,(i)+0,(v)>>0), \
+			PBIT8I(p,(i)+1,(v)>>8), \
+			PBIT8I(p,(i)+2,(v)>>16), \
+			PBIT8I(p,(i)+3,(v)>>24), \
+			PBIT8I(p,(i)+4,(v)>>32), \
+			PBIT8I(p,(i)+5,(v)>>40), \
+			PBIT8I(p,(i)+6,(v)>>48), \
+			PBIT8I(p,(i)+7,(v)>>56), \
+			(v))
+#define	PBIT16(p,v)	PBIT16I(p,0,v)
+#define	PBIT32(p,v)	PBIT32I(p,0,v)
+#define	PBIT64(p,v)	PBIT64I(p,0,v)
 #endif
 
-#define	GBIT16BE(p)	((GBIT8(p)<<8)|GBIT8(p+1))
-#define	GBIT32BE(p)	((GBIT16BE(p)<<16)|GBIT16BE(p+2))
-#define	GBIT64BE(p)	((GBIT32BE(p)<<32)|GBIT32BE(p+4))
-#define	PBIT16BE(p,v)	(PBIT8(p,(v)>>8),PBIT8(p+1,v),(v))
-#define	PBIT32BE(p,v)	(PBIT16BE(p,(v)>>16),PBIT16BE(p+2,v),(v))
-#define	PBIT64BE(p,v)	(PBIT32BE(p,(v)>>32),PBIT32BE(p+4,v),(v))
+#define	GBIT16IBE(p,i)	((GBIT8I(p,i)<<8)|GBIT8I(p,(i)+1))
+#define	GBIT32IBE(p,i)	((GBIT16IBE(p,i)<<16)|GBIT16IBE(p,(i)+2))
+#define	GBIT64IBE(p,i)	((GBIT32IBE(p,i)<<32)|GBIT32IBE(p,(i)+4))
+#define	GBIT16BE(p)	GBIT16IBE(p,0)
+#define	GBIT32BE(p)	GBIT32IBE(p,0)
+#define	GBIT64BE(p)	GBIT64IBE(p,0)
+#define	PBIT16IBE(p,i,v)	(PBIT8I(p,(i)+0,(v)>>8), \
+				PBIT8I(p,(i)+1,(v)>>0), \
+				(v))
+#define	PBIT32IBE(p,i,v)	(PBIT8I(p,(i)+0,(v)>>24), \
+				PBIT8I(p,(i)+1,(v)>>16), \
+				PBIT8I(p,(i)+2,(v)>>8), \
+				PBIT8I(p,(i)+3,(v)>>0), \
+				(v))
+#define	PBIT64IBE(p,i,v)	(PBIT8I(p,(i)+0,(v)>>56), \
+				PBIT8I(p,(i)+1,(v)>>48), \
+				PBIT8I(p,(i)+2,(v)>>40), \
+				PBIT8I(p,(i)+3,(v)>>32), \
+				PBIT8I(p,(i)+4,(v)>>24), \
+				PBIT8I(p,(i)+5,(v)>>16), \
+				PBIT8I(p,(i)+6,(v)>>8), \
+				PBIT8I(p,(i)+7,(v)>>0), \
+				(v))
+#define	PBIT16BE(p,v)	PBIT16IBE(p,0,v)
+#define	PBIT32BE(p,v)	PBIT32IBE(p,0,v)
+#define	PBIT64BE(p,v)	PBIT64IBE(p,0,v)
 
 /*
  * print routines
@@ -339,11 +384,11 @@ extern	char*		getwd(char*, int);
 extern	double		ipow10(int);
 extern	double		pow10(int);
 extern	NORETURN	sysfatal(char*, ...);
-extern	int		dec64(uchar*, int, char*, int);
+extern	int		dec64(uchar*, int, const char*, int);
 extern	int		enc64(char*, int, uchar*, int);
-extern	int		dec32(uchar*, int, char*, int);
+extern	int		dec32(uchar*, int, const char*, int);
 extern	int		enc32(char*, int, uchar*, int);
-extern	int		dec16(uchar*, int, char*, int);
+extern	int		dec16(uchar*, int, const char*, int);
 extern	int		enc16(char*, int, uchar*, int);
 extern	int		encodefmt(Fmt*);
 
@@ -464,7 +509,7 @@ struct Dir {
 	ulong	atime;	/* last read time */
 	ulong	mtime;	/* last write time */
 	vlong	length;	/* file length */
-	char	*name;	/* last element of path */
+	const char	*name;	/* last element of path */
 	char	*uid;	/* owner name */
 	char	*gid;	/* group name */
 	char	*muid;	/* last modifier name */

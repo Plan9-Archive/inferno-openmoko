@@ -156,7 +156,7 @@ static	Rectangle	flushrect;
 static	int		waste;
 static	DScreen*	dscreen;
 extern	void		flushmemscreen(Rectangle);
-	void		drawmesg(Client*, const char*, int);
+	void		drawmesg(Client*, const uchar*, int);
 	void		drawuninstall(Client*, int);
 	void		drawfreedimage(DImage*);
 	Client*		drawclientofpath(ulong);
@@ -181,7 +181,7 @@ static	char Enamed[] = 	"image already has name";
 static	char Ewrongname[] = 	"wrong name for image";
 
 static int
-drawgen(Chan *c, char *name, Dirtab *tab, int x, int s, Dir *dp)
+drawgen(Chan *c, const char *name, Dirtab *tab, int x, int s, Dir *dp)
 {
 	int t;
 	Qid q;
@@ -715,7 +715,7 @@ drawaddname(Client *client, DImage *di, int n, char *str)
 	free(sdraw.name);
 	sdraw.name = t;
 	new = &sdraw.name[sdraw.nname++];
-	new->name = smalloc(n+1);
+	new->name = (char*)smalloc(n+1);
 	memmove(new->name, str, n);
 	new->name[n] = 0;
 	new->dimage = di;
@@ -804,7 +804,7 @@ drawclient(Chan *c)
 }
 
 Memimage*
-drawimage(Client *client, const char *a)
+drawimage(Client *client, const uchar *a)
 {
 	DImage *d;
 
@@ -815,7 +815,7 @@ drawimage(Client *client, const char *a)
 }
 
 void
-drawrectangle(Rectangle *r, const char *a)
+drawrectangle(Rectangle *r, const uchar *a)
 {
 	r->min.x = BGLONG(a+0*4);
 	r->min.y = BGLONG(a+1*4);
@@ -824,7 +824,7 @@ drawrectangle(Rectangle *r, const char *a)
 }
 
 void
-drawpoint(Point *p, const char *a)
+drawpoint(Point *p, const uchar *a)
 {
 	p->x = BGLONG(a+0*4);
 	p->y = BGLONG(a+1*4);
@@ -902,7 +902,7 @@ drawattach(const char *spec)
 }
 
 static Walkqid*
-drawwalk(Chan *c, Chan *nc, char **name, int nname)
+drawwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	if(screendata.bdata == nil)
 		error("no frame buffer");
@@ -1207,7 +1207,7 @@ drawwrite(Chan *c, const char *a, long n, vlong off)
 		break;
 
 	case Qdata:
-		drawmesg(cl, a, n);
+		drawmesg(cl, (const uchar*)a, n); /* FIXME */
 		drawwakeall();
 		break;
 
@@ -1245,7 +1245,7 @@ drawcoord(const uchar *p, const uchar *maxp, int oldx, int *newx)
 }
 
 static void
-printmesg(char *fmt, const char *a, int plsprnt)
+printmesg(char *fmt, const uchar *a, int plsprnt)
 {
 /* was unreacheable
 	char buf[256];
@@ -1297,10 +1297,10 @@ printmesg(char *fmt, const char *a, int plsprnt)
 }
 
 void
-drawmesg(Client *client, const char *a, int n)
+drawmesg(Client *client, const uchar *a, int n)
 {
 	int c, op, repl, m, y, dstid, scrnid, ni, ci, j, nw, e0, e1, ox, oy, esize, oesize, doflush;
-	const char *u;
+	const uchar *u;
 	uchar refresh;
 	char *fmt;
 	ulong value, chan;
@@ -1799,7 +1799,7 @@ drawmesg(Client *client, const char *a, int n)
 			c = bytesperline(r, i->depth);
 			c *= Dy(r);
 			free(client->readdata);
-			client->readdata = (char*)mallocz(c, 0);
+			client->readdata = (uchar*)mallocz(c, 0);
 			if(client->readdata == nil)
 				error("readimage malloc failed");
 			client->nreaddata = memunload(i, r, client->readdata, c);
@@ -1966,7 +1966,7 @@ drawmesg(Client *client, const char *a, int n)
 }
 
 int
-drawlsetrefresh(ulong qidpath, int id, Refreshfn reffn, void *refx)
+drawlsetrefresh(ulong qidpath, int id, Refreshfn reffn, Refx *refx)
 {
 	DImage *d;
 	Memimage *i;

@@ -245,7 +245,7 @@ memaudit( void* v, size_t size, int tag,
 	return nil;
 	*/
 }
-
+/*
 static void
 mput4(uchar *m, ulong v)
 {
@@ -253,7 +253,7 @@ mput4(uchar *m, ulong v)
 	m[1] = v>>16;
 	m[2] = v>>8;
 	m[3] = v;
-}
+}*/
 
 static Chan*
 memattach(const char *spec)
@@ -262,7 +262,7 @@ memattach(const char *spec)
 }
 
 static Walkqid*
-memwalk(Chan *c, Chan *nc, char **name, int nname)
+memwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, memdir, nelem(memdir), devgen);
 }
@@ -340,7 +340,7 @@ memclose(Chan *c)
 static long
 memread(Chan *c, char *va, long count, vlong offset)
 {
-	uchar *m;
+	char *m;
 	char *e, *s;
 	int i, summary;
 	long n, nr;
@@ -406,12 +406,12 @@ memread(Chan *c, char *va, long count, vlong offset)
 		m = va;
 		do{
 			if((count -= 4*4) < 0)
-				return m-(uchar*)va;
+				return m-va;
 			pe = poolevents.events[poolevents.rd];
-			mput4(m, pe.pool);
-			mput4(m+4, pe.pc);
-			mput4(m+8, pe.base);
-			mput4(m+12, pe.size);
+			PBIT32IBE(m,  0, pe.pool);
+			PBIT32IBE(m,  4, pe.pc);
+			PBIT32IBE(m,  8, pe.base);
+			PBIT32IBE(m, 12, pe.size);
 			m += 4*4;
 			if(++poolevents.rd >= nelem(poolevents.events))
 				poolevents.rd = 0;
@@ -428,10 +428,10 @@ memread(Chan *c, char *va, long count, vlong offset)
 		m = va;
 		for(i = offset/(4*4); i < memprof.snapped && (count -= 4*4) >= 0; i++){
 			b = &memprof.snap[i];
-			mput4(m, b->pool);
-			mput4(m+4, b->val);
-			mput4(m+8, b->count);
-			mput4(m+12, b->size);
+			PBIT32IBE(m,  0, b->pool);
+			PBIT32IBE(m,  4, b->val);
+			PBIT32IBE(m,  8, b->count);
+			PBIT32IBE(m, 12, b->size);
 			m += 4*4;
 		}
 		return m-va;

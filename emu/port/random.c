@@ -105,15 +105,14 @@ randominit(void)
  *  consume random bytes from a circular buffer
  */
 ulong
-randomread(void *xp, ulong n)
+randomread(char *p, ulong n)
 {
-	uchar *e, *p, *r;
+	char *e;
+	uchar*r;
 	ulong x;
 	int i;
 
-	p = xp;
-
-if(0)print("A%ld.%d.%lux|", n, rb.target, getcallerpc(&xp));
+/*if(0)print("A%ld.%d.%lux|", n, rb.target, getcallerpc(&xp));*/
 	if(waserror()){
 		qunlock(&rb.l);
 		nexterror();

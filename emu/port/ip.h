@@ -43,15 +43,15 @@ extern void		so_keepalive(int, int);
 //extern void		hnputs(void *p, unsigned short v);
 //extern unsigned long	nhgetl(void *p);
 //extern unsigned short	nhgets(void *p);
-extern unsigned long	parseip(char to[16], const char *from);
-extern size_t	parsemac(char *to, const char *from, size_t len);
-extern const char*v4parseip(char to[4], const char *from);
+extern unsigned long	parseip(uchar to[16], const char *from);
+extern size_t	parsemac(uchar *to, const char *from, size_t len);
+extern const char*v4parseip(uchar to[4], const char *from);
 
 extern int		bipipe(int[]);
 
-extern int	isv4(const char v6[16]);
-extern void	v4tov6(char v6[16], const char v4[4]);
-extern int	v6tov4(char v4[4], const char v6[16]);
+extern int	isv4(const uchar v6[16]);
+extern void	v4tov6(uchar v6[16], const uchar v4[4]);
+extern int	v6tov4(uchar v4[4], const uchar v6[16]);
 extern int	eipfmt(Fmt*);
 
 #define	ipmove(x, y) memmove(x, y, IPaddrlen)

@@ -224,7 +224,7 @@ eiaattach(const char *spec)
 }
 
 static Walkqid*
-eiawalk(Chan *c, Chan *nc, char **name, int nname)
+eiawalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, eiadir, ndir, devgen);
 }

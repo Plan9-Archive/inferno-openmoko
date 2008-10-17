@@ -109,18 +109,18 @@ void producerand(void);
 static void alglistinit(void);
 static void	ensure(Dstate*, Block**, int);
 static void	consume(Block**, uchar*, int);
-static void	setsecret(OneWay*, const char*, int);
+static void	setsecret(OneWay*, const uchar*, int);
 static Block*	encryptb(Dstate*, Block*, int);
 static Block*	decryptb(Dstate*, Block*);
 static Block*	digestb(Dstate*, Block*, int);
 static void	checkdigestb(Dstate*, Block*);
-static Chan*	buftochan(char*);
+static Chan*	buftochan(const char*);
 static void	sslhangup(Dstate*);
 static void dsclone(Chan *c);
 static void	dsnew(Chan *c, Dstate **);
 
 static int
-sslgen(Chan *c, char *dname, Dirtab *d, int nd, int s, Dir *dp)
+sslgen(Chan *c, const char *dname, Dirtab *d, int nd, int s, Dir *dp)
 {
 	Qid q;
 	Dstate *ds;
@@ -219,7 +219,7 @@ sslattach(const char *spec)
 }
 
 static Walkqid*
-sslwalk(Chan *c, Chan *nc, char **name, int nname)
+sslwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, 0, 0, sslgen);
 }
@@ -617,7 +617,7 @@ sslread(Chan *c, char *a, long n, vlong offset)
  *  trying to obscure the block fill
  */
 static void
-randfill(uchar *buf, int len)
+randfill(char *buf, int len)
 {
 	while(len-- > 0)
 		*buf++ = nrand(256);
@@ -633,7 +633,7 @@ sslbwrite(Chan *c, Block *b, ulong offset)
 	volatile struct { Block *b; } bb;
 	Block *nb;
 	int h, n, m, pad, rv;
-	uchar *p;
+	char *p;
 
 	bb.b = b;
 	s.s = dstate[CONV(c->qid)];
@@ -733,10 +733,10 @@ sslbwrite(Chan *c, Block *b, ulong offset)
 }
 
 static void
-setsecret(OneWay *w, const char *secret, int n)
+setsecret(OneWay *w, const uchar *secret, int n)
 {
 	free(w->secret);
-	w->secret = (char*)mallocz(n, 0);
+	w->secret = (uchar*)mallocz(n, 0);
 	if(w->secret == nil)
 		error(Enomem);
 	memmove(w->secret, secret, n);
@@ -869,7 +869,7 @@ Hashalg hashtab[] =
 };
 
 static int
-parsehashalg(char *p, Dstate *s)
+parsehashalg(const char *p, Dstate *s)
 {
 	Hashalg *ha;
 
@@ -912,7 +912,7 @@ Encalg encrypttab[] =
 };
 
 static int
-parseencryptalg(char *p, Dstate *s)
+parseencryptalg(const char *p, Dstate *s)
 {
 	Encalg *ea;
 
@@ -976,9 +976,9 @@ sslwrite(Chan *c, const char *a, long n, vlong offset)
 	volatile struct { Dstate *s; } s;
 	volatile struct { Block *b; } b;
 	int m, t;
-	char *np, *e, buf[32];
-	const char *p;
-	char *x;
+	char *np, buf[32];
+	const char *e, *p;
+	uchar *x;
 
 	s.s = dstate[CONV(c->qid)];
 	if(s.s == 0)
@@ -1020,10 +1020,10 @@ sslwrite(Chan *c, const char *a, long n, vlong offset)
 	default:
 		panic("sslwrite");
 	case Qsecretin:
-		setsecret(&s.s->in, a, n);
+		setsecret(&s.s->in, (const uchar*)a, n);
 		goto out;
 	case Qsecretout:
-		setsecret(&s.s->out, a, n);
+		setsecret(&s.s->out, (const uchar*)a, n);
 		goto out;
 	case Qctl:
 		break;
@@ -1077,11 +1077,11 @@ sslwrite(Chan *c, const char *a, long n, vlong offset)
 		s.s->blocklen = 1;
 
 		for(;;){
-			np = strchr(p, ' ');
+			np = strchr((char*)p, ' ');
 			if(np)
 				*np++ = 0;
 			else{
-				np = strchr(p, '/');
+				np = strchr((char*)p, '/');
 				if(np)
 					*np++ = 0;
 			}
@@ -1107,7 +1107,7 @@ sslwrite(Chan *c, const char *a, long n, vlong offset)
 			s.s->maxpad = s.s->max = (1<<15) - s.s->diglen - 1;
 	} else if(strcmp(buf, "secretin") == 0 && p != 0) {
 		m = (strlen(p)*3)/2;
-		x = (char*)smalloc(m);
+		x = (uchar*)smalloc(m);
 		if(waserror()){
 			free(x);
 			nexterror();
@@ -1118,7 +1118,7 @@ sslwrite(Chan *c, const char *a, long n, vlong offset)
 		free(x);
 	} else if(strcmp(buf, "secretout") == 0 && p != 0) {
 		m = (strlen(p)*3)/2;
-		x = (char*)smalloc(m);
+		x = (uchar*)smalloc(m);
 		if(waserror()){
 			free(x);
 			nexterror();
@@ -1141,7 +1141,8 @@ out:
 static Block*
 encryptb(Dstate *s, Block *b, int offset)
 {
-	uchar *p, *ep, *p2, *ip, *eip;
+	char *p, *ep, *p2;
+	uchar *ip, *eip;
 	DESstate *ds;
 	IDEAstate *is;
 
@@ -1150,7 +1151,7 @@ encryptb(Dstate *s, Block *b, int offset)
 		ds = s->out.state.des;
 		ep = b->rp + BLEN(b);
 		for(p = b->rp + offset; p < ep; p += 8)
-			block_cipher(ds->expanded, p, 0);
+			block_cipher(ds->expanded, (uchar*)p, 0);
 		break;
 	case DESCBC:
 		ds = s->out.state.des;
@@ -1160,7 +1161,7 @@ encryptb(Dstate *s, Block *b, int offset)
 			ip = ds->ivec;
 			for(eip = ip+8; ip < eip; )
 				*p2++ ^= *ip++;
-			block_cipher(ds->expanded, p, 0);
+			block_cipher(ds->expanded, (uchar*)p, 0);
 			memmove(ds->ivec, p, 8);
 		}
 		break;
@@ -1168,7 +1169,7 @@ encryptb(Dstate *s, Block *b, int offset)
 		is = s->out.state.idea;
 		ep = b->rp + BLEN(b);
 		for(p = b->rp + offset; p < ep; p += 8)
-			idea_cipher(is->edkey, p, 0);
+			idea_cipher(is->edkey, (uchar*)p, 0);
 		break;
 	case IDEACBC:
 		is = s->out.state.idea;
@@ -1178,12 +1179,12 @@ encryptb(Dstate *s, Block *b, int offset)
 			ip = is->ivec;
 			for(eip = ip+8; ip < eip; )
 				*p2++ ^= *ip++;
-			idea_cipher(is->edkey, p, 0);
+			idea_cipher(is->edkey, (uchar*)p, 0);
 			memmove(is->ivec, p, 8);
 		}
 		break;
 	case RC4:
-		rc4(s->out.state.rc4, b->rp + offset, BLEN(b) - offset);
+		rc4(s->out.state.rc4, (uchar*)b->rp + offset, BLEN(b) - offset);
 		break;
 	}
 	return b;
@@ -1193,7 +1194,8 @@ static Block*
 decryptb(Dstate *s, Block *inb)
 {
 	Block *b, **l;
-	uchar *p, *ep, *tp, *ip, *eip;
+	char *p, *ep;
+	uchar *ip, *eip, *tp;
 	DESstate *ds;
 	IDEAstate *is;
 	uchar tmp[8];
@@ -1218,14 +1220,14 @@ decryptb(Dstate *s, Block *inb)
 			ds = s->in.state.des;
 			ep = b->rp + BLEN(b);
 			for(p = b->rp; p < ep; p += 8)
-				block_cipher(ds->expanded, p, 1);
+				block_cipher(ds->expanded, (uchar*)p, 1);
 			break;
 		case DESCBC:
 			ds = s->in.state.des;
 			ep = b->rp + BLEN(b);
 			for(p = b->rp; p < ep;){
 				memmove(tmp, p, 8);
-				block_cipher(ds->expanded, p, 1);
+				block_cipher(ds->expanded, (uchar*)p, 1);
 				tp = tmp;
 				ip = ds->ivec;
 				for(eip = ip+8; ip < eip; ){
@@ -1238,14 +1240,14 @@ decryptb(Dstate *s, Block *inb)
 			is = s->in.state.idea;
 			ep = b->rp + BLEN(b);
 			for(p = b->rp; p < ep; p += 8)
-				idea_cipher(is->edkey, p, 1);
+				idea_cipher(is->edkey, (uchar*)p, 1);
 			break;
 		case IDEACBC:
 			is = s->in.state.idea;
 			ep = b->rp + BLEN(b);
 			for(p = b->rp; p < ep;){
 				memmove(tmp, p, 8);
-				idea_cipher(is->edkey, p, 1);
+				idea_cipher(is->edkey, (uchar*)p, 1);
 				tp = tmp;
 				ip = is->ivec;
 				for(eip = ip+8; ip < eip; ){
@@ -1255,7 +1257,7 @@ decryptb(Dstate *s, Block *inb)
 			}
 			break;
 		case RC4:
-			rc4(s->in.state.rc4, b->rp, BLEN(b));
+			rc4(s->in.state.rc4, (uchar*)b->rp, BLEN(b));
 			break;
 		}
 	}
@@ -1279,7 +1281,7 @@ digestb(Dstate *s, Block *b, int offset)
 
 	/* hash secret + message */
 	(*s->hf)(w->secret, w->slen, 0, &ss);
-	(*s->hf)(b->rp + h, n, 0, &ss);
+	(*s->hf)((uchar*)b->rp + h, n, 0, &ss);
 
 	/* hash message id */
 	p = msgid;
@@ -1288,7 +1290,7 @@ digestb(Dstate *s, Block *b, int offset)
 	*p++ = n>>16;
 	*p++ = n>>8;
 	*p = n;
-	(*s->hf)(msgid, 4, b->rp + offset, &ss);
+	(*s->hf)(msgid, 4, (uchar*)b->rp + offset, &ss);
 
 	return b;
 }
@@ -1317,7 +1319,7 @@ checkdigestb(Dstate *s, Block *inb)
 		n = BLEN(b) - h;
 		if(n < 0)
 			panic("checkdigestb");
-		(*s->hf)(b->rp + h, n, 0, &ss);
+		(*s->hf)((uchar*)b->rp + h, n, 0, &ss);
 		h = 0;
 	}
 
@@ -1337,7 +1339,7 @@ checkdigestb(Dstate *s, Block *inb)
 
 /* get channel associated with an fd */
 static Chan*
-buftochan(char *p)
+buftochan(const char *p)
 {
 	Chan *c;
 	int fd;

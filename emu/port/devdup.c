@@ -6,7 +6,7 @@
 /* Qid is (2*fd + (file is ctl))+1 */
 
 static int
-dupgen(Chan *c, char *name, Dirtab *tab, int ntab, int s, Dir *dp)
+dupgen(Chan *c, const char *name, Dirtab *tab, int ntab, int s, Dir *dp)
 {
 	Fgrp *fgrp = up->env->fgrp;
 	Chan *f;
@@ -45,7 +45,7 @@ dupattach(const char *spec)
 }
 
 static Walkqid*
-dupwalk(Chan *c, Chan *nc, char **name, int nname)
+dupwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, nil, 0, dupgen);
 }

@@ -22,14 +22,14 @@ static	HANDLE	errh = INVALID_HANDLE_VALUE;
 static	int	donetermset = 0;
 static	int sleepers = 0;
 
-	Rune	*widen(char *s);
-	char		*narrowen(Rune *ws);
-	int		widebytes(Rune *ws);
-	int		runeslen(Rune*);
-	Rune*	runesdup(Rune*);
-	Rune*	utftorunes(Rune*, char*, int);
-	char*	runestoutf(char*, Rune*, int);
-	int		runescmp(Rune*, Rune*);
+	Rune	*widen(const char *s);
+	char		*narrowen(const Rune *ws);
+	int		widebytes(const Rune *ws);
+	int		runeslen(const Rune*);
+	Rune*	runesdup(const Rune*);
+	Rune*	utftorunes(Rune*, const char*, int);
+	char*	runestoutf(char*, const Rune*, int);
+	int		runescmp(const Rune*, const Rune*);
 
 __declspec(thread)       Proc    *up;
 
@@ -698,7 +698,7 @@ segflush(void *a, ulong n)
 }
 
 Rune *
-widen(char *s)
+widen(const char *s)
 {
 	int n;
 	Rune *ws;
@@ -711,7 +711,7 @@ widen(char *s)
 
 
 char *
-narrowen(Rune *ws)
+narrowen(const Rune *ws)
 {
 	char *s;
 	int n;

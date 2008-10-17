@@ -129,6 +129,10 @@ modetomask[] =
 	RMODE|WMODE|XMODE,
 };
 
+extern Rune	*widen(const char *s);
+extern char* narrowen(const Rune *ws);
+
+
 extern	DWORD	PlatformId;
 	char    rootdir[MAXROOT] = "\\inferno";
 	Rune	rootname[] = L"inferno-server";
@@ -432,7 +436,7 @@ fsattach(const char *spec)
 }
 
 Walkqid*
-fswalk(Chan *c, Chan *nc, char **name, int nname)
+fswalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	int j, alloc;
 	Walkqid *wq;
@@ -1478,7 +1482,7 @@ fsdirset(char *edir, int n, WIN32_FIND_DATA *data, char *path, Chan *c, int isdi
 		free(dir.uid);
 	if(dir.gid != neveryone)
 		free(dir.gid);
-	free(dir.name);
+	free((char*)dir.name); /* XXX: unconst */
 	return n;
 }
 

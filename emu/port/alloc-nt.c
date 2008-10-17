@@ -126,7 +126,7 @@ void*	v_poolalloc(Pool* pool, size_t size, const char*file, int line, const char
 			panic("HeapCreate");
 		poolwalk(pool, 0);
 	}
-	b = HeapAlloc(pool->handle, 0, sizeof(Bhdr)+size+sizeof(Btail));
+	b = (Bhdr*)HeapAlloc(pool->handle, 0, sizeof(Bhdr)+size+sizeof(Btail));
 	if(b==nil)
 		return nil;
 	pool->nalloc++;
@@ -171,7 +171,7 @@ void*	v_poolrealloc(Pool* pool, void* v, size_t size, const char*file, int line,
 
 	oldtag = b->tag;
 	oldsize = b->size;
-	b = HeapReAlloc(pool->handle, 0, b, sizeof(Bhdr)+size+sizeof(Btail));
+	b = (Bhdr*)HeapReAlloc(pool->handle, 0, b, sizeof(Bhdr)+size+sizeof(Btail));
 	if(b==nil)
 	{
 		pool->nfree++;
@@ -265,8 +265,7 @@ void	poolwalk(Pool* pool, poolwalk_callback callback)
 	phe.lpData = 0;
 	while (HeapWalk( pool->handle, &phe ))
 	{
-
-		b = phe.lpData;
+		b = (Bhdr*)phe.lpData;
 		if (phe.wFlags & PROCESS_HEAP_ENTRY_BUSY && b->mymark==MYMARK )
 		{
 			/*print("<%d w=%x %p/%x bsize=%x>",
@@ -380,7 +379,7 @@ v_strdup(const char *s, const char*file, int line, const char*function)
 {
 	char *os;
 
-	os = v_malloc(strlen(s) + 1, file, line, function);
+	os = (char*)v_malloc(strlen(s) + 1, file, line, function);
 	if(os == 0)
 		return 0;
 	return strcpy(os, s);

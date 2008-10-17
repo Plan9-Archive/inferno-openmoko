@@ -152,7 +152,7 @@ handler(char *estr)
 		pc--;
 	}
 	destroy(p->exval);
-	p->exval = H;
+	p->exval = (String*)H;
 	return 0;
 found:
 	{
@@ -203,7 +203,7 @@ found:
 	}
 	eadr = (String **)((char*)f+eoff);
 	destroy(*eadr);
-	*eadr = H;
+	*eadr = (String*)H;
 	if(p->exval == H)
 		*eadr = newestring(estr);	/* might fail */
 	else{
@@ -217,6 +217,6 @@ found:
 	memmove(&p->R, &R, sizeof(R));
 	p->kill = nil;
 	destroy(p->exval);
-	p->exval = H;
+	p->exval = (String*)H;
 	return 1;
 }

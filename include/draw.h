@@ -501,9 +501,11 @@ extern Subfont*	_getsubfont(Display*, char*);
 extern Subfont*	getdefont(Display*);
 extern int	lockdisplay(Display*);
 extern void	unlockdisplay(Display*);
-typedef struct	Memimage Memimage;
-typedef void (*Refreshfn)(Memimage*, Rectangle, void*); /* from memlayer.h */
-extern int	drawlsetrefresh(ulong, int, Refreshfn, void*);
+
+typedef struct Memimage Memimage;
+typedef struct Refx Refx;
+typedef void (*Refreshfn)(Memimage*, Rectangle, Refx*);
+extern int	drawlsetrefresh(ulong, int, Refreshfn, Refx*);
 
 /* Compositing operator utility */
 extern void	_setdrawop(Display*, Drawop);

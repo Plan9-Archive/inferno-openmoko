@@ -24,7 +24,7 @@ static struct
 {
 	Lock	l;
 	ulong	path;
-	int	pipeqsize;	
+	int	pipeqsize;
 } pipealloc;
 
 enum
@@ -104,7 +104,7 @@ pipeattach(const char *spec)
 }
 
 static int
-pipegen(Chan *c, char *name, Dirtab *tab, int ntab, int i, Dir *dp)
+pipegen(Chan *c, const char *name, Dirtab *tab, int ntab, int i, Dir *dp)
 {
 	int id, len;
 	Qid qid;
@@ -140,7 +140,7 @@ pipegen(Chan *c, char *name, Dirtab *tab, int ntab, int i, Dir *dp)
 }
 
 static Walkqid*
-pipewalk(Chan *c, Chan *nc, char **name, int nname)
+pipewalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	Walkqid *wq;
 	Pipe *p;
@@ -269,7 +269,7 @@ pipeclose(Chan *c)
 		}
 	}
 
-	
+
 	/*
 	 *  if both sides are closed, they are reusable
 	 */

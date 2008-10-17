@@ -28,7 +28,7 @@ snarfattach(const char *spec)
 }
 
 static Walkqid*
-snarfwalk(Chan *c, Chan *nc, char **name, int nname)
+snarfwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, snarftab, nelem(snarftab), devgen);
 }

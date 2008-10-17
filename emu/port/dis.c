@@ -156,7 +156,7 @@ newprog(Prog *p, Modlink *m)
 	n->xec = xec;
 	n->quanta = PQUANTA;
 	n->flags = 0;
-	n->exval = H;
+	n->exval = (String*)H;
 
 	ADDREF(m);
 	Setmark(D2H(m));

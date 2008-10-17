@@ -25,7 +25,7 @@ static uchar t64d[256] = {
 static char t64e[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 int
-dec64(uchar *out, int lim, char *in, int n)
+dec64(uchar *out, int lim, const char *in, int n)
 {
 	ulong b24;
 	uchar *start = out;
@@ -35,7 +35,7 @@ dec64(uchar *out, int lim, char *in, int n)
 	b24 = 0;
 	i = 0;
 	while(n-- > 0){
- 
+
 		c = t64d[*(uchar*)in++];
 		if(c == INVAL)
 			continue;

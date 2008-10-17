@@ -151,7 +151,7 @@ extern	Module*	modules;
 static  char 	Emisalign[] = "misaligned address";
 
 static int
-proggen(Chan *c, char *name, Dirtab *tab, int ntab, int s, Dir *dp)
+proggen(Chan *c, const char *name, Dirtab *tab, int ntab, int s, Dir *dp)
 {
 	Qid qid;
 	Prog *p;
@@ -232,7 +232,7 @@ progattach(const char *spec)
 }
 
 static Walkqid*
-progwalk(Chan *c, Chan *nc, char **name, int nname)
+progwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, 0, 0, proggen);
 }

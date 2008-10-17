@@ -44,7 +44,7 @@ typedef struct Walkqid	Walkqid;
 
 #include "pool.h"
 
-typedef int    Devgen(Chan*, char*, Dirtab*, int, int, Dir*);
+typedef int    Devgen(Chan*, const char*, Dirtab*, int, int, Dir*);
 
 enum
 {
@@ -163,7 +163,7 @@ struct Dev
 
 	void	(*init)(void);
 	Chan*	(*attach)(const char*);
-	Walkqid*	(*walk)(Chan*, Chan*, char**, int);
+	Walkqid*	(*walk)(Chan*, Chan*, const char**, int);
 	int	(*stat)(Chan*, char*, int);
 	Chan*	(*open)(Chan*, int);
 	void	(*create)(Chan*, const char*, int, ulong);

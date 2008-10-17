@@ -23,7 +23,7 @@ audioattach(const char *spec)
 }
 
 static Walkqid*
-audiowalk(Chan *c, Chan *nc, char **name, int nname)
+audiowalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, audiotab, nelem(audiotab), devgen);
 }
@@ -365,7 +365,7 @@ val2str(svp_t* t, ulong v)
 	return nil;
 }
 
-static int 
+static int
 sval(char* buf, ulong* v, ulong max, ulong min)
 {
 	unsigned long val = strtoul(buf, 0, 10);

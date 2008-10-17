@@ -52,7 +52,7 @@ Type	*Trdchan;
 Type	*Twrchan;
 
 static int
-srvgen(Chan *c, char *name, Dirtab *tab, int ntab, int s, Dir *dp)
+srvgen(Chan *c, const char *name, Dirtab *tab, int ntab, int s, Dir *dp)
 {
 	SrvFile *f;
 
@@ -167,7 +167,7 @@ srvattach(const char *spec)
 }
 
 static Walkqid*
-srvwalk(Chan *c, Chan *nc, char **name, int nname)
+srvwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	SrvFile *d, *pd;
 	Walkqid *w;

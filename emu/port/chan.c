@@ -33,7 +33,7 @@ struct Elemlist
 {
 	char	*name;	/* copy of name, so '/' can be overwritten */
 	int	nelems;
-	char	**elems;
+	const char	**elems;
 	int	*off;
 	int	mustbedir;
 };
@@ -85,7 +85,7 @@ decref(Ref *r)
  * save a string in up->genbuf;
  */
 void
-kstrcpy(char *s, char *t, int ns)
+kstrcpy(char *s, const char *t, int ns)
 {
 	int nt;
 
@@ -126,7 +126,7 @@ kstrdup(char **p, const char *s)
 	char *t, *prev;
 
 	n = strlen(s)+1;
-	t = kmalloc(n);
+	t = (char*)kmalloc(n);
 	if(t == nil)
 		panic("kstrdup: no memory");
 	memmove(t, s, n);
@@ -169,7 +169,7 @@ newchan(void)
 	unlock(&chanalloc.l);
 
 	if(c == nil) {
-		c = malloc(sizeof(Chan));
+		c = (Chan*)malloc(sizeof(Chan));
 		if(c == nil)
 			error(Enomem);
 		lock(&chanalloc.l);
@@ -209,11 +209,11 @@ newcname(char *s)
 	Cname *n;
 	int i;
 
-	n = smalloc(sizeof(Cname));
+	n = (Cname*)smalloc(sizeof(Cname));
 	i = strlen(s);
 	n->len = i;
 	n->alen = i+CNAMESLOP;
-	n->s = smalloc(n->alen);
+	n->s = (char*)smalloc(n->alen);
 	memmove(n->s, s, i+1);
 	n->r.ref = 1;
 	incref(&ncname);
@@ -252,7 +252,7 @@ addelem(Cname *n, const char *s)
 	i = strlen(s);
 	if(n->len+1+i+1 > n->alen){
 		a = n->len+1+i+1 + CNAMESLOP;
-		t = smalloc(a);
+		t = (char*)smalloc(a);
 		memmove(t, n->s, n->len+1);
 		free(n->s);
 		n->s = t;
@@ -379,7 +379,7 @@ newmhead(Chan *from)
 {
 	Mhead *mh;
 
-	mh = smalloc(sizeof(Mhead));
+	mh = (Mhead*)smalloc(sizeof(Mhead));
 	mh->r.ref = 1;
 	mh->from = from;
 	incref(&from->r);
@@ -692,7 +692,7 @@ undomount(Chan *c, Cname *name)
  */
 static char Edoesnotexist[] = "does not exist";
 int
-walk(Chan **cp, char **names, int nnames, int nomount, int *nerror)
+walk(Chan **cp, const char **names, int nnames, int nomount, int *nerror)
 {
 	int dev, dotdot, i, n, nhave, ntry, type;
 	Chan *c, *nc;
@@ -902,16 +902,16 @@ cleancname(Cname *n)
 static void
 growparse(Elemlist *e)
 {
-	char **new;
+	const char **new;
 	int *inew;
 	enum { Delta = 8 };
 
 	if(e->nelems % Delta == 0){
-		new = smalloc((e->nelems+Delta) * sizeof(char*));
+		new = (const char**)smalloc((e->nelems+Delta) * sizeof(char*));
 		memmove(new, e->elems, e->nelems*sizeof(char*));
 		free(e->elems);
 		e->elems = new;
-		inew = smalloc((e->nelems+Delta+1) * sizeof(int));
+		inew = (int*)smalloc((e->nelems+Delta+1) * sizeof(int));
 		memmove(inew, e->off, e->nelems*sizeof(int));
 		free(e->off);
 		e->off = inew;
@@ -920,7 +920,7 @@ growparse(Elemlist *e)
 
 /*
  * The name is known to be valid.
- * Copy the name so slashes can be overwritten.
+ * Copy the name so slashes can be overwritten.                   - BUG, name is not copied actually
  * An empty string will set nelem=0.
  * A path ending in / or /. or /.//./ etc. will have
  * e.mustbedir = 1, so that we correctly
@@ -928,15 +928,15 @@ growparse(Elemlist *e)
  * rather than a directory.
  */
 static void
-parsename(char *name, Elemlist *e)
+parsename(const char *name, Elemlist *e)
 {
-	char *slash;
+	const char *slash;
 
 	kstrdup(&e->name, name);
 	name = e->name;
 	e->nelems = 0;
 	e->elems = nil;
-	e->off = smalloc(sizeof(int));
+	e->off = (int*)smalloc(sizeof(int));
 	e->off[0] = skipslash(name) - name;
 	for(;;){
 		name = skipslash(name);
@@ -954,17 +954,17 @@ parsename(char *name, Elemlist *e)
 			break;
 		}
 		e->off[e->nelems] = slash - e->name;
-		*slash++ = '\0';
+		//FIXME *slash++ = '\0';
+		*(char*)slash = '\0'; slash++;
 		name = slash;
 	}
 }
 
-static void*
-kmemrchr(void *va, int c, long n)
+static const char*
+kmemrchr(const char *a, int c, long n)
 {
-	uchar *a, *e;
+	const char *e;
 
-	a = va;
 	for(e=a+n-1; e>a; e--)
 		if(*e == c)
 			return e;
@@ -993,7 +993,7 @@ saveregisters(void)
  * do not use the Cname*, this avoids an unnecessary clone.
  */
 Chan*
-namec(char *aname, int amode, int omode, ulong perm)
+namec(const char *aname, int amode, int omode, ulong perm)
 {
 	int n, prefix, len, t, nomount, npath;
 	Chan *c, *cnew;
@@ -1002,7 +1002,7 @@ namec(char *aname, int amode, int omode, ulong perm)
 	Rune r;
 	Mhead *m;
 	char *createerr, tmperrbuf[ERRMAX];
-	char *name;
+	const char *name;
 
 	name = aname;
 	if(name[0] == '\0')
@@ -1331,8 +1331,8 @@ if(c->umh != nil){
 /*
  * name is valid. skip leading / and ./ as much as possible
  */
-char*
-skipslash(char *name)
+const char*
+skipslash(const char *name)
 {
 	while(name[0]=='/' || (name[0]=='.' && (name[1]==0 || name[1]=='/')))
 		name++;
@@ -1350,14 +1350,14 @@ skipslash(char *name)
  * or a valid character.
  */
 void
-validname(char *aname, int slashok)
+validname(const char *aname, int slashok)
 {
-	char *ename, *name;
+	const char *ename, *name;
 	int c;
 	Rune r;
 
 	name = aname;
-	ename = memchr(name, 0, (1<<16));
+	ename = (const char *)memchr(name, 0, (1<<16));
 
 	if(ename==nil || ename-name>=(1<<16))
 		error("name too long");

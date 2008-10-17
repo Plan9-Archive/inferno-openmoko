@@ -120,9 +120,8 @@ syserr(char *s, char *es, Prog *p)
 void
 Sys_millisec(void *fp)
 {
-	F_Sys_millisec *f;
+	F_Sys_millisec *f = (F_Sys_millisec *)fp;
 
-	f = fp;
 	*f->ret = osmillisec();
 }
 
@@ -130,11 +129,10 @@ void
 Sys_open(void *fp)
 {
 	int fd;
-	F_Sys_open *f;
+	F_Sys_open *f = (F_Sys_open *)fp;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Sys_FD*)H;
 	release();
 	fd = kopen(string2c(f->s), f->mode);
 	acquire();
@@ -150,9 +148,8 @@ Sys_pipe(void *fp)
 	Array *a;
 	int fd[2];
 	Sys_FD **sfd;
-	F_Sys_pipe *f;
+	F_Sys_pipe *f = (F_Sys_pipe *)fp;
 
-	f = fp;
 	*f->ret = -1;
 
 	a = f->fds;
@@ -164,8 +161,8 @@ Sys_pipe(void *fp)
 	sfd = (Sys_FD**)a->data;
 	destroy(sfd[0]);
 	destroy(sfd[1]);
-	sfd[0] = H;
-	sfd[1] = H;
+	sfd[0] = (Sys_FD*)H;
+	sfd[1] = (Sys_FD*)H;
 	sfd[0] = mkfd(fd[0]);
 	sfd[1] = mkfd(fd[1]);
 	*f->ret = 0;
@@ -174,12 +171,11 @@ Sys_pipe(void *fp)
 void
 Sys_fildes(void *fp)
 {
-	F_Sys_fildes *f;
+	F_Sys_fildes *f = (F_Sys_fildes *)fp;
 	int fd;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Sys_FD*)H;
 	release();
 	fd = kdup(f->fd, -1);
 	acquire();
@@ -191,9 +187,8 @@ Sys_fildes(void *fp)
 void
 Sys_dup(void *fp)
 {
-	F_Sys_dup *f;
+	F_Sys_dup *f = (F_Sys_dup *)fp;
 
-	f = fp;
 	release();
 	*f->ret = kdup(f->old, f->new);
 	acquire();
@@ -203,11 +198,10 @@ void
 Sys_create(void *fp)
 {
 	int fd;
-	F_Sys_create *f;
+	F_Sys_create *f = (F_Sys_create *)fp;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Sys_FD*)H;
 	release();
 	fd = kcreate(string2c(f->s), f->mode, f->perm);
 	acquire();
@@ -220,9 +214,8 @@ Sys_create(void *fp)
 void
 Sys_remove(void *fp)
 {
-	F_Sys_remove *f;
+	F_Sys_remove *f = (F_Sys_remove *)fp;
 
-	f = fp;
 	release();
 	*f->ret = kremove(string2c(f->s));
 	acquire();
@@ -231,9 +224,8 @@ Sys_remove(void *fp)
 void
 Sys_seek(void *fp)
 {
-	F_Sys_seek *f;
+	F_Sys_seek *f = (F_Sys_seek *)fp;
 
-	f = fp;
 	release();
 	*f->ret = kseek(fdchk(f->fd), f->off, f->start);
 	acquire();
@@ -242,9 +234,8 @@ Sys_seek(void *fp)
 void
 Sys_unmount(void *fp)
 {
-	F_Sys_unmount *f;
+	F_Sys_unmount *f = (F_Sys_unmount *)fp;
 
-	f = fp;
 	release();
 	*f->ret = kunmount(string2c(f->s1), string2c(f->s2));
 	acquire();
@@ -254,9 +245,8 @@ void
 Sys_read(void *fp)
 {
 	int n;
-	F_Sys_read *f;
+	F_Sys_read *f = (F_Sys_read *)fp;
 
-	f = fp;
 	n = f->n;
 	if(f->buf == (Array*)H || n < 0) {
 		*f->ret = 0;
@@ -274,9 +264,8 @@ void
 Sys_readn(void *fp)
 {
 	int fd, m, n, t;
-	F_Sys_readn *f;
+	F_Sys_readn *f = (F_Sys_readn *)fp;
 
-	f = fp;
 	n = f->n;
 	if(f->buf == (Array*)H || n < 0) {
 		*f->ret = 0;
@@ -303,9 +292,8 @@ void
 Sys_pread(void *fp)
 {
 	int n;
-	F_Sys_pread *f;
+	F_Sys_pread *f = (F_Sys_pread *)fp;
 
-	f = fp;
 	n = f->n;
 	if(f->buf == (Array*)H || n < 0) {
 		*f->ret = 0;
@@ -322,9 +310,8 @@ Sys_pread(void *fp)
 void
 Sys_chdir(void *fp)
 {
-	F_Sys_chdir *f;
+	F_Sys_chdir *f = (F_Sys_chdir *)fp;
 
-	f = fp;
 	release();
 	*f->ret = kchdir(string2c(f->path));
 	acquire();
@@ -334,9 +321,8 @@ void
 Sys_write(void *fp)
 {
 	int n;
-	F_Sys_write *f;
+	F_Sys_write *f = (F_Sys_write *)fp;
 
-	f = fp;
 	n = f->n;
 	if(f->buf == (Array*)H || n < 0) {
 		*f->ret = 0;
@@ -354,9 +340,8 @@ void
 Sys_pwrite(void *fp)
 {
 	int n;
-	F_Sys_pwrite *f;
+	F_Sys_pwrite *f = (F_Sys_pwrite *)fp;
 
-	f = fp;
 	n = f->n;
 	if(f->buf == (Array*)H || n < 0) {
 		*f->ret = 0;
@@ -402,7 +387,7 @@ packdir(Sys_Dir *sd)
 	n = 0;
 	for(i=0; i<4; i++)
 		n += strlen(nm[i])+1;
-	d = smalloc(sizeof(*d)+n);
+	d = (Dir*)smalloc(sizeof(*d)+n);
 	p = (char*)d+sizeof(*d);
 	for(i=0; i<4; i++){
 		n = strlen(nm[i])+1;
@@ -430,9 +415,8 @@ void
 Sys_fstat(void *fp)
 {
 	Dir *d;
-	F_Sys_fstat *f;
+	F_Sys_fstat *f = (F_Sys_fstat *)fp;
 
-	f = fp;
 	f->ret->t0 = -1;
 	release();
 	d = kdirfstat(fdchk(f->fd));
@@ -451,9 +435,8 @@ void
 Sys_stat(void *fp)
 {
 	Dir *d;
-	F_Sys_stat *f;
+	F_Sys_stat *f = (F_Sys_stat *)fp;
 
-	f = fp;
 	f->ret->t0 = -1;
 	release();
 	d = kdirstat(string2c(f->s));
@@ -471,13 +454,12 @@ Sys_stat(void *fp)
 void
 Sys_fd2path(void *fp)
 {
-	F_Sys_fd2path *f;
+	F_Sys_fd2path *f = (F_Sys_fd2path *)fp;
 	char *s;
 	void *r;
 
-	f = fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (String*)H;
 	destroy(r);
 	release();
 	s = kfd2path(fdchk(f->fd));
@@ -492,9 +474,8 @@ Sys_fd2path(void *fp)
 void
 Sys_mount(void *fp)
 {
-	F_Sys_mount *f;
+	F_Sys_mount *f = (F_Sys_mount *)fp;
 
-	f = fp;
 	release();
 	*f->ret = kmount(fdchk(f->fd), fdchk(f->afd), string2c(f->on), f->flags, string2c(f->spec));
 	acquire();
@@ -503,9 +484,8 @@ Sys_mount(void *fp)
 void
 Sys_bind(void *fp)
 {
-	F_Sys_bind *f;
+	F_Sys_bind *f = (F_Sys_bind *)fp;
 
-	f = fp;
 	release();
 	*f->ret = kbind(string2c(f->s), string2c(f->on), f->flags);
 	acquire();
@@ -515,9 +495,8 @@ void
 Sys_wstat(void *fp)
 {
 	Dir *d;
-	F_Sys_wstat *f;
+	F_Sys_wstat *f = (F_Sys_wstat *)fp;
 
-	f = fp;
 	d = packdir(&f->d);
 	release();
 	*f->ret = kdirwstat(string2c(f->s), d);
@@ -529,9 +508,8 @@ void
 Sys_fwstat(void *fp)
 {
 	Dir *d;
-	F_Sys_fwstat *f;
+	F_Sys_fwstat *f = (F_Sys_fwstat *)fp;
 
-	f = fp;
 	d = packdir(&f->d);
 	release();
 	*f->ret = kdirfwstat(fdchk(f->fd), d);
@@ -546,8 +524,8 @@ Sys_print(void *fp)
 	Prog *p;
 	Chan *c;
 	char buf[1024], *b = buf;
-	F_Sys_print *f;
-	f = fp;
+	F_Sys_print *f = (F_Sys_print *)fp;
+
 	c = up->env->fgrp->fd[1];
 	if(c == nil)
 		return;
@@ -569,9 +547,8 @@ Sys_fprint(void *fp)
 	int n;
 	Prog *p;
 	char buf[1024], *b = buf;
-	F_Sys_fprint *f;
+	F_Sys_fprint *f = (F_Sys_fprint *)fp;
 
-	f = fp;
 	p = currun();
 	release();
 	n = xprint(p, f, &f->vargs, f->s, buf, sizeof(buf));
@@ -586,9 +563,8 @@ Sys_fprint(void *fp)
 void
 Sys_werrstr(void *fp)
 {
-	F_Sys_werrstr *f;
+	F_Sys_werrstr *f = (F_Sys_werrstr *)fp;
 
-	f = fp;
 	*f->ret = 0;
 	kstrcpy(up->env->errstr, string2c(f->s), ERRMAX);
 }
@@ -598,18 +574,17 @@ Sys_dial(void *fp)
 {
 	int cfd;
 	char dir[NETPATHLEN], *a, *l;
-	F_Sys_dial *f;
+	F_Sys_dial *f = (F_Sys_dial *)fp;
 
-	f = fp;
 	a = string2c(f->addr);
 	l = string2c(f->local);
 	release();
 	f->ret->t0 = kdial(a, l, dir, &cfd);
 	acquire();
 	destroy(f->ret->t1.dfd);
-	f->ret->t1.dfd = H;
+	f->ret->t1.dfd = (Sys_FD*)H;
 	destroy(f->ret->t1.cfd);
-	f->ret->t1.cfd = H;
+	f->ret->t1.cfd = (Sys_FD*)H;
 	if(f->ret->t0 == -1)
 		return;
 
@@ -623,17 +598,16 @@ void
 Sys_announce(void *fp)
 {
 	char dir[NETPATHLEN], *a;
-	F_Sys_announce *f;
+	F_Sys_announce *f = (F_Sys_announce *)fp;
 
-	f = fp;
 	a = string2c(f->addr);
 	release();
 	f->ret->t0 = kannounce(a, dir);
 	acquire();
 	destroy(f->ret->t1.dfd);
-	f->ret->t1.dfd = H;
+	f->ret->t1.dfd = (Sys_FD*)H;
 	destroy(f->ret->t1.cfd);
-	f->ret->t1.cfd = H;
+	f->ret->t1.cfd = (Sys_FD*)H;
 	if(f->ret->t0 == -1)
 		return;
 
@@ -645,19 +619,18 @@ Sys_announce(void *fp)
 void
 Sys_listen(void *fp)
 {
-	F_Sys_listen *f;
+	F_Sys_listen *f = (F_Sys_listen *)fp;
 	char dir[NETPATHLEN], *d;
 
-	f = fp;
 	d = string2c(f->c.dir);
 	release();
 	f->ret->t0 = klisten(d, dir);
 	acquire();
 
 	destroy(f->ret->t1.dfd);
-	f->ret->t1.dfd = H;
+	f->ret->t1.dfd = (Sys_FD*)H;
 	destroy(f->ret->t1.cfd);
-	f->ret->t1.cfd = H;
+	f->ret->t1.cfd = (Sys_FD*)H;
 	if(f->ret->t0 == -1)
 		return;
 
@@ -669,9 +642,8 @@ Sys_listen(void *fp)
 void
 Sys_sleep(void *fp)
 {
-	F_Sys_sleep *f;
+	F_Sys_sleep *f = (F_Sys_sleep *)fp;
 
-	f = fp;
 	release();
 	if(f->period > 0){
 		if(waserror()){
@@ -690,13 +662,12 @@ void
 Sys_stream(void *fp)
 {
 	Prog *p;
-	uchar *buf;
+	char *buf;
 	int src, dst;
-	F_Sys_stream *f;
+	F_Sys_stream *f = (F_Sys_stream *)fp;
 	int nbytes, t, n;
 
-	f = fp;
-	buf = malloc(f->bufsiz);
+	buf = (char *)malloc(f->bufsiz);
 	if(buf == nil) {
 		kwerrstr(Enomem);
 		*f->ret = -1;
@@ -738,9 +709,8 @@ Sys_stream(void *fp)
 void
 Sys_export(void *fp)
 {
-	F_Sys_export *f;
+	F_Sys_export *f = (F_Sys_export *)fp;
 
-	f = fp;
 	release();
 	*f->ret = export(fdchk(f->c), string2c(f->dir), f->flag&Sys_EXPASYNC);
 	acquire();
@@ -753,7 +723,7 @@ Sys_file2chan(void *fp)
 	Heap *h;
 	Channel *c;
 	Sys_FileIO *fio;
-	F_Sys_file2chan *f;
+	F_Sys_file2chan *f = (F_Sys_file2chan *)fp;
 	void *sv;
 
 	h = heap(TFileIO);
@@ -766,7 +736,6 @@ Sys_file2chan(void *fp)
 	c = cnewc(FioTwrite, movertmp, 16);
 	fio->write = c;
 
-	f = fp;
 	sv = *f->ret;
 	*f->ret = fio;
 	destroy(sv);
@@ -775,7 +744,7 @@ Sys_file2chan(void *fp)
 	r = srvf2c(string2c(f->dir), string2c(f->file), fio);
 	acquire();
 	if(r == -1) {
-		*f->ret = H;
+		*f->ret = (Sys_FileIO*)H;
 		destroy(fio);
 	}
 }
@@ -797,12 +766,10 @@ Sys_pctl(void *fp)
 	Pgrp *opg;
 	Chan *dot;
 	Osenv *o;
-	F_Sys_pctl *f;
+	F_Sys_pctl *f = (F_Sys_pctl *)fp;
 	Fgrp *fg, *ofg, *nfg;
 	volatile struct {Egrp *ne;} ne;
 	Egrp *oe;
-
-	f = fp;
 
 	p = currun();
 	if(f->flags & BlockingPctl)
@@ -912,14 +879,13 @@ Sys_dirread(void *fp)
 	Dir *b;
 	int i, n;
 	Heap *h;
-	uchar *d;
+	char *d;
 	void *r;
-	F_Sys_dirread *f;
+	F_Sys_dirread *f = (F_Sys_dirread *)fp;
 
-	f = fp;
 	f->ret->t0 = -1;
 	r = f->ret->t1;
-	f->ret->t1 = H;
+	f->ret->t1 = (Array*)H;
 	destroy(r);
 	release();
 	n = kdirread(fdchk(f->fd), &b);
@@ -949,12 +915,11 @@ void
 Sys_fauth(void *fp)
 {
 	int fd;
-	F_Sys_fauth *f;
+	F_Sys_fauth *f = (F_Sys_fauth *)fp;
 	void *r;
 
-	f = fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (Sys_FD*)H;
 	destroy(r);
 	release();
 	fd = kfauth(fdchk(f->fd), string2c(f->aname));
@@ -967,14 +932,13 @@ void
 Sys_fversion(void *fp)
 {
 	void *r;
-	F_Sys_fversion *f;
+	F_Sys_fversion *f = (F_Sys_fversion *)fp;
 	int n;
 	char buf[20], *s;
 
-	f = fp;
 	f->ret->t0 = -1;
 	r = f->ret->t1;
-	f->ret->t1 = H;
+	f->ret->t1 = (String*)H;
 	destroy(r);
 	s = string2c(f->version);
 	n = strlen(s);
@@ -994,9 +958,8 @@ Sys_fversion(void *fp)
 void
 Sys_iounit(void *fp)
 {
-	F_Sys_iounit *f;
+	F_Sys_iounit *f = (F_Sys_iounit *)fp;
 
-	f = fp;
 	release();
 	*f->ret = kiounit(fdchk(f->fd));
 	acquire();
@@ -1035,7 +998,7 @@ crecv(Channel *c, void *ip)
 
 	rsav = R;
 	R.s = (Disdata*) &c;
-	R.d = ip;
+	R.d = (Disdata*) ip;
 	irecv(); /* FIXME: args passed via R  */
 	R = rsav;
 }
@@ -1054,7 +1017,7 @@ csend(Channel *c, void *ip)
 	}
 
 	rsav = R;
-	R.s = ip;
+	R.s = (Disdata*) ip;
 	R.d = (Disdata*) &c;
 	isend(); /* FIXME: args passed via R  */
 	R = rsav;

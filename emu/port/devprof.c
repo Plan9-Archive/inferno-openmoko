@@ -178,7 +178,7 @@ freeprof(void)
 }
 
 static int
-profgen(Chan *c, char *name, Dirtab *d, int nd, int s, Dir *dp)
+profgen(Chan *c, const char *name, Dirtab *d, int nd, int s, Dir *dp)
 {
 	Qid qid;
 	Record *r;
@@ -244,7 +244,7 @@ profattach(const char *spec)
 }
 
 static Walkqid*
-profwalk(Chan *c, Chan *nc, char **name, int nname)
+profwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, 0, 0, profgen);
 }

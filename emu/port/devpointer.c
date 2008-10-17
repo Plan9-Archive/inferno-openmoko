@@ -141,7 +141,7 @@ pointerattach(const char* spec)
 }
 
 static Walkqid*
-pointerwalk(Chan *c, Chan *nc, char **name, int nname)
+pointerwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	Walkqid *wq;
 

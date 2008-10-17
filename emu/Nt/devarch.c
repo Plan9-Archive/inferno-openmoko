@@ -131,13 +131,13 @@ archattach(const char* spec)
 }
 
 static Walkqid*
-archwalk(Chan *c, Chan *nc, char **name, int nname)
+archwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, archtab, nelem(archtab), devgen);
 }
 
 static int
-archstat(Chan* c, uchar *db, int n)
+archstat(Chan* c, char *db, int n)
 {
 	return devstat(c, db, n, archtab, nelem(archtab), devgen);
 }

@@ -377,7 +377,7 @@ mntchan(void)
 }
 
 static Walkqid*
-mntwalk(Chan *c, Chan *nc, char **name, int nname)
+mntwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	volatile int alloc;
 	int i;
@@ -1047,7 +1047,7 @@ mntralloc(Chan *c, size_t msize)
 	lock(&mntalloc.l);
 	new = mntalloc.rpcfree;
 	if(new == nil){
-		new = malloc(sizeof(Mntrpc));
+		new = (Mntrpc*)malloc(sizeof(Mntrpc));
 		if(new == nil) {
 			unlock(&mntalloc.l);
 			exhausted("mount rpc header");
@@ -1056,7 +1056,7 @@ mntralloc(Chan *c, size_t msize)
 		 * The header is split from the data buffer as
 		 * mountmux may swap the buffer with another header.
 		 */
-		new->rpc = mallocz(msize, 0);
+		new->rpc = (char*)mallocz(msize, 0);
 		if(new->rpc == nil){
 			free(new);
 			unlock(&mntalloc.l);
@@ -1075,7 +1075,7 @@ mntralloc(Chan *c, size_t msize)
 		mntalloc.nrpcfree--;
 		if(new->rpclen < msize){
 			free(new->rpc);
-			new->rpc = mallocz(msize, 0);
+			new->rpc = (char*)mallocz(msize, 0);
 			if(new->rpc == nil){
 				free(new);
 				mntalloc.nrpcused--;

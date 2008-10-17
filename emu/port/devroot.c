@@ -27,7 +27,7 @@ rootattach(const char *spec)
 }
 
 static int
-rootgen(Chan *c, char *name, Dirtab *tab, int nd, int s, Dir *dp)
+rootgen(Chan *c, const char *name, Dirtab *tab, int nd, int s, Dir *dp)
 {
 	int p, i;
 	Rootdata *r;
@@ -66,7 +66,7 @@ rootgen(Chan *c, char *name, Dirtab *tab, int nd, int s, Dir *dp)
 }
 
 static Walkqid*
-rootwalk(Chan *c, Chan *nc, char **name, int nname)
+rootwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	ulong p;
 
@@ -97,13 +97,13 @@ rootopen(Chan *c, int omode)
 /*
  * sysremove() knows this is a nop
  */
-static void	 
+static void
 rootclose(Chan *c)
 {
 	USED(c);
 }
 
-static long	 
+static long
 rootread(Chan *c, char *buf, long n, vlong offset)
 {
 	ulong p, len;
@@ -122,7 +122,7 @@ rootread(Chan *c, char *buf, long n, vlong offset)
 	return n;
 }
 
-static long	 
+static long
 rootwrite(Chan *c, const char *a, long n, vlong off)
 {
 	USED(c); USED(a); USED(n); USED(off);

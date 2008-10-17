@@ -59,7 +59,7 @@ uqidalloc(Uqidtab *tab, Chan *c)
 		qunlock(&tab->l);
 		return q;
 	}
-	q = mallocz(sizeof(*q), 1);
+	q = (Uqid *)mallocz(sizeof(*q), 1);
 	if(q == nil){
 		qunlock(&tab->l);
 		error(Enomem);

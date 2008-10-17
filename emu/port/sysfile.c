@@ -16,7 +16,7 @@ growfd(Fgrp *f, int fd)
 		n = MAXNFD;
 	if(fd >= n)
 		return -1;
-	nfd = malloc(n*sizeof(Chan*));
+	nfd = (Chan**)malloc(n*sizeof(Chan*));
 	if(nfd == nil)
 		return -1;
 	ofd = f->fd;
@@ -82,7 +82,7 @@ bad:
 }
 
 long
-kchanio(Chan *c, void *buf, int n, int mode)
+kchanio(Chan *c, char *buf, int n, int mode)
 {
 	int r;
 
@@ -243,7 +243,7 @@ kdup(int old, int new)
 }
 
 int
-kfstat(int fd, uchar *buf, int n)
+kfstat(int fd, char *buf, int n)
 {
 	volatile struct { Chan *c; } c;
 
@@ -270,7 +270,7 @@ kfd2path(int fd)
 	c = fdtochan(up->env->fgrp, fd, -1, 0, 1);
 	s = nil;
 	if(c->name != nil){
-		s = malloc(c->name->len+1);
+		s = (char*)malloc(c->name->len+1);
 		if(s == nil){
 			cclose(c);
 			error(Enomem);
@@ -390,7 +390,7 @@ kpipe(int fd[2])
 }
 
 int
-kfwstat(int fd, uchar *buf, int n)
+kfwstat(int fd, char *buf, int n)
 {
 	volatile struct { Chan *c; } c;
 
@@ -539,7 +539,7 @@ kopen(char *path, int mode)
 }
 
 long
-unionread(Chan *c, void *va, long n)
+unionread(Chan *c, char *va, long n)
 {
 	int i;
 	long nr;
@@ -598,7 +598,7 @@ unionrewind(Chan *c)
 }
 
 static long
-rread(int fd, void *va, long n, vlong *offp)
+rread(int fd, char *va, long n, vlong *offp)
 {
 	int dir;
 	Lock *cl;
@@ -653,13 +653,13 @@ rread(int fd, void *va, long n, vlong *offp)
 }
 
 long
-kread(int fd, void *va, long n)
+kread(int fd, char *va, long n)
 {
 	return rread(fd, va, n, nil);
 }
 
 long
-kpread(int fd, void *va, long n, vlong off)
+kpread(int fd, char *va, long n, vlong off)
 {
 	return rread(fd, va, n, &off);
 }
@@ -762,7 +762,7 @@ kseek(int fd, vlong off, int whence)
 }
 
 void
-validstat(char *s, int n)
+validstat(const char *s, int n)
 {
 	int m;
 	char buf[64];
@@ -789,7 +789,7 @@ validstat(char *s, int n)
 }
 
 int
-kstat(char *path, uchar *buf, int n)
+kstat(char *path, char *buf, int n)
 {
 	volatile struct { Chan *c; } c;
 
@@ -806,7 +806,7 @@ kstat(char *path, uchar *buf, int n)
 }
 
 static long
-rwrite(int fd, void *va, long n, vlong *offp)
+rwrite(int fd, const char *va, long n, vlong *offp)
 {
 	Lock *cl;
 	volatile struct { Chan *c; } c;
@@ -862,19 +862,19 @@ rwrite(int fd, void *va, long n, vlong *offp)
 }
 
 long
-kwrite(int fd, void *va, long n)
+kwrite(int fd, char *va, long n)
 {
 	return rwrite(fd, va, n, nil);
 }
 
 long
-kpwrite(int fd, void *va, long n, vlong off)
+kpwrite(int fd, const char *va, long n, vlong off)
 {
 	return rwrite(fd, va, n, &off);
 }
 
 int
-kwstat(char *path, uchar *buf, int n)
+kwstat(char *path, char *buf, int n)
 {
 	volatile struct { Chan *c; } c;
 
@@ -901,13 +901,13 @@ Dir*
 chandirstat(Chan *c)
 {
 	Dir *d;
-	uchar *buf;
+	char *buf;
 	int n, nd, i;
 
 	nd = DIRSIZE;
 	for(i=0; i<2; i++){	/* should work by the second try */
-		d = smalloc(sizeof(Dir) + nd);
-		buf = (uchar*)&d[1];
+		d = (Dir*)smalloc(sizeof(Dir) + nd);
+		buf = (char*)&d[1];
 		if(waserror()){
 			free(d);
 			return nil;
@@ -918,7 +918,7 @@ chandirstat(Chan *c)
 			free(d);
 			return nil;
 		}
-		nd = GBIT16((uchar*)buf) + BIT16SZ;	/* size needed to store whole stat buffer including count */
+		nd = GBIT16(buf) + BIT16SZ;	/* size needed to store whole stat buffer including count */
 		if(nd <= n){
 			convM2D(buf, n, d, (char*)&d[1]);
 			return d;
@@ -969,11 +969,11 @@ kdirfstat(int fd)
 int
 kdirwstat(char *name, Dir *dir)
 {
-	uchar *buf;
+	char *buf;
 	int r;
 
 	r = sizeD2M(dir);
-	buf = smalloc(r);
+	buf = (char*)smalloc(r);
 	convD2M(dir, buf, r);
 	r = kwstat(name, buf, r);
 	free(buf);
@@ -983,11 +983,11 @@ kdirwstat(char *name, Dir *dir)
 int
 kdirfwstat(int fd, Dir *dir)
 {
-	uchar *buf;
+	char *buf;
 	int r;
 
 	r = sizeD2M(dir);
-	buf = smalloc(r);
+	buf = (char*)smalloc(r);
 	convD2M(dir, buf, r);
 	r = kfwstat(fd, buf, r);
 	free(buf);
@@ -995,7 +995,7 @@ kdirfwstat(int fd, Dir *dir)
 }
 
 static long
-dirpackage(uchar *buf, long ts, Dir **d)
+dirpackage(char *buf, long ts, Dir **d)
 {
 	char *s;
 	long ss, i, n, nn, m;
@@ -1020,7 +1020,7 @@ dirpackage(uchar *buf, long ts, Dir **d)
 	if(i != ts)
 		error("bad directory format");
 
-	*d = malloc(n * sizeof(Dir) + ss);
+	*d = (Dir*)malloc(n * sizeof(Dir) + ss);
 	if(*d == nil)
 		error(Enomem);
 
@@ -1030,7 +1030,7 @@ dirpackage(uchar *buf, long ts, Dir **d)
 	s = (char*)*d + n * sizeof(Dir);
 	nn = 0;
 	for(i = 0; i < ts; i += m){
-		m = BIT16SZ + GBIT16((uchar*)&buf[i]);
+		m = BIT16SZ + GBIT16(&buf[i]);
 		if(nn >= n || convM2D(&buf[i], m, *d + nn, s) != m){
 			free(*d);
 			*d = nil;
@@ -1046,13 +1046,13 @@ dirpackage(uchar *buf, long ts, Dir **d)
 long
 kdirread(int fd, Dir **d)
 {
-	uchar *buf;
+	char *buf;
 	long ts;
 
 	*d = nil;
 	if(waserror())
 		return -1;
-	buf = malloc(DIRREADLIM);
+	buf = (char*)malloc(DIRREADLIM);
 	if(buf == nil)
 		error(Enomem);
 	if(waserror()){

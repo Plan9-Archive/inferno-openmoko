@@ -9,7 +9,7 @@ static int
 ncmdfield(const char *p, int n)
 {
 	int white, nwhite;
-	char *ep;
+	const char *ep;
 	int nf;
 
 	if(p == nil)
@@ -40,7 +40,7 @@ parsecmd(const char *p, int n)
 	nf = ncmdfield(p, n);
 
 	/* allocate Cmdbuf plus string pointers plus copy of string including \0 */
-	sp = smalloc(sizeof(*cb) + nf * sizeof(char*) + n + 1);
+	sp = (char*)smalloc(sizeof(*cb) + nf * sizeof(char*) + n + 1);
 	cb = (Cmdbuf*)sp;
 	cb->f = (char**)(&cb[1]);
 	cb->buf = (char*)(&cb->f[nf]);

@@ -28,7 +28,7 @@ devno(int c, int user)
 }
 
 void
-devdir(Chan *c, Qid qid, char *n, long length, char *user, long perm, Dir *db)
+devdir(Chan *c, Qid qid, const char *n, long length, char *user, long perm, Dir *db)
 {
 	db->name = n;
 	if(c->flag&CMSG)
@@ -86,7 +86,7 @@ devattach(int tc, const char *spec)
 	c->type = devno(tc, 0);
 	if(spec == nil)
 		spec = "";
-	buf = smalloc(4+strlen(spec)+1);
+	buf = (char*)smalloc(4+strlen(spec)+1);
 	sprint(buf, "#%C%s", tc, spec);
 	c->name = newcname(buf);
 	free(buf);
@@ -116,12 +116,12 @@ devclone(Chan *c)
 }
 
 Walkqid*
-devwalk(Chan *c, Chan *nc, char **name, int nname, Dirtab *tab, int ntab, Devgen *gen)
+devwalk(Chan *c, Chan *nc, const char **name, int nname, Dirtab *tab, int ntab, Devgen *gen)
 {
 	int i, j;
 	volatile int alloc;
 	Walkqid *wq;
-	char *n;
+	const char *n;
 	Dir dir;
 
 	if(nname > 0)
@@ -273,7 +273,7 @@ devdirread(Chan *c, char *d, long n, Dirtab *tab, int ntab, Devgen *gen)
 			break;
 
 		case 1:
-			dsz = convD2M(&dir.d, (uchar*)d, n-m);
+			dsz = convD2M(&dir.d, d, n-m);
 			if(dsz <= BIT16SZ){	/* <= not < because this isn't stat; read is stuck */
 				if(m == 0)
 					error(Eshort);
@@ -292,7 +292,7 @@ devdirread(Chan *c, char *d, long n, Dirtab *tab, int ntab, Devgen *gen)
  * error(Eperm) if open permission not granted for up->env->user.
  */
 void
-devpermcheck(char *fileuid, ulong perm, int omode)
+devpermcheck(const char *fileuid, ulong perm, int omode)
 {
 	ulong t;
 	static int access[] = { 0400, 0200, 0600, 0100 };
@@ -431,7 +431,7 @@ readnum(ulong off, char *buf, ulong n, ulong val, int size)
  * check that the name in a wstat is plausible
  */
 void
-validwstatname(char *name)
+validwstatname(const char *name)
 {
 	validname(name, 0);
 	if(strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
@@ -439,7 +439,7 @@ validwstatname(char *name)
 }
 
 Dev*
-devbyname(char *name)
+devbyname(const char *name)
 {
 	int i;
 

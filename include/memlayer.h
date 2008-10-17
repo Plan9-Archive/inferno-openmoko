@@ -1,7 +1,9 @@
 #pragma src "/usr/inferno/libmemlayer"
 
 typedef struct Memscreen Memscreen;
-typedef void (*Refreshfn)(Memimage*, Rectangle, void*);
+typedef struct Refx Refx;
+typedef void (*Refreshfn)(Memimage*, Rectangle, Refx*);
+
 
 struct Memscreen
 {
@@ -34,7 +36,7 @@ int			memunload(Memimage*, Rectangle, const uchar*, int);
  * All these functions accept screen coordinates, not local ones.
  */
 void			_memlayerop(void (*fn)(Memimage*, Rectangle, Rectangle, void*, int), Memimage*, Rectangle, Rectangle, void*);
-Memimage*	memlalloc(Memscreen*, Rectangle, Refreshfn, void*, ulong);
+Memimage*		memlalloc(Memscreen*, Rectangle, Refreshfn, void*, ulong);
 void			memldelete(Memimage*);
 void			memlfree(Memimage*);
 void			memltofront(Memimage*);
@@ -42,9 +44,9 @@ void			memltofrontn(Memimage**, int);
 void			_memltofrontfill(Memimage*, int);
 void			memltorear(Memimage*);
 void			memltorearn(Memimage**, int);
-int			memlsetrefresh(Memimage*, Refreshfn, void*);
+int			memlsetrefresh(Memimage*, Refreshfn, Refx*);
 void			memlhide(Memimage*, Rectangle);
 void			memlexpose(Memimage*, Rectangle);
 void			_memlsetclear(Memscreen*);
 int			memlorigin(Memimage*, Point, Point);
-void			memlnorefresh(Memimage*, Rectangle, void*);
+void			memlnorefresh(Memimage*, Rectangle, Refx*);

@@ -61,7 +61,7 @@ struct Exq
 	Export*	export;
 	Proc*	slave;
 	Fcall	in, out;
-	uchar*	buf;
+	char*	buf;
 	int	bsize;
 };
 
@@ -127,7 +127,7 @@ export(int fd, char *dir, int async)
 	dc = namec(dir, Atodir, 0, 0);
 	poperror();
 
-	fs = malloc(sizeof(Export));
+	fs = (Export*)malloc(sizeof(Export));
 	if(fs == nil){
 		cclose(c);
 		cclose(dc);
@@ -210,12 +210,10 @@ exreadn(Chan *c, void *buf, int n)
 }
 
 static int
-exreadmsg(Chan *c, void *a, uint n)
+exreadmsg(Chan *c, char *buf, uint n)
 {
 	int m, len;
-	uchar *buf;
 
-	buf = a;
 	m = exreadn(c, buf, BIT32SZ);
 	if(m < BIT32SZ){
 		if(m < 0)
@@ -243,7 +241,7 @@ exportproc(void *a)
 	Exq *q;
 	int async, msize;
 	int n, type;
-	Export *fs = a;
+	Export *fs = (Export *)a;
 
 	exportinit();
 
@@ -253,13 +251,13 @@ exportproc(void *a)
 		if(msize == 0)
 			msize = MAXRPCDEF;
 		for(n=0;; n++){	/* we don't use smalloc, to avoid memset */
-			q = mallocz(sizeof(*q)+msize, 0);
+			q = (Exq *)mallocz(sizeof(*q)+msize, 0);
 			if(q != nil || n > 6000)
 				break;
 			if(n%600 == 0)
 				print("exportproc %ld: waiting for memory (%d) for request\n", up->pid, msize);
 			osenter(); /* BUG WTF */
-			osmillisleep(100); 
+			osmillisleep(100);
 			osleave();
 		}
 		if(q == nil){
@@ -268,7 +266,7 @@ exportproc(void *a)
 			break;
 		}
 		memset(q, 0, sizeof(*q));
-		q->buf = (uchar*)q + sizeof(*q);
+		q->buf = (char*)q + sizeof(*q);
 		q->bsize = msize;
 
 		n = exreadmsg(fs->io, q->buf, msize);	/* TO DO: avoid copy */
@@ -658,7 +656,7 @@ Exmkfid(Export *fs, ulong fid)
 	ulong h;
 	Fid *f, *nf;
 
-	nf = malloc(sizeof(Fid));
+	nf = (Fid *)malloc(sizeof(Fid));
 	if(nf == nil)
 		return nil;
 	lock(&fs->fidlock);

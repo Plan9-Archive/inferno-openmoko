@@ -78,7 +78,7 @@ capattach(const char *spec)
 }
 
 static Walkqid*
-capwalk(Chan *c, Chan *nc, char **name, int nname)
+capwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, capdir, nelem(capdir), devgen);
 }

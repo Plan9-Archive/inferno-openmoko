@@ -416,7 +416,7 @@ builtinmod(char *name, void *vr, int rlen)
 }
 
 void
-retnstr(char *s, int n, String **d)
+retnstr(const char *s, int n, String **d)
 {
 	String *s1;
 
@@ -428,7 +428,7 @@ retnstr(char *s, int n, String **d)
 }
 
 void
-retstr(char *s, String **d)
+retstr(const char *s, String **d)
 {
 	String *s1;
 

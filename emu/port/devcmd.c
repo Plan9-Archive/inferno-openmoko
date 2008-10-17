@@ -88,7 +88,7 @@ cmd3gen(Chan *c, int i, Dir *dp)
 }
 
 static int
-cmdgen(Chan *c, char *name, Dirtab *d, int nd, int s, Dir *dp)
+cmdgen(Chan *c, const char *name, Dirtab *d, int nd, int s, Dir *dp)
 {
 	Qid q;
 	Conv *cv;
@@ -176,7 +176,7 @@ cmdattach(const char *spec)
 }
 
 static Walkqid*
-cmdwalk(Chan *c, Chan *nc, char **name, int nname)
+cmdwalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, 0, 0, cmdgen);
 }

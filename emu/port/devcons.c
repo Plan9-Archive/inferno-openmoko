@@ -194,7 +194,7 @@ consattach(const char *spec)
 }
 
 static Walkqid*
-conswalk(Chan *c, Chan *nc, char **name, int nname)
+conswalk(Chan *c, Chan *nc, const char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, contab, nelem(contab), devgen);
 }
@@ -656,7 +656,7 @@ truerand(void)
 {
 	ulong x;
 
-	randomread(&x, sizeof(x));
+	randomread((char*)&x, sizeof(x));
 	return x;
 }
 
