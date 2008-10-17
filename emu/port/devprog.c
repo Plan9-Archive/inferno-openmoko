@@ -1366,7 +1366,7 @@ dbgblock(Prog *p)
 	if(ctl != nil)
 		qproduce(ctl->q, "run", 3);
 }
-
+extern REG R;
 void
 dbgxec(Prog *p)
 {

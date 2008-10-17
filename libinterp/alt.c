@@ -3,14 +3,9 @@
 #include "interp.h"
 #include "raise.h"
 
-#define OP(fn)	void fn(void)
-//#define W(p)	*((DISINT*)(p))
 
 #define CANGET(c)	((c)->size > 0)
 #define CANPUT(c)	((c)->buf != H && (c)->size < (c)->buf->len)
-
-extern	OP(isend);
-extern	OP(irecv);
 
 /*
  * Count the number of ready channels in an array of channels
@@ -182,11 +177,12 @@ altdone(Alt *a, Prog *p, Channel *sel, int sr)
 	}
 }
 
+
 /*
  * ALT Pass 2 - Perform the communication on the chosen channel
  */
-static void
-altcomm(Alt *a, int which)
+static int
+altcomm(Alt *a, int which, DISINT* ret)
 {
 	Type *t;
 	Array *r;
@@ -201,11 +197,8 @@ altcomm(Alt *a, int which)
 	while(ac < eac) {
 		c = ac->c;
 		if((c->recv->prog != nil || CANPUT(c)) && which-- == 0) {
-			R.d->disint = n;
-			R.s = ac->ptr;
-			R.d = &c;
-			isend(); /* FIXME: pass via R */
-			return;
+			*ret = n;
+			return _isend(c, ac->ptr);
 		}
 		ac++;
 		n++;
@@ -223,13 +216,10 @@ altcomm(Alt *a, int which)
 			while(ca < ec) {
 				c = *ca;
 				if(c != H && (c->send->prog != nil || CANGET(c)) && which-- == 0) {
-					R.d->disint = n;
-					R.s = &c;
+					*ret  = n;
 					ptr = ac->ptr;
-					R.d = ptr + 1;
 					ptr[0] = an;
-					irecv();  /* FIXME: pass via R */
-					return;
+					return _irecv(c, ptr+1);
 				}
 				ca++;
 				an++;
@@ -237,16 +227,13 @@ altcomm(Alt *a, int which)
 		}
 		else
 		if((c->send->prog != nil || CANGET(c)) && which-- == 0) {
-			R.d->disint = n;
-			R.s = &c;
-			R.d = ac->ptr;
-			irecv();  /* FIXME: pass via R */
-			return;
+			*ret  = n;
+			return _irecv(c, ac->ptr);
 		}
 		ac++;
 		n++;
 	}
-	return;
+	return 0;
 }
 
 void
@@ -262,33 +249,32 @@ altgone(Prog *p)
 	}
 }
 
-void
-xecalt(int block)
+
+int
+xecalt(int block, Alt *a, DISINT* ret)
 {
-	Alt *a;
 	Prog *p;
 	int nrdy;
 	static ulong xrand = 0x20342;
+	int ic1;
 
 	p = currun();
 
-	a = &R.s->alt;
 	nrdy = altrdy(a, p);
 	if(nrdy == 0) {
 		if(block) {
 			delrun(Palt);
-			p->R.s = R.s;
-			p->R.d = R.d;
-			R.IC = 1;
-			R.t = 1;
-			return;
+			p->R.s = (Disdata*) a;
+			p->R.d = (Disdata*) ret;
+			return 1;
 		}
-		R.d->disint = a->nsend + a->nrecv;
+		*ret = a->nsend + a->nrecv;
 		altdone(a, p, nil, -1);
-		return;
+		return 0;
 	}
 
 	xrand = xrand*1103515245 + 12345;
-	altcomm(a, (xrand>>8)%nrdy);
+	ic1 = altcomm(a, (xrand>>8)%nrdy, ret);
 	altdone(a, p, nil, -1);
+	return ic1;
 }

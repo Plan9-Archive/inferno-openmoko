@@ -93,6 +93,7 @@ union Disdata
 {
 	DISBYTE		disbyte;
 	DISINT		disint;
+	DISINT		disints[1]; 	/* for igoto */
 	DISBIG		disbig;
 	DISREAL		disreal;
 	DISINT16	disint16;
@@ -149,7 +150,7 @@ struct Channel
 	union {
 		SrvFile*srv;		/* devsrv */
 	} aux;
-	void		(*mover)(void);	/* Data mover */
+	void		(*mover)(void*d, void*s, Channel*c);	/* Data mover */
 	union {
 		DISINT	w;
 		Type*	t;
@@ -250,7 +251,7 @@ struct REG
 	Disdata*	s;		/* Source */
 	Disdata*	d;		/* Destination */
 	Disdata*	m;		/* Middle */
-	DISINT		t;		/* Middle temporary */
+	DISINT		tt;		/* Middle temporary */
 #if OBJTYPE!=386
 	DISINT		st;		/* Source temporary */
 	DISINT		dt;		/* Destination temporary */
@@ -419,7 +420,7 @@ extern	Type	Tbyte;
 extern	Type	Tword;
 extern	Type	Tlong;
 extern	Type	Treal;
-extern	REG	R;
+/*extern	REG	R;*/
 extern	String	snil;
 extern	void	(*optab[256])(void);
 extern	void	(*comvec)(void);
@@ -540,7 +541,7 @@ extern	void		ptradd(Heap*);
 extern	void		ptrdel(Heap*);
 extern	void		pushrun(Prog*);
 extern	Module*		readmod(const char*, Module*, int sync);
-extern	void		irecv(void);
+extern	int 		_irecv(Channel *c, void* v);
 extern	void		release(void);
 extern	void		releasex(void);
 extern	void		retnstr(const char*, int, String**);
@@ -549,7 +550,7 @@ extern	void		rungc(Prog*);
 extern	void		runtime(Module*, Link*, char*, int, void(*)(void*), Type*);
 extern	void		safemem(void*, Type*, void (*)(void*));
 extern	int		segflush(void *, ulong);
-extern	void		isend(void);
+extern	int		_isend(Channel *c, void *v);
 extern	void		setdbreg(uchar*);
 extern	uchar*		setdbloc(uchar*);
 extern	void		seterror(char*, ...);
@@ -568,7 +569,7 @@ extern	void		tkmodinit(void);
 extern	void		unload(Module*);
 extern	int		verifysigner(uchar*, int, uchar*, ulong);
 extern	void		xec(Prog*);
-extern	void		xecalt(int);
+extern	int		xecalt(int, Alt *a, DISINT*ret);
 extern	int		xprint(Prog*, void*, void*, String*, char*, int);
 extern	int		bigxprint(Prog*, void*, void*, String*, char**, int);
 extern	void		iyield(void);

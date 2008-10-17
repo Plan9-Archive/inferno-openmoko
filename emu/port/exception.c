@@ -83,6 +83,7 @@ freeframe(uchar *fp, int setsp)
 		R.SP = fp;
 }
 #endif
+extern REG R;
 int
 handler(char *estr)
 {

@@ -202,7 +202,7 @@ void		validname(const char*, int);
 void		validstat(const char*, int);
 void		validwstatname(const char*);
 NORETURN	vmachine(void*);
-int		walk(Chan**, char**, int, int, int*);
+int		walk(Chan**, const char**, int, int, int*);
 NORETURN 	cleanexit(int);
 void		oshostintr(Proc*);
 void		osenter(void);

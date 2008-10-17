@@ -49,7 +49,7 @@ devdir(Chan *c, Qid qid, const char *n, long length, char *user, long perm, Dir 
  * the zeroth element of the table MUST be the directory itself for ..
  */
 int
-devgen(Chan *c, char *name, Dirtab *tab, int ntab, int i, Dir *dp)
+devgen(Chan *c, const char *name, Dirtab *tab, int ntab, int i, Dir *dp)
 {
 	USED(name);
 	if(tab == 0)

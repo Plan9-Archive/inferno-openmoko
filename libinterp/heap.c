@@ -372,8 +372,7 @@ v_heapz(Type *t, const char*file, int line, const char*function)
 	h->ref = 1;
 	h->color = mutator;
 	memset(H2D(void*, h), 0, t->size);
-	if(t->np)
-		initmem(t, H2D(void*, h));
+	initmem(t, H2D(void*, h));
 	if(heapmonitor != nil)
 		heapmonitor(0, h, t->size);
 	return h;
@@ -392,8 +391,7 @@ v_heap(Type *t, const char*file, int line, const char*function)
 	t->ref++;
 	h->ref = 1;
 	h->color = mutator;
-	if(t->np)
-		initmem(t, H2D(void*, h));
+	initmem(t, H2D(void*, h));
 	if(heapmonitor != nil)
 		heapmonitor(0, h, t->size);
 	return h;

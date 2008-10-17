@@ -5,6 +5,7 @@
 #include "pool.h"
 
 #define OP(fn)	void fn(void)
+extern REG R;
 
 OP(indc)
 {

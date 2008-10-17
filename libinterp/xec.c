@@ -10,7 +10,7 @@ REG	R = {0};			/* Virtual Machine registers */ /* BUG: WTF Global R? on multi-pr
 String	snil = {0};			/* String known to be zero length */
 
 
-#define OP(fn)	void fn(void)
+#define OP(fn)	static void fn(void)
 
 
 OP(runt) { }
@@ -65,7 +65,7 @@ OP(shrb) { R.d->disbyte = R.m->disbyte >> R.s->disint; }
 OP(shrw) { R.d->disint = R.m->disint >> R.s->disint; }
 OP(shrl) { R.d->disbig = R.m->disbig >> R.s->disint; }
 OP(lsrw) { R.d->disint = (DISUINT)R.m->disint >> R.s->disint; }
-OP(lsrl) { R.d->disbig = (DISUBIG)(R.m->disbig) >> R.s->disint; }
+OP(lsrl) { R.d->disbig = (DISUBIG)R.m->disbig >> R.s->disint; }
 OP(beqb) { if(R.s->disbyte == R.m->disbyte) R.PC = R.d->pinst; }
 OP(bneb) { if(R.s->disbyte != R.m->disbyte) R.PC = R.d->pinst; }
 OP(bltb) { if(R.s->disbyte <  R.m->disbyte) R.PC = R.d->pinst; }
@@ -253,7 +253,7 @@ OP(movp)
 		ADDREF(sv);
 		Setmark(D2H(sv));
 	}
-	destroy(R.d->pvoid);
+	destroy(R.d->pvoid); /* FIXME: atomic xchg */
 	R.d->pvoid = sv;
 }
 OP(movmp)
@@ -261,18 +261,17 @@ OP(movmp)
 	Type *t = R.M->type[R.m->disint];  /* TODO: check index range */
 
 	incmem(R.s, t);
-	if (t->np)
-		freeptrs(R.d, t);
+	freeptrs(R.d, t);
 	memcpy(R.d, R.s, t->size);
 }
 OP(new)
 {
-	destroy(R.d->pvoid);
+	destroy(R.d->pvoid);  /* FIXME: atomic xchg */
 	R.d->pvoid = H2D(void*, heap(R.M->type[R.s->disint]));  /* TODO: check index range */
 }
 OP(newz)
 {
-	destroy(R.d->pvoid);
+	destroy(R.d->pvoid); /* FIXME: atomic xchg */
 	R.d->pvoid = H2D(void*, heapz(R.M->type[R.s->disint]));  /* TODO: check index range */
 }
 OP(mnewz)
@@ -282,7 +281,7 @@ OP(mnewz)
 	if(ml == H)
 		error(exModule);
 
-	destroy(R.d->pvoid);
+	destroy(R.d->pvoid); /* FIXME: atomic xchg */
 	R.d->pvoid = H2D(void*, heapz(ml->type[R.m->disint]));  /* TODO: check index range */
 }
 OP(frame) /* == newz */
@@ -335,7 +334,7 @@ OP(newa)
 	a->data = (char*)(a+1);
 	initarray(t, a);
 
-	destroy(R.d->parray);
+	destroy(R.d->parray); /* FIXME: atomic xchg */
 	R.d->parray = a;
 }
 OP(newaz)
@@ -357,7 +356,7 @@ OP(newaz)
 	memset(a->data, 0, t->size*sz);
 	initarray(t, a);
 
-	destroy(R.d->parray);
+	destroy(R.d->parray); /* FIXME: atomic xchg */
 	R.d->parray = a;
 }
 Channel*
@@ -399,7 +398,7 @@ newc(Type *t, void (*mover)(void*d, void*s, Channel*c))
 			error(exNegsize);
 	}
 
-	destroy(R.d->pchannel);
+	destroy(R.d->pchannel); /* FIXME: atomic xchg */
 	return R.d->pchannel = cnewc(t, mover, len);
 }
 
@@ -415,7 +414,7 @@ void moverp(void*d, void*s, Channel*c)
 		ADDREF(sv);
 		Setmark(D2H(sv));
 	}
-	destroy(*(void**)d);
+	destroy(*(void**)d); /* FIXME: atomic xchg */
 	*(void**)d = sv;
 }
 void
@@ -424,12 +423,12 @@ movertmp(void*d, void*s, Channel*c)		/* Used by send & receive */
 	Type* t = c->mid.t;
 	incmem(s, t);
 	freeptrs(d, t);
-	memmove(d, s, t->size);
+	memcpy(d, s, t->size);
 }
 static void
 moverm(void*d, void*s, Channel*c)		/* Used by send & receive */
 {
-	memmove(d, s, c->mid.w);
+	memcpy(d, s, c->mid.w);
 }
 
 
@@ -457,10 +456,10 @@ OP(newcmp)
 }
 OP(icase)
 {
-	DISINT v, *t, *l, d, n, n2;
+	DISINT *t, *l, d, n, n2;
+	const DISINT v = R.s->disint;
 
-	v = R.s->disint;
-	t = (DISINT*)((DISINT)R.d + sizeof(DISINT)); /* FIXME */
+	t = R.d->disints + 1; /* FIXME: declare struct */
 	n = t[-1];
 	d = t[n*3];
 
@@ -488,10 +487,9 @@ OP(icase)
 OP(casel)
 {
 	DISINT *t, *l, d, n, n2;
-	DISBIG v;
+	const DISBIG v = R.s->disbig;
 
-	v = R.s->disbig;
-	t = (DISINT*)((DISINT)R.d + 2*sizeof(DISINT)); /* FIXME */
+	t = R.d->disints + 2; /* FIXME: declare struct */
 	n = t[-2];
 	d = t[n*6];
 
@@ -519,10 +517,10 @@ OP(casel)
 OP(casec)
 {
 	DISINT *l, *t, *e, n, n2, r;
-	String *sl, *sh, *sv;
+	String *sl, *sh;
+	const String * const sv = R.s->pstring;
 
-	sv = R.s->pstring;
-	t = (DISINT*)((DISINT)R.d + sizeof(DISINT)); /* FIXME */
+	t = R.d->disints + 1; /* FIXME: declare struct */
 	n = t[-1];
 	e = t + n*3;
 	if(n > 2){
@@ -532,7 +530,7 @@ OP(casec)
 			sl = (String*)l[0];
 			r = stringcmp(sv, sl);
 			if(r == 0){
-				e = &l[2];
+				e = l + 2;
 				break;
 			}
 			if(r < 0){
@@ -545,7 +543,7 @@ OP(casec)
 				n -= n2+1;
 				continue;
 			}
-			e = &l[2];
+			e = l + 2;
 			break;
 		}
 		t = e;
@@ -556,13 +554,13 @@ OP(casec)
 			sh = (String*)t[1];
 			if(sh == H) {
 				if(stringcmp(sl, sv) == 0) {
-					t = &t[2];
+					t += 2;
 					goto found;
 				}
 			}
 			else
 			if(stringcmp(sl, sv) <= 0 && stringcmp(sh, sv) >= 0) {
-				t = &t[2];
+				t += 2;
 				goto found;
 			}
 			t += 3;
@@ -570,21 +568,20 @@ OP(casec)
 	}
 found:
 	if(R.M->compiled) {
-		R.PC = (Inst*)*t;
+		R.PC = (Inst*)t[0];
 		return;
 	}
 	R.PC = R.M->prog + t[0];
 }
 OP(igoto)
 {
-	DISINT *t;
-
-	t = (DISINT*)((DISINT)R.d + (R.s->disint * sizeof(DISINT))); /* FIXME */
+	DISINT* t = R.d->disints + R.s->disint;
 	if(R.M->compiled) {
-		R.PC = (Inst*)t[0];
-		return;
+		R.PC = (Inst*)t[0]; /* FIXME: check index and new PC */
 	}
-	R.PC = R.M->prog + t[0];
+	else {
+		R.PC = R.M->prog + t[0]; /* FIXME: check index and new PC */
+	}
 }
 OP(call)
 {
@@ -642,9 +639,9 @@ OP(ret)
 	if(m != nil) {
 		if(R.M->compiled != m->compiled) {
 			R.IC = 1;
-			R.t = 1;
+			/*R.t = 1; write only*/
 		}
-		destroy(R.M);
+		destroy(R.M); /* FIXME: atomic xchg */
 		R.M = m;
 		R.MP = m->MP;
 	}
@@ -674,7 +671,7 @@ OP(iload)
 		ml = linkmod(m, ldt, 1);
 	}
 
-	destroy(R.d->pmodlink);
+	destroy(R.d->pmodlink); /* FIXME: atomic xchg */
 	R.d->pmodlink = ml;
 }
 OP(mcall)
@@ -714,12 +711,12 @@ OP(mcall)
 		p = currun();
 		if(p->kill != nil)
 			error(p->kill);
-		R.t = 0;
+		/*R.t = 0; write only*/
 		return;
 	}
 	R.MP = R.M->MP;
 	R.PC = l->pc;
-	R.t = 1;
+	/*R.t = 1; write only*/
 
 	if(f->mr->compiled != R.M->compiled)
 		R.IC = 1;
@@ -758,15 +755,9 @@ cgetb(Channel *c, void *v)
 		if(c->front == c->buf->len)
 			c->front = 0;
 		c->size--;
-		//R.s = w;
-		//R.m = (Disdata*) &c->mid;
-		//R.d = v;
-
 		c->mover(v, w, c);
-		if(a->t->np){
-			freeptrs(w, a->t);
-			initmem(a->t, w);
-		}
+		freeptrs(w, a->t);
+		initmem(a->t, w);
 		return 1;
 	}
 	return 0;
@@ -804,6 +795,7 @@ cqsize(Progq *q)
 	return n;
 }
 */
+
 void
 cqadd(Progq **q, Prog *p)
 {
@@ -855,24 +847,19 @@ cqdelp(Progq **q, Prog *p)
 			q = &(*q)->next;
 	}
 }
-OP(isend)
+
+int _isend(Channel *c, void *v)
 {
-	Channel *c = R.d->pchannel;
- 	Prog *p;
+ 	Prog *p = c->recv->prog;
 
-	if(c == H)
-		error(exNilref);
-
-	if((p = c->recv->prog) == nil) {
-		if(c->buf != H && cputb(c, R.s))
-			return;
+	if(p == nil) {
+		if(c->buf != H && cputb(c, v))
+			return 1;
 		p = delrun(Psend);
-		p->ptr = R.s;
+		p->ptr = v;
 		p->chan = c;	/* for killprog */
-		R.IC = 1;
-		R.t = 1;
 		cqadd(&c->send, p);
-		return;
+		return 1;
 	}
 
 	if(c->buf != H && c->size > 0)
@@ -882,29 +869,32 @@ OP(isend)
 	if(p->state == Palt)
 		altdone(&p->R.s->alt, p, c, 1);
 
-	c->mover(p->ptr, R.s, c);
+	c->mover(p->ptr, v, c);
 	p->ptr = nil;
 	addrun(p);
-	R.t = 0;
+	return 0;
 }
-OP(irecv)
+OP(isend)
 {
-	Channel *c = R.s->pchannel;
-	Prog *p;
+	Channel *c = R.d->pchannel;
 
 	if(c == H)
 		error(exNilref);
-
-	if((p = c->send->prog) == nil) {
-		if(c->buf != H && cgetb(c, R.d))
-			return;
-		p = delrun(Precv);
-		p->ptr = R.d;
-		p->chan = c;	/* for killprog */
+	if(_isend(c, R.s))
 		R.IC = 1;
-		R.t = 1;
+}
+int _irecv(Channel *c, void* v)
+{
+	Prog *p = c->send->prog;
+
+	if(p == nil) {
+		if(c->buf != H && cgetb(c, v))
+			return 0;
+		p = delrun(Precv);
+		p->ptr = v;
+		p->chan = c;	/* for killprog */
 		cqadd(&c->recv, p);
-		return;
+		return 1;
 	}
 
 	if(c->buf != H && c->size != c->buf->len)
@@ -915,22 +905,30 @@ OP(irecv)
 		altdone(&p->R.s->alt, p, c, 0);
 
 	if(c->buf != H){
-		cgetb(c, R.d);
+		cgetb(c, v);
 		cputb(c, p->ptr);
 		p->ptr = nil;
 	}
 	else{
-		c->mover(R.d, p->ptr, c);
+		c->mover(v, p->ptr, c);
 		p->ptr = nil;
 	}
 	addrun(p);
-	R.t = 0;
+	return 0;
 }
+OP(irecv)
+{
+	Channel *c = R.s->pchannel;
+
+	if(c == H)
+		error(exNilref);
+	if(_irecv(c, R.d))
+		R.IC = 1;
+}
+
 int
 csendalt(Channel *c, void *ip, Type *t, int len)
 {
-	REG rsav;
-
 	if(c == H)
 		error(exNilref);
 
@@ -942,11 +940,8 @@ csendalt(Channel *c, void *ip, Type *t, int len)
 		}
 		c->buf = H2D(Array*, heaparray(t, len));
 	}
-	rsav = R;
-	R.s = ip;
-	R.d = &c;
-	isend(); /* FIXME */
-	R = rsav;
+	if(_isend(c, ip))
+		R.IC = 1;
 	freeptrs(ip, t);
 	return 1;
 }
@@ -1052,11 +1047,19 @@ OP(headl)
 OP(headp)
 {
 	List *l = R.s->plist;
+	void *sv;
 
 	if(l == H)
 		error(exNilref);
-	R.s = &l->data;
-	movp(); /* FIXME: args passed via R  */
+
+	//was R.s = &l->data; movp();
+	sv = l->data.pvoid;
+	if(sv != H) {
+		ADDREF(sv);
+		Setmark(D2H(sv));
+	}
+	destroy(R.d->pvoid); /* FIXME: atomic xchg */
+	R.d->pvoid = sv;
 }
 OP(headf)
 {
@@ -1077,20 +1080,34 @@ OP(headm)
 OP(headmp)
 {
 	List *l = R.s->plist;
+	Type *t;
 
 	if(l == H)
 		error(exNilref);
-	R.s = &l->data;
-	movmp(); /* FIXME: args passed via R  */
+
+	//was R.s = &l->data; movmp();
+	t = R.M->type[R.m->disint];  /* TODO: check index range */
+	incmem(&l->data, t);
+	freeptrs(R.d, t);
+	memcpy(R.d, &l->data, t->size);
+
 }
 OP(tail)
 {
 	List *l = R.s->plist;
+	List *sv;
 
 	if(l == H)
 		error(exNilref);
-	R.s = (Disdata*) &l->tail;
-	movp(); /* FIXME: args passed via R  */
+
+	//was R.s = (Disdata*) &l->tail; movp();
+	sv = l->tail;
+	if(sv != H) {
+		ADDREF(sv);
+		Setmark(D2H(sv));
+	}
+	destroy(R.d->plist); /* FIXME: atomic xchg */
+	R.d->plist = sv;
 }
 OP(slicea)
 {
@@ -1123,7 +1140,7 @@ OP(slicea)
 	if(ds->root != H) {			/* slicing a slice */
 		ds = ds->root;
 		ADDREF(ds);
-		destroy(R.d->parray);
+		destroy(R.d->parray); /* FIXME: atomic xchg */
 		R.d->parray = ss;
 		ss->root = ds;
 	}
@@ -1166,16 +1183,14 @@ OP(slicela)
 			ep -= t->size;
 			sp -= t->size;
 			incmem(sp, t);
-			if (t->np)
-				freeptrs(ep, t);
+			freeptrs(ep, t);
 		}
 	}
 	else {
 		ep = dp + ss->len*t->size;
 		while(dp < ep) {
 			incmem(sp, t);
-			if (t->np)
-				freeptrs(dp, t);
+			freeptrs(dp, t);
 			dp += t->size;
 			sp += t->size;
 		}
@@ -1184,12 +1199,14 @@ OP(slicela)
 }
 OP(alt)
 {
-	R.t = 0;
-	xecalt(1);
+	/*R.t = 0; write only*/
+	if(xecalt(1, &R.s->alt, &R.d->disint))
+		R.IC = 1;
 }
 OP(nbalt)
 {
-	xecalt(0);
+	if(xecalt(0, &R.s->alt, &R.d->disint))
+		R.IC = 1;
 }
 OP(tcmp)
 {
@@ -1465,7 +1482,7 @@ OP(self)
 
 	ADDREF(ml);
 
-	destroy(R.d->pmodlink);
+	destroy(R.d->pmodlink); /* FIXME: atomic xchg */
 	R.d->pmodlink = ml;
 }
 
@@ -1490,11 +1507,11 @@ destroystack(REG *reg)
 
 		freeptrs(f, D2H(f)->t);
 		if(f->mr != nil) {
-			destroy(reg->M);
+			destroy(reg->M); /* FIXME: atomic xchg */
 			reg->M = f->mr;
 		}
 	}
-	destroy(reg->M);
+	destroy(reg->M); /* FIXME: atomic xchg */
 	reg->M = H;	/* for devprof */
 	print(":destroystack end\n");
 }
@@ -1517,18 +1534,18 @@ irestore(Prog *p)
 
 
 
-extern OP(cvtca);
-extern OP(cvtac);
-extern OP(cvtwc);
-extern OP(cvtcw);
-extern OP(cvtfc);
-extern OP(cvtcf);
-extern OP(insc);
-extern OP(indc);
-extern OP(addc);
-extern OP(lenc);
-extern OP(slicec);
-extern OP(cvtlc);
+extern void cvtca(void);
+extern void cvtac(void);
+extern void cvtwc(void);
+extern void cvtcw(void);
+extern void cvtfc(void);
+extern void cvtcf(void);
+extern void insc(void);
+extern void indc(void);
+extern void addc(void);
+extern void lenc(void);
+extern void slicec(void);
+extern void cvtlc(void);
 
 #include "optab.h"
 

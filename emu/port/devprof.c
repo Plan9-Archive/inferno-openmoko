@@ -517,7 +517,7 @@ newmodule(Module *m, int vm, int scale, int origin)
 }
 
 #define LIMBO(m)	((m)->path[0] != '$')
-
+extern REG R;
 Module*
 limbomodule(void)
 {

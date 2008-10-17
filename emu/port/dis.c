@@ -916,7 +916,7 @@ startup(void)
 
 	osblock();
 }
-
+extern REG R;
 static void
 progexit(void)
 {

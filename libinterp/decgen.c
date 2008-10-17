@@ -21,6 +21,7 @@ main(void)
 	print("#include \"isa.h\"\n");
 	print("#include \"interp.h\"\n\n");
 	print("#include \"raise.h\"\n\n");
+	print("extern REG R;\n\n");
 
 	for(i = 0; i < 256; i++)
 		decgen(i);
@@ -120,8 +121,8 @@ decgen(int addr)
 		print("\tR.m = R.d;\n");
 		break;
 	case AXIMM: /*???*/
-		print("\tR.t = (short) R.PC->reg;\n");
-		print("\tR.m = (Disdata*) &R.t;\n");
+		print("\tR.tt = (short) R.PC->reg;\n");
+		print("\tR.m = (Disdata*) &R.tt;\n");
 		break;
 	case AXINF:
 		print("\tR.m = (Disdata*) ((char*)R.FP + R.PC->reg);\n");
