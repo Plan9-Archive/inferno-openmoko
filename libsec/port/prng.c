@@ -6,7 +6,7 @@
 //  just use the libc prng to fill a buffer
 //
 void
-prng(uchar *p, int n)
+prng(char *p, int n)
 {
 	uchar *e;
 

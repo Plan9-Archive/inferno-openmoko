@@ -219,7 +219,7 @@ static	int		ismember(User*, User*);
 static	User		*sidtouser(Rune*, PSID);
 static	User		*domnametouser(Rune*, Rune*, Rune*);
 static	User		*nametouser(Rune*, Rune*);
-static	User		*unametouser(Rune*, char*);
+static	User		*unametouser(Rune*, const char*);
 static	void		addgroups(User*, int);
 static	User		*mkuser(PSID, int, Rune*, Rune*);
 static	Rune		*domsrv(Rune *, Rune[MAX_PATH]);
@@ -1479,10 +1479,10 @@ fsdirset(char *edir, int n, WIN32_FIND_DATA *data, char *path, Chan *c, int isdi
 	else
 		n = convD2M(&dir, edir, n);
 	if(dir.uid != neveryone)
-		free(dir.uid);
+		free(dir.uid); /* XXX: unconst */
 	if(dir.gid != neveryone)
-		free(dir.gid);
-	free((char*)dir.name); /* XXX: unconst */
+		free(dir.gid); /* XXX: unconst */
+	free(dir.name); /* XXX: unconst */
 	return n;
 }
 
@@ -2117,7 +2117,7 @@ nametouser(Rune *srv, Rune *name)
  * this mapping could be cached
  */
 static User*
-unametouser(Rune *srv, char *name)
+unametouser(Rune *srv, const char *name)
 {
 	Rune rname[MAX_PATH];
 

@@ -9,27 +9,20 @@
 
 static	QLock	dbq;
 
-void
-Srv_init(void *fp)
+DISAPI(Srv_init)
 {
-	USED(fp);
+	USED(f);
 }
 
-void
-Srv_iph2a(void *fp)
+DISAPI(Srv_iph2a)
 {
 	Heap *hpt;
 	String *ss;
-	F_Srv_iph2a *f;
 	int i, n, nhost;
 	List **h, *l, *nl;
 	char *hostv[10];
-	void *r;
 
-	f = (F_Srv_iph2a*)fp;
-	r = *f->ret;
-	*f->ret = (List*)H;
-	destroy(r);
+	ASSIGN(*f->ret, H);
 	release();
 	qlock(&dbq);
 	if(waserror()){
@@ -67,21 +60,15 @@ Srv_iph2a(void *fp)
 	*f->ret = l;
 }
 
-void
-Srv_ipa2h(void *fp)
+DISAPI(Srv_ipa2h)
 {
 	Heap *hpt;
 	String *ss;
-	F_Srv_ipa2h *f;
 	int i, n, naliases;
 	List **h, *l, *nl;
 	char *hostv[10];
-	void *r;
 
-	f = (F_Srv_ipa2h*)fp;
-	r = *f->ret;
-	*f->ret = (List*)H;
-	destroy(r);
+	ASSIGN(*f->ret, H);
 	release();
 	qlock(&dbq);
 	if(waserror()){
@@ -123,11 +110,7 @@ DISAPI(Srv_ipn2p)
 {
 	int n;
 	char buf[16];
-	void *r;
 
-	//r = *f->ret;
-	//*f->ret = (String*)H;
-	//destroy(r);
 	ASSIGN(*f->ret, (String*)H);
 	release();
 	qlock(&dbq);

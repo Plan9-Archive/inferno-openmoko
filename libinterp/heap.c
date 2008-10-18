@@ -45,14 +45,14 @@ freeptrs(void *v, Type *t /* usually =D2H(v)->t */)
 	while(p < ep) {
 		c = *p;
 		if(c != 0) {
- 			if(BIT(c, 0) && (x = w[7]) != H) destroy(x);
-			if(BIT(c, 1) && (x = w[6]) != H) destroy(x);
- 			if(BIT(c, 2) && (x = w[5]) != H) destroy(x);
-			if(BIT(c, 3) && (x = w[4]) != H) destroy(x);
-			if(BIT(c, 4) && (x = w[3]) != H) destroy(x);
-			if(BIT(c, 5) && (x = w[2]) != H) destroy(x);
-			if(BIT(c, 6) && (x = w[1]) != H) destroy(x);
-			if(BIT(c, 7) && (x = w[0]) != H) destroy(x);
+ 			if(BIT(c, 0) && (x = w[7]) != H) ASSIGN(x, H);
+			if(BIT(c, 1) && (x = w[6]) != H) ASSIGN(x, H);
+ 			if(BIT(c, 2) && (x = w[5]) != H) ASSIGN(x, H);
+			if(BIT(c, 3) && (x = w[4]) != H) ASSIGN(x, H);
+			if(BIT(c, 4) && (x = w[3]) != H) ASSIGN(x, H);
+			if(BIT(c, 5) && (x = w[2]) != H) ASSIGN(x, H);
+			if(BIT(c, 6) && (x = w[1]) != H) ASSIGN(x, H);
+			if(BIT(c, 7) && (x = w[0]) != H) ASSIGN(x, H);
 		}
 		p++;
 		w += 8;
@@ -94,7 +94,7 @@ freechan(Heap *h, int swept)
 	killcomm(&c->send);
 	killcomm(&c->recv);
 	if (!swept && c->buf != H)
-		destroy(c->buf);
+		ASSIGN(c->buf, H);
 }
 
 void
@@ -117,16 +117,16 @@ freearray(Heap *h, int swept)
 	Type *t = a->t;
 
 	if(!swept) {
-		if(a->root != H)
-			destroy(a->root);
-		else
-			if(t->np != 0) {
-				v = a->data;
-				for(i = 0; i < a->len; i++) {
-					freeptrs(v, t);
-					v += t->size;
-				}
+		if(a->root != H) {
+			ASSIGN(a->root, H);
+		}
+		else if(t->np != 0) {
+			v = a->data;
+			for(i = 0; i < a->len; i++) {
+				freeptrs(v, t);
+				v += t->size;
 			}
+		}
 	}
 	if(t->ref-- == 1) {
 		free(t->initialize);
@@ -183,7 +183,7 @@ freemodlink(Heap *h, int swept)
 	if(ml->m->rt == DYNMOD)
 		freedyndata(ml);
 	else if(!swept)
-		destroy(ml->MP);
+		ASSIGN(ml->MP, H);
 	unload(ml->m);
 }
 /*
@@ -211,13 +211,19 @@ freeheap(Heap *h, int swept)
 }
 
 void
-destroy(void *v)
+//destroy(void *v)
+destroyxx(void**pp, void*new)
 {
 	Heap *h;
 	Type *t;
+	void* v = *pp; /*XCHG*/
+	*pp = new;
 
 	if(v == H)
 		return;
+
+	if(v == nil)
+		panic("destroy nil");
 
 	h = D2H(v);
 	assert(poolmsize(heapmem, h)>0);	/* consistency check */

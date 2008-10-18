@@ -14,7 +14,7 @@
 #include	"lib9.h"
 
 int
-print(char *fmt, ...)
+print(const char *fmt, ...)
 {
 	int n;
 	va_list args;

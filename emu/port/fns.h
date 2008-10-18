@@ -90,8 +90,9 @@ int		isdotdot(__in_z const char*);
 int		iseve(void);
 int		kannounce(char*, char*);
 int		kdial(char*, char*, char*, int*);
+typedef void (*ProcFunc)(void*);
 int		kproc( __in_z const char *name,
-		       __in void (*func)(void*),
+		       __in ProcFunc func,
 		      void *arg,
 		      KProcFlags flags);
 int		kfgrpclose(Fgrp*, int);

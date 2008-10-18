@@ -149,20 +149,17 @@ bad:
 }
 
 void
-Element_iconseparator(void *fp, int kind)
+Element_iconseparator(F_Element_icon *f, int kind)
 {
-	F_Element_icon *f;
 	PElement *e;
 	Image *icon;
 	int locked;
 
-	f = fp;
 	badenviron(f->env, 1);
 	checkimage(f->mask);
 	icon = checkimage(f->icon);
 	locked = lockdisplay(icon->display);
-	destroy(*f->ret);
-	*f->ret = H;
+	ASSIGN(*f->ret, H);
 	if(kind == ESeparator)
 		e = separatorelement(f->env, f->r, f->icon, f->mask);
 	else
@@ -194,8 +191,7 @@ DISAPI(Element_text)
 
 	disp = checkscreen(f->env->screen)->display;
 	locked = lockdisplay(disp);
-	destroy(*f->ret);
-	*f->ret = H;
+	ASSIGN(*f->ret, H);
 	pelem = textelement(f->env, f->text, f->r, f->kind);
 	*f->ret = (Prefab_Element*)pelem;
 	if(locked)
@@ -214,8 +210,7 @@ DISAPI(Element_layout)
 
 	disp = checkscreen(f->env->screen)->display;
 	locked = lockdisplay(disp);
-	destroy(*f->ret);
-	*f->ret = H;
+	ASSIGN(*f->ret, H);
 	pelem = layoutelement(f->env, f->lay, f->r, f->kind);
 	*f->ret = (Prefab_Element*)pelem;
 	if(locked)
@@ -648,11 +643,10 @@ doselect(void *fp, int dotags)
 	pc = checkcompound(f->comp);
 	pe = lookupelement(f->elem);
 	if(pe->pkind!=EHorizontal && pe->pkind!=EVertical || pe->nkids == 0){
-    Bad:
-		destroy(f->ret->t2);
+Bad:
 		f->ret->t0 = 9999;
 		f->ret->t1 = 0;
-		f->ret->t2 = H;
+		ASSIGN(f->ret->t2, H);
 		return;
 	}
 	ntag = 0;
@@ -723,7 +717,7 @@ doselect(void *fp, int dotags)
 				pe = tagged[i];
 			else
 				pe = element(pe, i, nil);
-			destroy(f->ret->t2);
+			ASSIGN(f->ret->t2, H);
 			ADDREF(pe);
 			f->ret->t2 = &pe->e;
 			if(locked)

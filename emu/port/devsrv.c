@@ -2,7 +2,7 @@
 #include	"fns.h"
 #include	"error.h"
 #include	"interp.h"
-#include	<isa.h>
+#include	"isa.h"
 #include	"runt.h"
 
 typedef struct SrvFile SrvFile;
@@ -510,7 +510,7 @@ srvread(Chan *c, char *va, long count, vlong offset)
 	ptradd(D2H(rc));
 	if(waserror()){
 		ptrdel(D2H(rc));
-		destroy(rc);
+		ASSIGN(rc, H);
 		nexterror();
 	}
 
@@ -525,7 +525,7 @@ srvread(Chan *c, char *va, long count, vlong offset)
 	ptradd(h);
 	if(waserror()){
 		ptrdel(h);
-		destroy(r);
+		ASSIGN(r, H);
 		nexterror();
 	}
 
@@ -544,11 +544,11 @@ srvread(Chan *c, char *va, long count, vlong offset)
 
 	poperror();
 	ptrdel(h);
-	destroy(r);
+	ASSIGN(r, H);
 
 	poperror();
 	ptrdel(D2H(rc));
-	destroy(rc);
+	ASSIGN(rc, H);
 
 	poperror();
 	release();
@@ -585,7 +585,7 @@ srvwrite(Chan *c, const char *va, long count, vlong offset)
 	ptradd(D2H(wc));
 	if(waserror()){
 		ptrdel(D2H(wc));
-		destroy(wc);
+		ASSIGN(wc, H);
 		nexterror();
 	}
 
@@ -597,7 +597,7 @@ srvwrite(Chan *c, const char *va, long count, vlong offset)
 	ptradd(D2H(req.t1));
 	if(waserror()){
 		ptrdel(D2H(req.t1));
-		destroy(req.t1);
+		ASSIGN(req.t1, H);
 		nexterror();
 	}
 
@@ -605,14 +605,14 @@ srvwrite(Chan *c, const char *va, long count, vlong offset)
 
 	poperror();
 	ptrdel(D2H(req.t1));
-	destroy(req.t1);
+	ASSIGN(req.t1, H);
 
 	h = heap(dev.Rwrite);
 	w = H2D(Sys_Rwrite *, h);
 	ptradd(h);
 	if(waserror()){
 		ptrdel(h);
-		destroy(w);
+		ASSIGN(w, H);
 		nexterror();
 	}
 	crecv(wc, w);
@@ -621,11 +621,11 @@ srvwrite(Chan *c, const char *va, long count, vlong offset)
 	poperror();
 	ptrdel(h);
 	l = w->t0;
-	destroy(w);
+	ASSIGN(w, H);
 
 	poperror();
 	ptrdel(D2H(wc));
-	destroy(wc);
+	ASSIGN(wc, H);
 
 	poperror();
 	release();

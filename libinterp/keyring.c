@@ -463,14 +463,14 @@ strtosk(const char *buf)
 		return (SK*)H;
 	owner = strtostring(p, &p);
 	if(owner == H){
-		destroy(sa);
+		ASSIGN(sa, H);
 		return (SK*)H;
 	}
 
 	key = (*sa->vec->str2sk)(p, &p);
 	if(key == nil){
-		destroy(sa);
-		destroy(owner);
+		ASSIGN(sa, H);
+		ASSIGN(owner, H);
 		return (SK*)H;
 	}
 	sk = newSK(sa, owner, 0);
@@ -628,14 +628,14 @@ strtopk(char *buf)
 		return (PK*)H;
 	owner = strtostring(p, &p);
 	if(owner == H){
-		destroy(sa);
+		ASSIGN(sa, H);
 		return (PK*)H;
 	}
 
 	key = (*sa->vec->str2pk)(p, &p);
 	if(key == nil){
-		destroy(sa);
-		destroy(owner);
+		ASSIGN(sa, H);
+		ASSIGN(owner, H);
 		return (PK*)H;
 	}
 	pk = newPK(sa, owner, 0);
@@ -790,14 +790,14 @@ strtocert(char *buf)
 
 	ha = strtostring(p, &p);
 	if(ha == H){
-		destroy(sa);
+		ASSIGN(sa, H);
 		return (Certificate*)H;
 	}
 
 	signer = strtostring(p, &p);
 	if(signer == H){
-		destroy(sa);
-		destroy(ha);
+		ASSIGN(sa, H);
+		ASSIGN(ha, H);
 		return (Certificate*)H;
 	}
 
@@ -806,9 +806,9 @@ strtocert(char *buf)
 		p++;
 	signa = (*sa->vec->str2sig)(p, &p);
 	if(signa == nil){
-		destroy(sa);
-		destroy(ha);
-		destroy(signer);
+		ASSIGN(sa, H);
+		ASSIGN(ha, H);
+		ASSIGN(signer, H);
 		return (Certificate*)H;
 	}
 
@@ -1584,8 +1584,8 @@ if(0)print("Y");
 		goto out;
 	}
 	certmutable(alphacert);
-	destroy(alphacert);
-	alphacert = (Certificate*)H;
+	ASSIGN(alphacert, H);
+	//alphacert = (Certificate*)H;
 
 	/* get signature of alpha**r1 and alpha**r0 and verify */
 	n = getmsg(fd, buf, Maxbuf-1);
@@ -1664,15 +1664,15 @@ out:
 	/* free resources */
 	if(hispk != H){
 		pkmutable(hispk);
-		destroy(hispk);
+		ASSIGN(hispk, H);
 	}
 	if(hiscert != H){
 		certmutable(hiscert);
-		destroy(hiscert);
+		ASSIGN(hiscert, H);
 	}
 	if(alphacert != H){
 		certmutable(alphacert);
-		destroy(alphacert);
+		ASSIGN(alphacert, H);
 	}
 	free(buf);
 	if(r0 != nil){
@@ -1844,8 +1844,7 @@ DISAPI(Keyring_readauthinfo)
 	ok = 1;
 out:
 	if(!ok){
-		destroy(*f->ret);
-		*f->ret = (Keyring_Authinfo*)H;
+		ASSIGN(*f->ret, H);
 	}
 	free(buf);
 	if(fd >= 0){
@@ -2420,13 +2419,11 @@ DISAPI(DSAsk_gen)
 	Keyring_DSAsk *sk;
 	DSApriv *p;
 	DSApub pub, *oldpk;
-	void *v;
 
-	v = *f->ret;
 	sk = (Keyring_DSAsk *)newthing(TDSAsk, 0);
 	sk->pk = (Keyring_DSApk *)newthing(TDSApk, 0);
-	*f->ret = sk;
-	destroy(v);
+
+	ASSIGN(*f->ret, sk);
 	oldpk = nil;
 	if(f->oldpk != H){
 		dsapk2pub(&pub, f->oldpk);
@@ -2445,12 +2442,10 @@ DISAPI(DSAsk_sign)
 	DSApriv p;
 	mpint *m;
 	DSAsig *s;
-	void *v;
 
-	v = *f->ret;
 	sig = (Keyring_DSAsig *)newthing(TDSAsig, 0);
-	*f->ret = sig;
-	destroy(v);
+
+	ASSIGN(*f->ret, sig);
 
 	dsask2priv(&p, f->k);
 	m = checkIPint(f->m);
@@ -2515,13 +2510,11 @@ DISAPI(EGsk_gen)
 {
 	Keyring_EGsk *sk;
 	EGpriv *p;
-	void *v;
 
-	v = *f->ret;
 	sk = (Keyring_EGsk *)newthing(TEGsk, 0);
 	sk->pk = (Keyring_EGpk *)newthing(TEGpk, 0);
-	*f->ret = sk;
-	destroy(v);
+
+	ASSIGN(*f->ret, sk);
 	release();
 	for(;;){
 		p = eggen(f->nlen, f->nrep);
@@ -2540,12 +2533,10 @@ DISAPI(EGsk_sign)
 	EGpriv p;
 	mpint *m;
 	EGsig *s;
-	void *v;
 
-	v = *f->ret;
 	sig = (Keyring_EGsig *)newthing(TEGsig, 0);
-	*f->ret = sig;
-	destroy(v);
+
+	ASSIGN(*f->ret, sig);
 
 	egsk2priv(&p, f->k);
 	m = checkIPint(f->m);
@@ -2619,11 +2610,8 @@ DISAPI(RSApk_encrypt)
 {
 	RSApub p;
 	mpint *m, *o;
-	void *v;
 
-	v = *f->ret;
-	*f->ret = (Keyring_IPint*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	rsapk2pub(&p, f->k);
 	m = checkIPint(f->m);
@@ -2637,13 +2625,11 @@ DISAPI(RSAsk_gen)
 {
 	Keyring_RSAsk *sk;
 	RSApriv *p;
-	void *v;
 
-	v = *f->ret;
 	sk = (Keyring_RSAsk *)newthing(TRSAsk, 0);
 	sk->pk = (Keyring_RSApk *)newthing(TRSApk, 0);
-	*f->ret = sk;
-	destroy(v);
+
+	ASSIGN(*f->ret, sk);
 	release();
 	for(;;){
 		p = rsagen(f->nlen, f->elen, f->nrep);
@@ -2660,20 +2646,17 @@ DISAPI(RSAsk_fill)
 {
 	Keyring_RSAsk *sk;
 	RSApriv *p;
-	void *v;
 
-	v = *f->ret;
 	sk = (Keyring_RSAsk *)newthing(TRSAsk, 0);
 	sk->pk = (Keyring_RSApk *)newthing(TRSApk, 0);
-	*f->ret = sk;
-	destroy(v);
+
+	ASSIGN(*f->ret, sk);
 	release();
 	p = rsafill(checkIPint(f->n), checkIPint(f->e), checkIPint(f->d),
 			checkIPint(f->p), checkIPint(f->q));
 	acquire();
 	if(p == nil) {
-		*f->ret = (Keyring_RSAsk*)H;
-		destroy(sk);
+		ASSIGN(*f->ret, H);
 	}else{
 		rsapriv2sk(sk, p);
 		rsaprivfree(p);
@@ -2684,11 +2667,8 @@ DISAPI(RSAsk_decrypt)
 {
 	RSApriv p;
 	mpint *m, *o;
-	void *v;
 
-	v = *f->ret;
-	*f->ret = (Keyring_IPint*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	rsask2priv(&p, f->k);
 	m = checkIPint(f->m);
@@ -2703,12 +2683,10 @@ DISAPI(RSAsk_sign)
 	Keyring_RSAsig *sig;
 	RSApriv p;
 	mpint *m, *s;
-	void *v;
 
-	v = *f->ret;
 	sig = (Keyring_RSAsig *)newthing(TRSAsig, 0);
-	*f->ret = sig;
-	destroy(v);
+
+	ASSIGN(*f->ret, sig);
 
 	rsask2priv(&p, f->k);
 	m = checkIPint(f->m);

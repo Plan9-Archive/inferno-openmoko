@@ -78,7 +78,7 @@ DISAPI(Face_loadglyph)
 	n = ftg.width*ftg.height;
 	h = heaparray(&Tbyte, n);
 	if (h == H) {
-		destroy(g);
+		ASSIGN(g, H);
 		kwerrstr(exNomem);
 		return;
 	}
@@ -106,8 +106,7 @@ DISAPI(Freetype_newface)
 	char *path;
 	char *err;
 
-	destroy(*f->ret);
-	*f->ret = (Freetype_Face *)H;
+	//ASSIGN(*f->ret, (Freetype_Face *)H);
 
 	h = heapz(TFace);
 	if (h == H) {
@@ -116,16 +115,16 @@ DISAPI(Freetype_newface)
 	}
 
 	face = H2D(Face*, h);
-	limboface = (Freetype_Face*)face;
-	*f->ret = limboface;
+	limboface = &face->freetypeface;
+
 	path = strdup(string2c(f->path));	/* string2c() can call error() */
 	release();
 	err = ftnewface(path, f->index, &face->ftface, &finfo);
 	acquire();
 	free(path);
 	if (err != nil) {
-		*f->ret = (Freetype_Face *)H;
-		destroy(face);
+		ASSIGN(*f->ret, H);
+		ASSIGN(face, H);
 		kwerrstr(err);
 		return;
 	}
@@ -136,13 +135,12 @@ DISAPI(Freetype_newface)
 	limboface->ascent = finfo.ascent;
 	limboface->familyname = c2string(finfo.familyname, strlen(finfo.familyname));
 	limboface->stylename = c2string(finfo.stylename, strlen(finfo.stylename));
-	*f->ret = limboface;
+	ASSIGN(*f->ret, limboface);
 }
 
 DISAPI(Freetype_newmemface)
 {
-	destroy(*f->ret);
-	*f->ret = (Freetype_Face *)H;
+	ASSIGN(*f->ret, H);
 
 	kwerrstr("not implemented");
 }
@@ -195,8 +193,8 @@ freeface(Heap *h, int swept)
 	Face *face = H2D(Face*, h);
 
 	if (!swept) {
-		destroy(face->freetypeface.familyname);
-		destroy(face->freetypeface.stylename);
+		ASSIGN(face->freetypeface.familyname, H);
+		ASSIGN(face->freetypeface.stylename, H);
 	}
 	release();
 	ftdoneface(face->ftface);

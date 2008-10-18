@@ -10,7 +10,8 @@ typedef float			DISREAL32;	/* 32 float IEEE754 */
 
 #define DISAPI(name) void name(F_##name *f)
 
-#define ASSIGN(place, value) {void* old=(place); (place)=(value); destroy(old);}
+//#define ASSIGN(place, value) {void* old=(place); (place)=(value); destroy(old);}
+#define ASSIGN(place, value) {destroyxx((void**)&(place), (value));}
 //#define ASSIGN(place, value) {void* old=(place); (place)=H; destroy(old); (place)=(value); } /* memory saver */
 
 enum ProgState
@@ -471,7 +472,7 @@ extern	void		delprog(Prog*, char*);
 extern	Prog*		delrun(enum ProgState);
 extern	void		delrunq(Prog*);
 extern	Prog*		delruntail(enum ProgState);
-extern	void		destroy(void*);
+extern	void		destroyxx(void**pp, void*new);
 extern	void		destroyimage(ulong);
 extern	void		destroylinks(Module*);
 extern	void		destroystack(REG*);
@@ -532,7 +533,7 @@ extern	Array*		mem2array(const void*, int);
 extern	void		mlink(Module*, Link*, const char*, int, int, Type*);
 extern	void		modinit(void);
 extern	DISINT		modstatus(REG*, char*, int);
-extern	void		movp(void);
+//extern	void		movp(void);
 extern	void		moverp(void*d, void*s, Channel*c);
 extern	void		movertmp(void*d, void*s, Channel*c);
 extern	void		movtmpsafe(void);
@@ -574,7 +575,7 @@ extern	String*		splitc(String**, int);
 extern	uchar*		stack(Frame*);
 extern	int		stringblen(String*);
 extern	int		stringcmp(const String*, const String*);
-extern	String*		stringdup(String*);
+extern	String*		stringdup(const String*);
 extern	String*		stringheap(int, int, int, int);
 extern	char*		syserr(char*, char*, Prog*);
 extern	void		sysinit(void);
@@ -585,8 +586,8 @@ extern	void		unload(Module*);
 extern	int		verifysigner(const char*, int, const char*, ulong);
 extern	void		xec(Prog*);
 extern	int		xecalt(int, Alt *a, DISINT*ret);
-extern	int		xprint(Prog*, void*, void*, String*, char*, int);
-extern	int		bigxprint(Prog*, void*, void*, String*, char**, int);
+extern	int		xprint(Prog*, const void*, const void*, String*, char*, int);
+extern	int		bigxprint(Prog*, const void*, const void*, String*, char**, int);
 extern	void		iyield(void);
 extern	String*		newrunes(int);
 extern	String*		newstring(int);

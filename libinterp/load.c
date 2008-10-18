@@ -532,7 +532,7 @@ parsemod(const char *path, const char *code, ulong length, const Dir *dir)
 
 	return m;
 bad:
-	destroy(m->origmp);
+	ASSIGN(m->origmp, H);
 	freemod(m);
 	return nil;
 }
@@ -588,9 +588,9 @@ freemod(Module *m)
 			freetype(m->type[i]);
 		free(m->type);
 	}
-	free((void*)m->name); /* XXX: unconst */
+	free(m->name); /* XXX: unconst */
 	free(m->prog);
-	free((void*)m->path); /* XXX: unconst */
+	free(m->path); /* XXX: unconst */
 	free(m->pctab);
 	if(m->ldt != nil){
 		for(i2 = m->ldt; *i2 != nil; i2++){
@@ -634,7 +634,7 @@ unload(Module *m)
 	if(m->rt == DYNMOD)
 		freedyncode(m);
 	else
-		destroy(m->origmp);
+		ASSIGN(m->origmp, H);
 
 	destroylinks(m);
 

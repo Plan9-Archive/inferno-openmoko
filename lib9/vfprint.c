@@ -31,7 +31,7 @@ _fmtFdFlush(Fmt *f)
 }
 
 int
-vfprint(int fd, char *fmt, va_list args)
+vfprint(int fd, const char *fmt, va_list args)
 {
 	Fmt f;
 	char buf[256]; /* TODO */

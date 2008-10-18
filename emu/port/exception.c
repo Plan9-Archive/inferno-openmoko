@@ -136,10 +136,13 @@ handler(char *estr)
 			}
 		}
 		if(!str && f != R.FP){		/* becomes a string exception in immediate caller */
-			v = p->exval;
+			/*v = p->exval;
 			p->exval = *(String**)v;
 			ADDREF(p->exval);
-			destroy(v);
+			ASSIGN(v, H);*/
+			ADDREF(*(String**)p->exval);
+			ASSIGN(p->exval, *(String**)p->exval);
+			//ADDREF(p->exval);
 			str = 1;
 			continue;
 		}
@@ -152,8 +155,7 @@ handler(char *estr)
 			pc = f->lr-m->prog;
 		pc--;
 	}
-	destroy(p->exval);
-	p->exval = (String*)H;
+	ASSIGN(p->exval, H);
 	return 0;
 found:
 	{
@@ -193,8 +195,7 @@ found:
 
 		if(mr != nil){
 			m = mr;
-			destroy(R.M);
-			R.M = m;
+			ASSIGN(R.M, m);
 			R.MP = m->MP;
 		}
 	}
@@ -203,8 +204,7 @@ found:
 		initmem(zt, f);
 	}
 	eadr = (String **)((char*)f+eoff);
-	destroy(*eadr);
-	*eadr = (String*)H;
+	ASSIGN(*eadr, H);
 	if(p->exval == H)
 		*eadr = newestring(estr);	/* might fail */
 	else{
@@ -217,7 +217,6 @@ found:
 		R.PC = m->prog+newpc;
 	memmove(&p->R, &R, sizeof(R));
 	p->kill = nil;
-	destroy(p->exval);
-	p->exval = (String*)H;
+	ASSIGN(p->exval, H);
 	return 1;
 }

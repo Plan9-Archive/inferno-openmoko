@@ -116,7 +116,7 @@ linkmod(Module *m, Import *ldt, int mkmp/*=0*/)
 
 	for(i = 0, l = ldt; l->name != nil; i++, l++) {
 		if(linkm(m, ml, i, l) < 0){
-			destroy(ml);
+			ASSIGN(ml, H);
 			return (Modlink*)H;
 		}
 	}

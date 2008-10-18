@@ -94,8 +94,7 @@ r:
 		}
 	}
 	if(ss != rd->pstring) {
-		destroy(rd->pstring);
-		rd->pstring = ss;
+		ASSIGN(rd->pstring, ss);
 	}
 }
 
@@ -135,12 +134,11 @@ OP(slicec)
 {
 	String *ns = slicer(rs->disint, rm->disint, rd->pstring);
 
-	destroy(rd->pstring);
-	rd->pstring = ns;
+	ASSIGN(rd->pstring, ns);
 }
 
-void
-cvtup(Rune *r, String *s)
+static void
+cvtup(Rune *r, const String *s)
 {
 	const char* bp = s->Sascii;
 	const char* ep = bp + s->len;
@@ -451,7 +449,7 @@ newrunes(int nr)
 }
 
 String*
-stringdup(String *s)
+stringdup(const String *s)
 {
 	String *ns;
 
@@ -552,9 +550,9 @@ ne:	if(c1 < c2)
 String*
 splitc(String **s, int expand)
 {
-	String *ss, *ns;
+	const String * const ss = *s;
+	String *ns;
 
-	ss = *s;
 	if(expand && ss->len > 0) {
 		ns = newrunes(ss->len);
 		cvtup(ns->Srune, ss);
@@ -562,7 +560,6 @@ splitc(String **s, int expand)
 	else
 		ns = stringdup(ss);
 
-	destroy(ss);
-	*s = ns;
+	ASSIGN(*s, ns); /*XXX*/
 	return ns;
 }

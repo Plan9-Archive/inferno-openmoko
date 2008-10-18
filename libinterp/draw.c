@@ -463,11 +463,11 @@ freedrawdisplay(Heap *h, int swept)
 	dd = H2D(DDisplay*, h);
 
 	if(!swept) {
-		destroy(dd->drawdisplay.image);
-		destroy(dd->drawdisplay.black);
-		destroy(dd->drawdisplay.white);
-		destroy(dd->drawdisplay.opaque);
-		destroy(dd->drawdisplay.transparent);
+		ASSIGN(dd->drawdisplay.image, H);
+		ASSIGN(dd->drawdisplay.black, H);
+		ASSIGN(dd->drawdisplay.white, H);
+		ASSIGN(dd->drawdisplay.opaque, H);
+		ASSIGN(dd->drawdisplay.transparent, H);
 	}
 	/* we've now released dd->image etc.; make sure they're not freed again */
 	d = dd->display;
@@ -962,8 +962,7 @@ DISAPI(Display_newimage)
 	int locked;
 
 	d = checkdisplay(f->d);
-	destroy(*f->ret);
-	*f->ret = (Draw_Image*)H;
+	ASSIGN(*f->ret, H);
 	locked = lockdisplay(d);
 	*f->ret = allocdrawimage((DDisplay*)f->d, f->r, f->chans.desc,
 				nil, f->repl, f->color);
@@ -1033,12 +1032,11 @@ DISAPI(Image_name)
 	if(locked)
 		unlockdisplay(i->display);
 	if(ok){
-		destroy(f->src->iname);
 		if(f->in){
-			f->src->iname = f->name;
+			ASSIGN(f->src->iname, f->name);
 			ADDREF(f->name);
 		}else
-			f->src->iname = (String*)H;
+			ASSIGN(f->src->iname, H);
 	}
 }
 
@@ -1062,8 +1060,7 @@ DISAPI(Display_open)
 	Image *i;
 	Display *disp;
 
-	destroy(*f->ret);
-	*f->ret = (Draw_Image*)H;
+	ASSIGN(*f->ret, (Draw_Image*)H);
 	disp = lookupdisplay(f->d);
 	if(disp == nil)
 		return;
@@ -1080,8 +1077,7 @@ DISAPI(Display_namedimage)
 	Draw_Image *di;
 	int locked;
 
-	destroy(*f->ret);
-	*f->ret = (Draw_Image*)H;
+	ASSIGN(*f->ret, (Draw_Image*)H);
 	d = checkdisplay(f->d);
 	locked = lockdisplay(d);
 	i = namedimage(d, string2c(f->name));
@@ -1109,8 +1105,7 @@ DISAPI(Display_readimage)
 	Sys_FD *fd;
 	int locked;
 
-	destroy(*f->ret);
-	*f->ret = (Draw_Image*)H;
+	ASSIGN(*f->ret, (Draw_Image*)H);
 	fd = f->fd;
 	if(fd == H)
 		return;
@@ -1204,8 +1199,7 @@ DISAPI(Screen_allocate)
 	Image *image;
 	int locked;
 
-	destroy(*f->ret);
-	*f->ret = (Draw_Screen*)H;
+	ASSIGN(*f->ret, (Draw_Screen*)H);
 	image = checkimage(f->image);
 	checkimage(f->fill);
 	locked = lockdisplay(image->display);
@@ -1224,8 +1218,7 @@ DISAPI(Display_publicscreen)
 	Display *disp;
 	int locked;
 
-	destroy(*f->ret);
-	*f->ret = (Draw_Screen*)H;
+	ASSIGN(*f->ret, (Draw_Screen*)H);
 	disp = checkdisplay(f->d);
 	locked = lockdisplay(disp);
 	s = publicscreen(disp, f->id, disp->image->chan);
@@ -1258,9 +1251,9 @@ freedrawscreen(Heap *h, int swept)
 
 	ds = H2D(DScreen*, h);
 	if(!swept) {
-		destroy(ds->drawscreen.image);
-		destroy(ds->drawscreen.fill);
-		destroy(ds->drawscreen.display);
+		ASSIGN(ds->drawscreen.image, H);
+		ASSIGN(ds->drawscreen.fill, H);
+		ASSIGN(ds->drawscreen.display, H);
 	}
 	s = lookupscreen(&ds->drawscreen);
 	if(s == nil){
@@ -1525,8 +1518,8 @@ freedrawfont(Heap*h, int swept)
 	d = H2D(Draw_Font*, h);
 	f = lookupfont(d);
 	if(!swept) {
-		destroy(d->name);
-		destroy(d->display);
+		ASSIGN(d->name, H);
+		ASSIGN(d->display, H);
 	}
 	font_close(f);
 	display_dec(((DFont*)d)->dref);
@@ -1651,11 +1644,8 @@ DISAPI(Display_rgb)
 	ulong c;
 	Display *disp;
 	int locked;
-	void *r;
 
-	r = *f->ret;
-	*f->ret = (Draw_Image*)H;
-	destroy(r);
+	ASSIGN(*f->ret, (Draw_Image*)H);
 	disp = checkdisplay(f->d);
 
 	c = ((f->r&255)<<24)|((f->g&255)<<16)|((f->b&255)<<8)|0xFF;
@@ -1768,7 +1758,6 @@ DISAPI(Screen_newwindow)
 	Screen *s;
 	Rectangle r;
 	int locked;
-	void *v;
 
 	s = checkscreen(f->screen);
 	R2R(r, f->r);
@@ -1782,9 +1771,7 @@ DISAPI(Screen_newwindow)
 	if(f->backing != Refnone && f->backing != Refbackup)
 		f->backing = Refbackup;
 
-	v = *f->ret;
-	*f->ret = (Draw_Image*)H;
-	destroy(v);
+	ASSIGN(*f->ret, (Draw_Image*)H);
 
 	locked = lockdisplay(s->display);
 	i = allocwindow(s, r, f->backing, f->color);

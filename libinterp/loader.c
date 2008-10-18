@@ -73,8 +73,7 @@ DISAPI(Loader_ifetch)
 	Inst *i, *ie;
 	Loader_Inst *li;
 
-	destroy(*f->ret);
-	*f->ret = (Array*)H;
+	ASSIGN(*f->ret, H);
 
 	if(f->mp == H)
 		return;
@@ -124,8 +123,7 @@ DISAPI(Loader_link)
 	Array *ar;
 	Loader_Link *ll;
 
-	destroy(*f->ret);
-	*f->ret = (Array*)H;
+	ASSIGN(*f->ret, H);
 
 	if(f->mp == H)
 		return;
@@ -175,8 +173,7 @@ DISAPI(Loader_tdesc)
 	Module *m;
 	Loader_Typedesc *lt;
 
-	destroy(*f->ret);
-	*f->ret = (Array *)H;
+	ASSIGN(*f->ret, H);
 
 	if(f->mp == H)
 		return;
@@ -215,8 +212,7 @@ DISAPI(Loader_newmod)
 	Inst *i, *ie;
 	Loader_Inst *li;
 
-	destroy(*f->ret);
-	*f->ret = (Modlink *)H;
+	ASSIGN(*f->ret, H);
 
 	if(f->inst == H || f->data == H) {
 		kwerrstr("nil parameters");
@@ -280,7 +276,7 @@ DISAPI(Loader_newmod)
 	*f->ret = ml;
 	return;
 bad:
-	destroy(m->origmp);
+	ASSIGN(m->origmp, H);
 	freemod(m);
 }
 

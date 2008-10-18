@@ -16,7 +16,7 @@ sysmodinit(void)
 }
 
 int
-xprint(Prog *xp, const char *fp, const char *va, String *s1, char *buf, int n)
+xprint(Prog *xp, const void* vfp, const void* vva, String *s1, char *buf, int n)
 {
 	DISINT i;
 	void *p;
@@ -29,6 +29,8 @@ xprint(Prog *xp, const char *fp, const char *va, String *s1, char *buf, int n)
 	char *b, *eb, *f, fmt[32];
 	Rune r;
 
+	const char *fp = vfp;
+	const char *va = vva;
 
 	sip = 0;
 	isr = 0;
@@ -159,7 +161,7 @@ xprint(Prog *xp, const char *fp, const char *va, String *s1, char *buf, int n)
 }
 
 int
-bigxprint(Prog *xp, void *vfp, void *vva, String *s1, char **buf, int s)
+bigxprint(Prog *xp, const void *vfp, const void *vva, String *s1, char **buf, int s)
 {
 	char *b;
 	int m, n;
@@ -284,8 +286,7 @@ DISAPI(Sys_tokenize)
 	}
 
 	f->ret->t0 = n;
-	destroy(f->ret->t1);
-	f->ret->t1 = l;
+	ASSIGN(f->ret->t1, l);
 }
 
 DISAPI(Sys_utfbytes)

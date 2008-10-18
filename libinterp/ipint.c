@@ -92,11 +92,8 @@ DISAPI(IPint_iptob64)
 DISAPI(IPint_iptobytes)
 {
 	uchar buf[MaxBigBytes];
-	void *v;
 
-	v = *f->ret;
-	*f->ret = (Array*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	/* TO DO: two's complement or have ipmagtobe? */
 	*f->ret = mem2array(buf, mptobe(MP(f->i), buf, sizeof(buf), nil));	/* for now we'll ignore sign */
@@ -105,11 +102,8 @@ DISAPI(IPint_iptobytes)
 DISAPI(IPint_iptobebytes)
 {
 	uchar buf[MaxBigBytes];
-	void *v;
 
-	v = *f->ret;
-	*f->ret = (Array*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	*f->ret = mem2array(buf, mptobe(MP(f->i), buf, sizeof(buf), nil));
 }
@@ -143,11 +137,7 @@ strtoipint(String *s, int base)
 
 DISAPI(IPint_b64toip)
 {
-	void *v;
-
-	v = *f->ret;
-	*f->ret = (Keyring_IPint*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	*f->ret = strtoipint(f->str, 64);
 }
@@ -155,11 +145,8 @@ DISAPI(IPint_b64toip)
 DISAPI(IPint_bytestoip)
 {
 	mpint *b;
-	void *v;
 
-	v = *f->ret;
-	*f->ret = (Keyring_IPint*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	if(f->buf == H)
 		error(exNilref);
@@ -171,11 +158,8 @@ DISAPI(IPint_bytestoip)
 DISAPI(IPint_bebytestoip)
 {
 	mpint *b;
-	void *v;
 
-	v = *f->ret;
-	*f->ret = (Keyring_IPint*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	if(f->mag == H)
 		error(exNilref);
@@ -186,11 +170,7 @@ DISAPI(IPint_bebytestoip)
 
 DISAPI(IPint_strtoip)
 {
-	void *v;
-
-	v = *f->ret;
-	*f->ret = (Keyring_IPint*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	*f->ret = strtoipint(f->str, f->base);
 }
@@ -199,11 +179,8 @@ DISAPI(IPint_strtoip)
 DISAPI(IPint_random)
 {
 	mpint *b;
-	void *v;
 
-	v = *f->ret;
-	*f->ret = (Keyring_IPint*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	release();
 	b = mprand(f->maxbits, genrandom, nil);
@@ -229,11 +206,7 @@ DISAPI(IPint_bits)
 /* create a new IP from an int */
 DISAPI(IPint_inttoip)
 {
-	void *v;
-
-	v = *f->ret;
-	*f->ret = (Keyring_IPint*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	*f->ret = newIPint(itomp(f->i, nil));
 }
@@ -250,11 +223,8 @@ DISAPI(IPint_iptoint)
 DISAPI(IPint_expmod)
 {
 	mpint *ret, *mod, *base, *exp;
-	void *v;
 
-	v = *f->ret;
-	*f->ret = (Keyring_IPint*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	base = MP(f->base);
 	exp = MP(f->exp);
@@ -272,11 +242,8 @@ DISAPI(IPint_expmod)
 DISAPI(IPint_invert)
 {
 	mpint *ret;
-	void *v;
 
-	v = *f->ret;
-	*f->ret = (Keyring_IPint*)H;
-	destroy(v);
+	ASSIGN(*f->ret, H);
 
 	ret = mpnew(0);
 	if(ret != nil)
@@ -327,7 +294,6 @@ DISAPI(IPint_mul)
 DISAPI(IPint_div)
 {
 	mpint *i1, *i2, *quo, *rem;
-	void *v;
 
 	i1 = MP(f->i1);
 	i2 = MP(f->i2);

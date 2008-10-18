@@ -84,11 +84,8 @@ DISAPI(Tk_toplevel)
 	TkWin *tkw;
 	TkCtxt *ctxt;
 	Display *disp;
-	void *r;
 
-	r = *f->ret;
-	*f->ret = (Tk_Toplevel*)H;
-	destroy(r);
+	ASSIGN(*f->ret, H);
 	disp = checkdisplay(f->d);
 
 	h = heapz(fakeTkTop);
@@ -103,7 +100,7 @@ DISAPI(Tk_toplevel)
 
 	tk = tknewobj(t, TKframe, sizeof(Tk)+sizeof(TkWin));
 	if(tk == nil) {
-		destroy(t);
+		ASSIGN(t, H);
 		return;
 	}
 
@@ -122,14 +119,14 @@ DISAPI(Tk_toplevel)
 	tk->name = tkmkname(".");
 	if(tk->name == nil) {
 		tkfreeobj(tk);
-		destroy(t);
+		ASSIGN(t, H);
 		return;
 	}
 
 	ctxt = tknewctxt(disp);
 	if(ctxt == nil) {
 		tkfreeobj(tk);
-		destroy(t);
+		ASSIGN(t, H);
 		return;
 	}
 	t->ctxt = ctxt;
@@ -516,7 +513,7 @@ tkfreevar(TkTop *t, char *name, int swept)
 				break;
 			case TkVchan:
 				if(!swept)
-					destroy(p->value.c);
+					ASSIGN(p->value.c, H);
 				break;
 			}
 			free(p);
@@ -528,7 +525,6 @@ tkfreevar(TkTop *t, char *name, int swept)
 
 DISAPI(Tk_namechan)
 {
-	Heap *h;
 	TkVar *v;
 	TkTop *t;
 	char *name;
@@ -560,8 +556,8 @@ DISAPI(Tk_namechan)
 		retstr(TkNotvt, f->ret);
 		return;
 	}
-	destroy(v->value.c);
-	v->value.c = f->c;
+
+	ASSIGN(v->value.c, f->c);
 	unlockctxt(t->ctxt);
 	ADDREF(v->value.c);
 	Setmark(D2H(v->value.c));
@@ -721,7 +717,7 @@ tkdelpanelimage(TkTop *t, Image *i)
 		t->panelimages = pi->link;
 	if (D2H(pi->image)->ref == 1) {		/* don't bother locking if it's not going away */
 		locked = lockdisplay(t->display);
-		destroy(pi->image);
+		ASSIGN(pi->image, H);
 		if (locked)
 			unlockdisplay(t->display);
 	}
@@ -737,13 +733,10 @@ DISAPI(Tk_putimage)
 	int locked, found, reqid, n;
 	char *words[2];
 	Display *d;
-	void *r;
 	char *name, *e;
 	Tk *tk;
 
-	r = *f->ret;
-	*f->ret = (String*)H;
-	destroy(r);
+	ASSIGN(*f->ret, H);
 
 	t = (TkTop*)f->t;
 	if(t == H || D2H(t)->t != fakeTkTop) {
@@ -906,7 +899,6 @@ tkfreetop(Heap *h, int swept)
 	TkImg *i, *nexti;
 	TkVar *v, *nextv;
 	int wgtype;
-	void *r;
 	TkPanelimage *pi, *nextpi;
 
 	t = H2D(TkTop*, h);
@@ -943,7 +935,7 @@ tkfreetop(Heap *h, int swept)
 			break;
 		case TkVchan:
 			if(!swept)
-				destroy(v->value.c);
+				ASSIGN(v->value.c, H);
 			break;
 		}
 		free(v);
@@ -951,7 +943,7 @@ tkfreetop(Heap *h, int swept)
 
 	for (pi = t->panelimages; pi; pi = nextpi) {
 		if (!swept)
-			destroy(pi->image);
+			ASSIGN(pi->image, H);
 		nextpi = pi->link;
 		free(pi);
 	}
@@ -972,21 +964,10 @@ tkfreetop(Heap *h, int swept)
 	/* XXX should we leave it locked for this bit? */
 	tkfreectxt(t->ctxt);
 	if(!swept) {
-		r = t->di;
-		t->di = (Draw_Image*)H;
-		destroy(r);
-
-		r = t->dd;
-		t->dd = (Draw_Display*)H;
-		destroy(r);
-
-		r = t->wreq;
-		t->wreq = (Channel*)H;
-		destroy(r);
-
-		r = t->wmctxt;
-		t->wmctxt = (Draw_Wmcontext*)H;
-		destroy(r);
+		ASSIGN(t->di, H);
+		ASSIGN(t->dd, H);
+		ASSIGN(t->wreq, H);
+		ASSIGN(t->wmctxt, H);
 	}
 }
 
@@ -994,8 +975,7 @@ static void
 tktopimagedptr(TkTop *top, Draw_Image *di)
 {
 	if(top->di != H){
-		destroy(top->di);
-		top->di = (Draw_Image*)H;
+		ASSIGN(top->di, H);
 	}
 	if(di == H)
 		return;
@@ -1006,9 +986,8 @@ tktopimagedptr(TkTop *top, Draw_Image *di)
 static void
 tkfreewinimage(TkWin *w)
 {
-	destroy(w->di);
 	w->image = nil;
-	w->di = (Draw_Image*)H;
+	ASSIGN(w->di, H);
 }
 
 static int
@@ -1025,7 +1004,7 @@ tksetwindrawimage(Tk *tk, Draw_Image *di)
 	same = tkw->di == di;
 	if(!same)
 		if(tkw->image != nil)
-			destroy(tkw->di);
+			ASSIGN(tkw->di, H);
 	if(di == H){
 		tkw->di = (Draw_Image*)H;
 		tkw->image = nil;
@@ -1066,7 +1045,7 @@ tkdestroywinimage(Tk *tk)
 	top = tk->env->top;
 
 	if(tkw->image != nil && !(tk->flag & Tkswept))
-		destroy(tkw->di);
+		ASSIGN(tkw->di, H);
 	tkw->di = (Draw_Image*)H;
 	tkw->image = nil;
 	if(tk->name == nil)

@@ -74,8 +74,8 @@ freeFileIO(Heap *h, int swept)
 		return;
 
 	fio = H2D(Sys_FileIO*, h);
-	destroy(fio->read);
-	destroy(fio->write);
+	ASSIGN(fio->read, H);
+	ASSIGN(fio->write, H);
 }
 
 Sys_FD*
@@ -190,8 +190,7 @@ DISAPI(Sys_create)
 {
 	int fd;
 
-	destroy(*f->ret);
-	*f->ret = (Sys_FD*)H;
+	ASSIGN(*f->ret, (Sys_FD*)H);
 	release();
 	fd = kcreate(string2c(f->s), f->mode, f->perm);
 	acquire();
@@ -418,11 +417,7 @@ DISAPI(Sys_stat)
 DISAPI(Sys_fd2path)
 {
 	char *s;
-	void *r;
 
-	//r = *f->ret;
-	//*f->ret = (String*)H;
-	//destroy(r);
 	release();
 	s = kfd2path(fdchk(f->fd));
 	acquire();
@@ -694,8 +689,8 @@ DISAPI(Sys_file2chan)
 	r = srvf2c(string2c(f->dir), string2c(f->file), fio);
 	acquire();
 	if(r == -1) {
-		*f->ret = (Sys_FileIO*)H;
-		destroy(fio);
+		//*f->ret = (Sys_FileIO*)H;
+		ASSIGN(*f->ret, H); /*kills fio */
 	}
 }
 
@@ -826,12 +821,10 @@ DISAPI(Sys_dirread)
 	int i, n;
 	Heap *h;
 	char *d;
-	void *r;
 
 	f->ret->t0 = -1;
-	r = f->ret->t1;
-	f->ret->t1 = (Array*)H;
-	destroy(r);
+	ASSIGN(f->ret->t1, H);
+
 	release();
 	n = kdirread(fdchk(f->fd), &b);
 	acquire();
@@ -859,11 +852,8 @@ DISAPI(Sys_dirread)
 DISAPI(Sys_fauth)
 {
 	int fd;
-	void *r;
 
-	r = *f->ret;
-	*f->ret = (Sys_FD*)H;
-	destroy(r);
+	ASSIGN(*f->ret, H);
 	release();
 	fd = kfauth(fdchk(f->fd), string2c(f->aname));
 	acquire();

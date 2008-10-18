@@ -325,7 +325,7 @@ emuinit(const char *imod)
 	putenvq("emuroot", rootdir, 1);
 	ksetenv("emuhost", hosttype, 1);
 
-	kproc("main", disinit, imod, KPDUP);  /* BUG: check return value */
+	kproc("main", (ProcFunc)disinit, (void*)imod, KPDUP);  /* BUG: check return value */
 
 	for(;;)
 		ospause();
@@ -419,7 +419,7 @@ enverror(void)
 }
 
 NORETURN
-panicv(char *fmt, va_list arg)
+panicv(const char *fmt, va_list arg)
 {
 	fprint(2, "panic: ");
 	vfprint(2, fmt, arg);

@@ -164,7 +164,7 @@ extern	char*	v_strdup(const char*, const char*, int, const char*);
 #define smalloc(size)		v_smalloc(size, __FILE__, __LINE__, __FUNCTION__)
 #define malloc(size)		v_malloc(size, __FILE__, __LINE__, __FUNCTION__)
 #define mallocz(size, clr)	v_mallocz(size, clr, __FILE__, __LINE__, __FUNCTION__)
-#define free(v)			v_free(v, __FILE__, __LINE__, __FUNCTION__)
+#define free(v)			{v_free((void*)(v), __FILE__, __LINE__, __FUNCTION__); *(void**)&(v)=(void*)0xDEAFBEEF; }
 #define realloc(v, size)	v_realloc(v, size, __FILE__, __LINE__, __FUNCTION__)
 #define calloc(num, size)	v_calloc(num, size, __FILE__, __LINE__, __FUNCTION__)
 #define msize(v)		v_msize(v, __FILE__, __LINE__, __FUNCTION__)
@@ -303,24 +303,24 @@ enum{
 	FmtFlag		= FmtByte << 1
 };
 
-extern	int	print(char*, ...);
-extern	char*	seprint(char*, char*, char*, ...);
-extern	char*	vseprint(char*, char*, char*, va_list);
+extern	int	print(const char*, ...);
+extern	char*	seprint(char*, char*, const char*, ...);
+extern	char*	vseprint(char*, char*, const char*, va_list);
 extern	int	snprint(char*, int, const char* fmt, ...);
-extern	int	vsnprint(char*, int, char*, va_list);
-extern	char*	smprint(char*, ...);
-extern	char*	vsmprint(char*, va_list);
-extern	int	sprint(char*, char*, ...);
-extern	int	fprint(int, char*, ...);
-extern	int	vfprint(int, char*, va_list);
+extern	int	vsnprint(char*, int, const char*, va_list);
+extern	char*	smprint(const char*, ...);
+extern	char*	vsmprint(const char*, va_list);
+extern	int	sprint(char*, const char*, ...);
+extern	int	fprint(int, const char*, ...);
+extern	int	vfprint(int, const char*, va_list);
 
-extern	int	runesprint(Rune*, char*, ...);
-extern	int	runesnprint(Rune*, int, char*, ...);
-extern	int	runevsnprint(Rune*, int, char*, va_list);
-extern	Rune*	runeseprint(Rune*, Rune*, char*, ...);
-extern	Rune*	runevseprint(Rune*, Rune*, char*, va_list);
-extern	Rune*	runesmprint(char*, ...);
-extern	Rune*	runevsmprint(char*, va_list);
+extern	int	runesprint(Rune*, const char*, ...);
+extern	int	runesnprint(Rune*, int, const char*, ...);
+extern	int	runevsnprint(Rune*, int, const char*, va_list);
+extern	Rune*	runeseprint(Rune*, Rune*, const char*, ...);
+extern	Rune*	runevseprint(Rune*, Rune*, const char*, va_list);
+extern	Rune*	runesmprint(const char*, ...);
+extern	Rune*	runevsmprint(const char*, va_list);
 
 extern	int	fmtfdinit(Fmt*, int, char*, int);
 extern	int	fmtfdflush(Fmt*);
@@ -332,8 +332,8 @@ extern	Rune*	runefmtstrflush(Fmt*);
 extern	int	fmtinstall(int, int (*)(Fmt*));
 extern	int	dofmt(Fmt*, char*);
 extern	int	dorfmt(Fmt*, Rune*);
-extern	int	fmtprint(Fmt*, char*, ...);
-extern	int	fmtvprint(Fmt*, char*, va_list);
+extern	int	fmtprint(Fmt*, const char*, ...);
+extern	int	fmtvprint(Fmt*, const char*, va_list);
 extern	int	fmtrune(Fmt*, int);
 extern	int	fmtstrcpy(Fmt*, char*);
 extern	int	fmtrunestrcpy(Fmt*, Rune*);
@@ -394,7 +394,7 @@ extern	vlong	osnsec(void);
 /*
  * one-of-a-kind
  */
-extern	NORETURN	_assert(char*, ...);
+extern	NORETURN	_assert(const char*, ...);
 extern	double		charstod(int(*)(void*), void*);
 extern	char*		cleanname(char*);
 extern	ulong		getcallerpc(void*);
@@ -536,8 +536,8 @@ struct Dir {
 	ulong	mtime;	/* last write time */
 	vlong	length;	/* file length */
 	const char	*name;	/* last element of path */
-	const char	*uid;	/* owner name */
-	const char	*gid;	/* group name */
+	char	*uid;	/* owner name */
+	char	*gid;	/* group name */
 	const char	*muid;	/* last modifier name */
 } Dir;
 
