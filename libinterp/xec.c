@@ -657,10 +657,14 @@ OP(mcall)
 		error(exModule);
 
 	o = rm->disint;
-	if(o >= 0)
-		l = &ml->links[o].u;   /* TODO: check index range */
-	else
+	if(o >= 0) {
+		if(o >= ml->nlinks)
+			error("invalid mframe");
+		l = &ml->links[o].u;
+	}
+	else {
 		l = &ml->m->ext[-o-1].u;   /* TODO: check index range */
+	}
 
 	if(ml->prog == nil) { /* build-in module */
 		l->runt(f);
@@ -705,10 +709,14 @@ OP(mspawn)
 		error(exSpawn);
 	p = newprog(currun(), ml);
 	o = rm->disint;
-	if(o >= 0)
-		p->R.PC = ml->links[o].u.pc;   /* TODO: check index range */
-	else
+	if(o >= 0) {
+		if(o >= ml->nlinks)
+			error("invalid mframe");
+		p->R.PC = ml->links[o].u.pc;
+	}
+	else {
 		p->R.PC = ml->m->ext[-o-1].u.pc;   /* TODO: check index range */
+	}
 	p->R.FP = rs->pframe;
 }
 OP(ret)
