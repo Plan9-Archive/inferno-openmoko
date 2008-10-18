@@ -107,7 +107,7 @@ slicer(ulong start, ulong v, const String *ds)
 
 	if(ds == H) {
 		if(start == 0 && v == 0)
-			return H;
+			return (String*)H;
 
 		error(exBounds);
 	}
@@ -158,7 +158,7 @@ addstring(String *s1, String *s2, int append)
 
 	if(s1 == H) {
 		if(s2 == H)
-			return H;
+			return (String*)H;
 		return stringdup(s2);
 	}
 	if(D2H(s1)->ref > 1)
@@ -255,7 +255,7 @@ r:
 OP(cvtac)
 {
 	Array *a = rs->parray;
-	String *ds = H;
+	String *ds = (String*)H;
 
 	if(a != H)
 		ds = c2string((char*)a->data, a->len);
@@ -354,7 +354,7 @@ string2c(String *s)
 	l = (nc * UTFmax) + UTFmax;
 	if(s->tmp == nil || msize(s->tmp) < l) {
 		free(s->tmp);
-		s->tmp = malloc(l);
+		s->tmp = (char*)malloc(l);
 		if(s->tmp == nil)
 			error(exNomem);
 	}
@@ -376,10 +376,10 @@ string2c(String *s)
 }
 
 String*
-c2string(char *cs, int len)
+c2string(const char *cs, int len)
 {
 	uchar *p;
-	char *ecs;
+	const char *ecs;
 	String *s;
 	Rune *r, junk;
 	int c, nc, isrune;
@@ -462,7 +462,7 @@ stringdup(String *s)
 	String *ns;
 
 	if(s == H)
-		return H;
+		return (String*)H;
 
 	if(s->len >= 0) {
 		ns = newstring(s->len);
@@ -477,10 +477,10 @@ stringdup(String *s)
 }
 
 int
-stringcmp(String *s1, String *s2)
+stringcmp(const String *s1, const String *s2)
 {
-	Rune *r1, *r2;
-	char *a1, *a2;
+	const Rune *r1, *r2;
+	const char *a1, *a2;
 	int v, n, n1, n2, c1, c2;
 	static String snil = { 0, 0, nil };
 

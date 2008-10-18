@@ -8,6 +8,8 @@ typedef short			DISINT16;	/* 16 bits */
 typedef float			DISREAL32;	/* 32 float IEEE754 */
 /*typedef void*			DISPOINTER;	/* for sizeof */
 
+#define DISAPI(name) void name(F_##name *f)
+
 enum ProgState
 {
 	Palt,				/* blocked in alt instruction */
@@ -77,7 +79,7 @@ typedef union Disdata Disdata;
 struct Altc
 {
 	Channel*	c;
-	void*		ptr;
+	DISINT*		ptr;
 };
 
 
@@ -222,17 +224,21 @@ struct Inst
 	Adr		d;
 };
 
+typedef void (*TypeDestructor)(Heap*, int);
+typedef void (*TypeMark)(Type*, void*);
 struct Type
 {
 	int		ref;
 	const char*	comment;	/* debugging */
-	void		(*destructor)(Heap*, int);	/* usually freeheap with exception for files and some special types */
-	void		(*fnmark)(Type*, void*);	/* markheap, tkmarktop */
+	TypeDestructor	destructor;	/* usually freeheap with exception for files and some special types */
+	TypeMark	fnmark;	/* markheap, tkmarktop */
+	//void		(*destructor)(Heap*, int);	/* usually freeheap with exception for files and some special types */
+	//void		(*fnmark)(Type*, void*);	/* markheap, markarray, marklist, tkmarktop */
 	int		size;
 	int		np;		/* map size in bytes, 0 if there is no pointers */
 	void*		destroy;	/* JITted code */
 	void*		initialize;	/* JITted code */
-	uchar		map[STRUCTALIGN];
+	char		map[STRUCTALIGN]; /* TODO: int map[] */
 };
 #define PRINT_TYPE(t) {int i; print("<%s %d %02X:", t->comment, t->size, t->np); for(i=0; i<t->np; i++) print("%02X", t->map[i]); print(">"); }
 
@@ -271,7 +277,7 @@ struct Progs
 struct Prog
 {
 	REG		R;		/* Register set */
-	DISINT*		iii;		/* Alt */
+	DISINT*		iii;		/* Alt FIXME: Altc */
 	Alt*		aaa;		/* Alt */
 	Prog*		link;		/* Run queue */
 	Channel*	chan;		/* Channel pointer */
@@ -292,7 +298,7 @@ struct Prog
 	Progs*		group;		/* process group */
 	Prog*		grpprev;	/* previous group member */
 	Prog*		grpnext;	/* next group member */
-	String*		exval;		/* current exception */
+	String*		exval;		/* current exception, FIXME: String* or String** */
 	char*		exstr;		/* last exception */
 	void		(*addrun)(Prog*);
 	void		(*xec)(Prog*);
@@ -303,7 +309,7 @@ struct Module
 {
 	int		ref;		/* Use count */
 	int		compiled;	/* Compiled into native assembler */
-	ulong		ss;		/* Stack size */
+	ulong		_ss_deprecated_;/* Stack size */
 	enum ModRtFlags	rt;		/* Runtime flags */
 	ulong		mtime;		/* Modtime of dis file */
 	Qid		qid;		/* Qid of dis file */
@@ -311,13 +317,13 @@ struct Module
 	uint		dev;		/* subtype of dis file's server */
 	int		nprog;		/* number of instructions */
 	Inst*		prog;		/* text segment */
-	uchar*		origmp;		/* unpolluted Module data */
+	char*		origmp;		/* unpolluted Module data */
 	int		ntype;		/* Number of type descriptors */
 	Type**		type;		/* Type descriptors */
 	Inst*		entry;		/* Entry PC */
 	Type*		entryt;		/* Entry frame */
-	char*		name;		/* Implements type */
-	char*		path;		/* File module loaded from */
+	const char*	name;		/* Implements type */
+	const char*	path;		/* File module loaded from */
 	Module*		link;		/* Links */
 	Link*		ext;		/* External dynamic links */
 	Import**	ldt;		/* Internal linkage descriptor tables */
@@ -338,7 +344,7 @@ struct Modl
  */
 struct Modlink
 {
-	uchar*		MP;		/* Module data for this instance */
+	char*		MP;		/* Module data for this instance */
 	Module*		m;		/* The real module */
 	int		compiled;	/* Compiled into native assembler (overwrites m->compiled) */
 	Inst*		prog;		/* text segment (overwrites m->prog) */
@@ -388,7 +394,7 @@ struct Handler
 	ulong		eoff;
 	ulong		ne;
 	Type*		t;
-	Except*	etab;
+	Except*		etab;
 };
 
 #define H2D(t, x)	((t)((Heap*)(x)+1))
@@ -436,13 +442,15 @@ extern	int	gchalt;
 extern	int	gccolor;
 extern	int	minvalid;
 
+typedef struct{const char *name; long sig; void (*fn)(void*); int size; int np; char map[16];} Runtab;
+
 extern	int		Dconv(Fmt*);
 extern	void		acquire(void);
 extern	void		addrun(Prog*);
 extern	void		altdone(Alt*, Prog*, Channel*, int);
 extern	void		altgone(Prog*);
 extern	Array*		allocimgarray(Heap*, Heap*);
-extern	Module*		builtinmod(char*, void*, int);
+extern	Module*		builtinmod(const char*, const Runtab*, int);
 extern	void		cblock(Prog*);
 extern	void		cmovw(void*, void*);
 extern	Channel*	cnewc(Type*, void (*mover)(void*d, void*s, Channel*c), int);
@@ -467,7 +475,7 @@ extern	void		destroystack(REG*);
 extern	void		drawmodinit(void);
 extern	int		dynldable(int);
 extern	void		loadermodinit(void);
-extern	Type*		dtype(void (*destructor)(Heap*, int), int, uchar*, int, const char*comment);
+extern	Type*		dtype(void (*destructor)(Heap*, int), int, const char*map, int mapsize, const char*comment);
 extern	Module*		dupmod(Module*);
 extern	NORETURN	error(char*);
 extern	NORETURN	errorf(char*, ...);
@@ -511,23 +519,23 @@ extern	Modlink*	mklinkmod(Module*, int);
 extern	Module*		load(char*);
 extern	Module*		lookmod(char*);
 extern	long		magic(void);
-extern	void		markarray(Type*, void*);
+extern	void		markarray(Type*, Array*);
 extern	void		markchan(Type*, void*);
 extern	void		markheap(Type*, void*);
-extern	void		marklist(Type*, void*);
+extern	void		marklist(Type*, List*);
 extern	void		markmodl(Type*, void*);
 extern	void		mathmodinit(void);
 extern	Array*		mem2array(const void*, int);
-extern	void		mlink(Module*, Link*, uchar*, int, int, Type*);
+extern	void		mlink(Module*, Link*, const char*, int, int, Type*);
 extern	void		modinit(void);
 extern	DISINT		modstatus(REG*, char*, int);
 extern	void		movp(void);
 extern	void		moverp(void*d, void*s, Channel*c);
 extern	void		movertmp(void*d, void*s, Channel*c);
 extern	void		movtmpsafe(void);
-extern	int		mustbesigned(char*, uchar*, ulong, Dir*);
-extern	Module*		newmod(char*);
-extern	Module*		newdyncode(int, char*, Dir*);
+extern	int		mustbesigned(const char *, const char*, ulong, const Dir*);
+extern	Module*		newmod(const char*);
+extern	Module*		newdyncode(int, const char*, Dir*);
 extern	void		newdyndata(Modlink*);
 extern	void		newgrp(Prog*);
 extern	void		newmp(void*, void*, Type*);
@@ -536,7 +544,7 @@ extern	void		newstack(Prog*);
 extern	void		noptrs(Type*, void*);
 extern	int		nprog(void);
 extern	void		opinit(void);
-extern	Module*		parsemod(char*, uchar*, ulong, Dir*);
+extern	Module*		parsemod(const char*, const char*, ulong, const Dir*);
 extern	Module*		parsedmod(char*, int, ulong, Qid);
 extern	void		prefabmodinit(void);
 extern	Prog*		progn(int);
@@ -551,7 +559,7 @@ extern	void		releasex(void);
 extern	void		retnstr(const char*, int, String**);
 extern	void		retstr(const char*, String**);
 extern	void		rungc(Prog*);
-extern	void		runtime(Module*, Link*, char*, int, void(*)(void*), Type*);
+extern	void		runtime(Module*, Link*, const char*, int, void(*)(void*), Type*);
 extern	void		safemem(void*, Type*, void (*)(void*));
 extern	int		segflush(void *, ulong);
 extern	int		_isend(Channel *c, void *v);
@@ -562,7 +570,7 @@ extern	void		sethints(String*, int);
 extern	String*		splitc(String**, int);
 extern	uchar*		stack(Frame*);
 extern	int		stringblen(String*);
-extern	int		stringcmp(String*, String*);
+extern	int		stringcmp(const String*, const String*);
 extern	String*		stringdup(String*);
 extern	String*		stringheap(int, int, int, int);
 extern	char*		syserr(char*, char*, Prog*);
@@ -571,7 +579,7 @@ extern	void		sysmodinit(void);
 extern	void		tellsomeone(Prog*, char*);
 extern	void		tkmodinit(void);
 extern	void		unload(Module*);
-extern	int		verifysigner(uchar*, int, uchar*, ulong);
+extern	int		verifysigner(const char*, int, const char*, ulong);
 extern	void		xec(Prog*);
 extern	int		xecalt(int, Alt *a, DISINT*ret);
 extern	int		xprint(Prog*, void*, void*, String*, char*, int);
@@ -580,7 +588,7 @@ extern	void		iyield(void);
 extern	String*		newrunes(int);
 extern	String*		newstring(int);
 extern	int		runeslen(Rune*, int);
-extern	String*		c2string(char*, int);
+extern	String*		c2string(const char*, int);
 extern	char*		string2c(String*);
 extern	List*		cons(ulong, List**);
 extern	String*		slicer(ulong, ulong, const String*);

@@ -1,5 +1,9 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
 
 typedef struct Pack Pack;
@@ -145,7 +149,7 @@ tkpackqit(Tk *t)
 		return;
 
 	tkpackqrm(t);
-	f = malloc(sizeof(Pack));
+	f = (Pack*)malloc(sizeof(Pack));
 	if(f == nil) {
 		print("tkpackqit: malloc failed\n");
 		return;
@@ -213,7 +217,7 @@ tkforget(TkTop *t, char *arg)
 	Tk *tk;
 	char *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	for(;;) {
@@ -242,7 +246,7 @@ tkpropagate(TkTop *t, char *arg)
 	TkStab *s;
 	char *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	arg = tkword(t, arg, buf, buf+Tkmaxitem, nil);
@@ -276,7 +280,7 @@ tkslaves(TkTop *t, char *arg, char **val)
 	Tk *tk;
 	char *fmt, *e, *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	tkword(t, arg, buf, buf+Tkmaxitem, nil);
@@ -338,7 +342,7 @@ tkpack(TkTop *t, char *arg, char **val)
 	TkName *names, *n;
 	char *e, *w, *buf;
 
-	buf = mallocz(Tkminitem, 0);
+	buf = (char*)mallocz(Tkminitem, 0);
 	if(buf == nil)
 		return TkNomem;
 
@@ -395,7 +399,7 @@ tkpack(TkTop *t, char *arg, char **val)
 
 	e = nil;
 	for(n = names; n; n = n->link) {
-		tk = n->obj;
+		tk = (Tk*)n->obj;
 		if(tk->master == nil) {
 			tk->pad = ZP;
 			tk->ipad = ZP;

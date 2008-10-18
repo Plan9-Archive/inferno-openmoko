@@ -1,6 +1,11 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "textw.h"
 
 #define istring u.string
@@ -24,7 +29,7 @@ tktindparse(Tk *tk, char **pspec, TkTindex *ans)
 	TkText *tkt;
 	char *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 

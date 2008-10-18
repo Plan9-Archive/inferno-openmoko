@@ -1,7 +1,12 @@
 #include "lib9.h"
 #include "draw.h"
 #include "keyboard.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "frame.h"
 #include "label.h"
 
@@ -366,7 +371,7 @@ mkchoicemenu(Tk *tkb)
 	menu->geom = tkmoveresize;
 	tkw = TKobj(TkWin, menu);
 	tkw->cbname = strdup(tkb->name->name);
-	tkw->di = (void*)-1;			// XXX
+	tkw->di = (Draw_Image*)H;
 
 	for(i = tkl->nvalues - 1; i >= 0; i--){
 		tkc = tknewobj(t, TKlabel, sizeof(Tk)+sizeof(TkLabel));
@@ -537,7 +542,7 @@ tkchoicebutsetvalue(Tk *tk, char *arg, char **val)
 	USED(val);
 	if (tkl->nvalues == 0)
 		return TkBadvl;
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if (buf == nil)
 		return TkNomem;
 	tkword(tk->env->top, arg, buf, buf+Tkmaxitem, &gotarg);
@@ -569,7 +574,7 @@ tkchoicebutget(Tk *tk, char *arg, char **val)
 
 	if (tkl->nvalues == 0)
 		return nil;
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if (buf == nil)
 		return TkNomem;
 	tkword(tk->env->top, arg, buf, buf+Tkmaxitem, &gotarg);
@@ -597,7 +602,7 @@ tkchoicebutvaluecount(Tk *tk, char *arg, char **val)
 
 
 static void
-tkchoicevarchanged(Tk *tk, char *var, char *value)
+tkchoicevarchanged(Tk *tk, const char *var, const char *value)
 {
 	TkLabel *tkl = TKobj(TkLabel, tk);
 	int v;
@@ -657,7 +662,7 @@ tkmenu(TkTop *t, char *arg, char **ret)
 		return TkNomem;
 
 	tkw = TKobj(TkWin, tk);
-	tkw->di = (void*)-1;		// XXX
+	tkw->di = (Draw_Image*)H;
 	tk->relief = TKraised;
 	tk->flag |= Tknograb;
 	tk->borderwidth = 2;
@@ -1041,7 +1046,7 @@ tkmenuindex2ptr(Tk *tk, char **arg)
 	int index;
 	char *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return nil;
 	*arg = tkword(tk->env->top, *arg, buf, buf+Tkmaxitem, nil);
@@ -1133,7 +1138,7 @@ tkmenuinsert(Tk *tk, char *arg, char **val)
 	char *buf;
 
 	USED(val);
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	arg = tkword(tk->env->top, arg, buf, buf+Tkmaxitem, nil);
@@ -1241,7 +1246,7 @@ tkmenuactivate(Tk *tk, char *arg, char **val)
 	char *buf;
 
 	USED(val);
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	tkword(tk->env->top, arg, buf, buf+Tkmaxitem, nil);
@@ -1308,7 +1313,7 @@ tkmenudelete(Tk *tk, char *arg, char **val)
 	char *buf;
 
 	USED(val);
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	arg = tkitem(buf, arg);
@@ -1341,7 +1346,7 @@ tkmenupost(Tk *tk, char *arg, char **val)
 
 	USED(val);
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	t = tk->env->top;
@@ -1377,7 +1382,7 @@ tkmenuindex(Tk *tk, char *arg, char **val)
 	char *buf;
 	int index;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	tkword(tk->env->top, arg, buf, buf+Tkmaxitem, nil);
@@ -1584,7 +1589,7 @@ menurelpos(Tk *sub)
 }
 
 static void
-autoscroll(Tk *tk, void *v, int cancelled)
+autoscroll(Tk *tk, const char *v, int cancelled)
 {
 	TkWin *tkw;
 	Rectangle r, dr;

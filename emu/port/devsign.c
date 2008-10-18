@@ -42,7 +42,7 @@ static Signerkey* findsignerkey(Skeyset*, char*, int, char*);
 extern vlong		osusectime(void);
 
 int
-verifysigner(uchar *sign, int len, uchar *data, ulong ndata)
+verifysigner(const char *sign, int len, const char *data, ulong ndata)
 {
 	Get sig;
 	int alg;
@@ -115,7 +115,7 @@ out:
 }
 
 int
-mustbesigned(char *path, uchar *code, ulong length, Dir *dir)
+mustbesigned(const char *path, const char *code, ulong length, const Dir *dir)
 {
 	USED(code); USED(length);
 if(0)print("load %s: %d %C\n", path, up->env->sigs!=nil, dir==nil?'?':dir->type);

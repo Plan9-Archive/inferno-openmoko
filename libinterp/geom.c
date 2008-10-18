@@ -5,52 +5,36 @@
 #include "runt.h"
 #include "raise.h"
 
-void
-Point_add(void *fp)
+DISAPI(Point_add)
 {
-	F_Point_add *f;
 	Draw_Point *ret;
-
-	f = fp;
 
 	ret = f->ret;
 	ret->x = f->p.x + f->q.x;
 	ret->y = f->p.y + f->q.y;
 }
 
-void
-Point_sub(void *fp)
+DISAPI(Point_sub)
 {
-	F_Point_sub *f;
 	Draw_Point *ret;
-
-	f = fp;
 
 	ret = f->ret;
 	ret->x = f->p.x - f->q.x;
 	ret->y = f->p.y - f->q.y;
 }
 
-void
-Point_mul(void *fp)
+DISAPI(Point_mul)
 {
-	F_Point_mul *f;
 	Draw_Point *ret;
-
-	f = fp;
 
 	ret = f->ret;
 	ret->x = f->p.x * f->i;
 	ret->y = f->p.y * f->i;
 }
 
-void
-Point_div(void *fp)
+DISAPI(Point_div)
 {
-	F_Point_div *f;
 	Draw_Point *ret;
-
-	f = fp;
 
 	if(f->i == 0)
 		error(exZdiv);
@@ -59,33 +43,21 @@ Point_div(void *fp)
 	ret->y = f->p.y / f->i;
 }
 
-void
-Point_eq(void *fp)
+DISAPI(Point_eq)
 {
-	F_Point_eq *f;
-
-	f = fp;
 	*f->ret = f->p.x == f->q.x && f->p.y == f->q.y;
 }
 
-void
-Point_in(void *fp)
+DISAPI(Point_in)
 {
-	F_Point_in *f;
-
-	f = fp;
 	*f->ret = f->p.x >= f->r.min.x && f->p.x < f->r.max.x &&
 	       f->p.y >= f->r.min.y && f->p.y < f->r.max.y;
 }
 
-void
-Rect_canon(void *fp)
+DISAPI(Rect_canon)
 {
-	F_Rect_canon *f;
 	Draw_Rect *ret;
 	DISINT t;
-
-	f = fp;
 
 	ret = f->ret;
 	if(f->r.max.x < f->r.min.x){
@@ -108,13 +80,10 @@ Rect_canon(void *fp)
 	}
 }
 
-void
-Rect_combine(void *fp)
+DISAPI(Rect_combine)
 {
-	F_Rect_combine *f;
 	Draw_Rect *ret;
 
-	f = fp;
 	ret = f->ret;
 	*ret = f->r;
 	if(f->r.min.x > f->s.min.x)
@@ -127,39 +96,25 @@ Rect_combine(void *fp)
 		ret->max.y = f->s.max.y;
 }
 
-void
-Rect_eq(void *fp)
+DISAPI(Rect_eq)
 {
-	F_Rect_eq *f;
-
-	f = fp;
-
 	*f->ret = f->r.min.x == f->s.min.x
 		&& f->r.max.x == f->s.max.x
 		&& f->r.min.y == f->s.min.y
 		&& f->r.max.y == f->s.max.y;
 }
 
-void
-Rect_Xrect(void *fp)
+DISAPI(Rect_Xrect)
 {
-	F_Rect_Xrect *f;
-
-	f = fp;
-
 	*f->ret = f->r.min.x < f->s.max.x
 		&& f->s.min.x < f->r.max.x
 		&& f->r.min.y < f->s.max.y
 		&& f->s.min.y < f->r.max.y;
 }
 
-void
-Rect_clip(void *fp)
+DISAPI(Rect_clip)
 {
-	F_Rect_clip *f;
 	Draw_Rect *r, *s, *ret;
-
-	f = fp;
 
 	r = &f->r;
 	s = &f->s;
@@ -195,23 +150,16 @@ Rect_clip(void *fp)
 	f->ret->t1 = 1;
 }
 
-void
-Rect_inrect(void *fp)
+DISAPI(Rect_inrect)
 {
-	F_Rect_inrect *f;
-
-	f = fp;
-
 	*f->ret = f->s.min.x <= f->r.min.x
 		&& f->r.max.x <= f->s.max.x
 		&& f->s.min.y <= f->r.min.y
 		&& f->r.max.y <= f->s.max.y;
 }
 
-void
-Rect_contains(void *fp)
+DISAPI(Rect_contains)
 {
-	F_Rect_contains *f = fp;
 	DISINT x = f->p.x;
 	DISINT y = f->p.y;
 
@@ -219,10 +167,8 @@ Rect_contains(void *fp)
 		&& y >= f->r.min.y && y < f->r.max.y;
 }
 
-void
-Rect_addpt(void *fp)
+DISAPI(Rect_addpt)
 {
-	F_Rect_addpt *f = fp;
 	Draw_Rect *ret = f->ret;
 	DISINT n = f->p.x;
 
@@ -233,10 +179,8 @@ Rect_addpt(void *fp)
 	ret->max.y = f->r.max.y + n;
 }
 
-void
-Rect_subpt(void *fp)
+DISAPI(Rect_subpt)
 {
-	F_Rect_subpt *f = fp;
 	Draw_Rect *ret = f->ret;
 	DISINT n = f->p.x;
 
@@ -247,10 +191,8 @@ Rect_subpt(void *fp)
 	ret->max.y = f->r.max.y - n;
 }
 
-void
-Rect_inset(void *fp)
+DISAPI(Rect_inset)
 {
-	F_Rect_inset *f = fp;
 	Draw_Rect *ret = f->ret;
 	DISINT n = f->n;
 
@@ -260,33 +202,19 @@ Rect_inset(void *fp)
 	ret->max.y = f->r.max.y - n;
 }
 
-void
-Rect_dx(void *fp)
+DISAPI(Rect_dx)
 {
-	F_Rect_dx *f;
-
-	f = fp;
-
 	*f->ret = f->r.max.x-f->r.min.x;
 }
 
-void
-Rect_dy(void *fp)
+DISAPI(Rect_dy)
 {
-	F_Rect_dy *f;
-
-	f = fp;
-
 	*f->ret = f->r.max.y-f->r.min.y;
 }
 
-void
-Rect_size(void *fp)
+DISAPI(Rect_size)
 {
-	F_Rect_size *f;
 	Draw_Point *ret;
-
-	f = fp;
 
 	ret = f->ret;
 	ret->x = f->r.max.x-f->r.min.x;

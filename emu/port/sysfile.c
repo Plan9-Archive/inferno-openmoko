@@ -352,7 +352,7 @@ kpipe(int fd[2])
 	Dev *d;
 	Fgrp *f;
 	Chan *c[2];
-	static char *names[] = {"data", "data1"};
+	static const char * names[] = {"data", "data1"};
 
 	f = up->env->fgrp;
 
@@ -515,7 +515,7 @@ kunmount(char *old, char *new)
 }
 
 int
-kopen(char *path, int mode)
+kopen(const char *path, int mode)
 {
 	int fd;
 	volatile struct { Chan *c; } c;

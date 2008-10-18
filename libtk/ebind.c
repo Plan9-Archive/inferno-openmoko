@@ -1,8 +1,13 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
-#include <kernel.h>
-#include <interp.h>
+
+#include "kernel.h"
+
 
 enum
 {
@@ -93,7 +98,7 @@ tkseqparse(char *seq)
 	int i, event;
 	char *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return -1;
 
@@ -212,7 +217,7 @@ tkcmdbind(Tk *tk, int event, char *s, void *data)
 
 	if(s == nil)
 		return;
-	cmd = malloc(2*Tkmaxitem);
+	cmd = (char*)malloc(2*Tkmaxitem);
 	if (cmd == nil) {
 		print("tk: bind command \"%s\": %s\n",
 			tk->name ? tk->name->name : "(noname)", TkNomem);
@@ -355,10 +360,10 @@ tkbind(TkTop *t, char *arg, char **ret)
 
 	USED(ret);
 
-	tag = mallocz(Tkmaxitem, 0);
+	tag = (char*)mallocz(Tkmaxitem, 0);
 	if(tag == nil)
 		return TkNomem;
-	seq = mallocz(Tkmaxitem, 0);
+	seq = (char*)mallocz(Tkmaxitem, 0);
 	if(seq == nil) {
 		free(tag);
 		return TkNomem;
@@ -493,7 +498,7 @@ tksend(TkTop *t, char *arg, char **ret)
 
 	USED(ret);
 
-	var = mallocz(Tkmaxitem, 0);
+	var = (char*)mallocz(Tkmaxitem, 0);
 	if(var == nil)
 		return TkNomem;
 
@@ -506,7 +511,7 @@ tksend(TkTop *t, char *arg, char **ret)
 		return TkNotvt;
 
 	arg = tkskip(arg, " \t");
-	if(tktolimbo(v->value, arg) == 0)
+	if(tktolimbo(v->value.c, arg) == 0)
 		return TkMovfw;
 
 	return nil;
@@ -634,7 +639,7 @@ tkfocus(TkTop *top, char *arg, char **ret)
 		return nil;
 	}
 
-	wp = mallocz(Tkmaxitem, 0);
+	wp = (char*)mallocz(Tkmaxitem, 0);
 	if(wp == nil)
 		return TkNomem;
 
@@ -671,7 +676,7 @@ tkraise(TkTop *t, char *arg, char **ret)
 
 	USED(ret);
 
-	wp = mallocz(Tkmaxitem, 0);
+	wp = (char*)mallocz(Tkmaxitem, 0);
 	if(wp == nil)
 		return TkNomem;
 	tkword(t, arg, wp, wp+Tkmaxitem, nil);
@@ -697,7 +702,7 @@ tklower(TkTop *t, char *arg, char **ret)
 	char *wp;
 
 	USED(ret);
-	wp = mallocz(Tkmaxitem, 0);
+	wp = (char*)mallocz(Tkmaxitem, 0);
 	if(wp == nil)
 		return TkNomem;
 	tkword(t, arg, wp, wp+Tkmaxitem, nil);
@@ -725,11 +730,11 @@ tkgrab(TkTop *t, char *arg, char **ret)
 
 	USED(ret);
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 
-	wp = mallocz(Tkmaxitem, 0);
+	wp = (char*)mallocz(Tkmaxitem, 0);
 	if(wp == nil) {
 		free(buf);
 		return TkNomem;
@@ -781,7 +786,7 @@ tkputs(TkTop *t, char *arg, char **ret)
 
 	USED(ret);
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	tkword(t, arg, buf, buf+Tkmaxitem, nil);
@@ -798,7 +803,7 @@ tkdestroy(TkTop *t, char *arg, char **ret)
 	char *n, *e, *buf;
 
 	USED(ret);
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	e = nil;
@@ -921,13 +926,13 @@ tkwinfo(TkTop *t, char *arg, char **ret)
 	Tk *tk;
 	char *cmd, *arg1;
 
-	cmd = mallocz(Tkmaxitem, 0);
+	cmd = (char*)mallocz(Tkmaxitem, 0);
 	if(cmd == nil)
 		return TkNomem;
 
 	arg = tkword(t, arg, cmd, cmd+Tkmaxitem, nil);
 	if(strcmp(cmd, "class") == 0) {
-		arg1 = mallocz(Tkmaxitem, 0);
+		arg1 = (char*)mallocz(Tkmaxitem, 0);
 		if(arg1 == nil) {
 			free(cmd);
 			return TkNomem;

@@ -19,10 +19,10 @@ Type*	TVector;
 Type*	TFace;
 Type*	TGlyph;
 
-static uchar	Matrixmap[] = Freetype_Matrix_map;
-static uchar	Vectormap[] = Freetype_Vector_map;
-static uchar	Facemap[] = Freetype_Face_map;
-static uchar	Glyphmap[] = Freetype_Glyph_map;
+static char	Matrixmap[] = Freetype_Matrix_map;
+static char	Vectormap[] = Freetype_Vector_map;
+static char	Facemap[] = Freetype_Face_map;
+static char	Glyphmap[] = Freetype_Glyph_map;
 
 static void		freeface(Heap*, int);
 static Face*	ckface(Freetype_Face*);
@@ -37,10 +37,8 @@ freetypemodinit(void)
 	TGlyph = dtype(freeheap, sizeof(Freetype_Glyph), Glyphmap, sizeof(Glyphmap), "Freetype->Glyph" );
 }
 
-void
-Face_haschar(void *fp)
+DISAPI(Face_haschar)
 {
-	F_Face_haschar *f = fp;
 	Face *face;
 
 	*f->ret = 0;
@@ -50,10 +48,8 @@ Face_haschar(void *fp)
 	acquire();
 }
 
-void
-Face_loadglyph(void *fp)
+DISAPI(Face_loadglyph)
 {
-	F_Face_loadglyph *f = fp;
 	Heap *h;
 	Face *face;
 	Freetype_Glyph *g;
@@ -64,7 +60,7 @@ Face_loadglyph(void *fp)
 	face = ckface(f->face);
 
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Freetype_Glyph *)H;
 
 	release();
 	err = ftloadglyph(face->ftface, f->c, &ftg);
@@ -102,10 +98,8 @@ Face_loadglyph(void *fp)
 	*f->ret = g;
 }
 
-void
-Freetype_newface(void *fp)
+DISAPI(Freetype_newface)
 {
-	F_Freetype_newface *f = fp;
 	Heap *h;
 	Face *face;
 	Freetype_Face *limboface;
@@ -114,7 +108,7 @@ Freetype_newface(void *fp)
 	char *err;
 
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Freetype_Face *)H;
 
 	h = heapz(TFace);
 	if (h == H) {
@@ -131,7 +125,7 @@ Freetype_newface(void *fp)
 	acquire();
 	free(path);
 	if (err != nil) {
-		*f->ret = H;
+		*f->ret = (Freetype_Face *)H;
 		destroy(face);
 		kwerrstr(err);
 		return;
@@ -146,21 +140,16 @@ Freetype_newface(void *fp)
 	*f->ret = limboface;
 }
 
-void
-Freetype_newmemface(void *fp)
+DISAPI(Freetype_newmemface)
 {
-	F_Freetype_newmemface *f = fp;
-
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Freetype_Face *)H;
 
 	kwerrstr("not implemented");
 }
 
-void
-Face_setcharsize(void *fp)
+DISAPI(Face_setcharsize)
 {
-	F_Face_setcharsize *f = fp;
 	Face *face;
 	Freetype_Face *limboface;
 	FTfaceinfo finfo;
@@ -178,10 +167,8 @@ Face_setcharsize(void *fp)
 	retstr(err, f->ret);
 }
 
-void
-Face_settransform(void *fp)
+DISAPI(Face_settransform)
 {
-	F_Face_settransform *f = fp;
 	FTmatrix *m = nil;
 	FTvector *v = nil;
 	Face *face;
@@ -193,7 +180,7 @@ Face_settransform(void *fp)
 	 * we have one for consistency - but always nil for now
 	 */
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (String*)H;
 
 	if (f->m != H)
 		m = (FTmatrix*)(f->m);

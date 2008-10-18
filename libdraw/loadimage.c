@@ -3,11 +3,11 @@
 #include "kernel.h"
 
 int
-loadimage(Image *i, Rectangle r, uchar *data, int ndata)
+loadimage(Image *i, Rectangle r, const char *data, int ndata)
 {
 	long dy;
 	int n, bpl, roff, dstroff, lskip, llen, y;
-	uchar *a;
+	char *a;
 	int chunk;
 	Rectangle dstr;
 

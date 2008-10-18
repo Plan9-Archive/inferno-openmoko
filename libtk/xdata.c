@@ -1,5 +1,9 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
 
 TkStab tkorient[] =
@@ -118,32 +122,32 @@ TkStab tkjustify[] =
 
 TkOption tkgeneric[] =
 {
- "actx",		OPTact,	0,	IAUX(0),
- "acty",		OPTact,	0,	IAUX(1),
- "actwidth",		OPTdist, offsetof(Tk, act.width),	IAUX(offsetof(Tk, env)),
- "actheight",		OPTdist, offsetof(Tk, act.height),	IAUX(offsetof(Tk, env)),
- "bd",			OPTnndist, offsetof(Tk, borderwidth),	nil,
- "borderwidth",		OPTnndist, offsetof(Tk, borderwidth),	nil,
- "highlightthickness",	OPTnndist, offsetof(Tk, highlightwidth), nil,
- "height",		OPTsize, 0,			IAUX(offsetof(Tk, env)),
- "width",		OPTsize, 0,			IAUX(offsetof(Tk, env)),
- "relief",		OPTstab, offsetof(Tk, relief),		tkrelief,
- "state",		OPTflag, offsetof(Tk, flag),		tkstate,
- "font",		OPTfont, offsetof(Tk, env),		nil,
- "foreground",		OPTcolr, offsetof(Tk, env),		IAUX(TkCforegnd),
- "background",		OPTcolr, offsetof(Tk, env),		IAUX(TkCbackgnd),
- "fg",			OPTcolr, offsetof(Tk, env),		IAUX(TkCforegnd),
- "bg",			OPTcolr, offsetof(Tk, env),		IAUX(TkCbackgnd),
- "selectcolor",		OPTcolr, offsetof(Tk, env),		IAUX(TkCselect),
- "selectforeground",	OPTcolr, offsetof(Tk, env),		IAUX(TkCselectfgnd),
- "selectbackground",	OPTcolr, offsetof(Tk, env),		IAUX(TkCselectbgnd),
- "activeforeground",	OPTcolr, offsetof(Tk, env),		IAUX(TkCactivefgnd),
- "activebackground",	OPTcolr, offsetof(Tk, env),		IAUX(TkCactivebgnd),
- "highlightcolor",	OPTcolr, offsetof(Tk, env),		IAUX(TkChighlightfgnd),
- "disabledcolor",	OPTcolr, offsetof(Tk, env),		IAUX(TkCdisablefgnd),
- "padx",		OPTnndist, offsetof(Tk, pad.x),		nil,
- "pady",		OPTnndist, offsetof(Tk, pad.y),		nil,
- "takefocus",	OPTflag, offsetof(Tk, flag),		tktakefocus,
+ "actx",		OPTact,		0,				(TkStab*)0,
+ "acty",		OPTact,		0,				(TkStab*)1,
+ "actwidth",		OPTdist,	offsetof(Tk, act.width),	(TkStab*)offsetof(Tk, env),
+ "actheight",		OPTdist,	offsetof(Tk, act.height),	(TkStab*)offsetof(Tk, env),
+ "bd",			OPTnndist,	offsetof(Tk, borderwidth),	nil,
+ "borderwidth",		OPTnndist,	offsetof(Tk, borderwidth),	nil,
+ "highlightthickness",	OPTnndist,	offsetof(Tk, highlightwidth), 	nil,
+ "height",		OPTsize,	0,				(TkStab*)offsetof(Tk, env),
+ "width",		OPTsize,	0,				(TkStab*)offsetof(Tk, env),
+ "relief",		OPTstab, 	offsetof(Tk, relief),		tkrelief,
+ "state",		OPTflag, 	offsetof(Tk, flag),		tkstate,
+ "font",		OPTfont, 	offsetof(Tk, env),		nil,
+ "foreground",		OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCforegnd,
+ "background",		OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCbackgnd,
+ "fg",			OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCforegnd,
+ "bg",			OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCbackgnd,
+ "selectcolor",		OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCselect,
+ "selectforeground",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCselectfgnd,
+ "selectbackground",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCselectbgnd,
+ "activeforeground",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCactivefgnd,
+ "activebackground",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCactivebgnd,
+ "highlightcolor",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkChighlightfgnd,
+ "disabledcolor",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCdisablefgnd,
+ "padx",		OPTnndist, 	offsetof(Tk, pad.x),		nil,
+ "pady",		OPTnndist, 	offsetof(Tk, pad.y),		nil,
+ "takefocus",		OPTflag, 	offsetof(Tk, flag),		tktakefocus,
  nil
 };
 

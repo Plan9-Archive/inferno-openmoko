@@ -1,6 +1,11 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "canvs.h"
 
 
@@ -29,8 +34,8 @@ static
 TkOption itemopts[] =
 {
 	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
-	"background",	OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCbackgnd),
-	"foreground",	OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCforegnd),
+	"background",	OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCbackgnd,
+	"foreground",	OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCforegnd,
 	nil
 };
 

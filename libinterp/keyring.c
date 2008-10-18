@@ -42,27 +42,27 @@ enum {
 	Maxmsg=	4096
 };
 
-uchar IPintmap[] = Keyring_IPint_map;
-uchar SigAlgmap[] = Keyring_SigAlg_map;
-uchar SKmap[] = Keyring_SK_map;
-uchar PKmap[] = Keyring_PK_map;
-uchar Certificatemap[] = Keyring_Certificate_map;
-uchar DigestStatemap[] = Keyring_DigestState_map;
-uchar Authinfomap[] = Keyring_Authinfo_map;
-uchar AESstatemap[] = Keyring_AESstate_map;
-uchar DESstatemap[] = Keyring_DESstate_map;
-uchar IDEAstatemap[] = Keyring_IDEAstate_map;
-uchar BFstatemap[] = Keyring_BFstate_map;
-uchar RC4statemap[] = Keyring_RC4state_map;
-uchar DSAskmap[] = Keyring_DSAsk_map;
-uchar DSApkmap[] = Keyring_DSApk_map;
-uchar DSAsigmap[] = Keyring_DSAsig_map;
-uchar EGskmap[] = Keyring_EGsk_map;
-uchar EGpkmap[] = Keyring_EGpk_map;
-uchar EGsigmap[] = Keyring_EGsig_map;
-uchar RSAskmap[] = Keyring_RSAsk_map;
-uchar RSApkmap[] = Keyring_RSApk_map;
-uchar RSAsigmap[] = Keyring_RSAsig_map;
+char IPintmap[] = Keyring_IPint_map;
+char SigAlgmap[] = Keyring_SigAlg_map;
+char SKmap[] = Keyring_SK_map;
+char PKmap[] = Keyring_PK_map;
+char Certificatemap[] = Keyring_Certificate_map;
+char DigestStatemap[] = Keyring_DigestState_map;
+char Authinfomap[] = Keyring_Authinfo_map;
+char AESstatemap[] = Keyring_AESstate_map;
+char DESstatemap[] = Keyring_DESstate_map;
+char IDEAstatemap[] = Keyring_IDEAstate_map;
+char BFstatemap[] = Keyring_BFstate_map;
+char RC4statemap[] = Keyring_RC4state_map;
+char DSAskmap[] = Keyring_DSAsk_map;
+char DSApkmap[] = Keyring_DSApk_map;
+char DSAsigmap[] = Keyring_DSAsig_map;
+char EGskmap[] = Keyring_EGsk_map;
+char EGpkmap[] = Keyring_EGpk_map;
+char EGsigmap[] = Keyring_EGsig_map;
+char RSAskmap[] = Keyring_RSAsk_map;
+char RSApkmap[] = Keyring_RSApk_map;
+char RSAsigmap[] = Keyring_RSAsig_map;
 
 PK*	checkPK(Keyring_PK *k);
 
@@ -98,7 +98,7 @@ bigtobase64(mpint* b, char *buf, int len)
 	int n, rv, o;
 
 	n = (b->top+1)*Dbytes;
-	p = malloc(n+1);
+	p = (uchar *)malloc(n+1);
 	if(p == nil)
 		goto Err;
 	n = mptobe(b, p+1, n, nil);
@@ -136,7 +136,7 @@ big64conv(Fmt *f)
 	b = va_arg(f->args, mpint*);
 	n = (b->top+1)*Dbytes + 1;
 	n = ((n+3)/3)*4 + 1;
-	buf = malloc(n);
+	buf = (char*)malloc(n);
 	bigtobase64(b, buf, n);
 	n = fmtstrcpy(f, buf);
 	free(buf);
@@ -158,7 +158,7 @@ static Keyring_IPint*
 ipcopymp(mpint* b)
 {
 	if(b == nil)
-		return H;
+		return (Keyring_IPint*)H;
 	return newIPint(mpcopy(b));
 }
 
@@ -225,10 +225,11 @@ findsigalg(char *name)
 }
 
 SigAlg*
-strtoalg(char *str, char **strp)
+strtoalg(const char *str, const char **strp)
 {
 	int n;
-	char *p, name[20];
+	const char *p;
+	char name[20];
 	SigAlgVec *sa;
 
 
@@ -272,15 +273,15 @@ checkSigAlg(Keyring_SigAlg *ksa)
  *  parse next new line terminated string into a String
  */
 String*
-strtostring(char *str, char **strp)
+strtostring(const char *str, const char **strp)
 {
-	char *p;
+	const char *p;
 	String *s;
 
 	p = strchr(str, '\n');
 	if(p == 0)
 		p = str + strlen(str);
-	s = H;
+	s = (String *)H;
 	retnstr(str, p - str, &s);
 
 	if(strp){
@@ -339,17 +340,14 @@ checkSK(Keyring_SK *k)
 	return sk;
 }
 
-void
-Keyring_genSK(void *fp)
+DISAPI(Keyring_genSK)
 {
-	F_Keyring_genSK *f;
 	SK *sk;
 	SigAlg *sa;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_SK*)H;
 	destroy(v);
 
 	sa = strtoalg(string2c(f->algname), 0);
@@ -363,18 +361,15 @@ Keyring_genSK(void *fp)
 	acquire();
 }
 
-void
-Keyring_genSKfromPK(void *fp)
+DISAPI(Keyring_genSKfromPK)
 {
-	F_Keyring_genSKfromPK *f;
 	SigAlg *sa;
 	PK *pk;
 	SK *sk;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_SK*)H;
 	destroy(v);
 
 	pk = checkPK(f->pk);
@@ -394,7 +389,7 @@ bigs2attr(Fmt *f, char *bigs, char **names)
 	char *b16, *vals[20];
 	uchar data[(MaxBigBytes*6 + 7)/8];
 
-	b16 = malloc(2*MaxBigBytes+1);
+	b16 = (char *)malloc(2*MaxBigBytes+1);
 	if(b16 == nil)
 		return nil;
 	n = getfields(bigs, vals, nelem(vals), 0, "\n");
@@ -411,19 +406,16 @@ bigs2attr(Fmt *f, char *bigs, char **names)
 	return fmtstrflush(f);
 }
 
-void
-Keyring_sktoattr(void *fp)
+DISAPI(Keyring_sktoattr)
 {
-	F_Keyring_sktoattr *f;
 	char *val, *buf, *owner;
 	SigAlg *sa;
 	Fmt o;
 	SK *sk;
 
-	f = fp;
 	sk = checkSK(f->sk);
 	sa = checkSigAlg(sk->x.sa);
-	buf = malloc(Maxbuf);
+	buf = (char*)malloc(Maxbuf);
 	if(buf == nil){
 		retstr(nil, f->ret);
 		return;
@@ -452,14 +444,11 @@ sktostr(SK *sk, char *buf, int len)
 	return n + (*sa->vec->sk2str)(sk->key, buf+n, len - n);
 }
 
-void
-Keyring_sktostr(void *fp)
+DISAPI(Keyring_sktostr)
 {
-	F_Keyring_sktostr *f;
 	char *buf;
 
-	f = fp;
-	buf = malloc(Maxbuf);
+	buf = (char *)malloc(Maxbuf);
 
 	if(buf)
 		sktostr(checkSK(f->sk), buf, Maxbuf);
@@ -469,28 +458,28 @@ Keyring_sktostr(void *fp)
 }
 
 static SK*
-strtosk(char *buf)
+strtosk(const char *buf)
 {
 	SK *sk;
-	char *p;
+	const char *p;
 	SigAlg *sa;
 	String *owner;
 	void *key;
 
 	sa = strtoalg(buf, &p);
 	if(sa == nil)
-		return H;
+		return (SK*)H;
 	owner = strtostring(p, &p);
 	if(owner == H){
 		destroy(sa);
-		return H;
+		return (SK*)H;
 	}
 
 	key = (*sa->vec->str2sk)(p, &p);
 	if(key == nil){
 		destroy(sa);
 		destroy(owner);
-		return H;
+		return (SK*)H;
 	}
 	sk = newSK(sa, owner, 0);
 	sk->key = key;
@@ -498,15 +487,12 @@ strtosk(char *buf)
 	return sk;
 }
 
-void
-Keyring_strtosk(void *fp)
+DISAPI(Keyring_strtosk)
 {
-	F_Keyring_strtosk *f;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_SK*)H;
 	destroy(v);
 	*f->ret = (Keyring_SK*)strtosk(string2c(f->s));
 }
@@ -578,17 +564,14 @@ checkPK(Keyring_PK *k)
 	return pk;
 }
 
-void
-Keyring_sktopk(void *fp)
+DISAPI(Keyring_sktopk)
 {
-	F_Keyring_sktopk *f;
 	PK *pk;
 	SigAlg *sa;
 	SK *sk;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Keyring_PK*)H;
 
 	sk = checkSK(f->sk);
 	sa = checkSigAlg(sk->x.sa);
@@ -608,14 +591,11 @@ pktostr(PK *pk, char *buf, int len)
 	return n + (*sa->vec->pk2str)(pk->key, buf+n, len - n);
 }
 
-void
-Keyring_pktostr(void *fp)
+DISAPI(Keyring_pktostr)
 {
-	F_Keyring_pktostr *f;
 	char *buf;
 
-	f = fp;
-	buf = malloc(Maxbuf);
+	buf = (char *)malloc(Maxbuf);
 
 	if(buf)
 		pktostr(checkPK(f->pk), buf, Maxbuf);
@@ -624,19 +604,16 @@ Keyring_pktostr(void *fp)
 	free(buf);
 }
 
-void
-Keyring_pktoattr(void *fp)
+DISAPI(Keyring_pktoattr)
 {
-	F_Keyring_pktoattr *f;
 	char *val, *buf, *owner;
 	SigAlg *sa;
 	Fmt o;
 	PK *pk;
 
-	f = fp;
 	pk = checkPK(f->pk);
 	sa = checkSigAlg(pk->x.sa);
-	buf = malloc(Maxbuf);
+	buf = (char*)malloc(Maxbuf);
 	if(buf == nil){
 		retstr(nil, f->ret);
 		return;
@@ -657,25 +634,25 @@ static PK*
 strtopk(char *buf)
 {
 	PK *pk;
-	char *p;
+	const char *p;
 	SigAlg *sa;
 	String *owner;
 	void *key;
 
 	sa = strtoalg(buf, &p);
 	if(sa == nil)
-		return H;
+		return (PK*)H;
 	owner = strtostring(p, &p);
 	if(owner == H){
 		destroy(sa);
-		return H;
+		return (PK*)H;
 	}
 
 	key = (*sa->vec->str2pk)(p, &p);
 	if(key == nil){
 		destroy(sa);
 		destroy(owner);
-		return H;
+		return (PK*)H;
 	}
 	pk = newPK(sa, owner, 0);
 	pk->key = key;
@@ -683,15 +660,12 @@ strtopk(char *buf)
 	return pk;
 }
 
-void
-Keyring_strtopk(void *fp)
+DISAPI(Keyring_strtopk)
 {
-	F_Keyring_strtopk *f;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_PK*)H;
 	destroy(v);
 	*f->ret = (Keyring_PK*)strtopk(string2c(f->s));
 }
@@ -781,14 +755,11 @@ certtostr(Certificate *c, char *buf, int len)
 	return n + (*sa->vec->sig2str)(c->signa, buf+n, len - n);
 }
 
-void
-Keyring_certtostr(void *fp)
+DISAPI(Keyring_certtostr)
 {
-	F_Keyring_certtostr *f;
 	char *buf;
 
-	f = fp;
-	buf = malloc(Maxbuf);
+	buf = (char *)malloc(Maxbuf);
 
 	if(buf)
 		certtostr(checkCertificate(f->c), buf, Maxbuf);
@@ -797,19 +768,16 @@ Keyring_certtostr(void *fp)
 	free(buf);
 }
 
-void
-Keyring_certtoattr(void *fp)
+DISAPI(Keyring_certtoattr)
 {
-	F_Keyring_certtoattr *f;
 	char *val, *buf, *ha;
 	SigAlg *sa;
 	Fmt o;
 	Certificate *c;
 
-	f = fp;
 	c = checkCertificate(f->c);
 	sa = checkSigAlg(c->x.sa);
-	buf = malloc(Maxbuf);
+	buf = (char *)malloc(Maxbuf);
 	if(buf == nil){
 		retstr(nil, f->ret);
 		return;
@@ -831,7 +799,7 @@ static Certificate*
 strtocert(char *buf)
 {
 	Certificate *c;
-	char *p;
+	const char *p;
 	SigAlg *sa;
 	String *signer, *ha;
 	long exp;
@@ -839,22 +807,22 @@ strtocert(char *buf)
 
 	sa = strtoalg(buf, &p);
 	if(sa == 0)
-		return H;
+		return (Certificate*)H;
 
 	ha = strtostring(p, &p);
 	if(ha == H){
 		destroy(sa);
-		return H;
+		return (Certificate*)H;
 	}
 
 	signer = strtostring(p, &p);
 	if(signer == H){
 		destroy(sa);
 		destroy(ha);
-		return H;
+		return (Certificate*)H;
 	}
 
-	exp = strtoul(p, &p, 10);
+	exp = strtoul(p, (char**)&p, 10);
 	if(*p)
 		p++;
 	signa = (*sa->vec->str2sig)(p, &p);
@@ -862,7 +830,7 @@ strtocert(char *buf)
 		destroy(sa);
 		destroy(ha);
 		destroy(signer);
-		return H;
+		return (Certificate*)H;
 	}
 
 	c = newCertificate(sa, ha, signer, exp, 0);
@@ -871,14 +839,9 @@ strtocert(char *buf)
 	return c;
 }
 
-void
-Keyring_strtocert(void *fp)
+DISAPI(Keyring_strtocert)
 {
-	F_Keyring_strtocert *f;
-
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
 	*f->ret = (Keyring_Certificate*)strtocert(string2c(f->s));
 }
 
@@ -894,9 +857,9 @@ sign(SK *sk, char *ha, ulong exp, uchar *a, int len)
 	char *buf;
 	String *hastr;
 
-	hastr = H;
+	hastr = (String *)H;
 	sa = checkSigAlg(sk->x.sa);
-	buf = malloc(Maxbuf);
+	buf = (char *)malloc(Maxbuf);
 	if(buf == nil)
 		return nil;
 
@@ -937,10 +900,8 @@ sign(SK *sk, char *ha, ulong exp, uchar *a, int len)
 	return c;
 }
 
-void
-Keyring_sign(void *fp)
+DISAPI(Keyring_sign)
 {
-	F_Keyring_sign *f;
 	Certificate *c;
 	mpint *b;
 	int n;
@@ -951,9 +912,8 @@ Keyring_sign(void *fp)
 	char *buf;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_Certificate*)H;
 	destroy(v);
 
 	sk = checkSK(f->sk);
@@ -962,7 +922,7 @@ Keyring_sign(void *fp)
 	/* add signer name and expiration time to hash */
 	if(f->state == H)
 		return;
-	buf = malloc(Maxbuf);
+	buf = (char*)malloc(Maxbuf);
 	if(buf == nil)
 		return;
 	ds = (XDigestState*)f->state;
@@ -996,19 +956,16 @@ Keyring_sign(void *fp)
 	mpfree(b);
 }
 
-void
-Keyring_signm(void *fp)
+DISAPI(Keyring_signm)
 {
-	F_Keyring_signm *f;
 	Certificate *c;
 	mpint *b;
 	SigAlg *sa;
 	SK *sk;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_Certificate*)H;
 	destroy(v);
 
 	sk = checkSK(f->sk);
@@ -1042,7 +999,7 @@ verify(PK *pk, Certificate *c, char *a, int len)
 		return 0;
 
 	/* add signer name and expiration time to hash */
-	buf = malloc(Maxbuf);
+	buf = (char*)malloc(Maxbuf);
 	if(buf == nil)
 		return 0;
 	n = snprint(buf, Maxbuf, "%s %d", string2c(c->x.signer), c->x.exp);
@@ -1077,10 +1034,8 @@ verify(PK *pk, Certificate *c, char *a, int len)
 	return n;
 }
 
-void
-Keyring_verify(void *fp)
+DISAPI(Keyring_verify)
 {
-	F_Keyring_verify *f;
 	Certificate *c;
 	mpint *b;
 	int n;
@@ -1090,7 +1045,6 @@ Keyring_verify(void *fp)
 	uchar digest[SHA1dlen];
 	char *buf;
 
-	f = fp;
 	*f->ret = 0;
 
 	c = checkCertificate(f->cert);
@@ -1103,7 +1057,7 @@ Keyring_verify(void *fp)
 	/* add signer name and expiration time to hash */
 	if(f->state == H)
 		return;
-	buf = malloc(Maxbuf);
+	buf = (char*)malloc(Maxbuf);
 	if(buf == nil)
 		return;
 	n = snprint(buf, Maxbuf, "%s %d", string2c(c->x.signer), c->x.exp);
@@ -1137,15 +1091,12 @@ Keyring_verify(void *fp)
 	mpfree(b);
 }
 
-void
-Keyring_verifym(void *fp)
+DISAPI(Keyring_verifym)
 {
-	F_Keyring_verifym *f;
 	Certificate *c;
 	SigAlg *sa, *pksa;
 	PK *pk;
 
-	f = fp;
 	*f->ret = 0;
 
 	c = checkCertificate(f->cert);
@@ -1166,17 +1117,14 @@ Keyring_verifym(void *fp)
 /*
  *  digests
  */
-void
-DigestState_copy(void *fp)
+DISAPI(DigestState_copy)
 {
-	F_DigestState_copy *f;
 	Heap *h;
 	XDigestState *ds;
 	void *r;
 
-	f = fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_DigestState*)H;
 	destroy(r);
 
 	if(f->d != H){
@@ -1197,17 +1145,17 @@ keyring_digest_x(Array *buf, int n, Array *digest, int dlen, Keyring_DigestState
 	if(buf != H){
 		if(n > buf->len)
 			n = buf->len;
-		cbuf = buf->data;
+		cbuf = (uchar*)buf->data; /*XXX*/
 	}else{
 		if(n != 0)
-			return H;
+			return (Keyring_DigestState*)H;
 		cbuf = nil;
 	}
 
 	if(digest != H){
 		if(digest->len < dlen)
-			return H;
-		cdigest = digest->data;
+			return (Keyring_DigestState*)H;
+		cdigest = (uchar*)digest->data;  /*XXX*/
 	} else
 		cdigest = nil;
 
@@ -1225,43 +1173,34 @@ keyring_digest_x(Array *buf, int n, Array *digest, int dlen, Keyring_DigestState
 	return (Keyring_DigestState*)ds;
 }
 
-void
-Keyring_sha1(void *fp)
+DISAPI(Keyring_sha1)
 {
-	F_Keyring_sha1 *f;
 	void *r;
 
-	f = fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_DigestState*)H;
 	destroy(r);
 
 	*f->ret = keyring_digest_x(f->buf, f->n, f->digest, SHA1dlen, f->state, sha1);
 }
 
-void
-Keyring_md5(void *fp)
+DISAPI(Keyring_md5)
 {
-	F_Keyring_md5 *f;
 	void *r;
 
-	f = fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_DigestState*)H;
 	destroy(r);
 
 	*f->ret = keyring_digest_x(f->buf, f->n, f->digest, MD5dlen, f->state, md5);
 }
 
-void
-Keyring_md4(void *fp)
+DISAPI(Keyring_md4)
 {
-	F_Keyring_md4 *f;
 	void *r;
 
-	f = fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_DigestState*)H;
 	destroy(r);
 
 	*f->ret = keyring_digest_x(f->buf, f->n, f->digest, MD4dlen, f->state, md4);
@@ -1277,20 +1216,20 @@ keyring_hmac_x(Array *data, int n, Array *key, Array *digest, int dlen, Keyring_
 	if(data != H){
 		if(n > data->len)
 			n = data->len;
-		cdata = data->data;
+		cdata = (uchar*)data->data; /*XXX*/
 	}else{
 		if(n != 0)
-			return H;
+			return (Keyring_DigestState*)H;
 		cdata = nil;
 	}
 
 	if(key == H || key->len > 64)
-		return H;
+		return (Keyring_DigestState*)H;
 
 	if(digest != H){
 		if(digest->len < dlen)
-			return H;
-		cdigest = digest->data;
+			return (Keyring_DigestState*)H;
+		cdigest = (uchar*)digest->data; /*XXX*/
 	} else
 		cdigest = nil;
 
@@ -1303,50 +1242,41 @@ keyring_hmac_x(Array *data, int n, Array *key, Array *digest, int dlen, Keyring_
 		ds = (XDigestState*)state;
 	}
 
-	(*fn)(cdata, n, key->data, key->len, cdigest, &ds->state);
+	(*fn)(cdata, n, (uchar*)key->data, key->len, cdigest, &ds->state); /*XXX*/
 
 	return (Keyring_DigestState*)ds;
 }
 
-void
-Keyring_hmac_sha1(void *fp)
+DISAPI(Keyring_hmac_sha1)
 {
-	F_Keyring_hmac_sha1 *f;
 	void *r;
 
-	f = fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_DigestState*)H;
 	destroy(r);
 	*f->ret = keyring_hmac_x(f->data, f->n, f->key, f->digest, SHA1dlen, f->state, hmac_sha1);
 }
 
-void
-Keyring_hmac_md5(void *fp)
+DISAPI(Keyring_hmac_md5)
 {
-	F_Keyring_hmac_md5 *f;
 	void *r;
 
-	f = fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_DigestState*)H;
 	destroy(r);
 	*f->ret = keyring_hmac_x(f->data, f->n, f->key, f->digest, MD5dlen, f->state, hmac_md5);
 }
 
-void
-Keyring_dhparams(void *fp)
+DISAPI(Keyring_dhparams)
 {
-	F_Keyring_dhparams *f;
 	mpint *p, *alpha;
 	void *v;
 
-	f = fp;
 	v = f->ret->t0;
-	f->ret->t0 = H;
+	f->ret->t0 = (Keyring_IPint*)H;
 	destroy(v);
 	v = f->ret->t1;
-	f->ret->t1 = H;
+	f->ret->t1 = (Keyring_IPint*)H;
 	destroy(v);
 
 	p = mpnew(0);
@@ -1377,13 +1307,10 @@ sendmsg(int fd, void *buf, int n)
 	return n;
 }
 
-void
-Keyring_sendmsg(void *fp)
+DISAPI(Keyring_sendmsg)
 {
-	F_Keyring_sendmsg *f;
 	int n;
 
-	f = fp;
 	*f->ret = -1;
 	if(f->fd == H || f->buf == H || f->n < 0)
 		return;
@@ -1416,13 +1343,10 @@ senderr(int fd, char *err, int addrmt)
 	return n;
 }
 
-void
-Keyring_senderrmsg(void *fp)
+DISAPI(Keyring_senderrmsg)
 {
-	F_Keyring_senderrmsg *f;
 	char *s;
 
-	f = fp;
 	*f->ret = -1;
 	if(f->fd == H)
 		return;
@@ -1432,13 +1356,12 @@ Keyring_senderrmsg(void *fp)
 }
 
 static int
-nreadn(int fd, void *av, int n)
+nreadn(int fd, char *a, int n)
 {
-
-	char *a;
+	//char *a;
 	long m, t;
 
-	a = av;
+	//a = av;
 	t = 0;
 	while(t < n){
 		m = kread(fd, a+t, n-t);
@@ -1502,22 +1425,19 @@ getmsg(int fd, char *buf, int n)
 	return len;
 }
 
-void
-Keyring_getmsg(void *fp)
+DISAPI(Keyring_getmsg)
 {
-	F_Keyring_getmsg *f;
 	char *buf;
 	int n;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Array*)H;
 	if(f->fd == H){
 		kwerrstr("nil fd");
 		return;
 	}
 
-	buf = malloc(Maxmsg);
+	buf = (char*)malloc(Maxmsg);
 	if(buf == nil){
 		kwerrstr(exNomem);
 		return;
@@ -1534,10 +1454,8 @@ Keyring_getmsg(void *fp)
 	free(buf);
 }
 
-void
-Keyring_auth(void *fp)
+DISAPI(Keyring_auth)
 {
-	F_Keyring_auth *f;
 	mpint *r0, *r1, *p, *alpha, *alphar0, *alphar1, *alphar0r1;
 	SK *mysk;
 	PK *mypk, *spk, *hispk;
@@ -1547,17 +1465,16 @@ Keyring_auth(void *fp)
 	int n, fd, version;
 	long now;
 
-	hispk = H;
-	hiscert = H;
-	alphacert = H;
+	hispk = (PK*)H;
+	hiscert = (Certificate*)H;
+	alphacert = (Certificate*)H;
 	err = nil;
 
 	/* null out the return values */
-	f = fp;
 	destroy(f->ret->t0);
-	f->ret->t0 = H;
+	f->ret->t0 = (String*)H;
 	destroy(f->ret->t1);
-	f->ret->t1 = H;
+	f->ret->t1 = (Array*)H;
 	r0 = r1 = alphar0 = alphar1 = alphar0r1 = nil;
 
 	/* check args */
@@ -1567,7 +1484,7 @@ Keyring_auth(void *fp)
 	}
 	fd = f->fd->fd;
 
-	buf = malloc(Maxbuf);
+	buf = (char*)malloc(Maxbuf);
 	if(buf == nil){
 		retstr(exNomem, &f->ret->t0);
 		return;
@@ -1738,7 +1655,7 @@ if(0)print("Y");
 	}
 	certmutable(alphacert);
 	destroy(alphacert);
-	alphacert = H;
+	alphacert = (Certificate*)H;
 
 	/* get signature of alpha**r1 and alpha**r0 and verify */
 	n = getmsg(fd, buf, Maxbuf-1);
@@ -1787,9 +1704,9 @@ out:
 			n = getmsg(fd, buf, Maxbuf-1);
 			if(n < 0){
 				destroy(f->ret->t0);
-				f->ret->t0 = H;
+				f->ret->t0 = (String*)H;
 				destroy(f->ret->t1);
-				f->ret->t1 = H;
+				f->ret->t1 = (Array*)H;
 				if(err == nil){
 					if(n < -1)
 						err = buf;
@@ -1845,17 +1762,14 @@ newAuthinfo(void)
 	return H2D(Keyring_Authinfo*, heap(TAuthinfo));
 }
 
-void
-Keyring_writeauthinfo(void *fp)
+DISAPI(Keyring_writeauthinfo)
 {
-	F_Keyring_writeauthinfo *f;
 	int n, fd;
 	char *buf;
 	PK *spk;
 	SK *mysk;
 	Certificate *c;
 
-	f = fp;
 	*f->ret = -1;
 
 	if(f->filename == H)
@@ -1870,7 +1784,7 @@ Keyring_writeauthinfo(void *fp)
 	mysk = checkSK(f->info->mysk);
 	c = checkCertificate(f->info->cert);
 
-	buf = malloc(Maxbuf);
+	buf = (char*)malloc(Maxbuf);
 	if(buf == nil)
 		return;
 
@@ -1925,10 +1839,8 @@ out:
 	}
 }
 
-void
-Keyring_readauthinfo(void *fp)
+DISAPI(Keyring_readauthinfo)
 {
-	F_Keyring_readauthinfo *f;
 	int fd;
 	char *buf;
 	int n, ok;
@@ -1938,16 +1850,15 @@ Keyring_readauthinfo(void *fp)
 	Keyring_Authinfo *ai;
 	mpint *b;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Keyring_Authinfo*)H;
 
 	ok = 0;
 
 	if(f->filename == H)
 		return;
 
-	buf = malloc(Maxbuf);
+	buf = (char*)malloc(Maxbuf);
 	if(buf == nil)
 		return;
 
@@ -2007,7 +1918,7 @@ Keyring_readauthinfo(void *fp)
 out:
 	if(!ok){
 		destroy(*f->ret);
-		*f->ret = H;
+		*f->ret = (Keyring_Authinfo*)H;
 	}
 	free(buf);
 	if(fd >= 0){
@@ -2066,7 +1977,7 @@ keyringmodinit(void)
  *  return negative number for error messages (including hangup)
  */
 static int
-getbuf(int fd, uchar *buf, int n, char *err, int nerr)
+getbuf(int fd, char *buf, int n, char *err, int nerr)
 {
 	int len;
 
@@ -2105,24 +2016,21 @@ getbuf(int fd, uchar *buf, int n, char *err, int nerr)
 	return -1;
 }
 
-void
-Keyring_getstring(void *fp)
+DISAPI(Keyring_getstring)
 {
-	F_Keyring_getstring *f;
-	uchar *buf;
+	char *buf;
 	char err[64];
 	int n;
 
-	f = fp;
 	destroy(f->ret->t0);
-	f->ret->t0 = H;
+	f->ret->t0 = (String*)H;
 	destroy(f->ret->t1);
-	f->ret->t1 = H;
+	f->ret->t1 = (String*)H;
 
 	if(f->fd == H)
 		return;
 
-	buf = malloc(Maxmsg);
+	buf = (char*)malloc(Maxmsg);
 	if(buf == nil)
 		return;
 
@@ -2130,29 +2038,26 @@ Keyring_getstring(void *fp)
 	if(n < 0)
 		retnstr(err, strlen(err), &f->ret->t1);
 	else
-		retnstr(((char*)buf)+1, n, &f->ret->t0);
+		retnstr(buf+1, n, &f->ret->t0);
 
 	free(buf);
 }
 
-void
-Keyring_getbytearray(void *fp)
+DISAPI(Keyring_getbytearray)
 {
-	F_Keyring_getbytearray *f;
-	uchar *buf;
+	char *buf;
 	char err[64];
 	int n;
 
-	f = fp;
 	destroy(f->ret->t0);
-	f->ret->t0 = H;
+	f->ret->t0 = (Array*)H;
 	destroy(f->ret->t1);
-	f->ret->t1 = H;
+	f->ret->t1 = (String*)H;
 
 	if(f->fd == H)
 		return;
 
-	buf = malloc(Maxmsg);
+	buf = (char*)malloc(Maxmsg);
 	if(buf == nil)
 		return;
 
@@ -2166,11 +2071,11 @@ Keyring_getbytearray(void *fp)
 }
 
 static int
-putbuf(int fd, void *p, int n)
+putbuf(int fd, const void *p, int n)
 {
 	char *buf;
 
-	buf = malloc(Maxmsg);
+	buf = (char*)malloc(Maxmsg);
 	if(buf == nil)
 		return -1;
 
@@ -2190,37 +2095,26 @@ putbuf(int fd, void *p, int n)
 	return n;
 }
 
-void
-Keyring_putstring(void *fp)
+DISAPI(Keyring_putstring)
 {
-	F_Keyring_putstring *f;
-
-	f = fp;
 	*f->ret = -1;
 	if(f->fd == H || f->s == H)
 		return;
 	*f->ret = putbuf(f->fd->fd, string2c(f->s), strlen(string2c(f->s)));
 }
 
-void
-Keyring_puterror(void *fp)
+DISAPI(Keyring_puterror)
 {
-	F_Keyring_puterror *f;
-
-	f = fp;
 	*f->ret = -1;
 	if(f->fd == H || f->s == H)
 		return;
 	*f->ret = putbuf(f->fd->fd, string2c(f->s), -strlen(string2c(f->s)));
 }
 
-void
-Keyring_putbytearray(void *fp)
+DISAPI(Keyring_putbytearray)
 {
-	F_Keyring_putbytearray *f;
 	int n;
 
-	f = fp;
 	*f->ret = -1;
 	if(f->fd == H || f->a == H)
 		return;
@@ -2230,17 +2124,14 @@ Keyring_putbytearray(void *fp)
 	*f->ret = putbuf(f->fd->fd, f->a->data, n);
 }
 
-void
-Keyring_dessetup(void *fp)
+DISAPI(Keyring_dessetup)
 {
-	F_Keyring_dessetup *f;
 	Heap *h;
 	XDESstate *ds;
-	uchar *ivec;
+	char *ivec;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Keyring_DESstate*)H;
 
 	if(f->key == H)
 		return;
@@ -2254,21 +2145,17 @@ Keyring_dessetup(void *fp)
 
 	h = heap(TDESstate);
 	ds = H2D(XDESstate*, h);
-	setupDESstate(&ds->state, f->key->data, ivec);
+	setupDESstate(&ds->state, (const uchar*)f->key->data, (uchar*)ivec); /*XXX*/
 
 	*f->ret = (Keyring_DESstate*)ds;
 }
 
-void
-Keyring_desecb(void *fp)
+DISAPI(Keyring_desecb)
 {
-	F_Keyring_desecb *f;
 	XDESstate *ds;
 	int i;
-	uchar *p;
+	char *p;
 	/* uchar tmp[8]; */
-
-	f = fp;
 
 	if(f->state == (Keyring_DESstate*)H)
 		return;
@@ -2283,18 +2170,14 @@ Keyring_desecb(void *fp)
 	p = f->buf->data;
 
 	for(i = 8; i <= f->n; i += 8, p += 8)
-		block_cipher(ds->state.expanded, p, f->direction);
+		block_cipher(ds->state.expanded, (uchar*)p, f->direction); /*XXX*/
 }
 
-void
-Keyring_descbc(void *fp)
+DISAPI(Keyring_descbc)
 {
-	F_Keyring_descbc *f;
 	XDESstate *ds;
 	uchar *p, *ep, *ip, *p2, *eip;
 	uchar tmp[8];
-
-	f = fp;
 
 	if(f->state == H)
 		return;
@@ -2306,7 +2189,7 @@ Keyring_descbc(void *fp)
 		return;
 
 	ds = (XDESstate*)f->state;
-	p = f->buf->data;
+	p = (uchar*)f->buf->data; /*XXX*/
 
 	if(f->direction == 0){
 		for(ep = p + f->n; p < ep; p += 8){
@@ -2331,24 +2214,21 @@ Keyring_descbc(void *fp)
 	}
 }
 
-void
-Keyring_ideasetup(void *fp)
+DISAPI(Keyring_ideasetup)
 {
-	F_Keyring_ideasetup *f;
 	Heap *h;
 	XIDEAstate *is;
 	uchar *ivec;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Keyring_IDEAstate*)H;
 
-	if(f->key == (Array*)H)
+	if(f->key == H)
 		return;
-	if(f->ivec == (Array*)H)
+	if(f->ivec == H)
 		ivec = 0;
 	else
-		ivec = f->ivec->data;
+		ivec = (uchar*)f->ivec->data; /*XXX*/
 
 	if(f->key->len < 16 || (ivec && f->ivec->len < 8))
 		return;
@@ -2356,25 +2236,21 @@ Keyring_ideasetup(void *fp)
 	h = heap(TIDEAstate);
 	is = H2D(XIDEAstate*, h);
 
-	setupIDEAstate(&is->state, f->key->data, ivec);
+	setupIDEAstate(&is->state, (uchar*)f->key->data, ivec); /*XXX*/
 
 	*f->ret = (Keyring_IDEAstate*)is;
 }
 
-void
-Keyring_ideaecb(void *fp)
+DISAPI(Keyring_ideaecb)
 {
-	F_Keyring_ideaecb *f;
 	XIDEAstate *is;
 	int i;
 	uchar *p;
 	/* uchar tmp[8]; */
 
-	f = fp;
-
-	if(f->state == (Keyring_IDEAstate*)H)
+	if(f->state == H)
 		return;
-	if(f->buf == (Array*)H)
+	if(f->buf == H)
 		return;
 	if(f->buf->len < f->n)
 		f->n = f->buf->len;
@@ -2382,25 +2258,21 @@ Keyring_ideaecb(void *fp)
 		return;
 
 	is = (XIDEAstate*)f->state;
-	p = f->buf->data;
+	p = (uchar*)f->buf->data; /*XXX*/
 
 	for(i = 8; i <= f->n; i += 8, p += 8)
 		idea_cipher(is->state.edkey, p, f->direction);
 }
 
-void
-Keyring_ideacbc(void *fp)
+DISAPI(Keyring_ideacbc)
 {
-	F_Keyring_ideacbc *f;
 	XIDEAstate *is;
 	uchar *p, *ep, *ip, *p2, *eip;
 	uchar tmp[8];
 
-	f = fp;
-
-	if(f->state == (Keyring_IDEAstate*)H)
+	if(f->state == H)
 		return;
-	if(f->buf == (Array*)H)
+	if(f->buf == H)
 		return;
 	if(f->buf->len < f->n)
 		f->n = f->buf->len;
@@ -2408,7 +2280,7 @@ Keyring_ideacbc(void *fp)
 		return;
 
 	is = (XIDEAstate*)f->state;
-	p = f->buf->data;
+	p = (uchar*)f->buf->data; /*XXX*/
 
 	if(f->direction == 0){
 		for(ep = p + f->n; p < ep; p += 8){
@@ -2433,24 +2305,21 @@ Keyring_ideacbc(void *fp)
 	}
 }
 
-void
-Keyring_aessetup(void *fp)
+DISAPI(Keyring_aessetup)
 {
-	F_Keyring_aessetup *f;
 	Heap *h;
 	XAESstate *is;
 	uchar *ivec;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Keyring_AESstate*)H;
 
-	if(f->key == (Array*)H)
+	if(f->key == H)
 		return;
-	if(f->ivec == (Array*)H)
+	if(f->ivec == H)
 		ivec = nil;
 	else
-		ivec = f->ivec->data;
+		ivec = (uchar*)f->ivec->data; /*XXX*/
 
 	if(f->key->len != 16 && f->key->len != 24 && f->key->len != 32)
 		return;
@@ -2460,19 +2329,15 @@ Keyring_aessetup(void *fp)
 	h = heap(TAESstate);
 	is = H2D(XAESstate*, h);
 
-	setupAESstate(&is->state, f->key->data, f->key->len, ivec);
+	setupAESstate(&is->state, (uchar*)f->key->data, f->key->len, ivec); /*XXX*/
 
 	*f->ret = (Keyring_AESstate*)is;
 }
 
-void
-Keyring_aescbc(void *fp)
+DISAPI(Keyring_aescbc)
 {
-	F_Keyring_aescbc *f;
 	XAESstate *is;
 	uchar *p;
-
-	f = fp;
 
 	if(f->state == (Keyring_AESstate*)H)
 		return;
@@ -2482,7 +2347,7 @@ Keyring_aescbc(void *fp)
 		f->n = f->buf->len;
 
 	is = (XAESstate*)f->state;
-	p = f->buf->data;
+	p = (uchar*)f->buf->data; /*XXX*/
 
 	if(f->direction == 0)
 		aesCBCencrypt(p, f->n, &is->state);
@@ -2490,24 +2355,21 @@ Keyring_aescbc(void *fp)
 		aesCBCdecrypt(p, f->n, &is->state);
 }
 
-void
-Keyring_blowfishsetup(void *fp)
+DISAPI(Keyring_blowfishsetup)
 {
-	F_Keyring_blowfishsetup *f;
 	Heap *h;
 	XBFstate *is;
 	uchar *ivec;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Keyring_BFstate*)H;
 
 	if(f->key == (Array*)H)
 		return;
 	if(f->ivec == (Array*)H)
 		ivec = nil;
 	else
-		ivec = f->ivec->data;
+		ivec = (uchar*)f->ivec->data; /*XXX*/
 
 	if(f->key->len <= 0)
 		return;
@@ -2517,19 +2379,15 @@ Keyring_blowfishsetup(void *fp)
 	h = heap(TBFstate);
 	is = H2D(XBFstate*, h);
 
-	setupBFstate(&is->state, f->key->data, f->key->len, ivec);
+	setupBFstate(&is->state, (const uchar*)f->key->data, f->key->len, ivec); /*XXX*/
 
 	*f->ret = (Keyring_BFstate*)is;
 }
 
-void
-Keyring_blowfishcbc(void *fp)
+DISAPI(Keyring_blowfishcbc)
 {
-	F_Keyring_blowfishcbc *f;
 	XBFstate *is;
 	uchar *p;
-
-	f = fp;
 
 	if(f->state == (Keyring_BFstate*)H)
 		return;
@@ -2539,7 +2397,7 @@ Keyring_blowfishcbc(void *fp)
 		f->n = f->buf->len;
 
 	is = (XBFstate*)f->state;
-	p = f->buf->data;
+	p = (uchar*)f->buf->data; /*XXX*/
 
 	if(f->direction == 0)
 		bfCBCencrypt(p, f->n, &is->state);
@@ -2547,16 +2405,13 @@ Keyring_blowfishcbc(void *fp)
 		bfCBCdecrypt(p, f->n, &is->state);
 }
 
-void
-Keyring_rc4setup(void *fp)
+DISAPI(Keyring_rc4setup)
 {
-	F_Keyring_rc4setup *f;
 	Heap *h;
 	XRC4state *is;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Keyring_RC4state*)H;
 
 	if(f->seed == (Array*)H)
 		return;
@@ -2564,19 +2419,16 @@ Keyring_rc4setup(void *fp)
 	h = heap(TRC4state);
 	is = H2D(XRC4state*, h);
 
-	setupRC4state(&is->state, f->seed->data, f->seed->len);
+	setupRC4state(&is->state, (uchar*)f->seed->data, f->seed->len); /*XXX*/
 
 	*f->ret = (Keyring_RC4state*)is;
 }
 
-void
-Keyring_rc4(void *fp)
+DISAPI(Keyring_rc4)
 {
-	F_Keyring_rc4 *f;
 	XRC4state *is;
 	uchar *p;
 
-	f = fp;
 	if(f->state == (Keyring_RC4state*)H)
 		return;
 	if(f->buf == (Array*)H)
@@ -2584,30 +2436,24 @@ Keyring_rc4(void *fp)
 	if(f->buf->len < f->n)
 		f->n = f->buf->len;
 	is = (XRC4state*)f->state;
-	p = f->buf->data;
+	p = (uchar*)f->buf->data; /*XXX*/
 	rc4(&is->state, p, f->n);
 }
 
-void
-Keyring_rc4skip(void *fp)
+DISAPI(Keyring_rc4skip)
 {
-	F_Keyring_rc4skip *f;
 	XRC4state *is;
 
-	f = fp;
 	if(f->state == (Keyring_RC4state*)H)
 		return;
 	is = (XRC4state*)f->state;
 	rc4skip(&is->state, f->n);
 }
 
-void
-Keyring_rc4back(void *fp)
+DISAPI(Keyring_rc4back)
 {
-	F_Keyring_rc4back *f;
 	XRC4state *is;
 
-	f = fp;
 	if(f->state == (Keyring_RC4state*)H)
 		return;
 	is = (XRC4state*)f->state;
@@ -2651,19 +2497,16 @@ dsapriv2sk(Keyring_DSAsk* sk, DSApriv* p)
 	sk->secret = ipcopymp(p->secret);
 }
 
-void
-DSAsk_gen(void *fp)
+DISAPI(DSAsk_gen)
 {
-	F_DSAsk_gen *f;
 	Keyring_DSAsk *sk;
 	DSApriv *p;
 	DSApub pub, *oldpk;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	sk = newthing(TDSAsk, 0);
-	sk->pk = newthing(TDSApk, 0);
+	sk = (Keyring_DSAsk *)newthing(TDSAsk, 0);
+	sk->pk = (Keyring_DSApk *)newthing(TDSApk, 0);
 	*f->ret = sk;
 	destroy(v);
 	oldpk = nil;
@@ -2678,19 +2521,16 @@ DSAsk_gen(void *fp)
 	dsaprivfree(p);
 }
 
-void
-DSAsk_sign(void *fp)
+DISAPI(DSAsk_sign)
 {
-	F_DSAsk_sign *f;
 	Keyring_DSAsig *sig;
 	DSApriv p;
 	mpint *m;
 	DSAsig *s;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	sig = newthing(TDSAsig, 0);
+	sig = (Keyring_DSAsig *)newthing(TDSAsig, 0);
 	*f->ret = sig;
 	destroy(v);
 
@@ -2704,15 +2544,12 @@ DSAsk_sign(void *fp)
 	dsasigfree(s);
 }
 
-void
-DSApk_verify(void *fp)
+DISAPI(DSApk_verify)
 {
-	F_DSApk_verify *f;
 	DSApub p;
 	DSAsig sig;
 	mpint *m;
 
-	f = fp;
 	*f->ret = 0;
 	if(f->m == H || f->sig == H)
 		return;
@@ -2756,18 +2593,15 @@ egpriv2sk(Keyring_EGsk* sk, EGpriv* p)
 	sk->secret = ipcopymp(p->secret);
 }
 
-void
-EGsk_gen(void *fp)
+DISAPI(EGsk_gen)
 {
-	F_EGsk_gen *f;
 	Keyring_EGsk *sk;
 	EGpriv *p;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	sk = newthing(TEGsk, 0);
-	sk->pk = newthing(TEGpk, 0);
+	sk = (Keyring_EGsk *)newthing(TEGsk, 0);
+	sk->pk = (Keyring_EGpk *)newthing(TEGpk, 0);
 	*f->ret = sk;
 	destroy(v);
 	release();
@@ -2782,19 +2616,16 @@ EGsk_gen(void *fp)
 	egprivfree(p);
 }
 
-void
-EGsk_sign(void *fp)
+DISAPI(EGsk_sign)
 {
-	F_EGsk_sign *f;
 	Keyring_EGsig *sig;
 	EGpriv p;
 	mpint *m;
 	EGsig *s;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	sig = newthing(TEGsig, 0);
+	sig = (Keyring_EGsig *)newthing(TEGsig, 0);
 	*f->ret = sig;
 	destroy(v);
 
@@ -2808,15 +2639,12 @@ EGsk_sign(void *fp)
 	egsigfree(s);
 }
 
-void
-EGpk_verify(void *fp)
+DISAPI(EGpk_verify)
 {
-	F_EGpk_verify *f;
 	EGpub p;
 	EGsig sig;
 	mpint *m;
 
-	f = fp;
 	*f->ret = 0;
 	if(f->m == H || f->sig == H)
 		return;
@@ -2869,17 +2697,14 @@ rsapriv2sk(Keyring_RSAsk* sk, RSApriv* p)
 	sk->c2 = ipcopymp(p->c2);
 }
 
-void
-RSApk_encrypt(void *fp)
+DISAPI(RSApk_encrypt)
 {
-	F_RSApk_encrypt *f;
 	RSApub p;
 	mpint *m, *o;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	rsapk2pub(&p, f->k);
@@ -2890,18 +2715,15 @@ RSApk_encrypt(void *fp)
 	*f->ret = newIPint(o);
 }
 
-void
-RSAsk_gen(void *fp)
+DISAPI(RSAsk_gen)
 {
-	F_RSAsk_gen *f;
 	Keyring_RSAsk *sk;
 	RSApriv *p;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	sk = newthing(TRSAsk, 0);
-	sk->pk = newthing(TRSApk, 0);
+	sk = (Keyring_RSAsk *)newthing(TRSAsk, 0);
+	sk->pk = (Keyring_RSApk *)newthing(TRSApk, 0);
 	*f->ret = sk;
 	destroy(v);
 	release();
@@ -2916,18 +2738,15 @@ RSAsk_gen(void *fp)
 	rsaprivfree(p);
 }
 
-void
-RSAsk_fill(void *fp)
+DISAPI(RSAsk_fill)
 {
-	F_RSAsk_fill *f;
 	Keyring_RSAsk *sk;
 	RSApriv *p;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	sk = newthing(TRSAsk, 0);
-	sk->pk = newthing(TRSApk, 0);
+	sk = (Keyring_RSAsk *)newthing(TRSAsk, 0);
+	sk->pk = (Keyring_RSApk *)newthing(TRSApk, 0);
 	*f->ret = sk;
 	destroy(v);
 	release();
@@ -2935,7 +2754,7 @@ RSAsk_fill(void *fp)
 			checkIPint(f->p), checkIPint(f->q));
 	acquire();
 	if(p == nil) {
-		*f->ret = H;
+		*f->ret = (Keyring_RSAsk*)H;
 		destroy(sk);
 	}else{
 		rsapriv2sk(sk, p);
@@ -2943,17 +2762,14 @@ RSAsk_fill(void *fp)
 	}
 }
 
-void
-RSAsk_decrypt(void *fp)
+DISAPI(RSAsk_decrypt)
 {
-	F_RSAsk_decrypt *f;
 	RSApriv p;
 	mpint *m, *o;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	rsask2priv(&p, f->k);
@@ -2964,18 +2780,15 @@ RSAsk_decrypt(void *fp)
 	*f->ret = newIPint(o);
 }
 
-void
-RSAsk_sign(void *fp)
+DISAPI(RSAsk_sign)
 {
-	F_RSAsk_sign *f;
 	Keyring_RSAsig *sig;
 	RSApriv p;
 	mpint *m, *s;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	sig = newthing(TRSAsig, 0);
+	sig = (Keyring_RSAsig *)newthing(TRSAsig, 0);
 	*f->ret = sig;
 	destroy(v);
 
@@ -2987,14 +2800,11 @@ RSAsk_sign(void *fp)
 	sig->n = newIPint(s);
 }
 
-void
-RSApk_verify(void *fp)
+DISAPI(RSApk_verify)
 {
-	F_RSApk_verify *f;
 	RSApub p;
 	mpint *sig, *m, *t;
 
-	f = fp;
 	*f->ret = 0;
 	if(f->m == H || f->sig == H)
 		return;

@@ -4,7 +4,7 @@
 #include "interp.h"
 
 int
-unloadimage(Image *i, Rectangle r, uchar *data, int ndata)
+unloadimage(Image *i, Rectangle r, char *data, int ndata)
 {
 	int bpl, n, ntot, dy;
 	uchar *a;

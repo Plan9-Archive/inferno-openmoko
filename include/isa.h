@@ -217,9 +217,9 @@ enum
 	DADEPTH = 4,		/* Array address stack size */
 };
 
-#define REGLINK	 (offsetof(Frame,lr)/IBY2WD)
-#define REGFRAME (offsetof(Frame,fp)/IBY2WD)
-#define REGMOD	 (offsetof(Frame,mr)/IBY2WD)
+//#define REGLINK	 (offsetof(Frame,lr)/IBY2WD)
+//#define REGFRAME (offsetof(Frame,fp)/IBY2WD)
+//#define REGMOD	 (offsetof(Frame,mr)/IBY2WD)
 //#define REGTYP	 (offsetof(Frame,t)/IBY2WD)
 //#define REGRET	 4
 #define NREG	 5
@@ -235,7 +235,7 @@ enum ModRtFlags
 	HASLDT		= (1<<6),
 };
 
-#define DTYPE(x)	(x>>4)
+#define DTYPE(x)	(((x)>>4)&0x0F)
 #define DBYTE(x, l)	((x<<4)|l)
 #define DMAX		(1<<4)
 #define DLEN(x)		(x& (DMAX-1))

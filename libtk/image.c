@@ -1,6 +1,10 @@
 #include "lib9.h"
-#include <kernel.h>
+#include "kernel.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
 
 char*	tkimgbmcreate(TkTop*, char*, int, char**);
@@ -89,7 +93,7 @@ tkimgbmcreate(TkTop *t, char *arg, int type, char **ret)
 	d = t->display;
 	locked = 0;
 
-	tki = malloc(sizeof(TkImg));
+	tki = (TkImg *)malloc(sizeof(TkImg));
 	if(tki == nil)
 		return TkNomem;
 
@@ -226,10 +230,10 @@ tkimage(TkTop *t, char *arg, char **ret)
 	char *fmt, *e, *buf, *cmd;
 
 	/* Note - could actually allocate buf and cmd in one buffer - DBK */
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
-	cmd = mallocz(Tkminitem, 0);
+	cmd = (char*)mallocz(Tkminitem, 0);
 	if(cmd == nil) {
 		free(buf);
 		return TkNomem;
@@ -316,7 +320,7 @@ tkimgput(TkImg *tki)
 }
 
 TkImg*
-tkauximage(TkTop *t, char* s, uchar* bytes, int nbytes, int chans, Rectangle r, int repl)
+tkauximage(TkTop *t, char* s, const char* bytes, int nbytes, int chans, Rectangle r, int repl)
 {
 	TkName *name;
 	TkCtxt *c;
@@ -334,7 +338,7 @@ tkauximage(TkTop *t, char* s, uchar* bytes, int nbytes, int chans, Rectangle r, 
 	name = tkmkname(s);
 	if (name == nil)
 		return nil;
-	tki = mallocz(sizeof(*tki), 0);
+	tki = (TkImg *)mallocz(sizeof(*tki), 0);
 	if (tki == nil)
 		goto err;
 	tki->env = tkdefaultenv(t);

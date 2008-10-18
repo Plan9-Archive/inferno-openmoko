@@ -1,6 +1,11 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "textw.h"
 
 #define istring u.string
@@ -32,7 +37,7 @@ tktaddmarkinfo(TkText *tkt, char *name, TkTmarkinfo **ret)
 {
 	TkTmarkinfo *mi;
 
-	mi = malloc(sizeof(TkTmarkinfo));
+	mi = (TkTmarkinfo *)malloc(sizeof(TkTmarkinfo));
 	if(mi == nil)
 		return TkNomem;
 
@@ -100,7 +105,7 @@ tktmarkparse(Tk *tk, char **parg, TkTmarkinfo **ret)
 	char *e, *buf;
 	TkText *tkt = TKobj(TkText, tk);
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 
@@ -196,7 +201,7 @@ tktmarkmove(Tk *tk, TkTmarkinfo *m, TkTindex *ixnew)
 		tktfixgeom(tk, tktprevwrapline(tk, ixnew->line), ixnew->line, 0);
 		tktextsize(tk, 1);
 	}
-	
+
 	ixnew->item = i;
 	ixnew->line = tktitemline(i);
 	ixnew->pos = 0;
@@ -226,7 +231,7 @@ tktmarkgravity(Tk *tk, char *arg, char **val)
 	if(*arg == '\0')
 		return tkvalue(val, (m->gravity & Tkleft)? "left" : "right");
 	else {
-		buf = mallocz(Tkmaxitem, 0);
+		buf = (char*)mallocz(Tkmaxitem, 0);
 		if(buf == nil)
 			return TkNomem;
 		tkword(tk->env->top, arg, buf, buf+Tkmaxitem, nil);
@@ -292,9 +297,9 @@ tktmarknext(Tk *tk, char *arg, char **val)
 	do {
 		if(ix.item->kind == TkTmark)
 			return tkvalue(val, "%s", ix.item->imark->name);
-		
+
 	} while(tktadjustind(tkt, TkTbyitem, &ix));
-	
+
 	return nil;
 }
 
@@ -313,7 +318,7 @@ tktmarkprevious(Tk *tk, char *arg, char **val)
 		if(ix.item->kind == TkTmark)
 			return tkvalue(val, "%s", ix.item->imark->name);
 	}
-	
+
 	return nil;
 }
 

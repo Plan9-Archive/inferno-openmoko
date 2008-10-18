@@ -1,7 +1,12 @@
-#include <lib9.h>
-#include <kernel.h>
+#include "lib9.h"
+#include "kernel.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "canvs.h"
 
 char*
@@ -25,7 +30,7 @@ tkparsepts(TkTop *t, TkCpoints *i, char **arg, int close)
 		npoint++;
 	}
 
-	i->parampt = mallocz(npoint*sizeof(Point), 0);
+	i->parampt = (Point*)mallocz(npoint*sizeof(Point), 0);
 	if(i->parampt == nil)
 		return TkNomem;
 
@@ -47,7 +52,7 @@ tkparsepts(TkTop *t, TkCpoints *i, char **arg, int close)
 	}
 	*arg = s;
 	close = (close != 0);
-	i->drawpt = mallocz((npoint+close)*sizeof(Point), 0);
+	i->drawpt = (Point*)mallocz((npoint+close)*sizeof(Point), 0);
 	if(i->drawpt == nil){
 		e = TkNomem;
 		goto Error;
@@ -70,7 +75,7 @@ tkparsepts(TkTop *t, TkCpoints *i, char **arg, int close)
 		p++;
 	}
 	if (close)
-		*d = i->drawpt[0];			
+		*d = i->drawpt[0];
 
 	i->npoint = npoint;
 	return nil;
@@ -87,7 +92,7 @@ tkcnewitem(Tk *tk, int t, int n)
 {
 	TkCitem *i;
 
-	i = malloc(n);
+	i = (TkCitem *)malloc(n);
 	if(i == nil)
 		return nil;
 	memset(i, 0, n);
@@ -224,13 +229,13 @@ tkcaddtag(Tk *tk, TkCitem *i, int new)
 			if(t->name == f)
 				break;
 		if(t == nil) {
-			t = malloc(sizeof(TkCtag));
+			t = (TkCtag *)malloc(sizeof(TkCtag));
 			if(t == nil) {
 				tkfreename(link);
 				return TkNomem;
 			}
 			t->name = f;
-			t->taglist = f->obj;		/* add to head of items with this tag */
+			t->taglist = (TkCtag*)f->obj;		/* add to head of items with this tag */
 			f->obj = t;
 			t->item = i;
 			t->itemlist = i->stag;	/* add to head of tags for this item */
@@ -297,7 +302,7 @@ tkcfirsttag(TkCitem *ilist, TkCtag* tag)
 				return t;
 	return nil;
 }
-		
+
 void
 tkmkpen(Image **pen, TkEnv *e, Image *stipple)
 {

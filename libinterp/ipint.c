@@ -51,24 +51,21 @@ freeIPint(Heap *h, int swept)
 	freeheap(h, 0);
 }
 
-void
-IPint_iptob64z(void *fp)
+DISAPI(IPint_iptob64z)
 {
-	F_IPint_iptob64 *f;
 	mpint *b;
 	char buf[MaxBigBytes];	/* TO DO: should allocate these */
 	uchar *p;
 	int n, o;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (String*)H;
 	destroy(v);
 
 	b = MP(f->i);
 	n = (b->top+1)*Dbytes;
-	p = malloc(n+1);
+	p = (uchar*)malloc(n+1);
 	if(p == nil)
 		error(exHeap);
 	n = mptobe(b, p+1, n, nil);
@@ -88,63 +85,51 @@ IPint_iptob64z(void *fp)
 	free(p);
 }
 
-void
-IPint_iptob64(void *fp)
+DISAPI(IPint_iptob64)
 {
-	F_IPint_iptob64 *f;
 	char buf[MaxBigBytes];
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (String*)H;
 	destroy(v);
 
 	mptoa(MP(f->i), 64, buf, sizeof(buf));
 	retstr(buf, f->ret);
 }
 
-void
-IPint_iptobytes(void *fp)
+DISAPI(IPint_iptobytes)
 {
-	F_IPint_iptobytes *f;
 	uchar buf[MaxBigBytes];
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Array*)H;
 	destroy(v);
 
 	/* TO DO: two's complement or have ipmagtobe? */
 	*f->ret = mem2array(buf, mptobe(MP(f->i), buf, sizeof(buf), nil));	/* for now we'll ignore sign */
 }
 
-void
-IPint_iptobebytes(void *fp)
+DISAPI(IPint_iptobebytes)
 {
-	F_IPint_iptobebytes *f;
 	uchar buf[MaxBigBytes];
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Array*)H;
 	destroy(v);
 
 	*f->ret = mem2array(buf, mptobe(MP(f->i), buf, sizeof(buf), nil));
 }
 
-void
-IPint_iptostr(void *fp)
+DISAPI(IPint_iptostr)
 {
-	F_IPint_iptostr *f;
 	char buf[MaxBigBytes];
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (String*)H;
 	destroy(v);
 
 	mptoa(MP(f->i), f->base, buf, sizeof(buf));
@@ -160,93 +145,78 @@ strtoipint(String *s, int base)
 	p = string2c(s);
 	b = strtomp(p, &q, base, nil);
 	if(b == nil)
-		return H;
+		return (Keyring_IPint*)H;
 	while(*q == '=')
 		q++;
 	if(q == p || *q != 0){
 		mpfree(b);
-		return H;
+		return (Keyring_IPint*)H;
 	}
 	return newIPint(b);
 }
 
-void
-IPint_b64toip(void *fp)
+DISAPI(IPint_b64toip)
 {
-	F_IPint_b64toip *f;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	*f->ret = strtoipint(f->str, 64);
 }
 
-void
-IPint_bytestoip(void *fp)
+DISAPI(IPint_bytestoip)
 {
-	F_IPint_bytestoip *f;
 	mpint *b;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	if(f->buf == H)
 		error(exNilref);
 
-	b = betomp(f->buf->data, f->buf->len, nil);	/* for now we'll ignore sign */
+	b = betomp((const uchar *)f->buf->data, f->buf->len, nil);	/* for now we'll ignore sign */ /*XXX*/
 	*f->ret = newIPint(b);
 }
 
-void
-IPint_bebytestoip(void *fp)
+DISAPI(IPint_bebytestoip)
 {
-	F_IPint_bebytestoip *f;
 	mpint *b;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	if(f->mag == H)
 		error(exNilref);
 
-	b = betomp(f->mag->data, f->mag->len, nil);
+	b = betomp((const uchar *)f->mag->data, f->mag->len, nil); /*XXX*/
 	*f->ret = newIPint(b);
 }
 
-void
-IPint_strtoip(void *fp)
+DISAPI(IPint_strtoip)
 {
-	F_IPint_strtoip *f;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	*f->ret = strtoipint(f->str, f->base);
 }
 
 /* create a random integer */
-void
-IPint_random(void *fp)
+DISAPI(IPint_random)
 {
-	F_IPint_random *f;
 	mpint *b;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	release();
@@ -256,13 +226,10 @@ IPint_random(void *fp)
 }
 
 /* number of bits in number */
-void
-IPint_bits(void *fp)
+DISAPI(IPint_bits)
 {
-	F_IPint_bits *f;
 	int n;
 
-	f = fp;
 	*f->ret = 0;
 	if(f->i == H)
 		return;
@@ -274,26 +241,19 @@ IPint_bits(void *fp)
 }
 
 /* create a new IP from an int */
-void
-IPint_inttoip(void *fp)
+DISAPI(IPint_inttoip)
 {
-	F_IPint_inttoip *f;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	*f->ret = newIPint(itomp(f->i, nil));
 }
 
-void
-IPint_iptoint(void *fp)
+DISAPI(IPint_iptoint)
 {
-	F_IPint_iptoint *f;
-
-	f = fp;
 	*f->ret = 0;
 	if(f->i == H)
 		return;
@@ -301,16 +261,13 @@ IPint_iptoint(void *fp)
 }
 
 /* modular exponentiation */
-void
-IPint_expmod(void *fp)
+DISAPI(IPint_expmod)
 {
-	F_IPint_expmod *f;
 	mpint *ret, *mod, *base, *exp;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	base = MP(f->base);
@@ -326,16 +283,13 @@ IPint_expmod(void *fp)
 }
 
 /* multiplicative inverse */
-void
-IPint_invert(void *fp)
+DISAPI(IPint_invert)
 {
-	F_IPint_invert *f;
 	mpint *ret;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	ret = mpnew(0);
@@ -345,16 +299,13 @@ IPint_invert(void *fp)
 }
 
 /* basic math */
-void
-IPint_add(void *fp)
+DISAPI(IPint_add)
 {
-	F_IPint_add *f;
 	mpint *i1, *i2, *ret;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	i1 = MP(f->i1);
@@ -365,16 +316,14 @@ IPint_add(void *fp)
 
 	*f->ret = newIPint(ret);
 }
-void
-IPint_sub(void *fp)
+
+DISAPI(IPint_sub)
 {
-	F_IPint_sub *f;
 	mpint *i1, *i2, *ret;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	i1 = MP(f->i1);
@@ -385,16 +334,14 @@ IPint_sub(void *fp)
 
 	*f->ret = newIPint(ret);
 }
-void
-IPint_mul(void *fp)
+
+DISAPI(IPint_mul)
 {
-	F_IPint_mul *f;
 	mpint *i1, *i2, *ret;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	i1 = MP(f->i1);
@@ -405,19 +352,17 @@ IPint_mul(void *fp)
 
 	*f->ret = newIPint(ret);
 }
-void
-IPint_div(void *fp)
+
+DISAPI(IPint_div)
 {
-	F_IPint_div *f;
 	mpint *i1, *i2, *quo, *rem;
 	void *v;
 
-	f = fp;
 	v = f->ret->t0;
-	f->ret->t0 = H;
+	f->ret->t0 = (Keyring_IPint*)H;
 	destroy(v);
 	v = f->ret->t1;
-	f->ret->t1 = H;
+	f->ret->t1 = (Keyring_IPint*)H;
 	destroy(v);
 
 	i1 = MP(f->i1);
@@ -435,16 +380,14 @@ IPint_div(void *fp)
 	f->ret->t0 = newIPint(quo);
 	f->ret->t1 = newIPint(rem);
 }
-void
-IPint_mod(void *fp)
+
+DISAPI(IPint_mod)
 {
-	F_IPint_mod *f;
 	mpint *i1, *i2, *ret;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	i1 = MP(f->i1);
@@ -455,16 +398,14 @@ IPint_mod(void *fp)
 
 	*f->ret = newIPint(ret);
 }
-void
-IPint_neg(void *fp)
+
+DISAPI(IPint_neg)
 {
-	F_IPint_neg *f;
 	mpint *ret;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	ret = mpcopy(MP(f->i));
@@ -476,15 +417,12 @@ IPint_neg(void *fp)
 }
 
 /* copy */
-void
-IPint_copy(void *fp)
+DISAPI(IPint_copy)
 {
-	F_IPint_copy *f;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	*f->ret = newIPint(mpcopy(MP(f->i)));
@@ -492,36 +430,25 @@ IPint_copy(void *fp)
 
 
 /* equality */
-void
-IPint_eq(void *fp)
+DISAPI(IPint_eq)
 {
-	F_IPint_eq *f;
-
-	f = fp;
 	*f->ret = mpcmp(MP(f->i1), MP(f->i2)) == 0;
 }
 
 /* compare */
-void
-IPint_cmp(void *fp)
+DISAPI(IPint_cmp)
 {
-	F_IPint_eq *f;
-
-	f = fp;
 	*f->ret = mpcmp(MP(f->i1), MP(f->i2));
 }
 
 /* shifts */
-void
-IPint_shl(void *fp)
+DISAPI(IPint_shl)
 {
-	F_IPint_shl *f;
 	mpint *ret, *i;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	i = MP(f->i);
@@ -530,16 +457,14 @@ IPint_shl(void *fp)
 		mpleft(i, f->n, ret);
 	*f->ret = newIPint(ret);
 }
-void
-IPint_shr(void *fp)
+
+DISAPI(IPint_shr)
 {
-	F_IPint_shr *f;
 	mpint *ret, *i;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	i = MP(f->i);
@@ -634,16 +559,13 @@ mpnot(mpint *b1, mpint *res)
 }
 
 /* bits */
-void
-IPint_and(void *fp)
+DISAPI(IPint_and)
 {
-	F_IPint_and *f;
 	mpint *ret, *i1, *i2;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	i1 = MP(f->i1);
@@ -654,16 +576,13 @@ IPint_and(void *fp)
 	*f->ret = newIPint(ret);
 }
 
-void
-IPint_ori(void *fp)
+DISAPI(IPint_ori)
 {
-	F_IPint_ori *f;
 	mpint *ret, *i1, *i2;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	i1 = MP(f->i1);
@@ -674,16 +593,13 @@ IPint_ori(void *fp)
 	*f->ret = newIPint(ret);
 }
 
-void
-IPint_xor(void *fp)
+DISAPI(IPint_xor)
 {
-	F_IPint_xor *f;
 	mpint *ret, *i1, *i2;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	i1 = MP(f->i1);
@@ -694,16 +610,13 @@ IPint_xor(void *fp)
 	*f->ret = newIPint(ret);
 }
 
-void
-IPint_not(void *fp)
+DISAPI(IPint_not)
 {
-	F_IPint_not *f;
 	mpint *ret, *i1;
 	void *v;
 
-	f = fp;
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Keyring_IPint*)H;
 	destroy(v);
 
 	i1 = MP(f->i1);

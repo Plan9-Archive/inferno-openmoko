@@ -137,7 +137,7 @@
 
 
   /* compare two kerning pairs */
-  FT_CALLBACK_DEF( int )
+  FT_CALLBACK_DEF( int )  __cdecl
   compare_kern_pairs( const void*  a,
                       const void*  b )
   {

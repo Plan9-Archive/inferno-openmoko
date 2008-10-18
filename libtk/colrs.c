@@ -1,5 +1,9 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
 
 #define RGB(R,G,B) ((R<<24)|(G<<16)|(B<<8)|(0xff))

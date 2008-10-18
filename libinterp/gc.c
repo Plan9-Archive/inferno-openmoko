@@ -60,7 +60,7 @@ ptradd(Heap *v)
 
 	if ((p = ptrfree) != nil)
 		ptrfree = p->next;
-	else if ((p = malloc(sizeof (Ptrhash))) == nil)
+	else if ((p = (Ptrhash *)malloc(sizeof (Ptrhash))) == nil)
 		error("ptradd malloc");
 	h = HASHPTR(v);
 	p->value = v;
@@ -113,16 +113,16 @@ void
 markheap(Type *t, void *vw)
 {
 	Heap *h;
-	uchar *p;
+	char *p;
 	int i, c, m;
-	DISINT **w, **q;
+	void **w, **q;
 	Type *t1;
 
 	if(t == nil || t->np == 0)
 		return;
 
 	markdepth++;
-	w = (DISINT**)vw;
+	w = (void**)vw;
 	p = t->map;
 	for(i = 0; i < t->np; i++) {
 		c = *p++;
@@ -151,16 +151,14 @@ markheap(Type *t, void *vw)
  * TODO This routine should be modified to be incremental, but how?
  */
 void
-markarray(Type *t, void *vw)
+markarray(Type *t, Array *a)
 {
 	int i;
 	Heap *h;
-	uchar *v;
-	Array *a;
+	char *v;
 
 	USED(t);
 
-	a = vw;
 	t = a->t;
 	if(a->root != H) {
 		h = D2H(a->root);
@@ -179,13 +177,11 @@ markarray(Type *t, void *vw)
 }
 
 void
-marklist(Type *t, void *vw)
+marklist(Type *t, List *l)
 {
-	List *l;
 	Heap *h;
 
 	USED(t);
-	l = vw;
 	markheap(l->t, &l->data); /*?*/
 	while(visit > 0) {
 		l = l->tail;
@@ -212,7 +208,7 @@ rootset(Prog *root)
 	Module *m;
 	Stkext *sx;
 	Modlink *ml;
-	uchar *fp, *sp, *ex, *mp;
+	char *fp, *sp, *ex, *mp;
 
 	mutator = gccolor % 3;
 	marker = (gccolor-1)%3;

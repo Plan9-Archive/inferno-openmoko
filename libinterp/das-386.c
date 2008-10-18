@@ -117,7 +117,7 @@ enum {
 	OPOVER,			/* Operand size override */
 	ADDOVER,		/* Address size override */
 };
-	
+
 static Optable optab0F00[8]=
 {
 	0,0,		"MOVW	LDT,%e",
@@ -486,7 +486,7 @@ static Optable optabD8[8+8] =
 	0,0,		"FDIVRD	%f,F0",
 };
 /*
- *	optabD9 and optabDB use the following encoding: 
+ *	optabD9 and optabDB use the following encoding:
  *	if (0 <= modrm <= 2) instruction = optabDx[modrm&0x07];
  *	else instruction = optabDx[(modrm&0x3f)+8];
  *
@@ -1466,7 +1466,7 @@ immediate(Instr *ip, long val)
 }
 
 static void
-prinstr(Instr *ip, char *fmt)
+prinstr(Instr *ip, const char *fmt)
 {
 	if (ip->prefix)
 		bprint(ip, "%s ", ip->prefix);
@@ -1571,7 +1571,7 @@ i386inst(ulong pc, char modifier, char *buf, int n)
 	}
 	instr.curr = buf;
 	instr.end = buf+n-1;
-	prinstr(&instr, op->proto);
+	prinstr(&instr, (const char*)op->proto);
 	return instr.n;
 }
 

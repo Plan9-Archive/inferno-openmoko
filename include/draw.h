@@ -189,9 +189,10 @@ struct Refreshq
 	Refreshq	*next;
 };
 
+typedef struct DRef DRef;
 struct Display
 {
-	void		*qlock;
+	QLock		*qlock;
 	int		locking;	/*program is using lockdisplay */
 	int		dirno;
 	Chan		*datachan;
@@ -211,13 +212,13 @@ struct Display
 	Image		*image;
 	Image		*opaque;
 	Image		*transparent;
-	uchar		buf[Displaybufsize+1];	/* +1 for flush message */
-	int			bufsize;
-	uchar		*bufp;
+	char		buf[Displaybufsize+1];	/* +1 for flush message */
+	int		bufsize;
+	char		*bufp;
 	Font		*defaultfont;
 	Subfont		*defaultsubfont;
 	Image		*windows;
-	void		*limbo;
+	DRef		*limbo;
 	Refreshq	*refhead;
 	Refreshq	*reftail;
 };
@@ -344,7 +345,7 @@ struct Font
  */
 extern Image*	_allocimage(Image*, Display*, Rectangle, ulong, int, ulong, int, int);
 extern Image*	allocimage(Display*, Rectangle, ulong, int, ulong);
-extern uchar*	bufimage(Display*, int);
+extern char*	bufimage(Display*, int);
 extern int	bytesperline(Rectangle, int);
 extern void	closedisplay(Display*);
 extern void	drawerror(Display*, char*);
@@ -355,13 +356,13 @@ extern int	_freeimage1(Image*);
 extern int	geninitdraw(char*, void(*)(Display*, char*), char*, char*, char*, int);
 extern int	initdraw(void(*)(Display*, char*), char*, char*);
 extern Display*	initdisplay(char*, char*, void(*)(Display*, char*));
-extern int	loadimage(Image*, Rectangle, uchar*, int);
-extern int	cloadimage(Image*, Rectangle, uchar*, int);
+extern int	loadimage(Image*, Rectangle, const char*, int);
+extern int	cloadimage(Image*, Rectangle, const char*, int);
 extern int	getwindow(Display*, int);
 extern int	gengetwindow(Display*, char*, Image**, Screen**, int);
 extern Image* readimage(Display*, int, int);
 extern Image* creadimage(Display*, int, int);
-extern int	unloadimage(Image*, Rectangle, uchar*, int);
+extern int	unloadimage(Image*, Rectangle, char*, int);
 extern int	wordsperline(Rectangle, int);
 extern int	writeimage(int, Image*, int);
 extern Image*	namedimage(Display*, char*);
@@ -561,6 +562,6 @@ extern	void	font_close(Font*);
 #define P2P(p1, p2)	(p1).x = (p2).x, (p1).y = (p2).y
 #define R2R(r1, r2)	(r1).min.x = (r2).min.x, (r1).min.y = (r2).min.y,\
 			(r1).max.x = (r2).max.x, (r1).max.y = (r2).max.y
-extern Image*	display_open(Display*, char*);
+extern Image*	display_open(Display*, const char*);
 
 #define TR_ALLOCIMAGE(r,c) {char s[64]; o("%s:%d %s allocimage(%d %d %d %d 0x%08uX=%s)\n", __FILE__, __LINE__, __FUNCTION__, (r).min.x, (r).min.y, (r).max.x, (r).max.y, (c), chantostr(s,(c)) );}

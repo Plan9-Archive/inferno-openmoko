@@ -148,9 +148,9 @@ static	uchar	isntfrog[256];
 
 static	void		fsremove(Chan*);
 
-	wchar_t	*widen(char *s);
-	char		*narrowen(wchar_t *ws);
-	int		widebytes(wchar_t *ws);
+	wchar_t	*widen(const char *s);
+	char		*narrowen(const wchar_t *ws);
+	int		widebytes(const wchar_t *ws);
 
 static char Etoolong[] = "file name too long";
 
@@ -2463,7 +2463,7 @@ runestoutf(char *p, const Rune *r, int nc)
 }
 
 Rune*
-utftorunes(Rune *r, char *p, int nc)
+utftorunes(Rune *r, const char *p, int nc)
 {
 	Rune *or, *er;
 
@@ -2476,7 +2476,7 @@ utftorunes(Rune *r, char *p, int nc)
 }
 
 int
-runescmp(Rune *s1, Rune *s2)
+runescmp(const Rune *s1, const Rune *s2)
 {
 	Rune r1, r2;
 

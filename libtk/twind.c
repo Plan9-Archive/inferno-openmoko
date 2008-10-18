@@ -1,6 +1,11 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "textw.h"
 
 #define istring u.string
@@ -330,7 +335,7 @@ tktwincreate(Tk *tk, char *arg, char **val)
 	if(e != nil)
 		return e;
 
-	i->iwin = malloc(sizeof(TkTwind));
+	i->iwin = (TkTwind*)malloc(sizeof(TkTwind));
 	if(i->iwin == nil) {
 		tktfreeitems(tkt, i, 1);
 		return TkNomem;

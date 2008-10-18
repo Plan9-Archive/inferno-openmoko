@@ -15,6 +15,7 @@
 #ifdef __cplusplus
 #define this _this
 #define new _new
+#define delete _delete
 #define public _public
 #define export _export
 #endif
@@ -107,7 +108,7 @@ extern	int	fullrune(const char*, int);
 extern	int	utflen(const char*);
 extern	int	utfnlen(const char*, long);
 extern	const char*	utfrune(const char*, long);
-extern	const char*	utfrrune(const char*, long);
+extern	/*const*/ char*	utfrrune(/*const*/ char*, long);
 extern	const char*	utfutf(const char*, const char*);
 extern	char*	utfecpy(char*, const char*, const char*);
 
@@ -175,35 +176,44 @@ extern	char*	v_strdup(const char*, const char*, int, const char*);
 #define	GBIT8I(p,i)	(((const u8int *)(p))[i])
 #define	GBIT8(p)	GBIT8I(p,0)
 
-#define	PBIT8I(p,i,v)	(((u8int *)(p))[i] = (v))
-#define	PBIT8(p,v)	PBIT8I(p,0,v)
+#define	GBIT16I(p,i)	((GBIT8I(p,(i)+0)<<0) |\
+			 (GBIT8I(p,(i)+1)<<8))
+#define	GBIT32I(p,i)	((GBIT8I(p,(i)+0)<<0) |\
+			 (GBIT8I(p,(i)+1)<<8) |\
+			 (GBIT8I(p,(i)+2)<<16) |\
+			 (GBIT8I(p,(i)+3)<<24))
+#define	GBIT64I(p,i)	((GBIT32I(p,(i)+0)<<0) |\
+			 ((u64int)GBIT32I(p,(i)+4)<<32))
 
+#define	GBIT16IBE(p,i)	((GBIT8I(p,(i)+0)<<8) |\
+			 (GBIT8I(p,(i)+1)<<0))
+#define	GBIT32IBE(p,i)	((GBIT8I(p,(i)+0)<<24) |\
+			 (GBIT8I(p,(i)+1)<<16) |\
+			 (GBIT8I(p,(i)+2)<<8) |\
+			 (GBIT8I(p,(i)+3)<<0))
+#define	GBIT64IBE(p,i)	(((u64int)GBIT32I(p,(i)+0)<<32) |\
+			 (GBIT32I(p,(i)+4)<<0))
 
-#if OBJTYPE==386
-/*little endian and unaligned read/write*/
-/*may not work on ARM*/
-#define	GBIT16(p)	(*((const u16int*)(p)))
-#define	GBIT32(p)       (*((const u32int*)(p)))
-#define	GBIT64(p)	(*((const u64int*)(p)))
-#define	PBIT16(p,v)	(*((u16int*)(p)) = (v))
-#define	PBIT32(p,v)	(*((u32int*)(p)) = (v))
-#define	PBIT64(p,v)	(*((u64int*)(p)) = (v))
-#else
-#define	GBIT16I(p,i)	(GBIT8I(p,i)|(GBIT8I(p,(i)+1)<<8))
-#define	GBIT32I(p,i)	(GBIT16I(p,i)|(GBIT16I(p,(i)+2)<<16))
-#define	GBIT64I(p,i)	(GBIT32I(p,i)|(GBIT32(p,(i)+4)<<32))
 #define	GBIT16(p)	GBIT16I(p,0)
 #define	GBIT32(p)	GBIT32I(p,0)
 #define	GBIT64(p)	GBIT64I(p,0)
-#define	PBIT16I(p,i,v)	(PBIT8I(p,(i)+0,(v)>>0), \
+#define	GBIT16BE(p)	GBIT16IBE(p,0)
+#define	GBIT32BE(p)	GBIT32IBE(p,0)
+#define	GBIT64BE(p)	GBIT64IBE(p,0)
+
+
+#define	PBIT8I(p,i,v)	(((u8int *)(p))[i] = (v))
+#define	PBIT8(p,v)	PBIT8I(p,0,v)
+
+#define	PBIT16I(p,i,v) (PBIT8I(p,(i)+0,(v)>>0), \
 			PBIT8I(p,(i)+1,(v)>>8), \
 			(v))
-#define	PBIT32I(p,i,v)	(PBIT8I(p,(i)+0,(v)>>0), \
+#define	PBIT32I(p,i,v) (PBIT8I(p,(i)+0,(v)>>0), \
 			PBIT8I(p,(i)+1,(v)>>8), \
 			PBIT8I(p,(i)+2,(v)>>16), \
 			PBIT8I(p,(i)+3,(v)>>24), \
 			(v))
-#define	PBIT64I(p,i,v)	(PBIT8I(p,(i)+0,(v)>>0), \
+#define	PBIT64I(p,i,v) (PBIT8I(p,(i)+0,(v)>>0), \
 			PBIT8I(p,(i)+1,(v)>>8), \
 			PBIT8I(p,(i)+2,(v)>>16), \
 			PBIT8I(p,(i)+3,(v)>>24), \
@@ -212,38 +222,51 @@ extern	char*	v_strdup(const char*, const char*, int, const char*);
 			PBIT8I(p,(i)+6,(v)>>48), \
 			PBIT8I(p,(i)+7,(v)>>56), \
 			(v))
+#define	PBIT16IBE(p,i,v) (PBIT8I(p,(i)+0,(v)>>8), \
+			  PBIT8I(p,(i)+1,(v)>>0), \
+			  (v))
+#define	PBIT32IBE(p,i,v) (PBIT8I(p,(i)+0,(v)>>24), \
+			  PBIT8I(p,(i)+1,(v)>>16), \
+			  PBIT8I(p,(i)+2,(v)>>8), \
+			  PBIT8I(p,(i)+3,(v)>>0), \
+			  (v))
+#define	PBIT64IBE(p,i,v) (PBIT8I(p,(i)+0,(v)>>56), \
+			  PBIT8I(p,(i)+1,(v)>>48), \
+			  PBIT8I(p,(i)+2,(v)>>40), \
+			  PBIT8I(p,(i)+3,(v)>>32), \
+			  PBIT8I(p,(i)+4,(v)>>24), \
+			  PBIT8I(p,(i)+5,(v)>>16), \
+			  PBIT8I(p,(i)+6,(v)>>8), \
+			  PBIT8I(p,(i)+7,(v)>>0), \
+			  (v))
+
 #define	PBIT16(p,v)	PBIT16I(p,0,v)
 #define	PBIT32(p,v)	PBIT32I(p,0,v)
 #define	PBIT64(p,v)	PBIT64I(p,0,v)
-#endif
-
-#define	GBIT16IBE(p,i)	((GBIT8I(p,i)<<8)|GBIT8I(p,(i)+1))
-#define	GBIT32IBE(p,i)	((GBIT16IBE(p,i)<<16)|GBIT16IBE(p,(i)+2))
-#define	GBIT64IBE(p,i)	((GBIT32IBE(p,i)<<32)|GBIT32IBE(p,(i)+4))
-#define	GBIT16BE(p)	GBIT16IBE(p,0)
-#define	GBIT32BE(p)	GBIT32IBE(p,0)
-#define	GBIT64BE(p)	GBIT64IBE(p,0)
-#define	PBIT16IBE(p,i,v)	(PBIT8I(p,(i)+0,(v)>>8), \
-				PBIT8I(p,(i)+1,(v)>>0), \
-				(v))
-#define	PBIT32IBE(p,i,v)	(PBIT8I(p,(i)+0,(v)>>24), \
-				PBIT8I(p,(i)+1,(v)>>16), \
-				PBIT8I(p,(i)+2,(v)>>8), \
-				PBIT8I(p,(i)+3,(v)>>0), \
-				(v))
-#define	PBIT64IBE(p,i,v)	(PBIT8I(p,(i)+0,(v)>>56), \
-				PBIT8I(p,(i)+1,(v)>>48), \
-				PBIT8I(p,(i)+2,(v)>>40), \
-				PBIT8I(p,(i)+3,(v)>>32), \
-				PBIT8I(p,(i)+4,(v)>>24), \
-				PBIT8I(p,(i)+5,(v)>>16), \
-				PBIT8I(p,(i)+6,(v)>>8), \
-				PBIT8I(p,(i)+7,(v)>>0), \
-				(v))
 #define	PBIT16BE(p,v)	PBIT16IBE(p,0,v)
 #define	PBIT32BE(p,v)	PBIT32IBE(p,0,v)
 #define	PBIT64BE(p,v)	PBIT64IBE(p,0,v)
 
+#if OBJTYPE==386
+/*little endian and unaligned read/write*/
+/*may not work on ARM*/
+#undef	GBIT16
+#undef	GBIT32
+#undef	GBIT64
+#undef	PBIT16
+#undef	PBIT32
+#undef	PBIT64
+
+#define	GBIT16(p)	(*((const u16int*)(p)))
+#define	GBIT32(p)       (*((const u32int*)(p)))
+#define	GBIT64(p)	(*((const u64int*)(p)))
+#define	PBIT16(p,v)	(*((u16int*)(p)) = (v))
+#define	PBIT32(p,v)	(*((u32int*)(p)) = (v))
+#define	PBIT64(p,v)	(*((u64int*)(p)) = (v))
+#endif
+
+
+/*#define BITS(v,o,l)	( ((v)>>(o)) & ((1<<l)-1) )*/
 /*
  * print routines
  */
@@ -284,7 +307,7 @@ enum{
 extern	int	print(char*, ...);
 extern	char*	seprint(char*, char*, char*, ...);
 extern	char*	vseprint(char*, char*, char*, va_list);
-extern	int	snprint(char*, int, char*, ...);
+extern	int	snprint(char*, int, const char* fmt, ...);
 extern	int	vsnprint(char*, int, char*, va_list);
 extern	char*	smprint(char*, ...);
 extern	char*	vsmprint(char*, va_list);
@@ -385,11 +408,11 @@ extern	double		ipow10(int);
 extern	double		pow10(int);
 extern	NORETURN	sysfatal(char*, ...);
 extern	int		dec64(uchar*, int, const char*, int);
-extern	int		enc64(char*, int, uchar*, int);
+extern	int		enc64(char*, int, const uchar*, int);
 extern	int		dec32(uchar*, int, const char*, int);
-extern	int		enc32(char*, int, uchar*, int);
+extern	int		enc32(char*, int, const uchar*, int);
 extern	int		dec16(uchar*, int, const char*, int);
-extern	int		enc16(char*, int, uchar*, int);
+extern	int		enc16(char*, int, const uchar*, int);
 extern	int		encodefmt(Fmt*);
 
 /*

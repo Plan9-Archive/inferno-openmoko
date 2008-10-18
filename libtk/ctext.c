@@ -1,7 +1,12 @@
-#include <lib9.h>
-#include <kernel.h>
+#include "lib9.h"
+#include "kernel.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "canvs.h"
 
 /* Text Options (+ means implemented)
@@ -48,7 +53,7 @@ TkOption textopts[] =
 {
 	"anchor",	OPTstab,	offsetof(TkCtext, anchor),	tkanchor,
 	"justify",	OPTstab,	offsetof(TkCtext, justify),	tktabjust,
-	"width",	OPTdist,	offsetof(TkCtext, width),	IAUX(offsetof(TkCtext, env)),
+	"width",	OPTdist,	offsetof(TkCtext, width),	(TkStab*)offsetof(TkCtext, env),
 	"stipple",	OPTbmap,	offsetof(TkCtext, stipple),	nil,
 	"text",		OPTtext,	offsetof(TkCtext, text),	nil,
 	nil
@@ -58,8 +63,8 @@ static
 TkOption itemopts[] =
 {
 	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
-	"font",		OPTfont,	offsetof(TkCitem, env),	nil,
-	"fill",		OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCfill),
+	"font",		OPTfont,	offsetof(TkCitem, env),		nil,
+	"fill",		OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCfill,
 	nil
 };
 
@@ -515,13 +520,13 @@ tkcvstextinsert(Tk *tk, TkCitem *i, char *arg)
 	if(*arg == '\0')
 		return nil;
 
-	text = malloc(Tkcvstextins);
+	text = (char*)malloc(Tkcvstextins);
 	if(text == nil)
 		return TkNomem;
 
 	tkword(top, arg, text, text+Tkcvstextins, nil);
 	n = strlen(text);
-	t->text = realloc(t->text, t->tlen+n+1);
+	t->text = (char*)realloc(t->text, t->tlen+n+1);
 	if(t->text == nil) {
 		free(text);
 		return TkNomem;

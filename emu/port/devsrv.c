@@ -86,8 +86,8 @@ srvgen(Chan *c, const char *name, Dirtab *tab, int ntab, int s, Dir *dp)
 static void
 srvinit(void)
 {
-	static uchar rmap[] = Sys_Rread_map;
-	static uchar wmap[] = Sys_Rwrite_map;
+	static char rmap[] = Sys_Rread_map;
+	static char wmap[] = Sys_Rwrite_map;
 
 	Trdchan = dtype(freerdchan, sizeof(Channel), Tchannel.map, Tchannel.np, "Srv->rdchan");
 	Twrchan = dtype(freewrchan, sizeof(Channel), Tchannel.map, Tchannel.np, "Srv->wrchan");

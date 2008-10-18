@@ -1,7 +1,11 @@
-#include <lib9.h>
-#include <kernel.h>
+#include "lib9.h"
+#include "kernel.h"
 #include "draw.h"
 #include "keyboard.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
 
 /* Widget Commands (+ means implemented)
@@ -318,7 +322,7 @@ tkentrytext(Image *i, Rectangle s, Tk *tk, TkEnv *env)
 	dp = Pt(s.min.x - (tke->x0 - tke->xv0), s.min.y);
 	if (tke->show) {
 		chartorune(&showr, tke->show);
-		text = mallocz(sizeof(Rune) * (tke->textlen+1), 0);
+		text = (Rune *)mallocz(sizeof(Rune) * (tke->textlen+1), 0);
 		if (text == nil)
 			return;
 		for (j = 0; j < tke->textlen; j++)
@@ -425,13 +429,13 @@ tkentrysh(Tk *tk)
 		}
 	}
 
-	val = mallocz(Tkminitem, 0);
+	val = (char*)mallocz(Tkminitem, 0);
 	if(val == nil)
 		return TkNomem;
 	v = tkfprint(val, bot);
 	*v++ = ' ';
 	tkfprint(v, top);
-	cmd = mallocz(Tkminitem, 0);
+	cmd = (char*)mallocz(Tkminitem, 0);
 	if(cmd == nil) {
 		free(val);
 		return TkNomem;
@@ -616,7 +620,7 @@ tkentryseecmd(Tk *tk, char *arg, char **val)
 
 	USED(val);
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	tkword(tk->env->top, arg, buf, buf+Tkmaxitem, nil);
@@ -639,7 +643,7 @@ tkentrybboxcmd(Tk *tk, char *arg, char **val)
 	int index;
 	Rectangle bbox;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	tkword(tk->env->top, arg, buf, buf+Tkmaxitem, nil);
@@ -657,7 +661,7 @@ tkentryindex(Tk *tk, char *arg, char **val)
 	int index;
 	char *r, *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	tkword(tk->env->top, arg, buf, buf+Tkmaxitem, nil);
@@ -676,7 +680,7 @@ tkentryicursor(Tk *tk, char *arg, char **val)
 	char *r, *buf;
 
 	USED(val);
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	tkword(tk->env->top, arg, buf, buf+Tkmaxitem, nil);
@@ -730,7 +734,7 @@ tkentryget(Tk *tk, char *arg, char **val)
 		return tkvalue(val, "%.*S", tke->textlen, tke->text);
 
 	top = tk->env->top;
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	arg = tkword(top, arg, buf, buf+Tkmaxitem, nil);
@@ -767,7 +771,7 @@ tkentryinsert(Tk *tk, char *arg, char **val)
 	tke = TKobj(TkEntry, tk);
 
 	top = tk->env->top;
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	arg = tkword(top, arg, buf, buf+Tkmaxitem, nil);
@@ -782,13 +786,13 @@ tkentryinsert(Tk *tk, char *arg, char **val)
 	n = strlen(arg) + 1;
 	if(n < Tkmaxitem)
 		n = Tkmaxitem;
-	text = malloc(n);
+	text = (char*)malloc(n);
 	if(text == nil)
 		return TkNomem;
 
 	tkword(top, arg, text, text+n, nil);
 	n = utflen(text);
-	etext = realloc(tke->text, (tke->textlen+n+1)*sizeof(Rune));
+	etext = (Rune*)realloc(tke->text, (tke->textlen+n+1)*sizeof(Rune));
 	if(etext == nil) {
 		free(text);
 		return TkNomem;
@@ -836,7 +840,7 @@ tkentrydelete(Tk *tk, char *arg, char **val)
 	tke = TKobj(TkEntry, tk);
 
 	top = tk->env->top;
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	arg = tkword(top, arg, buf, buf+Tkmaxitem, nil);
@@ -862,7 +866,7 @@ tkentrydelete(Tk *tk, char *arg, char **val)
 	memmove(tke->text+d0, tke->text+d1, (tke->textlen-d1)*sizeof(Rune));
 	tke->textlen -= d1 - d0;
 
-	text = realloc(tke->text, (tke->textlen+1) * sizeof(Rune));
+	text = (Rune*)realloc(tke->text, (tke->textlen+1) * sizeof(Rune));
 	if (text != nil)
 		tke->text = text;
 	tke->sel0 = adjustfordel(d0, d1, tke->sel0);
@@ -906,7 +910,7 @@ tkentrybs(Tk *tk, char *arg, char **val)
 	if(tke->sel0 < tke->sel1)
 		return tkentrydelete(tk, "sel.first sel.last", nil);
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 	tkword(tk->env->top, arg, buf, buf+Tkmaxitem, nil);
@@ -971,7 +975,7 @@ tkentryselect(Tk *tk, char *arg, char **val)
 	TkEntry *tke;
 	char *e, *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 
@@ -1122,7 +1126,7 @@ tkentryb2p(Tk *tk, char *arg, char **val)
 	USED(val);
 
 	tke = TKobj(TkEntry, tk);
-	buf = malloc(Tkmaxitem);
+	buf = (char*)malloc(Tkmaxitem);
 	if (buf == nil)
 		return TkNomem;
 
@@ -1145,7 +1149,7 @@ tkentryxview(Tk *tk, char *arg, char **val)
 	env = tk->env;
 	dx = tk->act.width - 2*xinset(tk);
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 
@@ -1213,7 +1217,7 @@ tkentryxview(Tk *tk, char *arg, char **val)
 }
 
 static void
-autoselect(Tk *tk, void *v, int cancelled)
+autoselect(Tk *tk, const char *v, int cancelled)
 {
 	TkEntry *tke = TKobj(TkEntry, tk);
 	Rectangle hitr;

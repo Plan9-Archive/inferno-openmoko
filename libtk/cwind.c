@@ -1,6 +1,11 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "canvs.h"
 
 /* Window Options (+ means implemented)
@@ -17,7 +22,7 @@ TkOption windopts[] =
 	"width",	OPTdist,	offsetof(TkCwind, width),	nil,
 	"height",	OPTdist,	offsetof(TkCwind, height),	nil,
 	"anchor",	OPTstab,	offsetof(TkCwind, flags),	tkanchor,
-	"window",	OPTwinp,	offsetof(TkCwind, sub),	nil,
+	"window",	OPTwinp,	offsetof(TkCwind, sub),		nil,
 	nil
 };
 

@@ -30,7 +30,7 @@ extern	int	kfstat(int, char*, int);
 extern	int	kfversion(int, uint, char*, uint);
 extern	int	kfwstat(int, char*, int);
 extern	int	kmount(int, int, char*, int, char*);
-extern	int	kopen(char*, int);
+extern	int	kopen(const char*, int);
 extern	int	kpipe(int[2]);
 extern	long	kpread(int, void*, long, vlong);
 extern	long	kread(int, void*, long);

@@ -764,7 +764,7 @@ schedmod(Module *m)
 		h = nheap(t->size);
 		h->t = t;
 		t->ref++;
-		ml->MP = H2D(uchar*, h);
+		ml->MP = H2D(char*, h);
 		newmp(ml->MP, m->origmp, t);
 	}
 

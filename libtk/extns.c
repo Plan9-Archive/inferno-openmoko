@@ -1,8 +1,12 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
 
-int	
+int
 tkextndeliver(Tk *tk, TkAction *binds, int event, void *data)
 {
 	return tksubdeliver(tk, binds, event, data, 1);

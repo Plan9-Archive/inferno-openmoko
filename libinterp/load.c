@@ -10,13 +10,13 @@ Module*	modules = 0;
 int	dontcompile = 0;
 
 static int
-operand(uchar **p)
+operand(const char **p)
 {
 	int c;
-	uchar *cp;
+	const char *cp;
 
 	cp = *p;
-	c = cp[0];
+	c = GBIT8I(cp,0);
 	switch(c & 0xC0) {
 	case 0x00:
 		*p = cp+1;
@@ -30,29 +30,23 @@ operand(uchar **p)
 			c |= ~0x3F;
 		else
 			c &= 0x3F;
-		return (c<<8)|cp[1];
+		return (c<<8) | GBIT8I(cp,1);
 	case 0xC0:
 		*p = cp+4;
 		if(c & 0x20)
 			c |= ~0x3F;
 		else
 			c &= 0x3F;
-		return (c<<24)|(cp[1]<<16)|(cp[2]<<8)|cp[3];
+		return (c<<24) | (GBIT8I(cp,1)<<16) | (GBIT8I(cp,2)<<8) | GBIT8I(cp,3);
 	}
 	return 0;
 }
 
 static ulong
-disw(uchar **p)
+disw(const char **p)
 {
-	ulong v;
-	uchar *c;
-
-	c = *p;
-	v  = c[0] << 24;
-	v |= c[1] << 16;
-	v |= c[2] << 8;
-	v |= c[3];
+	const char *c = *p;
+	ulong v = GBIT32BE(c);
 	*p = c + 4;
 	return v;
 }
@@ -83,11 +77,11 @@ load(char *path)
  * Type constructor
  */
 Type*
-dtype(void (*destructor)(Heap*, int), int size, uchar *map, int mapsize, const char*comment)
+dtype(void (*destructor)(Heap*, int), int size, const char *map, int mapsize, const char*comment)
 {
 	Type *t;
 
-	t = malloc(sizeof(Type)+mapsize);
+	t = (Type *)malloc(sizeof(Type)+mapsize);
 	if(t != nil) {
 		t->ref = 1;
 		t->destructor = destructor;
@@ -146,7 +140,7 @@ brpatch(Inst *ip, Module *m)
 }
 
 Module*
-parsemod(char *path, uchar *code, ulong length, Dir *dir)
+parsemod(const char *path, const char *code, ulong length, const Dir *dir)
 {
 	Heap *h;
 	Inst *ip;
@@ -158,13 +152,14 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 	DISINT lo, hi;
 	int lsize, id, v, entry, entryt, tnp, tsz, siglen;
 	int de, pc, i, n, isize, dsize, hsize, dasp;
-	uchar *mod, sm, *istream, **isp, *si, *addr, *dastack[DADEPTH];
+	const char *mod, *istream, **isp;
+	char sm, *si, *addr, *dastack[DADEPTH];
 	Link *l;
 
 	istream = code;
 	isp = &istream;
 
-	m = malloc(sizeof(Module));
+	m = (Module*)malloc(sizeof(Module));
 	if(m == nil)
 		return nil;
 
@@ -172,7 +167,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 	m->dtype = dir->type;
 	m->qid = dir->qid;
 	m->mtime = dir->mtime;
-	m->origmp = H;
+	m->origmp = (char*)H;
 	m->pctab = nil;
 
 	switch(operand(isp)) {
@@ -200,8 +195,8 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 		break;
 	}
 
-	m->rt = operand(isp);
-	m->ss = operand(isp);
+	m->rt = (enum ModRtFlags)operand(isp);
+	/*m->ss =*/ operand(isp);
 	isize = operand(isp);
 	dsize = operand(isp);
 	hsize = operand(isp);
@@ -215,7 +210,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 	}
 
 	m->nprog = isize;
-	m->prog = mallocz(isize*sizeof(Inst), 0);
+	m->prog = (Inst*)mallocz(isize*sizeof(Inst), 0);
 	if(m->prog == nil) {
 		kwerrstr(exNomem);
 		goto bad;
@@ -271,13 +266,13 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 	}
 
 	m->ntype = hsize;
-	m->type = malloc(hsize*sizeof(Type*));
+	m->type = (Type**)malloc(hsize*sizeof(Type*));
 	if(m->type == nil) {
 		kwerrstr(exNomem);
 		goto bad;
 	}
 	for(i = 0; i < hsize; i++) {
-		char *comment = malloc(256); /* TODO: debug, remove later */
+		char *comment = (char *)malloc(256); /* TODO: debug, remove later */
 		sprint(comment, "%s.%d", path, i);
 		id = operand(isp);
 		if(id > hsize) {
@@ -306,7 +301,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 			goto bad;
 		}
 		h = heapz(pt);
-		m->origmp = H2D(uchar*, h);
+		m->origmp = H2D(char*, h);
 	}
 	addr = m->origmp;
 	dasp = 0;
@@ -324,7 +319,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 			kwerrstr("bad data item");
 			goto bad;
 		case DEFS:
-			s = c2string((char*)istream, n);
+			s = c2string(istream, n);
 			istream += n;
 			*(String**)si = s;
 			break;
@@ -368,9 +363,9 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 			ary = H2D(Array*, h);
 			ary->t = pt;
 			ary->len = v;
-			ary->root = H;
-			ary->data = (uchar*)ary+sizeof(Array);
-			memset((void*)ary->data, 0, pt->size*v);
+			ary->root = (Array*)H;
+			ary->data = (char*)ary+sizeof(Array);
+			memset(ary->data, 0, pt->size*v);
 			initarray(pt, ary);
 			A(si) = ary;
 			break;
@@ -402,7 +397,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 		kwerrstr("bad module name");
 		goto bad;
 	}
-	m->name = strdup((char*)mod);
+	m->name = strdup(mod);
 	if(m->name == nil) {
 		kwerrstr(exNomem);
 		goto bad;
@@ -470,7 +465,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 		Except *e;
 
 		nh = operand(isp);
-		m->htab = malloc((nh+1)*sizeof(Handler));
+		m->htab = (Handler*)malloc((nh+1)*sizeof(Handler));
 		if(m->htab == nil){
 			kwerrstr(exNomem);
 			goto bad;
@@ -486,7 +481,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 			n = operand(isp);
 			h->ne = n>>16;
 			n &= 0xffff;
-			h->etab = malloc((n+1)*sizeof(Except));
+			h->etab = (Except*)malloc((n+1)*sizeof(Except));
 			if(h->etab == nil){
 				kwerrstr(exNomem);
 				goto bad;
@@ -543,16 +538,16 @@ bad:
 }
 
 Module*
-newmod(char *s)
+newmod(const char *s)
 {
 	Module *m;
 
-	m = malloc(sizeof(Module));
+	m = (Module *)malloc(sizeof(Module));
 	if(m == nil)
 		error(exNomem);
 	m->ref = 1;
 	m->path = s;
-	m->origmp = H;
+	m->origmp = (char*)H;
 	m->name = strdup(s);
 	if(m->name == nil) {
 		free(m);
@@ -593,9 +588,9 @@ freemod(Module *m)
 			freetype(m->type[i]);
 		free(m->type);
 	}
-	free(m->name);
+	free((void*)m->name); /* XXX: unconst */
 	free(m->prog);
-	free(m->path);
+	free((void*)m->path); /* XXX: unconst */
 	free(m->pctab);
 	if(m->ldt != nil){
 		for(i2 = m->ldt; *i2 != nil; i2++){

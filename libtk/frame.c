@@ -1,7 +1,12 @@
-#include <lib9.h>
-#include <kernel.h>
+#include "lib9.h"
+#include "kernel.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "frame.h"
 
 char*
@@ -63,7 +68,7 @@ tkfreeframe(Tk *tk)
 
 char*
 tkdrawframe(Tk *tk, Point orig)
-{	
+{
 	int bw;
 	Point p;
 	Image *i;
@@ -73,7 +78,7 @@ tkdrawframe(Tk *tk, Point orig)
 	i = tkimageof(tk);
 	if(i == nil)
 		return nil;
-	
+
 	p.x = orig.x + tk->act.x + tk->borderwidth;
 	p.y = orig.y + tk->act.y + tk->borderwidth;
 
@@ -240,7 +245,7 @@ tkframefocusorder(Tk *tk)
 	if (n == 0)
 		return;
 
-	inf = malloc(sizeof(*inf) * n);
+	inf = (TkWinfo *)malloc(sizeof(*inf) * n);
 	if (inf == nil)
 		return;
 	i = 0;

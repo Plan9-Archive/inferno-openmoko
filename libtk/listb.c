@@ -1,7 +1,12 @@
 #include "lib9.h"
 #include "draw.h"
 #include "keyboard.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "listb.h"
 
 /* Layout constants */
@@ -501,7 +506,7 @@ tklistbinsert(Tk *tk, char *arg, char **val)
 	n = strlen(arg);
 	if(n > Tkmaxitem) {
 		n = (n*3)/2;
-		tbuf = malloc(n);
+		tbuf = (char*)malloc(n);
 		if(tbuf == nil)
 			return TkNomem;
 	}
@@ -512,7 +517,7 @@ tklistbinsert(Tk *tk, char *arg, char **val)
 
 	while(*arg) {
 		arg = tkword(tk->env->top, arg, tbuf, &tbuf[n], nil);
-		e = malloc(sizeof(TkLentry)+strlen(tbuf)+1);
+		e = (TkLentry *)malloc(sizeof(TkLentry)+strlen(tbuf)+1);
 		if(e == nil)
 			return TkNomem;
 
@@ -920,7 +925,7 @@ dragto(Tk *tk, int y)
 }
 
 static void
-autoselect(Tk *tk, void *v, int cancelled)
+autoselect(Tk *tk, const char *v, int cancelled)
 {
 	Point pt;
 	int y, eh, ne;

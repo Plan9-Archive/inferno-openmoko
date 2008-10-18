@@ -226,7 +226,7 @@ int		kfstat(int, char*, int);
 int		kfwstat(int, char*, int);
 int		kmount(int, int, char*, int, char*);
 int		kunmount(char*, char*);
-int		kopen(char*, int);
+int		kopen(const char*, int);
 long		kread(int, void*, long);
 int		kremove(char*);
 vlong		kseek(int, vlong, int);

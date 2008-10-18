@@ -27,7 +27,6 @@
  */
 
 typedef struct Cache Cache;
-typedef struct DRef DRef;
 typedef struct DDisplay DDisplay;
 typedef struct DImage DImage;
 typedef struct DScreen DScreen;
@@ -85,14 +84,14 @@ struct DFont
 
 Cache*	sfcache[BIHASH];
 Cache*	fcache[BIHASH];
-void*	cacheqlock;
+QLock*	cacheqlock;
 
 static	Cache	*cachelookup(Cache**, Display*, char*);
 
-uchar fontmap[] = Draw_Font_map;
-uchar imagemap[] = Draw_Image_map;
-uchar screenmap[] = Draw_Screen_map;
-uchar displaymap[] = Draw_Display_map;
+char fontmap[] = Draw_Font_map;
+char imagemap[] = Draw_Image_map;
+char screenmap[] = Draw_Screen_map;
+char displaymap[] = Draw_Display_map;
 
 Type*	TFont;
 Type*	TImage;
@@ -168,7 +167,7 @@ cacheinstall(Cache **cache, Display *d, char *name, void *ptr, char *type)
 /*		print("%s %s already in cache\n", type, name); /**/
 		return nil;
 	}
-	c = malloc(sizeof(Cache));
+	c = (Cache*)malloc(sizeof(Cache));
 	if(c == nil)
 		return nil;
 	hash = drawhash(name);
@@ -215,7 +214,7 @@ cacheuninstall(Cache **cache, Display *d, char *name, char *type)
 }
 
 Image*
-lookupimage(Draw_Image *di)
+lookupimage(const Draw_Image *di)
 {
 	Display *disp;
 	Image *i;
@@ -312,10 +311,8 @@ checkdisplay(Draw_Display *dd)
 	return d;
 }
 
-void
-Display_allocate(void *fp)
+DISAPI(Display_allocate)
 {
-	F_Display_allocate *f;
 	char buf[128], *dev;
 	Subfont *df;
 	Display *display;
@@ -325,9 +322,8 @@ Display_allocate(void *fp)
 	DRef *dr;
 	Cache *c;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Display*)H;
 	if(cacheqlock == nil){
 		cacheqlock = libqlalloc();
 		if(cacheqlock == nil)
@@ -340,7 +336,7 @@ Display_allocate(void *fp)
 	if(display == 0)
 		return;
 
-	dr = malloc(sizeof(DRef));
+	dr = (DRef *)malloc(sizeof(DRef));
 	if(dr == nil)
 		return;
 	h = heap(TDisplay);
@@ -381,10 +377,8 @@ Display_allocate(void *fp)
 	libqunlock(display->qlock);
 }
 
-void
-Display_getwindow(void *fp)
+DISAPI(Display_getwindow)
 {
-	F_Display_getwindow *f;
 	Display *disp;
 	int locked;
 	Image *image;
@@ -392,12 +386,11 @@ Display_getwindow(void *fp)
 	char *wn;
 	void *r;
 
-	f = fp;
 	r = f->ret->t0;
-	f->ret->t0 = H;
+	f->ret->t0 = (Draw_Screen*)H;
 	destroy(r);
 	r = f->ret->t1;
-	f->ret->t1 = H;
+	f->ret->t1 = (Draw_Image*)H;
 	destroy(r);
 	disp = checkdisplay(f->d);
 	if(f->winname == H)
@@ -437,19 +430,16 @@ Return:
 		unlockdisplay(disp);
 }
 
-void
-Display_startrefresh(void *fp)
+DISAPI(Display_startrefresh)
 {
-	F_Display_startrefresh *f;
 	Display *disp;
 
-	f = fp;
 	disp = checkdisplay(f->d);
 	refreshslave(disp);
 }
 
 void
-display_dec(void *v)
+display_dec(DRef *v)
 {
 	DRef *dr;
 	Display *d;
@@ -496,16 +486,13 @@ freedrawdisplay(Heap *h, int swept)
 	/* Draw_Display header will be freed by caller */
 }
 
-void
-Display_color(void *fp)
+DISAPI(Display_color)
 {
-	F_Display_color *f;
 	Display *d;
 	int locked;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Image*)H;
 	d = checkdisplay(f->d);
 	locked = lockdisplay(d);
 	*f->ret = color((DDisplay*)f->d, f->color);
@@ -513,15 +500,12 @@ Display_color(void *fp)
 		unlockdisplay(d);
 }
 
-void
-Image_flush(void *fp)
+DISAPI(Image_flush)
 {
-	F_Image_flush *f;
 	Image *d;
 	DImage *di;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->win);
 	di = (DImage*)f->win;
 	switch(f->func){
@@ -554,13 +538,11 @@ checkflush(Draw_Image *dst)
 }
 
 static void
-imagedraw(void *fp, int op)
+imagedraw(F_Image_draw *f, Drawop op)
 {
-	F_Image_draw *f;
 	Image *d, *s, *m;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->dst);
 	if(f->src == H)
 		s = d->display->black;
@@ -579,29 +561,22 @@ imagedraw(void *fp, int op)
 		unlockdisplay(d->display);
 }
 
-void
-Image_draw(void *fp)
+DISAPI(Image_draw)
 {
-	imagedraw(fp, SoverD);
+	imagedraw(f, SoverD);
 }
 
-void
-Image_drawop(void *fp)
+DISAPI(Image_drawop)
 {
-	F_Image_drawop *f;
-
-	f = fp;
-	imagedraw(fp, f->op);
+	imagedraw((F_Image_draw*)f, (Drawop)f->op);
 }
 
 static void
-imagegendraw(void *fp, int op)
+imagegendraw(F_Image_gendraw *f, Drawop op)
 {
-	F_Image_gendraw *f;
 	Image *d, *s, *m;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->dst);
 	if(f->src == H)
 		s = d->display->black;
@@ -620,29 +595,23 @@ imagegendraw(void *fp, int op)
 		unlockdisplay(d->display);
 }
 
-void
-Image_gendraw(void *fp)
+DISAPI(Image_gendraw)
 {
-	imagegendraw(fp, SoverD);
+	imagegendraw(f, SoverD);
 }
 
-void
-Image_gendrawop(void *fp)
-{
-	F_Image_gendrawop *f;
 
-	f = fp;
-	imagegendraw(fp, f->op);
+DISAPI(Image_gendrawop)
+{
+	imagegendraw((F_Image_gendraw*)f, (Drawop)f->op);
 }
 
 static void
-drawline(void *fp, int op)
+drawline(F_Image_line *f, Drawop op)
 {
-	F_Image_line *f;
 	Image *d, *s;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->dst);
 	s = checkimage(f->src);
 	if(d->display != s->display || f->radius < 0)
@@ -654,29 +623,22 @@ drawline(void *fp, int op)
 		unlockdisplay(d->display);
 }
 
-void
-Image_line(void *fp)
+DISAPI(Image_line)
 {
-	drawline(fp, SoverD);
+	drawline(f, SoverD);
 }
 
-void
-Image_lineop(void *fp)
+DISAPI(Image_lineop)
 {
-	F_Image_lineop *f;
-
-	f = fp;
-	drawline(fp, f->op);
+	drawline((F_Image_line*)f, (Drawop)f->op);
 }
 
 static void
-drawsplinepoly(void *fp, int smooth, int op)
+drawsplinepoly(F_Image_poly *f, int smooth, Drawop op)
 {
-	F_Image_poly *f;
 	Image *d, *s;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->dst);
 	s = checkimage(f->src);
 	if(d->display != s->display|| f->radius < 0)
@@ -694,44 +656,32 @@ drawsplinepoly(void *fp, int smooth, int op)
 		unlockdisplay(d->display);
 }
 
-void
-Image_poly(void *fp)
+DISAPI(Image_poly)
 {
-	drawsplinepoly(fp, 0, SoverD);
+	drawsplinepoly(f, 0, SoverD);
 }
 
-void
-Image_polyop(void *fp)
+DISAPI(Image_polyop)
 {
-	F_Image_polyop *f;
-
-	f = fp;
-	drawsplinepoly(fp, 0, f->op);
+	drawsplinepoly((F_Image_poly*)f, 0, (Drawop)f->op);
 }
 
-void
-Image_bezspline(void *fp)
+DISAPI(Image_bezspline)
 {
-	drawsplinepoly(fp, 1, SoverD);
+	drawsplinepoly((F_Image_poly*)f, 1, SoverD);
 }
 
-void
-Image_bezsplineop(void *fp)
+DISAPI(Image_bezsplineop)
 {
-	F_Image_bezsplineop *f;
-
-	f = fp;
-	drawsplinepoly(fp, 1, f->op);
+	drawsplinepoly((F_Image_poly*)f, 1, (Drawop)f->op);
 }
 
 static void
-drawbezier(void *fp, int op)
+drawbezier(F_Image_bezier *f, Drawop op)
 {
-	F_Image_bezier *f;
 	Image *d, *s;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->dst);
 	s = checkimage(f->src);
 	if(d->display != s->display || f->radius < 0)
@@ -744,29 +694,22 @@ drawbezier(void *fp, int op)
 		unlockdisplay(d->display);
 }
 
-void
-Image_bezier(void *fp)
+DISAPI(Image_bezier)
 {
-	drawbezier(fp, SoverD);
+	drawbezier(f, SoverD);
 }
 
-void
-Image_bezierop(void *fp)
+DISAPI(Image_bezierop)
 {
-	F_Image_bezierop *f;
-
-	f = fp;
-	drawbezier(fp, f->op);
+	drawbezier((F_Image_bezier*)f, (Drawop)f->op);
 }
 
 static void
-drawfillbezier(void *fp, int op)
+drawfillbezier(F_Image_fillbezier *f, Drawop op)
 {
-	F_Image_fillbezier *f;
 	Image *d, *s;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->dst);
 	s = checkimage(f->src);
 	if(d->display != s->display)
@@ -779,29 +722,22 @@ drawfillbezier(void *fp, int op)
 		unlockdisplay(d->display);
 }
 
-void
-Image_fillbezier(void *fp)
+DISAPI(Image_fillbezier)
 {
-	drawfillbezier(fp, SoverD);
+	drawfillbezier(f, SoverD);
 }
 
-void
-Image_fillbezierop(void *fp)
+DISAPI(Image_fillbezierop)
 {
-	F_Image_fillbezierop *f;
-
-	f = fp;
-	drawfillbezier(fp, f->op);
+	drawfillbezier((F_Image_fillbezier*)f, (Drawop)f->op);
 }
 
 static void
-drawfillsplinepoly(void *fp, int smooth, int op)
+drawfillsplinepoly(F_Image_fillpoly *f, int smooth, Drawop op)
 {
-	F_Image_fillpoly *f;
 	Image *d, *s;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->dst);
 	s = checkimage(f->src);
 	if(d->display != s->display)
@@ -819,44 +755,32 @@ drawfillsplinepoly(void *fp, int smooth, int op)
 		unlockdisplay(d->display);
 }
 
-void
-Image_fillpoly(void *fp)
+DISAPI(Image_fillpoly)
 {
-	drawfillsplinepoly(fp, 0, SoverD);
+	drawfillsplinepoly(f, 0, SoverD);
 }
 
-void
-Image_fillpolyop(void *fp)
+DISAPI(Image_fillpolyop)
 {
-	F_Image_fillpolyop *f;
-
-	f = fp;
-	drawfillsplinepoly(fp, 0, f->op);
+	drawfillsplinepoly((F_Image_fillpoly*)f, 0, (Drawop)f->op);
 }
 
-void
-Image_fillbezspline(void *fp)
+DISAPI(Image_fillbezspline)
 {
-	drawfillsplinepoly(fp, 1, SoverD);
+	drawfillsplinepoly((F_Image_fillpoly*)f, 1, SoverD);
 }
 
-void
-Image_fillbezsplineop(void *fp)
+DISAPI(Image_fillbezsplineop)
 {
-	F_Image_fillbezsplineop *f;
-
-	f = fp;
-	drawfillsplinepoly(fp, 1, f->op);
+	drawfillsplinepoly((F_Image_fillpoly*)f, 1, (Drawop)f->op);
 }
 
 static void
-drawarcellipse(void *fp, int isarc, int alpha, int phi, int op)
+drawarcellipse(F_Image_arc *f, int isarc, int alpha, int phi, Drawop op)
 {
-	F_Image_arc *f;
 	Image *d, *s;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->dst);
 	s = checkimage(f->src);
 	if(d->display != s->display || f->thick < 0 || f->a<0 || f->b<0)
@@ -874,47 +798,32 @@ drawarcellipse(void *fp, int isarc, int alpha, int phi, int op)
 		unlockdisplay(d->display);
 }
 
-void
-Image_ellipse(void *fp)
+DISAPI(Image_ellipse)
 {
-	drawarcellipse(fp, 0, 0, 0, SoverD);
+	drawarcellipse((F_Image_arc*)f, 0, 0, 0, SoverD);
 }
 
-void
-Image_ellipseop(void *fp)
+DISAPI(Image_ellipseop)
 {
-	F_Image_ellipseop *f;
-
-	f = fp;
-	drawarcellipse(fp, 0, 0, 0, f->op);
+	drawarcellipse((F_Image_arc*)f, 0, 0, 0, (Drawop)f->op);
 }
 
-void
-Image_arc(void *fp)
+DISAPI(Image_arc)
 {
-	F_Image_arc *f;
-
-	f = fp;
-	drawarcellipse(fp, 1, f->alpha, f->phi, SoverD);
+	drawarcellipse(f, 1, f->alpha, f->phi, SoverD);
 }
 
-void
-Image_arcop(void *fp)
+DISAPI(Image_arcop)
 {
-	F_Image_arcop *f;
-
-	f = fp;
-	drawarcellipse(fp, 1, f->alpha, f->phi, f->op);
+	drawarcellipse((F_Image_arc*)f, 1, f->alpha, f->phi, (Drawop)f->op);
 }
 
 static void
-drawfillarcellipse(void *fp, int isarc, int alpha, int phi, int op)
+drawfillarcellipse(F_Image_fillarc *f, int isarc, int alpha, int phi, Drawop op)
 {
-	F_Image_fillarc *f;
 	Image *d, *s;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->dst);
 	s = checkimage(f->src);
 	if(d->display != s->display || f->a<0 || f->b<0)
@@ -930,50 +839,35 @@ drawfillarcellipse(void *fp, int isarc, int alpha, int phi, int op)
 		unlockdisplay(d->display);
 }
 
-void
-Image_fillellipse(void *fp)
+DISAPI(Image_fillellipse)
 {
-	drawfillarcellipse(fp, 0, 0, 0, SoverD);
+	drawfillarcellipse((F_Image_fillarc*)f, 0, 0, 0, SoverD);
 }
 
-void
-Image_fillellipseop(void *fp)
+DISAPI(Image_fillellipseop)
 {
-	F_Image_fillellipseop *f;
-
-	f = fp;
-	drawfillarcellipse(fp, 0, 0, 0, f->op);
+	drawfillarcellipse((F_Image_fillarc*)f, 0, 0, 0, (Drawop)f->op);
 }
 
-void
-Image_fillarc(void *fp)
+DISAPI(Image_fillarc)
 {
-	F_Image_fillarc *f;
-
-	f = fp;
-	drawfillarcellipse(fp, 1, f->alpha, f->phi, SoverD);
+	drawfillarcellipse(f, 1, f->alpha, f->phi, SoverD);
 }
 
-void
-Image_fillarcop(void *fp)
+DISAPI(Image_fillarcop)
 {
-	F_Image_fillarcop *f;
-
-	f = fp;
-	drawfillarcellipse(fp, 1, f->alpha, f->phi, f->op);
+	drawfillarcellipse((F_Image_fillarc*)f, 1, f->alpha, f->phi, (Drawop)f->op);
 }
 
 static void
-drawtext(void *fp, int op)
+drawtext(F_Image_text *f, Drawop op)
 {
-	F_Image_text *f;
 	Font *font;
 	Point pt;
 	Image *s, *d;
 	String *str;
 	int locked;
 
-	f = fp;
 	if(f->dst == H || f->src == H)
 		goto Return;
 	if(f->font == H || f->str == H)
@@ -996,32 +890,25 @@ drawtext(void *fp, int op)
 	P2P(*f->ret, pt);
 }
 
-void
-Image_text(void *fp)
+DISAPI(Image_text)
 {
-	drawtext(fp, SoverD);
+	drawtext(f, SoverD);
 }
 
-void
-Image_textop(void *fp)
+DISAPI(Image_textop)
 {
-	F_Image_textop *f;
-
-	f = fp;
-	drawtext(fp, f->op);
+	drawtext((F_Image_text *)f, (Drawop)f->op);
 }
 
 static void
-drawtextbg(void *fp, int op)
+drawtextbg(F_Image_textbg *f, Drawop op)
 {
-	F_Image_textbg *f;
 	Font *font;
 	Point pt;
 	Image *s, *d, *bg;
 	String *str;
 	int locked;
 
-	f = fp;
 	if(f->dst == H || f->src == H)
 		goto Return;
 	if(f->font == H || f->str == H)
@@ -1045,29 +932,22 @@ drawtextbg(void *fp, int op)
 	P2P(*f->ret, pt);
 }
 
-void
-Image_textbg(void *fp)
+DISAPI(Image_textbg)
 {
-	drawtextbg(fp, SoverD);
+	drawtextbg(f, SoverD);
 }
 
-void
-Image_textbgop(void *fp)
+DISAPI(Image_textbgop)
 {
-	F_Image_textbgop *f;
-
-	f = fp;
-	drawtextbg(fp, f->op);
+	drawtextbg((F_Image_textbg *)f, (Drawop)f->op);
 }
 
 static void
-drawborder(void *fp, int op)
+drawborder(F_Image_border *f, Drawop op)
 {
-	F_Image_border *f;
 	Image *d, *s;
 	int locked;
 
-	f = fp;
 	d = checkimage(f->dst);
 	s = checkimage(f->src);
 	if(d->display != s->display)
@@ -1079,23 +959,19 @@ drawborder(void *fp, int op)
 		unlockdisplay(d->display);
 }
 
-void
-Image_border(void *fp)
+DISAPI(Image_border)
 {
-	drawborder(fp, SoverD);
+	drawborder(f, SoverD);
 }
 
-void
-Display_newimage(void *fp)
+DISAPI(Display_newimage)
 {
-	F_Display_newimage *f;
 	Display *d;
 	int locked;
 
-	f = fp;
 	d = checkdisplay(f->d);
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Image*)H;
 	locked = lockdisplay(d);
 	*f->ret = allocdrawimage((DDisplay*)f->d, f->r, f->chans.desc,
 				nil, f->repl, f->color);
@@ -1103,34 +979,28 @@ Display_newimage(void *fp)
 		unlockdisplay(d);
 }
 
-void
-Display_colormix(void *fp)
+DISAPI(Display_colormix)
 {
-	F_Display_colormix *f;
 	Display *disp;
 	Image *i;
 	int locked;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Image*)H;
 	disp = checkdisplay(f->d);
 	locked = lockdisplay(disp);
 	i = allocimagemix(disp, f->c1, f->c2);
 	if(locked)
 		unlockdisplay(disp);
-	*f->ret = mkdrawimage(i, H, f->d, nil);
+	*f->ret = mkdrawimage(i, (Draw_Screen*)H, f->d, nil);
 }
 
-void
-Image_readpixels(void *fp)
+DISAPI(Image_readpixels)
 {
-	F_Image_readpixels *f;
 	Rectangle r;
 	Image *i;
 	int locked;
 
-	f = fp;
 	R2R(r, f->r);
 	i = checkimage(f->src);
 	locked = lockdisplay(i->display);
@@ -1139,15 +1009,12 @@ Image_readpixels(void *fp)
 		unlockdisplay(i->display);
 }
 
-void
-Image_writepixels(void *fp)
+DISAPI(Image_writepixels)
 {
 	Rectangle r;
-	F_Image_writepixels *f;
 	Image *i;
 	int locked;
 
-	f = fp;
 	R2R(r, f->r);
 	i = checkimage(f->dst);
 	locked = lockdisplay(i->display);
@@ -1157,24 +1024,17 @@ Image_writepixels(void *fp)
 		unlockdisplay(i->display);
 }
 
-void
-Image_arrow(void *fp)
+DISAPI(Image_arrow)
 {
-	F_Image_arrow *f;
-
-	f = fp;
 	*f->ret = ARROW(f->a, f->b, f->c);
 }
 
-void
-Image_name(void *fp)
+DISAPI(Image_name)
 {
-	F_Image_name *f;
 	Image *i;
 	int locked, ok;
 	char *name;
 
-	f = fp;
 	*f->ret = -1;
 	i = checkimage(f->src);
 	name = string2c(f->name);
@@ -1188,12 +1048,12 @@ Image_name(void *fp)
 			f->src->iname = f->name;
 			ADDREF(f->name);
 		}else
-			f->src->iname = H;
+			f->src->iname = (String*)H;
 	}
 }
 
 Image*
-display_open(Display *disp, char *name)
+display_open(Display *disp, const char *name)
 {
 	Image *i;
 	int fd;
@@ -1207,16 +1067,13 @@ display_open(Display *disp, char *name)
 	return i;
 }
 
-void
-Display_open(void *fp)
+DISAPI(Display_open)
 {
 	Image *i;
 	Display *disp;
-	F_Display_open *f;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Image*)H;
 	disp = lookupdisplay(f->d);
 	if(disp == nil)
 		return;
@@ -1226,18 +1083,15 @@ Display_open(void *fp)
 	*f->ret = allocdrawimage((DDisplay*)f->d, DRECT(i->r), i->chan, i, 0, 0);
 }
 
-void
-Display_namedimage(void *fp)
+DISAPI(Display_namedimage)
 {
-	F_Display_namedimage *f;
 	Display *d;
 	Image *i;
 	Draw_Image *di;
 	int locked;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Image*)H;
 	d = checkdisplay(f->d);
 	locked = lockdisplay(d);
 	i = namedimage(d, string2c(f->name));
@@ -1258,18 +1112,15 @@ Display_namedimage(void *fp)
 	}
 }
 
-void
-Display_readimage(void *fp)
+DISAPI(Display_readimage)
 {
 	Image *i;
 	Display *disp;
-	F_Display_readimage *f;
 	Sys_FD *fd;
 	int locked;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Image*)H;
 	fd = f->fd;
 	if(fd == H)
 		return;
@@ -1286,14 +1137,11 @@ Display_readimage(void *fp)
 	}
 }
 
-void
-Display_writeimage(void *fp)
+DISAPI(Display_writeimage)
 {
 	Image *i;
-	F_Display_writeimage *f;
 	Sys_FD *fd;
 
-	f = fp;
 	*f->ret = -1;
 	fd = f->fd;
 	if(fd == H)
@@ -1311,8 +1159,8 @@ mkdrawscreen(Screen *s, Draw_Display *display)
 	DScreen *ds;
 	Draw_Image *dimage, *dfill;
 
-	dimage = mkdrawimage(s->image, H, display, nil);
-	dfill = mkdrawimage(s->fill, H, display, nil);
+	dimage = mkdrawimage(s->image, (Draw_Screen*)H, display, nil);
+	dfill = mkdrawimage(s->fill, (Draw_Screen*)H, display, nil);
 	h = heap(TScreen);
 	if(h == H)
 		return nil;
@@ -1360,17 +1208,14 @@ allocdrawscreen(Draw_Image *dimage, Draw_Image *dfill, int public)
 	return ds;
 }
 
-void
-Screen_allocate(void *fp)
+DISAPI(Screen_allocate)
 {
-	F_Screen_allocate *f;
 	DScreen *ds;
 	Image *image;
 	int locked;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Screen*)H;
 	image = checkimage(f->image);
 	checkimage(f->fill);
 	locked = lockdisplay(image->display);
@@ -1381,19 +1226,16 @@ Screen_allocate(void *fp)
 		unlockdisplay(image->display);
 }
 
-void
-Display_publicscreen(void *fp)
+DISAPI(Display_publicscreen)
 {
-	F_Display_publicscreen *f;
 	Heap *h;
 	Screen *s;
 	DScreen *ds;
 	Display *disp;
 	int locked;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Screen*)H;
 	disp = checkdisplay(f->d);
 	locked = lockdisplay(disp);
 	s = publicscreen(disp, f->id, disp->image->chan);
@@ -1406,8 +1248,8 @@ Display_publicscreen(void *fp)
 		return;
 	ds = H2D(DScreen*, h);
 	ds->screen = s;
-	ds->drawscreen.fill = H;
-	ds->drawscreen.image =H;
+	ds->drawscreen.fill = (Draw_Image*)H;
+	ds->drawscreen.image = (Draw_Image*)H;
 	ds->drawscreen.id = s->id;
 	ds->drawscreen.display = f->d;
 	ADDREF(f->d);
@@ -1445,10 +1287,8 @@ freedrawscreen(Heap *h, int swept)
 	/* screen header will be freed by caller */
 }
 
-void
-Font_build(void *fp)
+DISAPI(Font_build)
 {
-	F_Font_build *f;
 	Font *font;
 	DFont *dfont;
 	Heap *h;
@@ -1458,9 +1298,8 @@ Font_build(void *fp)
 	Display *disp;
 	int locked;
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Font*)H;
 	disp = checkdisplay(f->d);
 
 	name = string2c(f->name);
@@ -1625,19 +1464,15 @@ freesubfont(Subfont *sf)
 	freecachedsubfont(sf);
 }
 
-void
-Font_open(void *fp)
+DISAPI(Font_open)
 {
 	Heap *h;
 	Font *font;
 	Display *disp;
 	DFont *df;
-	F_Font_open *f;
-
-	f = fp;
 
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (Draw_Font*)H;
 	disp = checkdisplay(f->d);
 
 	font = font_open(disp, string2c(f->name));
@@ -1661,15 +1496,12 @@ Font_open(void *fp)
 	*f->ret = &df->drawfont;
 }
 
-void
-Font_width(void *fp)
+DISAPI(Font_width)
 {
-	F_Font_width *f;
 	Font *font;
 	char *s;
 	int locked;
 
-	f = fp;
 	s = string2c(f->str);
 	if(f->f == H || s[0]=='\0')
 		*f->ret = 0;
@@ -1682,14 +1514,11 @@ Font_width(void *fp)
 	}
 }
 
-void
-Font_bbox(void *fp)
+DISAPI(Font_bbox)
 {
-	F_Font_bbox *f;
 	Draw_Rect *ret;
 
 	/* place holder for the real thing */
-	f = fp;
 	ret = f->ret;
 	ret->min.x = ret->min.y = 0;
 	ret->max.x = ret->max.y = 0;
@@ -1715,43 +1544,28 @@ freedrawfont(Heap*h, int swept)
 	display_dec(((DFont*)d)->dref);
 }
 
-void
-Chans_text(void *fp)
+DISAPI(Chans_text)
 {
-	F_Chans_text *f;
 	char buf[16];
 
-	f = fp;
 	destroy(*f->ret);
-	*f->ret = H;
+	*f->ret = (String*)H;
 	if(chantostr(buf, f->c.desc) != nil)
 		retstr(buf, f->ret);
 }
 
-void
-Chans_depth(void *fp)
+DISAPI(Chans_depth)
 {
-	F_Chans_depth *f;
-
-	f = fp;
 	*f->ret = chantodepth(f->c.desc);
 }
 
-void
-Chans_eq(void *fp)
+DISAPI(Chans_eq)
 {
-	F_Chans_eq *f;
-
-	f = fp;
 	*f->ret = f->c.desc == f->d.desc;
 }
 
-void
-Chans_mk(void *fp)
+DISAPI(Chans_mk)
 {
-	F_Chans_mk *f;
-
-	f = fp;
 	f->ret->desc = strtochan(string2c(f->s));
 }
 
@@ -1759,11 +1573,8 @@ Chans_mk(void *fp)
 #define RGB2K(r,g,b)	((156763*(r)+307758*(g)+59769*(b))>>19)
 
 // todo: fast versions for known often used Chans
-void
-Chans_pack(void *fp)
+DISAPI(Chans_pack)
 {
-	F_Chans_pack * const f = fp;
-
 	ulong chan;
 	int d=0, nb;
 	ulong v=0;
@@ -1800,11 +1611,8 @@ Chans_pack(void *fp)
 	*f->ret = v;
 }
 
-void
-Chans_unpack(void *fp)
+DISAPI(Chans_unpack)
 {
-	F_Chans_unpack * const f = fp;
-
 	uchar r=0xAA, g=0xAA, b=0xAA, a=0xFF; /* garbage */
 	int nb, ov, v;
 	ulong chan, m, val = f->bits;
@@ -1850,18 +1658,15 @@ Chans_unpack(void *fp)
 	f->ret->t3 = a;
 }
 
-void
-Display_rgb(void *fp)
+DISAPI(Display_rgb)
 {
 	ulong c;
 	Display *disp;
-	F_Display_rgb *f;
 	int locked;
 	void *r;
 
-	f = fp;
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (Draw_Image*)H;
 	destroy(r);
 	disp = checkdisplay(f->d);
 
@@ -1873,23 +1678,16 @@ Display_rgb(void *fp)
 		unlockdisplay(disp);
 }
 
-void
-Display_rgb2cmap(void *fp)
+DISAPI(Display_rgb2cmap)
 {
-	F_Display_rgb2cmap *f;
-
-	f = fp;
 	/* f->display is unused, but someday may have color map */
 	*f->ret = rgb2cmap(f->r, f->g, f->b);
 }
 
-void
-Display_cmap2rgb(void *fp)
+DISAPI(Display_cmap2rgb)
 {
-	F_Display_cmap2rgb *f;
 	ulong c;
 
-	f = fp;
 	/* f->display is unused, but someday may have color map */
 	c = cmap2rgb(f->c);
 	f->ret->t0 = (c>>16)&0xFF;
@@ -1897,55 +1695,37 @@ Display_cmap2rgb(void *fp)
 	f->ret->t2 = (c>>0)&0xFF;
 }
 
-void
-Display_cmap2rgba(void *fp)
+DISAPI(Display_cmap2rgba)
 {
-	F_Display_cmap2rgba *f;
-
-	f = fp;
 	/* f->display is unused, but someday may have color map */
 	*f->ret = cmap2rgba(f->c);
 }
 
-void
-Draw_setalpha(void *fp)
+DISAPI(Draw_setalpha)
 {
-	F_Draw_setalpha *f;
-
-	f = fp;
 	*f->ret = setalpha(f->c, f->a);
 }
 
-void
-Draw_icossin(void *fp)
+DISAPI(Draw_icossin)
 {
-	F_Draw_icossin *f;
 	int s, c;
 
-	f = fp;
 	icossin(f->deg, &s, &c);
 	f->ret->t0 = s;
 	f->ret->t1 = c;
 }
 
-void
-Draw_icossin2(void *fp)
+DISAPI(Draw_icossin2)
 {
-	F_Draw_icossin2 *f;
 	int s, c;
 
-	f = fp;
 	icossin2(f->p.x, f->p.y, &s, &c);
 	f->ret->t0 = s;
 	f->ret->t1 = c;
 }
 
-void
-Draw_bytesperline(void *fp)
+DISAPI(Draw_bytesperline)
 {
-	F_Draw_bytesperline *f;
-
-	f = fp;
 	*f->ret = bytesperline(IRECT(f->r), f->d);
 }
 
@@ -1971,7 +1751,7 @@ mkdrawimage(Image *i, Draw_Screen *screen, Draw_Display *display, void *ref)
 
 	h = heap(TImage);
 	if(h == H)
-		return H;
+		return (Draw_Image*)H;
 
 	di = H2D(DImage*, h);
 	di->image = i;
@@ -1994,17 +1774,14 @@ mkdrawimage(Image *i, Draw_Screen *screen, Draw_Display *display, void *ref)
 	return &di->drawimage;
 }
 
-void
-Screen_newwindow(void *fp)
+DISAPI(Screen_newwindow)
 {
-	F_Screen_newwindow *f;
 	Image *i;
 	Screen *s;
 	Rectangle r;
 	int locked;
 	void *v;
 
-	f = fp;
 	s = checkscreen(f->screen);
 	R2R(r, f->r);
 
@@ -2018,7 +1795,7 @@ Screen_newwindow(void *fp)
 		f->backing = Refbackup;
 
 	v = *f->ret;
-	*f->ret = H;
+	*f->ret = (Draw_Image*)H;
 	destroy(v);
 
 	locked = lockdisplay(s->display);
@@ -2042,7 +1819,7 @@ screentopbot(Draw_Screen *screen, Array *array, void (*topbot)(Image **, int))
 
 	s = checkscreen(screen);
 	di = (Draw_Image**)array->data;
-	ip = malloc(array->len * sizeof(Image*));
+	ip = (Image **)malloc(array->len * sizeof(Image*));
 	if(ip == nil)
 		return;
 	n = 0;
@@ -2067,19 +1844,13 @@ screentopbot(Draw_Screen *screen, Array *array, void (*topbot)(Image **, int))
 		unlockdisplay(s->display);
 }
 
-void
-Screen_top(void *fp)
+DISAPI(Screen_top)
 {
-	F_Screen_top *f;
-	f = fp;
 	screentopbot(f->screen, f->wins, topnwindows);
 }
 
-void
-Screen_bottom(void *fp)
+DISAPI(Screen_bottom)
 {
-	F_Screen_top *f;
-	f = fp;
 	screentopbot(f->screen, f->wins, bottomnwindows);
 }
 
@@ -2107,14 +1878,11 @@ freedrawimage(Heap *h, int swept)
 	/* image/layer header will be freed by caller */
 }
 
-void
-Image_top(void *fp)
+DISAPI(Image_top)
 {
-	F_Image_top *f;
 	Image *i;
 	int locked;
 
-	f = fp;
 	i = checkimage(f->win);
 	locked = lockdisplay(i->display);
 	topwindow(i);
@@ -2123,14 +1891,11 @@ Image_top(void *fp)
 		unlockdisplay(i->display);
 }
 
-void
-Image_origin(void *fp)
+DISAPI(Image_origin)
 {
-	F_Image_origin *f;
 	Image *i;
 	int locked;
 
-	f = fp;
 	i = checkimage(f->win);
 	locked = lockdisplay(i->display);
 	if(originwindow(i, IPOINT(f->log), IPOINT(f->scr)) < 0)
@@ -2144,14 +1909,11 @@ Image_origin(void *fp)
 		unlockdisplay(i->display);
 }
 
-void
-Image_bottom(void *fp)
+DISAPI(Image_bottom)
 {
-	F_Image_top *f;
 	Image *i;
 	int locked;
 
-	f = fp;
 	i = checkimage(f->win);
 	locked = lockdisplay(i->display);
 	bottomwindow(i);
@@ -2173,14 +1935,14 @@ allocdrawimage(DDisplay *ddisplay, Draw_Rect r, ulong chan, Image *iimage, int r
 		R2R(rr, r);
 		image = allocimage(ddisplay->display, rr, chan, repl, color);
 		if(image == nil)
-			return H;
+			return (Draw_Image*)H;
 	}
 
 	h = heap(TImage);
 	if(h == H){
 		if(iimage == nil)
 			freeimage(image);
-		return H;
+		return (Draw_Image*)H;
 	}
 
 	di = H2D(DImage*, h);
@@ -2191,7 +1953,7 @@ allocdrawimage(DDisplay *ddisplay, Draw_Rect r, ulong chan, Image *iimage, int r
 	di->drawimage.repl = repl;
 	di->drawimage.display = (Draw_Display*)ddisplay;
 	ADDREF(di->drawimage.display);
-	di->drawimage.screen = H;
+	di->drawimage.screen = (Draw_Screen*)H;
 	di->dref = ddisplay->display->limbo;
 	di->dref->ref++;
 	di->image = image;
@@ -2314,7 +2076,7 @@ doflush(Display *d)
 {
 	int m, n;
 	char err[ERRMAX];
-	uchar *tp;
+	char *tp;
 
 	n = d->bufp-d->buf;
 	if(n <= 0)
@@ -2329,7 +2091,7 @@ doflush(Display *d)
 		if(_drawdebug || strcmp(err, "screen id in use") != 0 && strcmp(err, exImage) != 0){
 			print("flushimage fail: (%d not %d) d=%lux: %s\nbuffer: ", m, n, (ulong)d, err);
 			for(tp = d->buf; tp < d->bufp; tp++)
-				print("%.2x ", (int)*tp);
+				print("%.2x ", (uchar)*tp);
 			print("\n");
 		}
 		d->bufp = d->buf;	/* might as well; chance of continuing */
@@ -2412,7 +2174,7 @@ queuerefresh(Image *i, Rectangle r, Reffn reffn, void *refptr)
 	Refreshq *rq;
 
 	d = i->display;
-	rq = malloc(sizeof(Refreshq));
+	rq = (Refreshq *)malloc(sizeof(Refreshq));
 	if(rq == nil)
 		return;
 	if(d->reftail)
@@ -2425,10 +2187,10 @@ queuerefresh(Image *i, Rectangle r, Reffn reffn, void *refptr)
 	rq->r = r;
 }
 
-uchar*
+char*
 bufimage(Display *d, int n)
 {
-	uchar *p;
+	char *p;
 
 	if(n<0 || n>Displaybufsize){
 		kwerrstr("bad count in bufimage");

@@ -1,7 +1,12 @@
-#include <lib9.h>
-#include <kernel.h>
+#include "lib9.h"
+#include "kernel.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "canvs.h"
 
 /* Widget Commands (+ means implemented)
@@ -61,7 +66,7 @@ TkOption opts[] =
 {
 	"closeenough",		OPTfrac,	offsetof(TkCanvas, close),	nil,
 	"confine",		OPTfrac,	offsetof(TkCanvas, confine),	nil,
-	"scrollregion",		OPTfrac,	offsetof(TkCanvas, scrollr),	IAUX(4),
+	"scrollregion",		OPTfrac,	offsetof(TkCanvas, scrollr),	(TkStab*)4,
 	"xscrollincrement",	OPTfrac,	offsetof(TkCanvas, xscrolli),	nil,
 	"yscrollincrement",	OPTfrac,	offsetof(TkCanvas, yscrolli),	nil,
 	"xscrollcommand",	OPTtext,	offsetof(TkCanvas, xscroll),	nil,
@@ -232,7 +237,7 @@ tkcvsfocusorder(Tk *tk)
 	if (n == 0)
 		return;
 
-	inf = malloc(sizeof(*inf) * n);
+	inf = (TkWinfo *)malloc(sizeof(*inf) * n);
 	if (inf == nil)
 		return;
 
@@ -351,7 +356,7 @@ tkfreecanv(Tk *tk)
 	for(j = 0; j < TkChash; j++) {
 		for(n = c->thash[j]; n; n = nn) {
 			nn = n->link;
-			for(t = n->obj; t; t = tt) {
+			for(t = (TkCtag *)n->obj; t; t = tt) {
 				tt = t->taglist;
 				free(t);
 			}
@@ -611,7 +616,7 @@ tkcvstags(Tk *tk, char *arg, char **val, int af)
 		if(f == nil)
 			return TkBadtg;
 
-		t = tkclasttag(c->head, f->obj);
+		t = tkclasttag(c->head, (TkCtag *)f->obj);
 		if(t == nil)
 			return TkBadtg;
 
@@ -655,7 +660,7 @@ tkcvstags(Tk *tk, char *arg, char **val, int af)
 		f = tkctaglook(tk, nil, buf);
 		if(f == nil)
 			return TkBadtg;
-		tt = f->obj;
+		tt = (TkCtag *)f->obj;
 		for(b = c->head; b; b = b->next) {
 			for(t = tt; t; t = t->itemlist)
 				if(t->item == b)
@@ -721,7 +726,7 @@ tkcvstags(Tk *tk, char *arg, char **val, int af)
 		f = tkctaglook(tk, nil, buf);
 		if(f == nil)
 			return TkBadtg;
-		for(t = f->obj; t; t = t->taglist) {
+		for(t = (TkCtag *)f->obj; t; t = t->taglist) {
 			i = t->item;
 			if(af == TkCadd) {
 				i->tags = tkmkname(tag);
@@ -841,7 +846,7 @@ tksweepcanv(Tk *tk)
 		for(n = *np; n != nil; n = nn) {
 			nn = n->link;
 			if(n->ref == 0) {
-				for(t = n->obj; t != nil; t = tt) {
+				for(t = (TkCtag *)n->obj; t != nil; t = tt) {
 					tt = t->taglist;
 					free(t);
 				}
@@ -897,7 +902,7 @@ tkcvsgrab(Tk *tk, char *arg, char **val)
 			return TkBadtg;
 
 		c = TKobj(TkCanvas, tk);
-		t = tkcfirsttag(c->head, f->obj);
+		t = tkcfirsttag(c->head, (TkCtag *)f->obj);
 		if(t == nil)
 			return TkBadtg;
 		c->grab = t->item;
@@ -946,7 +951,7 @@ tkcvsbind(Tk *tk, char *arg, char **val)
 
 	arg = tkskip(arg, " \t");
 	if(*arg == '\0') {
-		for(t = f->obj; t; t = t->taglist) {
+		for(t = (TkCtag *)f->obj; t; t = t->taglist) {
 			for(a = t->name->prop.binds; a; a = a->link)
 				if(event == a->event)
 					return tkvalue(val, "%s", a->arg);
@@ -1007,7 +1012,7 @@ tkcvsbbox(Tk *tk, char *arg, char **val)
 		f = tkctaglook(tk, nil, buf);
 		if(f == nil)
 			return TkBadtg;
-		for(t = f->obj; t; t = t->taglist)
+		for(t = (TkCtag *)f->obj; t; t = t->taglist)
 			tkbbmax(&bb, &t->item->p.bb);
 	}
 	return tkvalue(val, "%d %d %d %d", bb.min.x, bb.min.y, bb.max.x, bb.max.y);
@@ -1126,7 +1131,7 @@ tkcvscoords(Tk *tk, char *arg, char **val)
 
 	c = TKobj(TkCanvas, tk);
 
-	t = tkcfirsttag(c->head, f->obj);
+	t = tkcfirsttag(c->head, (TkCtag *)f->obj);
 	if(t == nil)
 		return TkBadtg;
 
@@ -1186,7 +1191,7 @@ tkcvsscale(Tk *tk, char *arg, char **val)
 	origin = pts.parampt[0];
 	scalef = pts.parampt[1];
 	tkfreepoint(&pts);
-	for(t = f->obj; t; t = t->taglist) {
+	for(t = (TkCtag *)f->obj; t; t = t->taglist) {
 		item = t->item;
 		p = item->p.parampt;
 		d = item->p.drawpt;
@@ -1260,9 +1265,9 @@ tkcvsdtag(Tk *tk, char *arg, char **val)
 			return TkBadtg;
 	}
 
-	for(t = f->obj; t; t = t->taglist) {
+	for(t = (TkCtag *)f->obj; t; t = t->taglist) {
 		l = (TkCtag **)&dt->obj;
-		for(it = dt->obj; it; it = it->taglist) {
+		for(it = (TkCtag *)dt->obj; it; it = it->taglist) {
 			if(t->item == it->item) {
 				*l = it->taglist;
 				l = &t->item->stag;
@@ -1296,7 +1301,7 @@ tkcvsdchars(Tk *tk, char *arg, char **val)
 	if(f == nil || f->obj == nil)
 		return TkBadtg;
 
-	for(t = f->obj; t; t = t->taglist) {
+	for(t = (TkCtag *)f->obj; t; t = t->taglist) {
 		if(t->item->type == TkCVtext) {
 			e = tkcvstextdchar(tk, t->item, arg);
 			if(e != nil)
@@ -1321,7 +1326,7 @@ tkcvsindex(Tk *tk, char *arg, char **val)
 	if(f == nil || f->obj == nil)
 		return TkBadtg;
 
-	for(t = f->obj; t; t = t->taglist) {
+	for(t = (TkCtag *)f->obj; t; t = t->taglist) {
 		if(t->item->type == TkCVtext) {
 			e = tkcvstextindex(tk, t->item, arg, val);
 			if(e != nil)
@@ -1346,7 +1351,7 @@ tkcvsicursor(Tk *tk, char *arg, char **val)
 	if(f == nil || f->obj == nil)
 		return TkBadtg;
 
-	for(t = f->obj; t; t = t->taglist) {
+	for(t = (TkCtag *)f->obj; t; t = t->taglist) {
 		if(t->item->type == TkCVtext) {
 			e = tkcvstexticursor(tk, t->item, arg);
 			if(e != nil)
@@ -1371,7 +1376,7 @@ tkcvsinsert(Tk *tk, char *arg, char **val)
 	if(f == nil || f->obj == nil)
 		return TkBadtg;
 
-	for(t = f->obj; t; t = t->taglist) {
+	for(t = (TkCtag *)f->obj; t; t = t->taglist) {
 		if(t->item->type == TkCVtext) {
 			e = tkcvstextinsert(tk, t->item, arg);
 			if(e != nil)
@@ -1420,7 +1425,7 @@ tkcvsselect(Tk *tk, char *arg, char **val)
 	if(f == nil)
 		return TkBadtg;
 
-	t = tkcfirsttag(c->head, f->obj);
+	t = tkcfirsttag(c->head, (TkCtag *)f->obj);
 	if(t == nil)
 		return TkBadtg;
 
@@ -1441,7 +1446,7 @@ tkcvsitemcget(Tk *tk, char *arg, char **val)
 		return TkBadtg;
 
 	for(i = TKobj(TkCanvas, tk)->head; i; i = i->next) {
-		for(t = f->obj; t; t = t->taglist)
+		for(t = (TkCtag *)f->obj; t; t = t->taglist)
 			if(i == t->item)
 				return tkcimethod[i->type].cget(i, arg, val);
 	}
@@ -1465,7 +1470,7 @@ tkcvsitemconf(Tk *tk, char *arg, char **val)
 		return TkBadtg;
 
 	c = TKobj(TkCanvas, tk);
-	for(t = f->obj; t; t = t->taglist) {
+	for(t = (TkCtag *)f->obj; t; t = t->taglist) {
 		for(i = c->head; i; i = i->next) {
 			if(i == t->item) {
 				tkbbmax(&c->update, &i->p.bb);
@@ -1526,7 +1531,7 @@ tkcvsdelete(Tk *tk, char *arg, char **val)
 		if(f == nil || f->obj == nil)
 			return nil;
 		while(f->obj) {
-			t = f->obj;
+			t = (TkCtag *)f->obj;
 			item = t->item;
 			for(it = item->stag; it; it = inext) {
 				inext = it->itemlist;
@@ -1605,7 +1610,7 @@ tkcvsfocus(Tk *tk, char *arg, char **val)
 
 	for(i = c->head; i; i = i->next) {
 		if(i->type == TkCVtext || i->type == TkCVwindow) {
-			for(t = f->obj; t; t = t->taglist)
+			for(t = (TkCtag *)f->obj; t; t = t->taglist)
 				if(t->item == i)
 					focus = i;
 		}
@@ -1635,7 +1640,7 @@ tkcvsgettags(Tk *tk, char *arg, char **val)
 		return TkBadtg;
 
 	c = TKobj(TkCanvas, tk);
-	t = tkclasttag(c->head, f->obj);
+	t = tkclasttag(c->head, (TkCtag *)f->obj);
 	if(t == nil)
 		return TkBadtg;
 	fmt = "%s";
@@ -1679,7 +1684,7 @@ tkcvslower(Tk *tk, char *arg, char **val)
 		if(b == nil || f->obj == nil)
 			return TkBadtg;
 		for(it = c->head; it; it = it->next) {
-			for(t = b->obj; t; t = t->taglist)
+			for(t = (TkCtag *)b->obj; t; t = t->taglist)
 				if(t->item == it)
 					goto found;
 			below = &it->next;
@@ -1690,7 +1695,7 @@ tkcvslower(Tk *tk, char *arg, char **val)
 	prev = iprev = nil;
 	itemtail = &items;;
 	for (it = *l; it != nil; it = *l) {
-		for (t = f->obj; t; t = t->taglist) {
+		for (t = (TkCtag *)f->obj; t; t = t->taglist) {
 			if(t->item == it) {
 				if (it == *below || below == &it->next)
 					below = l;
@@ -1744,7 +1749,7 @@ tkcvsmove(Tk *tk, char *arg, char **val)
 		return e;
 
 	u = &TKobj(TkCanvas, tk)->update;
-	for(t = tag->obj; t; t = t->taglist) {
+	for(t = (TkCtag *)tag->obj; t; t = t->taglist) {
 		item = t->item;
 		p = &item->p;
 		tkbbmax(u, &p->bb);
@@ -1782,7 +1787,7 @@ tkcvsraise(Tk *tk, char *arg, char **val)
 		 * find topmost item in the display list matching the "above" tag
 		 */
 		for(it = c->head; it != nil; it = it->next) {
-			for(t = a->obj; t; t = t->taglist)
+			for(t = (TkCtag *)a->obj; t; t = t->taglist)
 				if(t->item == it)
 					above = it;
 		}
@@ -1791,7 +1796,7 @@ tkcvsraise(Tk *tk, char *arg, char **val)
 	items = itemtail = nil;
 	for (it = c->head; it != nil; it = next) {
 		next = it->next;
-		for (t = f->obj; t; t = t->taglist) {
+		for (t = (TkCtag *)f->obj; t; t = t->taglist) {
 			if(t->item == it) {
 				if (it == above)
 					above = next;
@@ -1849,7 +1854,7 @@ tkcvstype(Tk *tk, char *arg, char **val)
 
 	c = TKobj(TkCanvas, tk);
 
-	t = tkcfirsttag(c->head, f->obj);
+	t = tkcfirsttag(c->head, (TkCtag *)f->obj);
 	if(t == nil)
 		return nil;
 

@@ -52,7 +52,7 @@ X917init(void)
 }
 
 void
-genrandom(uchar *p, int n)
+genrandom(char *p, int n)
 {
 	_genrandomqlock();
 	if(x917state.seeded == 0)

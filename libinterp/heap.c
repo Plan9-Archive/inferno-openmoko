@@ -11,9 +11,9 @@ void	freechan(Heap*, int);
 /**
  * Dis types
  */
-Type	Tarray = { 1, "array", freearray, markarray, sizeof(Array) };
+Type	Tarray = { 1, "array", freearray, (TypeMark)markarray, sizeof(Array) };
 Type	Tstring = { 1, "string", freestring, noptrs, sizeof(String) };
-Type	Tlist = { 1, "list", freelist, marklist, sizeof(List) };
+Type	Tlist = { 1, "list", freelist, (TypeMark)marklist, sizeof(List) };
 Type	Tmodlink = { 1, "modlink", freemodlink, markheap, -1, 1, 0, 0, { 0x80 } };
 Type	Tchannel = { 1, "channel", freechan, markheap, sizeof(Channel), 1,0,0,{0x80} };
 Type	Tptr = { 1, "ptr", 0, markheap, sizeof(DISINT*), 1, 0, 0, { 0x80 } };
@@ -34,7 +34,7 @@ freeptrs(void *v, Type *t /* usually =D2H(v)->t */)
 {
 	int c;
 	DISINT **w, *x;
-	uchar *p, *ep;
+	char *p, *ep;
 
 	if(t->np == 0)
 		return;
@@ -112,12 +112,9 @@ void
 freearray(Heap *h, int swept)
 {
 	int i;
-	Type *t;
-	uchar *v;
-	Array *a;
-
-	a = H2D(Array*, h);
-	t = a->t;
+	char *v;
+	Array *a = H2D(Array*, h);
+	Type *t = a->t;
 
 	if(!swept) {
 		if(a->root != H)
@@ -140,12 +137,9 @@ freearray(Heap *h, int swept)
 void
 freelist(Heap *h, int swept)
 {
-	Type *t;
-	List *l;
 	Heap *th;
-
-	l = H2D(List*, h);
-	t = l->t;
+	List *l = H2D(List*, h);
+	Type *t = l->t;
 
 	if(t != nil) {
 		if(!swept && t->np)
@@ -184,9 +178,8 @@ freelist(Heap *h, int swept)
 void
 freemodlink(Heap *h, int swept)
 {
-	Modlink *ml;
+	Modlink *ml = H2D(Modlink*, h);
 
-	ml = H2D(Modlink*, h);
 	if(ml->m->rt == DYNMOD)
 		freedyndata(ml);
 	else if(!swept)
@@ -263,7 +256,7 @@ freetype(Type *t)
 void
 incmem(void *vw, Type *t)
 {
-	uchar *p;
+	char *p;
 	int i, c, m;
 	DISINT **w, **q, *wp;
 
@@ -288,7 +281,7 @@ incmem(void *vw, Type *t)
 void
 scanptrs(void *vw, Type *t, void (*f)(void*))
 {
-	uchar *p;
+	char *p;
 	int i, c, m;
 	DISINT **w, **q, *wp;
 
@@ -315,10 +308,10 @@ void
 initmem(Type *t, void *vw)
 {
 	int c;
-	DISINT **w;
-	uchar *p, *ep;
+	void **w;
+	char *p, *ep;
 
-	w = (DISINT**)vw;
+	w = (void**)vw;
 	p = t->map;
 	ep = p + t->np;
 	while(p < ep) {
@@ -346,7 +339,7 @@ v_nheap(int n, const char*file, int line, const char*function)
 {
 	Heap *h;
 
-	h = v_poolalloc(heapmem, sizeof(Heap)+n, file, line, function);
+	h = (Heap *)v_poolalloc(heapmem, sizeof(Heap)+n, file, line, function);
 	if(h == nil)
 		error(exHeap);
 
@@ -364,7 +357,7 @@ v_heapz(Type *t, const char*file, int line, const char*function)
 {
 	Heap *h;
 
-	h = v_poolalloc(heapmem, sizeof(Heap)+t->size, file, line, function);
+	h = (Heap *)v_poolalloc(heapmem, sizeof(Heap)+t->size, file, line, function);
 	if(h == nil)
 		error(exHeap);
 	h->t = t;
@@ -383,7 +376,7 @@ v_heap(Type *t, const char*file, int line, const char*function)
 {
 	Heap *h;
 
-	h = v_poolalloc(heapmem, sizeof(Heap)+t->size, file, line, function);
+	h = (Heap *)v_poolalloc(heapmem, sizeof(Heap)+t->size, file, line, function);
 	if(h == nil)
 		error(exHeap);
 
@@ -409,8 +402,8 @@ v_heaparray(Type *t, int sz, const char*file, int line, const char*function)
 	a = H2D(Array*, h);
 	a->t = t;
 	a->len = sz;
-	a->root = H;
-	a->data = (uchar*)a + sizeof(Array);
+	a->root = (Array*)H;
+	a->data = (char*)a + sizeof(Array);
 	initarray(t, a);
 	return h;
 }
@@ -425,7 +418,7 @@ void
 initarray(Type *t, Array *a)
 {
 	int i;
-	uchar *p;
+	char *p;
 
 	t->ref++;
 	if(t->np == 0)
@@ -438,17 +431,18 @@ initarray(Type *t, Array *a)
 	}
 }
 
-void*
+Array*
 arraycpy(Array *sa)
 {
 	int i;
 	Heap *dh;
 	Array *da;
-	uchar *elemp;
-	void **sp, **dp;
+	char *elemp;
+	Array **sp;
+	Array **dp;
 
 	if(sa == H)
-		return H;
+		return (Array*)H;
 
 	dh = nheap(sizeof(Array) + sa->t->size*sa->len);
 	dh->t = &Tarray;
@@ -457,11 +451,11 @@ arraycpy(Array *sa)
 	da->t = sa->t;
 	da->t->ref++;
 	da->len = sa->len;
-	da->root = H;
-	da->data = (uchar*)da + sizeof(Array);
+	da->root = (Array*)H;
+	da->data = (char*)da + sizeof(Array);
 	if(da->t == &Tarray) {
-		dp = (void**)da->data;
-		sp = (void**)sa->data;
+		dp = (Array**)da->data;
+		sp = (Array**)sa->data;
 		/*
 		 * Maximum depth of this recursion is set by DADEPTH
 		 * in include/isa.h
@@ -470,7 +464,7 @@ arraycpy(Array *sa)
 			dp[i] = arraycpy(sp[i]);
 	}
 	else {
-		memmove(da->data, sa->data, da->len*sa->t->size);
+		memcpy(da->data, sa->data, da->len*sa->t->size);
 		elemp = da->data;
 		for(i = 0; i < sa->len; i++) {
 			incmem(elemp, da->t);
@@ -488,7 +482,7 @@ newmp(void *dst, void *src, Type *t)
 	void **uld, *wp;
 
 	memmove(dst, src, t->size);
-	uld = dst;
+	uld = (void **)dst;
 	for(i = 0; i < t->np; i++) {
 		c = t->map[i];
 		if(c != 0) {
@@ -496,7 +490,7 @@ newmp(void *dst, void *src, Type *t)
 				if((m & c) && (wp = *uld) != H) {
 					h = D2H(wp);
 					if(h->t == &Tarray){
-						*uld = arraycpy(wp);
+						*uld = arraycpy((Array*)wp);
 					}else {
 						ADDREF(wp);
 						Setmark(h);

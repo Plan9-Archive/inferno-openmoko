@@ -1,5 +1,9 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
 
 /* Layout constants */
@@ -628,11 +632,10 @@ tkScrolBut2P(Tk *tk, char *arg, char **val)
 }
 
 static void
-sbrepeat(Tk *tk, void *v, int cancelled)
+sbrepeat(Tk *tk, const char *fmt, int cancelled)
 {
 	char *e, buf[Tkmaxitem];
 	TkScroll *tks = TKobj(TkScroll, tk);
-	char *fmt = (char *)v;
 
 	if (cancelled) {
 		tks->flag &= ~Autorepeat;

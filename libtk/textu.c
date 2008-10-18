@@ -1,6 +1,11 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "textw.h"
 
 #define istring u.string
@@ -24,7 +29,7 @@ tktnewitem(int kind, int tagextra,TkTitem **ret)
 	TkTitem *i;
 
 	n = sizeof(TkTitem) + tagextra * sizeof(ulong);
-	i = malloc(n);
+	i = (TkTitem *)malloc(n);
 	if(i == nil)
 		return TkNomem;
 
@@ -41,7 +46,7 @@ tktnewline(int flags, TkTitem *items, TkTline *prev, TkTline *next, TkTline **re
 	TkTline *l;
 	TkTitem *i;
 
-	l = malloc(sizeof(TkTline));
+	l = (TkTline *)malloc(sizeof(TkTline));
 	if(l == nil)
 		return TkNomem;
 
@@ -502,10 +507,10 @@ tktsplititem(TkTindex *p)
 		l2 = strlen(i->istring) - l1;
 		if (l2 == 0)
 			print("tktsplititem botch\n");
-		s1 = malloc(l1+1);
+		s1 = (char*)malloc(l1+1);
 		if(s1 == nil)
 			return TkNomem;
-		s2 = malloc(l2+1);
+		s2 = (char*)malloc(l2+1);
 		if(s2 == nil) {
 			free(s1);
 			return TkNomem;
@@ -630,7 +635,7 @@ tktitempos(Tk *tk, TkTindex *ix)
 	TkTitem *i;
 	TkTline *l;
 	TkText *tkt = TKobj(TkText, tk);
- 
+
 	l = ix->line;
 
 	/* p in V space */
@@ -797,7 +802,7 @@ tktextevent(Tk *tk, int event, void *data)
 		if(tkt->mouse != nil)
 			dest = tktdeliver(tk, tkt->mouse, tkt->mouse, event, &m, deltasv);
 	}
-	else if(event == TkFocusin) 
+	else if(event == TkFocusin)
 		tktextcursor(tk, " insert", (char **) nil);
 	/* pass all "real" events on to parent text widget - DBK */
 	tksubdeliver(tk, tk->binds, event, data, 0);

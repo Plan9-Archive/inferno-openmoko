@@ -15,7 +15,7 @@ newlink(Link *l, const char *fn, int sig, Type *t)
 }
 
 void
-runtime(Module *m, Link *l, char *fn, int sig, void (*runt)(void*), Type *t)
+runtime(Module *m, Link *l, const char *fn, int sig, void (*runt)(void*), Type *t)
 {
 	USED(m);
 	newlink(l, fn, sig, t);
@@ -23,9 +23,9 @@ runtime(Module *m, Link *l, char *fn, int sig, void (*runt)(void*), Type *t)
 }
 
 void
-mlink(Module *m, Link* l, uchar *fn, int sig, int pc, Type *t)
+mlink(Module *m, Link* l, const char *fn, int sig, int pc, Type *t)
 {
-	newlink(l, (char*)fn, sig, t);
+	newlink(l, fn, sig, t);
 	l->u.pc = m->prog+pc;
 }
 
@@ -79,7 +79,7 @@ mklinkmod(Module *m, int n)
 	ml->prog = m->prog;
 	ml->type = m->type;
 	ml->compiled = m->compiled;
-	ml->MP = H;
+	ml->MP = (char*)H;
 	ml->data = nil;
 
 	return ml;
@@ -95,7 +95,7 @@ linkmod(Module *m, Import *ldt, int mkmp/*=0*/)
 	Import *l;
 
 	if(m == nil)
-		return H;
+		return (Modlink*)H;
 
 	for(i = 0, l = ldt; l->name != nil; i++, l++)
 		;
@@ -109,7 +109,7 @@ linkmod(Module *m, Import *ldt, int mkmp/*=0*/)
 			h = nheap(t->size);
 			h->t = t;
 			t->ref++;
-			ml->MP = H2D(uchar*, h);
+			ml->MP = H2D(char*, h);
 			newmp(ml->MP, m->origmp, t);
 		}
 	}
@@ -117,7 +117,7 @@ linkmod(Module *m, Import *ldt, int mkmp/*=0*/)
 	for(i = 0, l = ldt; l->name != nil; i++, l++) {
 		if(linkm(m, ml, i, l) < 0){
 			destroy(ml);
-			return H;
+			return (Modlink*)H;
 		}
 	}
 

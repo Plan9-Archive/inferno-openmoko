@@ -1,7 +1,12 @@
-#include <lib9.h>
-#include <kernel.h>
+#include "lib9.h"
+#include "kernel.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "keyboard.h"
 
 typedef struct TkScale TkScale;
@@ -801,7 +806,7 @@ sgn(int v)
 }
 
 static char*
-stepscale(Tk *tk, char *pos, int *end)
+stepscale(Tk *tk, const char *pos, int *end)
 {
 	TkScale *tks = TKobj(TkScale, tk);
 	char *e, buf[Tkmaxitem], f[32];
@@ -828,13 +833,13 @@ stepscale(Tk *tk, char *pos, int *end)
 }
 
 static void
-screpeat(Tk *tk, void *v, int cancelled)
+screpeat(Tk *tk, const char *pos, int cancelled)
 {
-	char *e, *pos;
+	char *e; //, *pos;
 	int repeat;
 	TkScale *tks = TKobj(TkScale, tk);
 
-	pos = v;
+	//pos = v;
 	if (cancelled) {
 		tks->flag &= ~Autorepeat;
 		return;

@@ -4,7 +4,7 @@
 #include "dat.h"
 
 mpint*
-mprand(int bits, void (*gen)(uchar*, int), mpint *b)
+mprand(int bits, void (*gen)(char*, int), mpint *b)
 {
 	int n, m;
 	mpdigit mask;

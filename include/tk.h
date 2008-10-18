@@ -134,8 +134,8 @@ enum
 #define TKI2F(i)	((i)*Tkfpscalar)
 extern	int TKF2I(int);
 /*#define TKF2I(f)	(((f) + Tkfpscalar/2)/Tkfpscalar)*/
-#define IAUX(i)		((void*)i)
-#define AUXI(i)		((int)i)
+//#define IAUX(i)		((void*)i)
+//#define AUXI(i)		((inti)
 #define TKKEY(i)	((i)&0xFFFF)
 
 typedef struct Tk Tk;
@@ -210,14 +210,18 @@ struct TkVar
 {
 	int	type;
 	TkVar*	link;
-	void*	value;
+	union
+	{
+		Channel* c;	// type == TkVchan
+		char*	pchar;	// type == TkVstring
+	} value;
 	char	name[TKSTRUCTALIGN];
 };
 
 struct TkPanelimage
 {
-	void*		image;		/* really Draw_Image */
-	int			ref;
+	Draw_Image *	image;		/* really Draw_Image */
+	int		ref;
 	TkPanelimage*	link;
 };
 
@@ -259,7 +263,12 @@ struct TkOption
 	char*		o;
 	int		type;
 	int		offset;
-	void*		aux;
+	/*void*		aux;*/
+	union {
+		//void *ptr;
+		TkStab* ptkstab;
+		int i;
+	} aux;
 };
 
 struct TkOptab
@@ -468,7 +477,7 @@ struct TkWin
 	Tk*		next;
 	Point		act;
 	Point		req;
-	void*	di;		/* !=H if it's been set externally */
+	Draw_Image*	di;		/* !=H if it's been set externally */
 	int		changed;	/* requested rect has changed since request sent */
 	int		reqid;	/* id of request most recently sent out; replies to earlier requests are ignored */
 
@@ -476,12 +485,12 @@ struct TkWin
 	Tk*		slave;
 	char*		postcmd;
 	char*		cascade;
-	int			freeonunmap;
-	char			*cbname;		/* name of choicebutton that posted this */
+	int		freeonunmap;
+	char		*cbname;		/* name of choicebutton that posted this */
 
-	Point			delta;
-	int			speed;
-	int			waiting;
+	Point		delta;
+	int		speed;
+	int		waiting;
 };
 
 struct TkMethod
@@ -499,13 +508,14 @@ struct TkMethod
 	Tk*		(*deliver)(Tk*, int, void*);
 	void		(*see)(Tk*, Rectangle*, Point*);
 	Tk*		(*inwindow)(Tk*, Point*);
-	void		(*varchanged)(Tk*, char*, char*);
+	void		(*varchanged)(Tk*, const char*, const char*);
 	int		ncmd;
 };
 
 struct TkName
 {
 	TkName*		link;
+	//Tk *		obj;		/* Name for ... */
 	void*		obj;		/* Name for ... */
 	union {
 		TkAction*	binds;
@@ -530,31 +540,40 @@ struct TkCol
 
 struct TkCtxt
 {
-	void*	lock;
+	QLock*		lock;
 	Display*	display;
 	int		ncol;
-	TkCol*	chead;
-	TkCol*	ctail;
-	Image*	i;			/* temporary image for drawing buttons, etc */
-	Image*	ia;			/* as above, but with an alpha channel */
+	TkCol*		chead;
+	TkCol*		ctail;
+	Image*		i;			/* temporary image for drawing buttons, etc */
+	Image*		ia;			/* as above, but with an alpha channel */
 	Tk*		tkkeygrab;
 
 	int		focused;
 	Tk*		mfocus;
 	Tk*		mgrab;
 	Tk*		entered;
-	TkMouse	mstate;
+	TkMouse		mstate;
 
 	Tk*		tkmenu;
-	void*	extn;
+	void*		extn;
 };
 
 struct TkTop
 {
-	void*	dd;	/* really Draw_Display */
-	void*	wreq;	/* really chan of string */
-	void*	di;		/* really Draw_Image* */
-	void*	wmctxt;	/* really Draw_Wmcontext */
+//	struct Tk_Toplevel
+//	{
+//		Draw_Display*	display;
+//		Channel*	wreq;
+//		Draw_Image*	image;
+//		Draw_Wmcontext*	ctxt;
+//		Draw_Rect	screenr;
+//	};
+	Draw_Display*	dd;
+	Channel*	wreq;
+	Draw_Image*	di;
+	Draw_Wmcontext*	wmctxt;
+	//Draw_Rect	screenr;
 	Rectangle	screenr;	/* XXX sleazy equiv to Draw_Rect, but what else? */
 
 	/* Private from here on */
@@ -685,7 +704,7 @@ extern	void		tksetglobalfocus(TkTop*, int);
 extern	TkImg*		tkname2img(TkTop*, char*);
 extern	void		tkimgput(TkImg*);
 extern	void		tksizeimage(Tk*, TkImg*);
-extern	TkImg*		tkauximage(TkTop*, char*, uchar*, int, int, Rectangle, int);
+extern	TkImg*		tkauximage(TkTop*, char*, const char*, int, int, Rectangle, int);
 
 /* choicebuttons - menus.c */
 extern	Tk*		tkfindchoicemenu(Tk*);
@@ -755,10 +774,10 @@ extern	void		tksorttable(void);
 extern	char*		tkexec(TkTop*, char*, char**);
 extern	int		tkeventfmt(Fmt*);
 extern	void		tkerr(TkTop*, char*);
-extern	char*	tkerrstr(TkTop*, char*);
-extern	char*	tkcursorswitch(TkTop*, Image*, TkImg*);
+extern	char*		tkerrstr(TkTop*, const char*);
+extern	char*		tkcursorswitch(TkTop*, Image*, TkImg*);
 extern	void		tkcursorset(TkTop*, Point);
-extern	char*	tksetmgrab(TkTop*, Tk*);
+extern	char*		tksetmgrab(TkTop*, Tk*);
 extern	int 		tkinsidepoly(Point*, int, int, Point);
 extern	int		tklinehit(Point*, int, int, Point);
 extern	int		tkiswordchar(int);
@@ -770,7 +789,7 @@ extern	void		tksettransparent(Tk*, int);
 extern	ulong	tkrgba(int, int, int, int);
 extern	ulong	tkrgbashade(ulong, int);
 extern	void		tkrgbavals(ulong, int*, int*, int*, int*);
-extern	void		tkrepeat(Tk*, void(*)(Tk*, void*, int), void*, int, int);
+extern	void		tkrepeat(Tk*, void(*)(Tk*, const char*, int), const char*, int, int);
 extern	void		tkcancelrepeat(Tk*);
 extern	void		tkblink(Tk*, void(*)(Tk*, int));
 extern	void		tkblinkreset(Tk*);
@@ -815,7 +834,7 @@ extern	void		tksetwinimage(Tk*, Image*);
 extern	void		tkdestroywinimage(Tk*);
 extern	void		tkfreevar(TkTop*, char*, int);
 extern	TkVar*		tkmkvar(TkTop*, char*, int);
-extern	int		tktolimbo(void*, char*);
+extern	int		tktolimbo(Channel *, char*);
 extern	void		tkwreq(TkTop*, char*, ...);
 extern	void		tkdelpanelimage(TkTop*, Image*);
 

@@ -559,11 +559,11 @@ progstack(REG *reg, int state, char *va, int count, long offset)
 		pc = pc2dispc(pc, ml->m);
 
 	for(f = reg->FP; f != nil; f = f->fp) {
-		n += snprint(va+n, count-n, "%.8lux %.8lux %.8lux %.8lux %d %s\n",
-				(ulong)f,		/* FP */
+		n += snprint(va+n, count-n, "%.8p %.8lux %.8p %.8p %d %s\n",
+				f,		/* FP */
 				(ulong)(pc - ml->prog),	/* PC in dis instructions */
-				(ulong)ml->MP,		/* MP */
-				(ulong)ml->prog,	/* Code for module */
+				ml->MP,		/* MP */
+				ml->prog,	/* Code for module */
 				ml->compiled && ml->m->pctab == nil,	/* True if native assembler: fool stack utility for now */
 				ml->m->path);	/* File system path */
 

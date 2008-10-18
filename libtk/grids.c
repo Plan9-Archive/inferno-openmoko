@@ -1,5 +1,9 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
 
 /*
@@ -134,19 +138,19 @@ ensuregridsize(TkGrid *grid, Point dim)
 	if(dim.y < olddim.y)
 		dim.y = olddim.y;
 	if(dim.y > olddim.y){
-		cells = realloc(grid->cells, sizeof(TkGridcell*)*dim.y);
+		cells = (TkGridcell **)realloc(grid->cells, sizeof(TkGridcell*)*dim.y);
 		if(cells == nil)
 			return TkNomem;
 		grid->cells = cells;
 		for(i = olddim.y; i < dim.y; i++){
-			cells[i] = malloc(sizeof(TkGridcell)*dim.x);
+			cells[i] = (TkGridcell *)malloc(sizeof(TkGridcell)*dim.x);
 			if(cells[i] == nil){
 				for(i--; i >= olddim.y; i--)
 					free(cells[i]);
 				return TkNomem;
 			}
 		}
-		rows = realloc(grid->rows, sizeof(TkGridbeam)*dim.y);
+		rows = (TkGridbeam *)realloc(grid->rows, sizeof(TkGridbeam)*dim.y);
 		if(rows == nil)
 			return TkNomem;
 		grid->rows = rows;
@@ -161,13 +165,13 @@ ensuregridsize(TkGrid *grid, Point dim)
 		 */
 		cells = grid->cells;
 		for(i = 0; i < olddim.y; i++){
-			cellrow = realloc(cells[i], sizeof(TkGridcell) * dim.x);
+			cellrow = (TkGridcell *)realloc(cells[i], sizeof(TkGridcell) * dim.x);
 			if(cellrow == nil)
 				return TkNomem;	/* leak some earlier rows, but not permanently */
 			memset(cellrow + olddim.x, 0, (dim.x-olddim.x)*sizeof(TkGridcell));
 			cells[i] = cellrow;
 		}
-		cols = realloc(grid->cols, sizeof(TkGridbeam)*dim.x);
+		cols = (TkGridbeam *)realloc(grid->cols, sizeof(TkGridbeam)*dim.x);
 		if(cols == nil)
 			return TkNomem;
 		initbeam(cols + olddim.x, dim.x - olddim.x);
@@ -185,7 +189,7 @@ delbeams(TkGridbeam *beam, int nb, int x0, int x1)
 	for(i = x0; i < x1; i++)
 		free(beam[i].name);
 	memmove(&beam[x0], &beam[x1], sizeof(TkGridbeam) * (nb-x1));
-	b = realloc(beam, sizeof(TkGridbeam) * (nb-(x1-x0)));
+	b = (TkGridbeam *)realloc(beam, sizeof(TkGridbeam) * (nb-(x1-x0)));
 	return b ? b : beam;
 }
 
@@ -195,7 +199,7 @@ delrows(TkGrid *grid, int y0, int y1)
 	TkGridcell **cells;
 	memmove(grid->cells+y0, grid->cells+y1, sizeof(TkGridcell*) * (grid->dim.y-y1));
 	grid->dim.y -= (y1 - y0);
-	cells = realloc(grid->cells, sizeof(TkGridcell*) * grid->dim.y);
+	cells = (TkGridcell **)realloc(grid->cells, sizeof(TkGridcell*) * grid->dim.y);
 	if(cells != nil || grid->dim.y == 0)
 		grid->cells = cells;		/* can realloc to a smaller size ever fail? */
 }
@@ -212,7 +216,7 @@ delcols(TkGrid *grid, int x0, int x1)
 	for(y = 0; y < dim.y; y++){
 		row = cells[y];
 		memmove(row+x0, row+x1, sizeof(TkGridcell) * (dim.x - x1));
-		row = realloc(row, sizeof(TkGridcell) * ndx);
+		row = (TkGridcell *)realloc(row, sizeof(TkGridcell) * ndx);
 		if(row != nil || ndx == 0)
 			cells[y] = row;
 	}
@@ -528,7 +532,7 @@ tkgridconfigure(TkTop *t, TkGridparam *p, TkName *names)
 		return TkNotgrid;
 
 	if(grid == nil){
-		grid = malloc(sizeof(TkGrid));
+		grid = (TkGrid *)malloc(sizeof(TkGrid));
 		if(grid == nil)
 			return TkNomem;
 		p->in->grid = grid;
@@ -592,7 +596,7 @@ tkgridconfigure(TkTop *t, TkGridparam *p, TkName *names)
 		case '-':
 			return TkBadspan;
 		case '.':
-			tkp = n->obj;
+			tkp = (Tk*)n->obj;
 			if(tkisslave(p->in, tkp))
 				return TkRecur;
 			n = n->link;
@@ -636,7 +640,7 @@ tkgridconfigure(TkTop *t, TkGridparam *p, TkName *names)
 			}
 			break;
 		case '.':
-			tkf = n->obj;
+			tkf = (Tk*)n->obj;
 			n = n->link;
 			span = p->span;
 			for(; n != nil && strcmp(n->name, "-") == 0; n = n->link)
@@ -1109,7 +1113,7 @@ tkbeamconfigure(TkTop *t, char *arg, int isrow)
 	if(grid == nil){
 		if(master->slave != nil)
 			return TkNotgrid;
-		grid = master->grid = malloc(sizeof(TkGrid));
+		grid = master->grid = (TkGrid*)malloc(sizeof(TkGrid));
 		if(grid == nil){
 			tkfreename(names);
 			return TkNomem;
@@ -1280,7 +1284,7 @@ tkgrid(TkTop *t, char *arg, char **val)
 	TkName *names;
 	char *e, *w, *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 
@@ -1329,7 +1333,7 @@ tkgrid(TkTop *t, char *arg, char **val)
 			e = TkBadcm;
 		}
 	} else{
-		p = malloc(sizeof(TkGridparam));
+		p = (TkGridparam*)malloc(sizeof(TkGridparam));
 		if(p == nil)
 			return TkNomem;
 		tko[0].ptr = p;

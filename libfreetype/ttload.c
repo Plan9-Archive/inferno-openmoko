@@ -1576,7 +1576,7 @@
   }
 
 
-  FT_CALLBACK_DEF( int )
+  FT_CALLBACK_DEF( int )  __cdecl
   tt_kern_pair_compare( const void*  a,
                         const void*  b );
 
@@ -1715,7 +1715,7 @@
 #define TT_KERN_INDEX( g1, g2 )  ( ( (FT_ULong)g1 << 16 ) | g2 )
 
 
-  FT_CALLBACK_DEF( int )
+  FT_CALLBACK_DEF( int )  __cdecl
   tt_kern_pair_compare( const void*  a,
                         const void*  b )
   {

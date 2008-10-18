@@ -86,9 +86,9 @@ struct SigAlgVec {
 	char**	pkattr;
 	char**	sigattr;
 
-	void*	(*str2sk)(char*, char**);
-	void*	(*str2pk)(char*, char**);
-	void*	(*str2sig)(char*, char**);
+	void*	(*str2sk)(const char*, const char**);
+	void*	(*str2pk)(const char*, const char**);
+	void*	(*str2sig)(const char*, const char**);
 
 	int	(*sk2str)(void*, char*, int);
 	int	(*pk2str)(void*, char*, int);

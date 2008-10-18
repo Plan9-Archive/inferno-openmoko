@@ -13,7 +13,7 @@
 
 extern	void	tkfreetop(Heap*, int);
 Type*	fakeTkTop;
-static	uchar	TktypeMap[] = Tk_Toplevel_map;
+static	char	TktypeMap[] = Tk_Toplevel_map;
 int	tkstylus;
 void	(*tkwiretap)(void*, char*, char*, void*, Rectangle*);
 
@@ -33,21 +33,20 @@ unlockctxt(TkCtxt *ctxt)
 }
 
 static void
-tkmarktop(Type *t, void *vw)
+tkmarktop(Type *t, TkTop *top)
 {
 	Heap *h;
 	TkVar *v;
 	TkPanelimage *di;
-	TkTop *top;
 	Tk *w, *next;
 	TkWin *tkw;
 
-	markheap(t, vw);
-	top = vw;
+	markheap(t, top);
+
 	// XXX do we need to lock context here??
 	for(v = top->vars; v; v = v->link) {
 		if(v->type == TkVchan) {
-			h = D2H(v->value);
+			h = D2H(v->value.c);
 			Setmark(h);
 		}
 	}
@@ -72,13 +71,12 @@ tkmodinit(void)
 	fmtinstall('v', tkeventfmt);			/* XXX */
 
 	fakeTkTop = dtype(tkfreetop, sizeof(TkTop), TktypeMap, sizeof(TktypeMap), "Tk->top");
-	fakeTkTop->fnmark = tkmarktop;
+	fakeTkTop->fnmark = (TypeMark)tkmarktop;
 
 	tksorttable();
 }
 
-void
-Tk_toplevel(void *a)
+DISAPI(Tk_toplevel)
 {
 	Tk *tk;
 	Heap *h;
@@ -86,11 +84,10 @@ Tk_toplevel(void *a)
 	TkWin *tkw;
 	TkCtxt *ctxt;
 	Display *disp;
-	F_Tk_toplevel *f = a;
 	void *r;
 
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (Tk_Toplevel*)H;
 	destroy(r);
 	disp = checkdisplay(f->d);
 
@@ -117,7 +114,7 @@ Tk_toplevel(void *a)
 	tk->flag |= Tkwindow;
 
 	tkw = TKobj(TkWin, tk);
-	tkw->di = H;
+	tkw->di = (Draw_Image*)H;
 
 	tktopopt(tk, string2c(f->arg));
 
@@ -147,14 +144,12 @@ Tk_toplevel(void *a)
 	*f->ret = (Tk_Toplevel*)t;
 }
 
-void
-Tk_cmd(void *a)
+DISAPI(Tk_cmd)
 {
 	TkTop *t;
 	char *val, *e;
-	F_Tk_cmd *f = a;
 
-	t = (TkTop*)f->t;
+	t = (TkTop*)f->t; /* ??? FIXME */
 	if(t == H || D2H(t)->t != fakeTkTop) {
 		retstr(TkNotop, f->ret);
 		return;
@@ -180,21 +175,18 @@ Tk_cmd(void *a)
 	free(val);
 }
 
-void
-Tk_color(void *fp)
+DISAPI(Tk_color)
 {
 	ulong rgba;
-	F_Tk_color *f = fp;
+
 	if(tkparsecolor(string2c(f->col), &rgba) != nil)
 		*f->ret = DNotacolor;
 	else
 		*f->ret = rgba;
 }
 
-void
-Tk_rect(void *fp)
+DISAPI(Tk_rect)
 {
-	F_Tk_rect *f = fp;
 	Tk *tk;
 	TkTop *t;
 	Rectangle r;
@@ -202,7 +194,7 @@ Tk_rect(void *fp)
 	Point o;
 	int bd, flags;
 
-	t = (TkTop*)f->t;
+	t = (TkTop*)f->t; /* XXX */
 	if(t == H || D2H(t)->t != fakeTkTop){
 		*(Rectangle *)f->ret = ZR;
 		return;
@@ -305,20 +297,18 @@ tkenterleave(TkTop *t)
 		tkupdate(t2);
 }
 
-void
-Tk_pointer(void *a)
+DISAPI(Tk_pointer)
 {
-	static int buttonr[] = {TkButton1R, TkButton2R, TkButton3R, TkButton4R, TkButton5R, TkButton6R};
-	static int buttonp[] = {TkButton1P, TkButton2P, TkButton3P, TkButton4P, TkButton5P, TkButton6P};
+	static const int buttonr[] = {TkButton1R, TkButton2R, TkButton3R, TkButton4R, TkButton5R, TkButton6R};
+	static const int buttonp[] = {TkButton1P, TkButton2P, TkButton3P, TkButton4P, TkButton5P, TkButton6P};
 	Tk *fw, *target, *dest, *ent;
 	TkMouse m;
 	TkCtxt *c;
 	TkTop *t, *ot;
 	int d, dtype, etype;
-	F_Tk_pointer *f = a;
 	int b, lastb, inside;
 
-	t = (TkTop*)f->t;
+	t = (TkTop*)f->t; /* XXX */
 	if(t == H || D2H(t)->t != fakeTkTop)
 		return;
 
@@ -456,15 +446,13 @@ Tk_pointer(void *a)
 	unlockctxt(c);
 }
 
-void
-Tk_keyboard(void *a)
+DISAPI(Tk_keyboard)
 {
 	Tk *grab;
 	TkTop *t;
 	TkCtxt *c;
-	F_Tk_keyboard *f = a;
 
-	t = (TkTop*)f->t;
+	t = (TkTop*)f->t; /* XXX */
 	if(t == H || D2H(t)->t != fakeTkTop)
 		return;
 	c = t->ctxt;
@@ -498,16 +486,16 @@ tkmkvar(TkTop *t, char *name, int type)
 	if(type == 0)
 		return nil;
 
-	v = malloc(sizeof(TkVar)+strlen(name)+1);
+	v = (TkVar*)malloc(sizeof(TkVar)+strlen(name)+1);
 	if(v == nil)
 		return nil;
 	strcpy(v->name, name);
 	v->link = t->vars;
 	t->vars = v;
 	v->type = type;
-	v->value = nil;
+	v->value.c = nil;
 	if(type == TkVchan)
-		v->value = H;
+		v->value.c = (Channel*)H;
 	return v;
 }
 
@@ -524,11 +512,11 @@ tkfreevar(TkTop *t, char *name, int swept)
 			*l = p->link;
 			switch(p->type) {
 			default:
-				free(p->value);
+				free(p->value.pchar);
 				break;
 			case TkVchan:
 				if(!swept)
-					destroy(p->value);
+					destroy(p->value.c);
 				break;
 			}
 			free(p);
@@ -538,16 +526,14 @@ tkfreevar(TkTop *t, char *name, int swept)
 	}
 }
 
-void
-Tk_namechan(void *a)
+DISAPI(Tk_namechan)
 {
 	Heap *h;
 	TkVar *v;
 	TkTop *t;
 	char *name;
-	F_Tk_namechan *f = a;
 
-	t = (TkTop*)f->t;
+	t = (TkTop*)f->t; /* XXX */
 	if(t == H || D2H(t)->t != fakeTkTop) {
 		retstr(TkNotop, f->ret);
 		return;
@@ -574,29 +560,25 @@ Tk_namechan(void *a)
 		retstr(TkNotvt, f->ret);
 		return;
 	}
-	destroy(v->value);
-	v->value = f->c;
+	destroy(v->value.c);
+	v->value.c = f->c;
 	unlockctxt(t->ctxt);
-	ADDREF(v->value);
-	Setmark(D2H(v->value));
+	ADDREF(v->value.c);
+	Setmark(D2H(v->value.c));
 	// poolimmutable((void *)h);
 	retstr("", f->ret);
 }
 
-void
-Tk_quote(void *a)
+DISAPI(Tk_quote)
 {
 	String *s, *ns;
-	F_Tk_quote *f;
 	void *r;
 	int c, i, need, len, userune, last, n;
 	Rune *sr;
 	char *sc;
 
-	f = a;
-
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (String*)H;
 	destroy(r);
 
 	s = f->s;
@@ -710,7 +692,7 @@ tkaddpanelimage(TkTop *t, Draw_Image *di, Image **i)
 		}
 	}
 
-	pi = malloc(sizeof(TkPanelimage));
+	pi = (TkPanelimage*)malloc(sizeof(TkPanelimage));
 	if (pi == nil)
 		return TkNomem;
 	pi->image = di;
@@ -752,8 +734,7 @@ tkdelpanelimage(TkTop *t, Image *i)
 	free(pi);
 }
 
-void
-Tk_putimage(void *a)
+DISAPI(Tk_putimage)
 {
 	TkTop *t;
 	TkImg *tki;
@@ -761,15 +742,12 @@ Tk_putimage(void *a)
 	int locked, found, reqid, n;
 	char *words[2];
 	Display *d;
-	F_Tk_putimage *f;
 	void *r;
 	char *name, *e;
 	Tk *tk;
 
-	f = a;
-
 	r = *f->ret;
-	*f->ret = H;
+	*f->ret = (String*)H;
 	destroy(r);
 
 	t = (TkTop*)f->t;
@@ -861,27 +839,26 @@ tkimgcopy(TkTop *t, Image *cimg)
 	Draw_Image *i;
 
 	if(cimg == nil)
-		return H;
+		return (Draw_Image*)H;
 
 	dp = t->display;
 	new = allocimage(dp, cimg->r, cimg->chan, cimg->repl, DNofill);
 	if(new == nil)
-		return H;
+		return (Draw_Image*)H;
 	new->clipr = cimg->clipr;
 
 	drawop(new, new->r, cimg, nil, cimg->r.min, S);
 	if(tkwiretap != nil)
 		tkwiretap(t, "imgcopy", nil, cimg, &cimg->r);
 
-	i = mkdrawimage(new, H, t->dd, nil);
+	i = mkdrawimage(new, (Draw_Screen*)H, t->dd, nil);
 	if(i == H)
 		freeimage(new);
 
 	return i;
 }
 
-void
-Tk_getimage(void *a)
+DISAPI(Tk_getimage)
 {
 	Tk *tk;
 	char *n;
@@ -889,21 +866,18 @@ Tk_getimage(void *a)
 	TkTop *t;
 	int locked;
 	Display *d;
-	F_Tk_getimage *f;
 	void *r;
 	void (*getimgs)(Tk*, Image**, Image**);
 	Image *image, *mask;
 
-	f = a;
-
 	r = f->ret->t0;
-	f->ret->t0 = H;
+	f->ret->t0 = (Draw_Image*)H;
 	destroy(r);
 	r = f->ret->t1;
-	f->ret->t1 = H;
+	f->ret->t1 = (Draw_Image*)H;
 	destroy(r);
 	r = f->ret->t2;
-	f->ret->t2 = H;
+	f->ret->t2 = (String*)H;
 	destroy(r);
 
 	t = (TkTop*)f->t;
@@ -951,10 +925,10 @@ tkfreetop(Heap *h, int swept)
 	lockctxt(t->ctxt);
 
 	if(swept) {
-		t->di = H;
-		t->dd = H;
-		t->wreq = H;
-		t->wmctxt = H;
+		t->di = (Draw_Image*)H;
+		t->dd = (Draw_Display*)H;
+		t->wreq = (Channel*)H;
+		t->wmctxt = (Draw_Wmcontext*)H;
 	}
 
 	t->windows = nil;
@@ -977,11 +951,11 @@ tkfreetop(Heap *h, int swept)
 		nextv = v->link;
 		switch(v->type) {
 		default:
-			free(v->value);
+			free(v->value.pchar);
 			break;
 		case TkVchan:
 			if(!swept)
-				destroy(v->value);
+				destroy(v->value.c);
 			break;
 		}
 		free(v);
@@ -1011,19 +985,19 @@ tkfreetop(Heap *h, int swept)
 	tkfreectxt(t->ctxt);
 	if(!swept) {
 		r = t->di;
-		t->di = H;
+		t->di = (Draw_Image*)H;
 		destroy(r);
 
 		r = t->dd;
-		t->dd = H;
+		t->dd = (Draw_Display*)H;
 		destroy(r);
 
 		r = t->wreq;
-		t->wreq = H;
+		t->wreq = (Channel*)H;
 		destroy(r);
 
 		r = t->wmctxt;
-		t->wmctxt = H;
+		t->wmctxt = (Draw_Wmcontext*)H;
 		destroy(r);
 	}
 }
@@ -1033,7 +1007,7 @@ tktopimagedptr(TkTop *top, Draw_Image *di)
 {
 	if(top->di != H){
 		destroy(top->di);
-		top->di = H;
+		top->di = (Draw_Image*)H;
 	}
 	if(di == H)
 		return;
@@ -1046,7 +1020,7 @@ tkfreewinimage(TkWin *w)
 {
 	destroy(w->di);
 	w->image = nil;
-	w->di = H;
+	w->di = (Draw_Image*)H;
 }
 
 static int
@@ -1065,7 +1039,7 @@ tksetwindrawimage(Tk *tk, Draw_Image *di)
 		if(tkw->image != nil)
 			destroy(tkw->di);
 	if(di == H){
-		tkw->di = H;
+		tkw->di = (Draw_Image*)H;
 		tkw->image = nil;
 		return same;
 	}
@@ -1105,14 +1079,14 @@ tkdestroywinimage(Tk *tk)
 
 	if(tkw->image != nil && !(tk->flag & Tkswept))
 		destroy(tkw->di);
-	tkw->di = H;
+	tkw->di = (Draw_Image*)H;
 	tkw->image = nil;
 	if(tk->name == nil)
 		name = tkw->cbname;
 	else
 		name = tk->name->name;
 	if(name[0] == '.' && name[1] == '\0' && !(tk->flag & Tkswept))
-		tktopimagedptr(top, H);
+		tktopimagedptr(top, (Draw_Image*)H);
 	tkw->reqid++;
 	tkwreq(top, "delete %s", name);
 }
@@ -1189,7 +1163,7 @@ tkputwinimage(Tk *tk, Draw_Image *di, int reqid)
 }
 
 void
-tkwreq(TkTop *top, char *fmt, ...)
+tkwreq(TkTop *top, const char *fmt, ...)
 {
 	char *buf;
 	va_list arg;
@@ -1202,7 +1176,7 @@ tkwreq(TkTop *top, char *fmt, ...)
 }
 
 int
-tktolimbo(void *var, char *msg)
+tktolimbo(Channel *var, const char *msg)
 {
 	void *ptrs[1];
 	int r;
@@ -1211,7 +1185,7 @@ tktolimbo(void *var, char *msg)
 		return 0;
 	ptrs[0] = H;
 	retstr(msg, (String**) &ptrs[0]);
-	r = csendalt((Channel *)var, ptrs, &Tptr, TkMaxmsgs);
+	r = csendalt(var, ptrs, &Tptr, TkMaxmsgs);
 	return r;
 }
 
@@ -1272,11 +1246,11 @@ tkcursorswitch(TkTop *top, Image *i, TkImg *img)
 	}
 	nb = ci->r.max.x/8 * ci->r.max.y;
 	maxb = 7 + 12*4 + 2*nb + 1;
-	buf = mallocz(maxb, 0);
+	buf = (char*)mallocz(maxb, 0);
 	if(buf == nil)
 		return TkNomem;
 	n = sprint(buf, "cursor %d %d %d %d ", i->r.min.x, i->r.min.y, ci->r.max.x, ci->r.max.y);
-	unloadimage(ci, ci->r, (uchar*)buf+n, maxb-n);
+	unloadimage(ci, ci->r, buf+n, maxb-n);
 	hexify(buf+n, nb);
 	tktolimbo(top->wreq, buf);
 	if(img != nil){

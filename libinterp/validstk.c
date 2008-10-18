@@ -14,7 +14,7 @@ memchk(void *p, Type *t)
 	if(depth > 100)
 		return;
 	depth++;
-	base = p;
+	base = (ulong**)p;
 	for(i = 0; i < t->np; i++) {
 		for(j = 0; j < 8; j++) {
 			if(t->map[i] & (1<<(7-j))) {

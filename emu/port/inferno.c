@@ -14,18 +14,18 @@ extern	int	srvf2c(char*, char*, Sys_FileIO*);
 /*
  * System types connected to gc
  */
-uchar	FDmap[] = Sys_FD_map;
-uchar	FileIOmap[] = Sys_FileIO_map;
+char	FDmap[] = Sys_FD_map;
+char	FileIOmap[] = Sys_FileIO_map;
 void	freeFD(Heap*, int);
 void	freeFileIO(Heap*, int);
 Type*	TFD;
 Type*	TFileIO;
 
-static	uchar	rmap[] = Sys_FileIO_read_map;
-static	uchar	wmap[] = Sys_FileIO_write_map;
+static	char	rmap[] = Sys_FileIO_read_map;
+static	char	wmap[] = Sys_FileIO_write_map;
 static	Type*	FioTread;
 static	Type*	FioTwrite;
-static	uchar	dmap[] = Sys_Dir_map;
+static	char	dmap[] = Sys_Dir_map;
 static	Type*	Tdir;
 
 typedef struct FD FD;

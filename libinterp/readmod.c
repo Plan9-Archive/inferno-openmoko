@@ -9,7 +9,7 @@ readmod(const char *path, Module *m /*=lookmod(path)*/, int sync)
 {
 	Dir *d;
 	int fd, n, dynld;
-	uchar *code;
+	char *code;
 	Module *ans;
 	ulong length;
 
@@ -54,7 +54,7 @@ readmod(const char *path, Module *m /*=lookmod(path)*/, int sync)
 		goto done1;
 	}
 	length = d->length;
-	code = mallocz(length, 0);
+	code = (char*)mallocz(length, 0);
 	if(code == nil)
 		goto done;
 

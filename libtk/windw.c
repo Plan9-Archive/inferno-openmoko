@@ -1,6 +1,11 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "canvs.h"
 #include "textw.h"
 #include "kernel.h"
@@ -9,7 +14,7 @@ TkCtxt*
 tknewctxt(Display *d)
 {
 	TkCtxt *c;
-	c = malloc(sizeof(TkCtxt));
+	c = (TkCtxt *)malloc(sizeof(TkCtxt));
 	if(c == nil)
 		return nil;
 	c->lock = libqlalloc();
@@ -489,10 +494,11 @@ tktopopt(Tk *tk, char *opt)
 }
 
 /* general compare - compare top-left corners, y takes priority */
-static int
-tkfcmpgen(void *ap, void *bp)
+static int __cdecl
+tkfcmpgen(const void *ap, const void *bp)
 {
-	TkWinfo *a = ap, *b = bp;
+	const TkWinfo *a = (const TkWinfo *)ap;
+	const TkWinfo *b = (const TkWinfo *)bp;
 
 	if (a->r.min.y > b->r.min.y)
 		return 1;
@@ -506,18 +512,20 @@ tkfcmpgen(void *ap, void *bp)
 }
 
 /* compare x-coords only */
-static int
-tkfcmpx(void *ap, void *bp)
+static int __cdecl
+tkfcmpx(const void *ap, const void *bp)
 {
-	TkWinfo *a = ap, *b = bp;
+	const TkWinfo *a = (const TkWinfo *)ap;
+	const TkWinfo *b = (const TkWinfo *)bp;
 	return a->r.min.x - b->r.min.x;
 }
 
 /* compare y-coords only */
-static int
-tkfcmpy(void *ap, void *bp)
+static int __cdecl
+tkfcmpy(const void *ap, const void *bp)
 {
-	TkWinfo *a = ap, *b = bp;
+	const TkWinfo *a = (const TkWinfo *)ap;
+	const TkWinfo *b = (const TkWinfo *)bp;
 	return a->r.min.y - b->r.min.y;
 }
 
@@ -540,7 +548,7 @@ tksortfocusorder(TkWinfo *inf, int n)
 {
 	int i;
 	Rectangle overlap, r;
-	int (*cmpfn)(void*, void*);
+	int (__cdecl *cmpfn)(const void*, const void*);
 
 	overlap = inf[0].r;
 	for (i = 0; i < n; i++) {
@@ -589,7 +597,7 @@ tkbuildfocusorder(TkTop *tkt)
 		return;
 	}
 
-	tkt->focusorder = malloc(sizeof(*tkt->focusorder) * n);
+	tkt->focusorder = (Tk**)malloc(sizeof(*tkt->focusorder) * n);
 	tkt->nfocus = 0;
 	if (tkt->focusorder == nil)
 		return;
@@ -614,8 +622,8 @@ struct TkSee {
 
 static
 TkOption seeopts[] = {
-	"rectangle",		OPTfrac,	offsetof(TkSee, r),	IAUX(4),
-	"point",		OPTfrac,	offsetof(TkSee, p),	IAUX(2),
+	"rectangle",		OPTfrac,	offsetof(TkSee, r),	(TkStab*)4,
+	"point",		OPTfrac,	offsetof(TkSee, p),	(TkStab*)2,
 	"where",		OPTbool,	offsetof(TkSee, query),	nil,
 	nil
 };

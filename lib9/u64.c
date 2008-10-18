@@ -80,7 +80,7 @@ exhausted:
 }
 
 int
-enc64(char *out, int lim, uchar *in, int n)
+enc64(char *out, int lim, const uchar *in, int n)
 {
 	int i;
 	ulong b24;

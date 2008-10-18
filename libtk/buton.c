@@ -1,6 +1,11 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "label.h"
 
 /*#define	O(t, e)		((long)(&((t*)0)->e))*/
@@ -75,7 +80,7 @@ static char	tkselbut[] = "selectedButton";
 
 static char*	newbutton(TkTop*, int, char*, char**);
 static int	istransparent(Tk*);
-static void tkvarchanged(Tk*, char*, char*);
+static void	tkvarchanged(Tk*, const char*, const char*);
 
 char*
 tkbutton(TkTop *t, char *arg, char **ret)
@@ -169,7 +174,7 @@ newbutton(TkTop *t, int btype, char *arg, char **ret)
 			e = TkNotvt;
 			goto err;
 		} else
-			tkvarchanged(tk, tkl->variable, v->value);
+			tkvarchanged(tk, tkl->variable, v->value.pchar);
 	}
 
 	return tkvalue(ret, "%s", tk->name->name);
@@ -323,7 +328,7 @@ tkbuttonconf(Tk *tk, char *arg, char **val)
 				tkl->variable = nil;
 			}
 			else
-				tkvarchanged(tk, tkl->variable, v->value);
+				tkvarchanged(tk, tkl->variable, v->value.pchar);
 		}
 	}
 	return e;
@@ -337,7 +342,7 @@ istransparent(Tk *tk)
 }
 
 static void
-tkvarchanged(Tk *tk, char *var, char *val)
+tkvarchanged(Tk *tk, const char *var, const char *val)
 {
 	TkLabel *tkl;
 	char *sval;
@@ -446,7 +451,7 @@ buttoninvoke(Tk *tk, char **val)
 }
 
 static void
-cancelinvoke(Tk *tk, void *v, int cancelled)
+cancelinvoke(Tk *tk, const char *v, int cancelled)
 {
 	int unset;
 	USED(cancelled);
@@ -476,7 +481,7 @@ tkbuttoninvoke(Tk *tk, char *arg, char **val)
 		return nil;
 	e = buttoninvoke(tk, val);
 	if (e == nil && tk->type == TKbutton && !(tk->flag & Tkactivated)) {
-		tkrepeat(tk, cancelinvoke, (void*)(tk->flag&Tkactive), InvokePause, 0);
+		tkrepeat(tk, cancelinvoke, (const char*)(tk->flag&Tkactive), InvokePause, 0);
 		tk->flag |= Tkactivated | Tkactive;
 		tksettransparent(tk, istransparent(tk));
 		tk->dirty = tkrect(tk, 1);

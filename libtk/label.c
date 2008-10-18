@@ -1,7 +1,12 @@
-#include <lib9.h>
-#include <kernel.h>
+#include "lib9.h"
+#include "kernel.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "label.h"
 
 /* Layout constants */
@@ -17,7 +22,7 @@ TkOption tklabelopts[] =
 	"justify",	OPTflag,	offsetof(TkLabel, justify),	tkjustify,
 	"anchor",	OPTflag,	offsetof(TkLabel, anchor),	tkanchor,
 	"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap),	nil,
-	"image",	OPTimag,	offsetof(TkLabel, img),	nil,
+	"image",	OPTimag,	offsetof(TkLabel, img),		nil,
 	nil
 };
 
@@ -335,7 +340,7 @@ tkdrawlabel(Tk *tk, Point orig)
 		}
 		u.x = p.x + ButtonBorder;
 		u.y = p.y + ButtonBorder + (h - CheckSpace) / 2;
-		pp = mallocz(4*sizeof(Point), 0);
+		pp = (Point*)mallocz(4*sizeof(Point), 0);
 		if(pp == nil)
 			return TkNomem;
 		pp[0].x = u.x + CheckButton/2;
@@ -426,7 +431,7 @@ tksetvar(TkTop *top, char *c, char *newval)
 	TkVar *v;
 	TkWin *tkw;
 	Tk *f, *m;
-	void (*vc)(Tk*, char*, char*);
+	void (*vc)(Tk*, const char*, const char*);
 
 	if (c == nil || c[0] == '\0')
 		return nil;
@@ -440,14 +445,14 @@ tksetvar(TkTop *top, char *c, char *newval)
 	if(newval == nil)
 		newval = "";
 
-	if(v->value != nil) {
-		if (strcmp(v->value, newval) == 0)
+	if(v->value.pchar != nil) {
+		if (strcmp(v->value.pchar, newval) == 0)
 			return nil;
-		free(v->value);
+		free(v->value.pchar);
 	}
 
-	v->value = strdup(newval);
-	if(v->value == nil)
+	v->value.pchar = strdup(newval);
+	if(v->value.pchar == nil)
 		return TkNomem;
 
 	for(f = top->root; f; f = f->siblings) {
@@ -472,7 +477,7 @@ tkvariable(TkTop *t, char *arg, char **ret)
 	int l;
 
 	l = strlen(arg) + 2;
-	buf = malloc(l);
+	buf = (char*)malloc(l);
 	if(buf == nil)
 		return TkNomem;
 	ebuf = buf+l;
@@ -493,11 +498,11 @@ tkvariable(TkTop *t, char *arg, char **ret)
 		}
 		v = tkmkvar(t, buf, 0);
 		free(buf);
-		if(v == nil || v->value == nil)
+		if(v == nil || v->value.pchar == nil)
 			return nil;
 		if(v->type != TkVstring)
 			return TkNotvt;
-		return tkvalue(ret, "%s", v->value);
+		return tkvalue(ret, "%s", v->value.pchar);
 	}
 	val = buf+strlen(buf)+1;
 	tkword(t, arg, val, ebuf, nil);

@@ -1,6 +1,11 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "canvs.h"
 
 
@@ -40,7 +45,7 @@ static
 TkOption lineopts[] =
 {
 	"arrow",	OPTstab,	offsetof(TkCline, arrow),	tklines,
-	"arrowshape",	OPTfrac,	offsetof(TkCline, shape[0]),	IAUX(3),
+	"arrowshape",	OPTfrac,	offsetof(TkCline, shape[0]),	(TkStab*)3,
 	"width",	OPTnnfrac,	offsetof(TkCline, width),	nil,
 	"stipple",	OPTbmap,	offsetof(TkCline, stipple),	nil,
 	"smooth",	OPTstab,	offsetof(TkCline, smooth),	tkbool,
@@ -53,7 +58,7 @@ static
 TkOption itemopts[] =
 {
 	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
-	"fill",		OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCforegnd),
+	"fill",		OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCforegnd,
 	nil
 };
 

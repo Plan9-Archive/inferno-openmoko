@@ -1,5 +1,9 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
 
 extern void	rptwakeup(void*, void*);
@@ -56,8 +60,8 @@ char*	tkfont;
 static void *autorpt;
 static int rptid;
 static Tk *rptw;
-static void *rptnote;
-static void (*rptcb)(Tk*, void*, int);
+static const char *rptnote;
+static void (*rptcb)(Tk*, const char*, int);
 static long rptto;
 static int rptint;
 
@@ -166,7 +170,7 @@ tkcolor(TkCtxt *c, ulong pix)
 		i = allocimage(d, r, RGBA32, 1, pix);
 	if(i == nil)
 		return d->black;
-	cc = malloc(sizeof(*cc));
+	cc = (TkCol *)malloc(sizeof(*cc));
 	if(cc == nil){
 		freeimage(i);
 		return d->black;
@@ -350,7 +354,7 @@ tknewenv(TkTop *t)
 {
 	TkEnv *e;
 
-	e = malloc(sizeof(TkEnv));
+	e = (TkEnv *)malloc(sizeof(TkEnv));
 	if(e == nil)
 		return nil;
 
@@ -370,7 +374,7 @@ tkdefaultenv(TkTop *t)
 		t->env->ref++;
 		return t->env;
 	}
-	t->env = malloc(sizeof(TkEnv));
+	t->env = (TkEnv*)malloc(sizeof(TkEnv));
 	if(t->env == nil)
 		return nil;
 
@@ -443,7 +447,7 @@ tkdupenv(TkEnv **env)
 	if(e->ref == 1)
 		return e;
 
-	ne = malloc(sizeof(TkEnv));
+	ne = (TkEnv *)malloc(sizeof(TkEnv));
 	if(ne == nil)
 		return nil;
 
@@ -466,7 +470,7 @@ tknewobj(TkTop *t, int type, int n)
 {
 	Tk *tk;
 
-	tk = malloc(n);
+	tk = (Tk *)malloc(n);
 	if(tk == 0)
 		return 0;
 
@@ -1052,7 +1056,7 @@ tkaction(TkAction **l, int event, int type, char *arg, int how)
 		return nil;
 	}
 
-	a = malloc(sizeof(TkAction));
+	a = (TkAction*)malloc(sizeof(TkAction));
 	if(a == nil) {
 		if(type == TkDynamic)
 			free(arg);
@@ -1392,7 +1396,7 @@ tkwidgetcmd(TkTop *t, Tk *tk, char *arg, char **val)
 	int bot, top, new, r;
 	char *e, *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 
@@ -1478,7 +1482,7 @@ tkdirty(Tk *tk)
 	}
 }
 
-static int
+static int __cdecl
 qcmdcmp(const void *a, const void *b)
 {
 	return strcmp(((TkCmdtab*)a)->name, ((TkCmdtab*)b)->name);
@@ -1514,7 +1518,7 @@ tksinglecmd(TkTop *t, char *arg, char **val)
 	if(t->debug)
 		print("tk: '%s'\n", arg);
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 
@@ -1615,7 +1619,7 @@ tkexec(TkTop *t, char *arg, char **val)
 			n = p - arg - 1;
 			if(cmdsz < n)
 				cmdsz = n;
-			c = realloc(cmd, cmdsz+1);
+			c = (char*)realloc(cmd, cmdsz+1);
 			if(c == nil){
 				free(cmd);
 				return TkNomem;
@@ -1722,9 +1726,9 @@ tkerr(TkTop *t, char *e)
 }
 
 char*
-tkerrstr(TkTop *t, char *e)
+tkerrstr(TkTop *t, const char *e)
 {
-	char *s = malloc(strlen(e)+1+strlen(t->errx)+1);
+	char *s = (char*)malloc(strlen(e)+1+strlen(t->errx)+1);
 
 	if(s == nil)
 		return nil;
@@ -1875,7 +1879,7 @@ tkcancelrepeat(Tk *tk)
 }
 
 void
-tkrepeat(Tk *tk, void (*callback)(Tk*, void*, int), void *note, int pause, int interval)
+tkrepeat(Tk *tk, void (*callback)(Tk*, const char*, int), const char *note, int pause, int interval)
 {
 	rptid++;
 	if (tk != rptw && rptw != nil)

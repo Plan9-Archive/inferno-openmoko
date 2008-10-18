@@ -7,7 +7,7 @@
 #include "dynld.h"
 
 Module*
-newdyncode(int fd, char *path, Dir *dir)
+newdyncode(int fd, const char *path, Dir *dir)
 {
 	USED(fd);
 	USED(path);

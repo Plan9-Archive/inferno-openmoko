@@ -8,7 +8,7 @@
  */
 
 int
-verifysigner(uchar *sign, int len, uchar *data, ulong ndata)
+verifysigner(const char *sign, int len, const char *data, ulong ndata)
 {
 	USED(sign);
 	USED(len);
@@ -19,7 +19,7 @@ verifysigner(uchar *sign, int len, uchar *data, ulong ndata)
 }
 
 int
-mustbesigned(char *path, uchar *code, ulong length, Dir *dir)
+mustbesigned(const char *path, const char *code, ulong length, const Dir *dir)
 {
 	USED(path);
 	USED(code);

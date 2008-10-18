@@ -827,7 +827,7 @@ Exclunk(Export *fs, Fcall *t, Fcall *r)
 }
 
 static int
-safewalk(Chan **cp, char **names, int nnames, int nomount, int *nerror)
+safewalk(Chan **cp, const char **names, int nnames, int nomount, int *nerror)
 {
 	int r;
 
@@ -844,7 +844,7 @@ Exwalk(Export *fs, Fcall *t, Fcall *r)
 {
 	Fid *f, *nf;
 	Chan *c;
-	char *name;
+	const char *name;
 	Uqid *qid;
 	int i;
 

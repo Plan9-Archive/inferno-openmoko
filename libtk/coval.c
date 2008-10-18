@@ -1,6 +1,11 @@
 #include "lib9.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
+
 #include "canvs.h"
 
 typedef void	(*Drawfn)(Image*, Point, int, int, Image*, int);
@@ -34,8 +39,8 @@ static
 TkOption itemopts[] =
 {
 	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
-	"fill",		OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCfill),
-	"outline",	OPTcolr,	offsetof(TkCitem, env),	IAUX(TkCforegnd),
+	"fill",		OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCfill,
+	"outline",	OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCforegnd,
 	nil
 };
 

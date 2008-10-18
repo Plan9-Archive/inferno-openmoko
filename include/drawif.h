@@ -7,6 +7,6 @@ extern void		freedrawfont(Heap*, int);
 extern void		freedrawimage(Heap*, int);
 extern void		freedrawscreen(Heap*, int);
 extern Font*		lookupfont(Draw_Font*);
-extern Image*		lookupimage(Draw_Image*);
+extern Image*		lookupimage(const Draw_Image*);
 extern Screen*		lookupscreen(Draw_Screen*);
 extern Draw_Image*	mkdrawimage(Image*, Draw_Screen*, Draw_Display*, void*);

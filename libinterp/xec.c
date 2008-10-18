@@ -114,7 +114,7 @@ OP(cvtfw)
 }
 OP(cvtcl)
 {
-	const String *s = rs->pstring;
+	String *s = rs->pstring;
 
 	if(s == H)
 		rd->disbig = 0;
@@ -330,7 +330,7 @@ OP(newa)
 	a = H2D(Array*, h);
 	a->t = t;
 	a->len = sz;
-	a->root = H;
+	a->root = (Array*)H;
 	a->data = (char*)(a+1);
 	initarray(t, a);
 
@@ -351,7 +351,7 @@ OP(newaz)
 	a = H2D(Array*, h);
 	a->t = t;
 	a->len = sz;
-	a->root = H;
+	a->root = (Array*)H;
 	a->data = (char*)(a+1);
 	memset(a->data, 0, t->size*sz);
 	initarray(t, a);
@@ -375,7 +375,7 @@ cnewc(Type *t, void (*mover)(void*d, void*s, Channel*c), int len)
 	c->send->prog = c->recv->prog = nil;
 	c->send->next = c->recv->next = nil;
 	c->mover = mover;
-	c->buf = H;
+	c->buf = (Array*)H;
 	if(len > 0)
 		c->buf = H2D(Array*, heaparray(t, len));
 	c->front = 0;
@@ -1152,7 +1152,7 @@ OP(slicela)
 	Type *t;
 	int l, dl;
 	Array *ss, *ds;
-	uchar *sp, *dp, *ep;
+	char *sp, *dp, *ep;
 
 	ss = rs->parray;
 	dl = rm->disint;
@@ -1230,7 +1230,7 @@ OP(iraise)
 	v = rs->pvoid;
 	if(v == H)
 		error(exNilref);
-	p->exval = v;
+	p->exval = (String*)v; /* FIXME */
 	ADDREF(v);
 	if(D2H(v)->t == &Tstring)
 		error(string2c((String*)v));
@@ -1508,7 +1508,7 @@ destroystack(REG *reg)
 		}
 	}
 	destroy(reg->M); /* FIXME: atomic xchg */
-	reg->M = H;	/* for devprof */
+	reg->M = (Modlink*)H;	/* for devprof */
 	print(":destroystack end\n");
 }
 Prog*
@@ -1530,18 +1530,18 @@ irestore(Prog *p)
 
 
 
-extern void cvtca(void);
-extern void cvtac(void);
-extern void cvtwc(void);
-extern void cvtcw(void);
-extern void cvtfc(void);
-extern void cvtcf(void);
-extern void insc(void);
-extern void indc(void);
-extern void addc(void);
-extern void lenc(void);
-extern void slicec(void);
-extern void cvtlc(void);
+extern void cvtca(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void cvtac(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void cvtwc(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void cvtcw(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void cvtfc(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void cvtcf(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void insc(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void indc(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void addc(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void lenc(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void slicec(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
+extern void cvtlc(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr);
 
 #include "optab.h"
 

@@ -16,7 +16,7 @@ sysmodinit(void)
 }
 
 int
-xprint(Prog *xp, void *vfp, void *vva, String *s1, char *buf, int n)
+xprint(Prog *xp, const char *fp, const char *va, String *s1, char *buf, int n)
 {
 	DISINT i;
 	void *p;
@@ -25,13 +25,10 @@ xprint(Prog *xp, void *vfp, void *vva, String *s1, char *buf, int n)
 	double d;
 	String *ss;
 	ulong *ptr;
-	uchar *fp, *va;
 	int nc, c, isbig, isr, sip;
 	char *b, *eb, *f, fmt[32];
 	Rune r;
 
-	fp = vfp;
-	va = vva;
 
 	sip = 0;
 	isr = 0;
@@ -151,7 +148,7 @@ xprint(Prog *xp, void *vfp, void *vva, String *s1, char *buf, int n)
 					c = D2H(ptr)->ref;
 					t = D2H(ptr)->t;
 				}
-				b += snprint(b, eb-b, "%d.%.8lux", c, (ulong)t);
+				b += snprint(b, eb-b, "%d.%.8p", c, t);
 				va += sizeof(void*);
 				break;
 			}
@@ -170,7 +167,7 @@ bigxprint(Prog *xp, void *vfp, void *vva, String *s1, char **buf, int s)
 	m = s;
 	for (;;) {
 		m *= 2;
-		b = malloc(m);
+		b = (char*)malloc(m);
 		if (b == nil)
 			error(exNomem);
 		n = xprint(xp, vfp, vva, s1, b, m);
@@ -182,14 +179,11 @@ bigxprint(Prog *xp, void *vfp, void *vva, String *s1, char **buf, int s)
 	return n;
 }
 
-void
-Sys_sprint(void *fp)
+DISAPI(Sys_sprint)
 {
 	int n;
-	char buf[256], *b = buf;
-	F_Sys_sprint *f;
+	char buf[256], *b = buf; /* FIXME: small buffer */
 
-	f = fp;
 	n = xprint(currun(), f, &f->vargs, f->s, buf, sizeof(buf));
 	if (n >= sizeof(buf)-UTFmax-2)
 		n = bigxprint(currun(), f, &f->vargs, f->s, &b, sizeof(buf));
@@ -199,14 +193,11 @@ Sys_sprint(void *fp)
 		free(b);
 }
 
-void
-Sys_aprint(void *fp)
+DISAPI(Sys_aprint)
 {
 	int n;
-	char buf[256], *b = buf;
-	F_Sys_aprint *f;
+	char buf[256], *b = buf; /* FIXME: small buffer */
 
-	f = fp;
 	n = xprint(currun(), f, &f->vargs, f->s, buf, sizeof(buf));
 	if (n >= sizeof(buf)-UTFmax-2)
 		n = bigxprint(currun(), f, &f->vargs, f->s, &b, sizeof(buf));
@@ -220,8 +211,8 @@ static int
 tokdelim(int c, const String *d)
 {
 	int l;
-	char *p;
-	Rune *r;
+	const char *p;
+	const Rune *r;
 
 	l = d->len;
 	if(l < 0) {
@@ -237,10 +228,8 @@ tokdelim(int c, const String *d)
 	return 0;
 }
 
-void
-Sys_tokenize(void *fp)
+DISAPI(Sys_tokenize)
 {
-	F_Sys_tokenize * const f = fp;
 	const String * const s = f->s;
 	const String * const d = f->delim;
 	List **h, *l, *nl;
@@ -249,12 +238,12 @@ Sys_tokenize(void *fp)
 	if(s == H || d == H) {
 		f->ret->t0 = 0;
 		destroy(f->ret->t1);
-		f->ret->t1 = H;
+		f->ret->t1 = (List*)H;
 		return;
 	}
 
 	n = 0;
-	l = H;
+	l = (List*)H;
 	h = &l;
 	first = 0;
 	srune = 0;
@@ -286,7 +275,7 @@ Sys_tokenize(void *fp)
 			break;
 
 		nl = cons(sizeof(String*), h);
-		nl->tail = H;
+		nl->tail = (List*)H;
 		nl->t = &Tptr;
 		Tptr.ref++;
 		nl->data.pstring = slicer(first, last, s);
@@ -301,10 +290,8 @@ Sys_tokenize(void *fp)
 	f->ret->t1 = l;
 }
 
-void
-Sys_utfbytes(void *fp)
+DISAPI(Sys_utfbytes)
 {
-	F_Sys_utfbytes * const f = fp;
 	Array * const a = f->buf;
 	int nbyte;
 
@@ -315,10 +302,8 @@ Sys_utfbytes(void *fp)
 	*f->ret = nbyte;
 }
 
-void
-Sys_byte2char(void *fp)
+DISAPI(Sys_byte2char)
 {
-	F_Sys_byte2char * const f = fp;
 	Array * const a = f->buf;
 	const int n = f->n;
 	Rune r;
@@ -356,10 +341,8 @@ Sys_byte2char(void *fp)
 	f->ret->t2 = 1;
 }
 
-void
-Sys_char2byte(void *fp)
+DISAPI(Sys_char2byte)
 {
-	F_Sys_char2byte * const f = fp;
 	Array * const a = f->buf;
 	const int n = f->n;
 	int c = f->c;
@@ -384,9 +367,9 @@ Sys_char2byte(void *fp)
 }
 
 Module *
-builtinmod(char *name, void *vr, int rlen)
+builtinmod(const char *name, const Runtab *vr, int rlen)
 {
-	Runtab *r = vr;
+	const Runtab *r = vr;
 	Type *t;
 	Module *m;
 	Link *l;
@@ -418,9 +401,8 @@ builtinmod(char *name, void *vr, int rlen)
 void
 retnstr(const char *s, int n, String **d)
 {
-	String *s1;
+	String *s1 = (String *)H;
 
-	s1 = H;
 	if(n != 0)
 		s1 = c2string(s, n);
 	destroy(*d);
@@ -430,9 +412,8 @@ retnstr(const char *s, int n, String **d)
 void
 retstr(const char *s, String **d)
 {
-	String *s1;
+	String *s1 = (String *)H;
 
-	s1 = H;
 	if(s != nil)
 		s1 = c2string(s, strlen(s));
 	destroy(*d);
@@ -447,15 +428,15 @@ mem2array(const void *va, int n)
 
 	if(n < 0)
 		n = 0;
-	h = nheap(sizeof(Array)+n);
+	h = nheap(sizeof(Array)+n); /* FIXME: make function createarray() */
 	h->t = &Tarray;
 	h->t->ref++;
 	a = H2D(Array*, h);
 	a->t = &Tbyte;
 	Tbyte.ref++;
 	a->len = n;
-	a->root = H;
-	a->data = (uchar*)a+sizeof(Array);
+	a->root = (Array*)H;
+	a->data = (char*)a+sizeof(Array);
 	if(va != 0)
 		memmove(a->data, va, n);
 
@@ -468,7 +449,7 @@ utfnleng(const char *s, int nb, int *ngood)
 	int c;
 	long n;
 	Rune rune;
-	char *es, *starts;
+	const char *es, *starts;
 
 	starts = s;
 	es = s+nb;

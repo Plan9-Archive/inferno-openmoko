@@ -1,6 +1,10 @@
 #include "lib9.h"
 #include "kernel.h"
 #include "draw.h"
+
+#include "isa.h"
+#include "interp.h"
+#include "../libinterp/runt.h"
 #include "tk.h"
 
 static char* pdist(TkTop*, TkOption*, void*, char**, char*, char*);
@@ -113,7 +117,7 @@ tkword(TkTop *t, char *str, char *buf, char *ebuf, int *gotarg)
 		 * substitution may occur anywhere within a word, not
 		 * only (as here) at the beginning.
 		 */
-		cmd = malloc(strlen(str));	/* not strlen+1 because the first character is skipped */
+		cmd = (char*)malloc(strlen(str));	/* not strlen+1 because the first character is skipped */
 		if ( cmd == nil ) {
 			buf[0] = '\0';	/* DBK - Why not an error message? */
 			return str;
@@ -189,7 +193,7 @@ tkmkname(char *name)
 {
 	TkName *n;
 
-	n = malloc(sizeof(struct TkName)+strlen(name));
+	n = (TkName *)malloc(sizeof(struct TkName)+strlen(name));
 	if(n == nil)
 		return nil;
 	strcpy(n->name, name);
@@ -210,7 +214,7 @@ tkparse(TkTop *t, char *str, TkOptab *ot, TkName **nl)
 	l = strlen(str);
 	if (l < Tkmaxitem)
 		l = Tkmaxitem;
-	buf = malloc(l + 1);
+	buf = (char*)malloc(l + 1);
 	if(buf == 0)
 		return TkNomem;
 	ebuf = buf + l + 1;
@@ -298,7 +302,7 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 	int wh, con, i, n, flag, *v;
 	char *r, *buf, *fmt;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 
@@ -327,10 +331,10 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 	case OPTignore:
 		return nil;
 	case OPTact:
-		w = ft->ptr;
+		w = (Tk*)ft->ptr;
 		g = tkposn(w);
 		n = g.y;
-		if(o->aux == 0)
+		if(o->aux.ptkstab == 0)
 			n = g.x;
 		free(buf);
 		return tkvalue(val, "%d", n);
@@ -339,7 +343,7 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 		free(buf);
 		return tkvalue(val, "%d", OPTION(ft->ptr, int, o->offset));
 	case OPTsize:
-		w = ft->ptr;
+		w = (Tk*)ft->ptr;
 		if(strcmp(r, "width") == 0)
 			wh = w->req.width;
 		else
@@ -361,7 +365,7 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 		free(buf);
 		return tkvalue(val, "%s", c);
 	case OPTstab:
-		s = o->aux;
+		s = o->aux.ptkstab;
 		c = "";
 		con = OPTION(ft->ptr, int, o->offset);
 		while(s->val) {
@@ -376,10 +380,10 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 	case OPTflag:
 		con = OPTION(ft->ptr, int, o->offset);
 		flag = 0;
-		for (s = o->aux; s->val != nil; s++)
+		for (s = o->aux.ptkstab; s->val != nil; s++)
 			flag |= s->con;
 		c = "";
-		for (s = o->aux; s->val != nil; s++) {
+		for (s = o->aux.ptkstab; s->val != nil; s++) {
 			if ((con & flag) == s->con) {
 				c = s->val;
 				break;
@@ -395,13 +399,13 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 		return nil;
 	case OPTcolr:
 		e = OPTION(ft->ptr, TkEnv*, o->offset);
-		i = AUXI(o->aux);
+		i = o->aux.i;
 		free(buf);
 		return tkvalue(val, "#%.8lux", e->colors[i]);
 	case OPTfrac:
 	case OPTnnfrac:
 		v = &OPTION(ft->ptr, int, o->offset);
-		n = (int)o->aux;
+		n = o->aux.i;
 		if(n == 0)
 			n = 1;
 		fmt = "%s";
@@ -467,10 +471,10 @@ pdist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	 * with an OPTdist element has a TkEnv as its first member.
 	 */
 
-	if (o->aux == nil)
+	if (o->aux.ptkstab == nil)
 		env = nil;
 	else
-		env = OPTION(place, TkEnv*, AUXI(o->aux));
+		env = OPTION(place, TkEnv*, o->aux.i);
 	e = tkfracword(t, str, &d, env);
 	if(e != nil)
 		return e;
@@ -501,13 +505,13 @@ psize(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	int d, off;
 
 	USED(ebuf);
-	e = tkfracword(t, str, &d, OPTION(place, TkEnv*, AUXI(o->aux)));
+	e = tkfracword(t, str, &d, OPTION(place, TkEnv*, o->aux.i));
 	if (e != nil)
 		return e;
 	if(d < 0)
 		return TkBadvl;
 
-	tk = place;
+	tk = (Tk *)place; /*XXX*/
 	/*
 	 * XXX there's no way of resetting Tksetwidth or Tksetheight.
 	 * could perhaps allow it by setting width/height to {}
@@ -535,7 +539,7 @@ pstab(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	if(*buf == '\0')
 		return TkOparg;
 
-	for(s = o->aux; s->val; s++)
+	for(s = o->aux.ptkstab; s->val; s++)
 		if(strcmp(s->val, buf) == 0)
 			break;
 	if(s->val == nil)
@@ -548,7 +552,7 @@ pstab(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	}
 
 	mask = 0;
-	for(c = o->aux; c->val; c++)
+	for(c = o->aux.ptkstab; c->val; c++)
 		mask |= c->con;
 
 	OPTION(place, int, o->offset) &= ~mask;
@@ -711,7 +715,7 @@ pbmap(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	else {
 		char *file;
 
-		file = mallocz(Tkmaxitem, 0);
+		file = (char*)mallocz(Tkmaxitem, 0);
 		if(file == nil)
 			return TkNomem;
 
@@ -885,7 +889,7 @@ pcolr(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	if(env == nil)
 		return TkNomem;
 
-	color = AUXI(o->aux);
+	color = o->aux.i;
 	rgba = changecol(env, setcol, color, rgba);
 	if(color == TkCbackgnd || color == TkCselectbgnd || color == TkCactivebgnd) {
 		if (setcol) {
@@ -975,7 +979,7 @@ pfrac(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	*str = tkword(t, *str, buf, ebuf, nil);
 
 	v = &OPTION(place, int, o->offset);
-	n = (int)o->aux;
+	n = o->aux.i;
 	if(n == 0)
 		n = 1;
 	p = buf;
@@ -1026,15 +1030,15 @@ ptabs(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	TkTtabstop *tabfirst, *tab, *tabprev;
 	char *ibuf;
 
-	ibuf = mallocz(Tkmaxitem, 0);
+	ibuf = (char*)mallocz(Tkmaxitem, 0);
 	if(ibuf == nil)
 		return TkNomem;
 	eibuf = ibuf + Tkmaxitem;
-	tspec.env = OPTION(place, TkEnv*, AUXI(o->aux));
+	tspec.env = OPTION(place, TkEnv*, o->aux.i);
 	opd.offset = offsetof(Tabspec, dist);
-	opd.aux = IAUX(offsetof(Tabspec, env));
+	opd.aux.i = offsetof(Tabspec, env);
 	opj.offset = offsetof(Tabspec, dist);
-	opj.aux = tktabjust;
+	opj.aux.ptkstab = tktabjust;
 	tabprev = nil;
 	tabfirst = nil;
 
@@ -1057,7 +1061,7 @@ ptabs(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 		if(e != nil)
 			tspec.just = Tkleft;
 
-		tab = malloc(sizeof(TkTtabstop));
+		tab = (TkTtabstop *)malloc(sizeof(TkTtabstop));
 		if(tab == nil) {
 			free(ibuf);
 			return TkNomem;
@@ -1086,7 +1090,7 @@ tkxyparse(Tk* tk, char **parg, Point *p)
 {
 	char *buf;
 
-	buf = mallocz(Tkmaxitem, 0);
+	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
 		return TkNomem;
 
@@ -1116,7 +1120,7 @@ plist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 
 	*str = tkword(t, *str, buf, ebuf, nil);
 	n = strlen(buf) + 1;
-	wbuf = mallocz(n, 0);
+	wbuf = (char*)mallocz(n, 0);
 	if (wbuf == nil)
 		return TkNomem;		/* XXX should we free old values too? */
 	ewbuf = &wbuf[n];
@@ -1130,7 +1134,7 @@ plist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	n = 0;
 	m = 4;
 	w = buf;
-	v = malloc(m * sizeof(char*));
+	v = (char**)malloc(m * sizeof(char*));
 	if (v == nil)
 		goto Error;
 	for (;;) {
@@ -1139,7 +1143,7 @@ plist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 			break;
 		if (n == m - 1) {
 			m += m/2;
-			nv = realloc(v, m * sizeof(char*));
+			nv = (char**)realloc(v, m * sizeof(char*));
 			if (nv == nil)
 				goto Error;
 			v = nv;
@@ -1150,7 +1154,7 @@ plist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 		n++;
 	}
 	v[n++] = nil;
-	*p = realloc(v, n * sizeof(char*));
+	*p = (char**)realloc(v, n * sizeof(char*));
 	free(wbuf);
 	return nil;
 Error:
