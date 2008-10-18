@@ -205,7 +205,7 @@ freeheap(Heap *h, int swept)
 		return;
 
 	t = h->t;
-	print("Free:\t");PRINT_TYPE(t);print("\n");
+	/*print("Free:\t");PRINT_TYPE(t);print("\n");*/
 	if (t->np)
 		freeptrs(H2D(void*, h), t);
 }

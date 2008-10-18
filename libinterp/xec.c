@@ -257,7 +257,12 @@ OP(movp)
 }
 OP(movmp)
 {
-	Type *t = rr->ML->type[rm->disint];  /* TODO: check index range */
+	Type *t;
+
+	if((DISUINT)rr->ML->m->ntype <= (DISUINT)rm->disint)
+		error(exCctovflw);
+
+	t = rr->ML->type[rm->disint];
 
 	incmem(rs, t);
 	freeptrs(rd, t);
@@ -265,11 +270,17 @@ OP(movmp)
 }
 OP(new)
 {
-	ASSIGN(rd->pvoid, H2D(void*, heap(rr->ML->type[rs->disint])));  /* TODO: check index range */
+	if((DISUINT)rr->ML->m->ntype <= (DISUINT)rs->disint)
+		error(exCctovflw);
+
+	ASSIGN(rd->pvoid, H2D(void*, heap(rr->ML->type[rs->disint])));
 }
 OP(newz)
 {
-	ASSIGN(rd->pvoid, H2D(void*, heapz(rr->ML->type[rs->disint])));  /* TODO: check index range */
+	if((DISUINT)rr->ML->m->ntype <= (DISUINT)rs->disint)
+		error(exCctovflw);
+
+	ASSIGN(rd->pvoid, H2D(void*, heapz(rr->ML->type[rs->disint])));
 }
 OP(mnewz)
 {
@@ -278,16 +289,23 @@ OP(mnewz)
 	if(ml == H)
 		error(exModule);
 
-	ASSIGN(rd->pvoid, H2D(void*, heapz(ml->type[rm->disint])));  /* TODO: check index range */
+	if((DISUINT)ml->m->ntype <= (DISUINT)rm->disint)
+		error(exCctovflw);
+
+	ASSIGN(rd->pvoid, H2D(void*, heapz(ml->type[rm->disint])));
 }
 OP(frame) /* == newz */
 {
-	/*destroy(rd->pframe); /* ??*/
-	Type *t = rr->ML->type[rs->disint];  /* TODO: check index range */
 	Frame *f;
+	Type *t;
+
+	if((DISUINT)rr->ML->m->ntype <= (DISUINT)rs->disint)
+		error(exCctovflw);
+
+	t = rr->ML->type[rs->disint];
 
 	/*PRINT_TYPE(t);*/
-	/* type fix */
+	/* frame type fix */
 	if(t->np==0) {t->np=1; t->map[0]=0;}
 	t->map[0] |= 0x40; /* parent */
 	t->map[0] |= 0x20; /* ml */
@@ -337,10 +355,15 @@ acheck(int tsz, int sz)
 }
 OP(newa)
 {
-	Type * const t = rr->ML->type[rm->disint];  /* TODO: check index range */
+	Type*t;
 	const int sz = rs->disint;
 	Heap *h;
 	Array *a;
+
+	if((DISUINT)rr->ML->m->ntype <= (DISUINT)rm->disint)
+		error(exCctovflw);
+
+	t = rr->ML->type[rm->disint];
 
 	acheck(t->size, sz);
 	h = nheap(sizeof(Array) + (t->size*sz));
@@ -357,10 +380,16 @@ OP(newa)
 }
 OP(newaz)
 {
-	Type * const t = rr->ML->type[rm->disint];  /* TODO: check index range */
+	Type*t;
 	const int sz = rs->disint;
 	Heap *h;
 	Array *a;
+
+	if((DISUINT)rr->ML->m->ntype <= (DISUINT)rm->disint)
+		error(exCctovflw);
+
+	t = rr->ML->type[rm->disint];
+
 
 	acheck(t->size, sz);
 	h = nheap(sizeof(Array) + (t->size*sz));
@@ -468,7 +497,10 @@ OP(newcm)
 }
 OP(newcmp)
 {
-	newc(rr->ML->type[rs->disint], movertmp, rm, rd);  /* TODO: check index range */
+	if((DISUINT)rr->ML->m->ntype <= (DISUINT)rs->disint)
+		error(exCctovflw);
+
+	newc(rr->ML->type[rs->disint], movertmp, rm, rd);
 }
 OP(icase)
 {
@@ -605,7 +637,7 @@ OP(call)
 
 	assert(f->parent == H); /* virginity check, just curious */
 	assert(f->ml == H);
-	ADDREF(rr->FP); /* protect parent from being destroyed in ret */
+	//ADDREF(rr->FP); /* protect parent from being destroyed in ret */
 	f->lr = rr->PC;
 	f->parent = rr->FP;
 	rr->FP = f;
@@ -639,15 +671,15 @@ OP(mcall)
 		return;
 	}
 
-	ADDREF(rr->FP); /* protect parent frame from being destroyed in ret */
-	ADDREF(rr->ML);
+	//ADDREF(rr->FP); /* protect parent frame from being destroyed in ret */
+	//ADDREF(rr->ML);
 	f->lr = rr->PC;
 	f->parent = rr->FP;
 	f->ml = rr->ML;
 
 	rr->FP = f;
 	rr->ML = ml;
-	ADDREF(ml);	/* pair to ASSIGN in ret */
+	//ADDREF(ml);	/* pair to ASSIGN in ret */
 
 	rr->PC = l->pc;
 
@@ -682,23 +714,27 @@ OP(mspawn)
 OP(ret)
 {
 	Frame *f = rr->FP;
-	Modlink *ml = f->ml;
 
 	if(f->parent == H) {
 		error(""); /* 'stack' underflow, exit */
 	}
 	rr->PC = f->lr;
 
-	ASSIGN(rr->FP, f->parent);
-
 	/* return from mcall */
-	if(ml != H) {
-		if(rr->ML->compiled != ml->compiled) {
+	if(f->ml != H) {
+		if(rr->ML->compiled != f->ml->compiled) {
 			rr->IC = 1;
 		}
-		ASSIGN(rr->ML, ml); /* pair to ADDREF in mcall */
-		/*rr->ML = ml;*/
+		//ADDREF(f->ml);
+		//ASSIGN(rr->ML, f->ml); /* pair to ADDREF in mcall */
+		rr->ML = f->ml;
 	}
+
+	if(f->ml != H)
+		ADDREF(f->ml);
+	ADDREF(f->parent); /* protect parent frame from being destroyed */
+	ASSIGN(rr->FP, f->parent);
+
 }
 OP(iload)
 {
@@ -1018,8 +1054,14 @@ OP(consm)
 }
 OP(consmp)
 {
-	Type *t = rr->ML->type[rm->disint];  /* TODO: check index range */
-	List *l = cons(t->size, &rd->plist);
+	Type *t;
+	List *l;
+
+	if((DISUINT)rr->ML->m->ntype <= (DISUINT)rm->disint)
+		error(exCctovflw);
+
+	t = rr->ML->type[rm->disint];
+	l = cons(t->size, &rd->plist);
 
 	incmem(rs, t);
 	memcpy(&l->data, rs, t->size);
@@ -1090,8 +1132,10 @@ OP(headmp)
 	if(l == H)
 		error(exNilref);
 
-	//was rs = &l->data; movmp();
-	t = rr->ML->type[rm->disint];  /* TODO: check index range */
+	if((DISUINT)rr->ML->m->ntype <= (DISUINT)rm->disint)
+		error(exCctovflw);
+
+	t = rr->ML->type[rm->disint];
 	incmem(&l->data, t);
 	freeptrs(rd, t);
 	memcpy(rd, &l->data, t->size);
@@ -1485,35 +1529,7 @@ OP(self)
 	ADDREF(ml);
 	ASSIGN(rd->pmodlink, ml);
 }
-#if 0
-void
-destroystack(REG *reg)
-{
-	/* BUG: free frames as well */
-	/* TODO mark Frame::mp and Frame::fp in Type::map */
-	Frame *f;
-	Type* t;
-	print("destroystack begin:\n");
-	for(f = reg->FP; f != H; f = f->parent)
-	{
-		assert(D2H(f)->t!=nil);
-		assert(D2H(f)->t->destructor == &freeheap);
 
-		print("Frame:\t");PRINT_TYPE(D2H(f)->t); print("\n");
-		/*{Type*t=D2H(f)->t; int i;
-		print("<%02X:", t->np); for(i=0; i<t->np; i++) print("%02X", t->map[i]);
-		print(">\n");
-		}*/
-
-		freeptrs(f, D2H(f)->t);
-		if(f->ml != H) {
-			ASSIGN(reg->ML, f->ml);
-		}
-	}
-	ASSIGN(reg->ML, (Modlink*)H); 	/* for devprof */
-	print(":destroystack end\n");
-}
-#endif
 Prog*
 isave(void)
 {

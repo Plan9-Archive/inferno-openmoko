@@ -438,7 +438,7 @@ killprog(Prog *p, char *cause)
 
 	p->state = Pexiting;
 	gclock();
-	/*destroystack(&p->R);*/
+	ASSIGN(p->R.FP, H); //destroystack(&p->R);
 	delprog(p, msg);
 	gcunlock();
 
@@ -1065,7 +1065,7 @@ progexit(void)
 
 	gclock();
 
-	/*destroystack(&R);*/
+	ASSIGN(R.FP, H); //destroystack(&R);
 
 	delprog(r, msg);
 	gcunlock();
