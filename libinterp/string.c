@@ -370,7 +370,7 @@ string2c(String *s)
 String*
 c2string(const char *cs, int len)
 {
-	uchar *p;
+	const char *p;
 	const char *ecs;
 	String *s;
 	Rune *r, junk;
@@ -378,7 +378,7 @@ c2string(const char *cs, int len)
 
 	isrune = 0;
 	ecs = cs+len;
-	p = (uchar*)cs;
+	p = cs;
 	while(len--) {
 		c = *p++;
 		if(c >= Runeself) {
@@ -395,12 +395,12 @@ c2string(const char *cs, int len)
 	}
 
 	p--;
-	nc = p - (uchar*)cs;
-	while(p < (uchar*)ecs) {
+	nc = p - cs;
+	while(p < ecs) {
 		c = *p;
 		if(c < Runeself)
 			p++;
-		else if(p+UTFmax<=(uchar*)ecs || fullrune((char*)p, (uchar*)ecs-p))
+		else if(p+UTFmax<=ecs || fullrune(p, ecs-p))
 			p += chartorune(&junk, (char*)p);
 		else
 			break;
@@ -421,7 +421,7 @@ newstring(int nb)
 	String *s = H2D(String*, h);
 
 	h->t = &Tstring;
-	Tstring.ref++;
+	Tstring.ref++; /*???*/
 	s->tmp = nil;
 	s->len = nb;
 	s->max = hmsize(h) - (sizeof(String)+sizeof(Heap));
