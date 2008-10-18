@@ -201,8 +201,7 @@ DISAPI(Sys_aprint)
 	n = xprint(currun(), f, &f->vargs, f->s, buf, sizeof(buf));
 	if (n >= sizeof(buf)-UTFmax-2)
 		n = bigxprint(currun(), f, &f->vargs, f->s, &b, sizeof(buf));
-	destroy(*f->ret);
-	*f->ret = mem2array(b, n);
+	ASSIGN(*f->ret, mem2array(b, n));
 	if (b != buf)
 		free(b);
 }
@@ -237,8 +236,7 @@ DISAPI(Sys_tokenize)
 
 	if(s == H || d == H) {
 		f->ret->t0 = 0;
-		destroy(f->ret->t1);
-		f->ret->t1 = (List*)H;
+		ASSIGN(f->ret->t1, (List*)H);
 		return;
 	}
 
@@ -405,8 +403,7 @@ retnstr(const char *s, int n, String **d)
 
 	if(n != 0)
 		s1 = c2string(s, n);
-	destroy(*d);
-	*d = s1;
+	ASSIGN(*d, s1);
 }
 
 void
@@ -416,8 +413,7 @@ retstr(const char *s, String **d)
 
 	if(s != nil)
 		s1 = c2string(s, strlen(s));
-	destroy(*d);
-	*d = s1;
+	ASSIGN(*d, s1);
 }
 
 Array*

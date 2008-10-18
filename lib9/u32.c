@@ -47,7 +47,7 @@ out:
 }
 
 int
-enc32(char *dest, int ndest, uchar *src, int nsrc)
+enc32(char *dest, int ndest, const uchar *src, int nsrc)
 {
 	char *tab, *start;
 	int j;

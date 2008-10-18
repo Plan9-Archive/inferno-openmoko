@@ -834,8 +834,8 @@ extern	void		tksetwinimage(Tk*, Image*);
 extern	void		tkdestroywinimage(Tk*);
 extern	void		tkfreevar(TkTop*, char*, int);
 extern	TkVar*		tkmkvar(TkTop*, char*, int);
-extern	int		tktolimbo(Channel *, char*);
-extern	void		tkwreq(TkTop*, char*, ...);
+extern	int		tktolimbo(Channel *, const char*);
+extern	void		tkwreq(TkTop*, const char*, ...);
 extern	void		tkdelpanelimage(TkTop*, Image*);
 
 extern	TkMethod		framemethod;

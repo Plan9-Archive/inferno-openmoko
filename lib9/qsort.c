@@ -109,7 +109,7 @@ qsorts(char *a, long n, Sort *p)
 }
 
 void
-qsort(void *va, long n, long es, int (*cmp)(void*, void*))
+qsort(void *va, long n, long es, int (*cmp)(const void*, const void*))
 {
 	Sort s;
 

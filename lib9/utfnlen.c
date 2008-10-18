@@ -6,7 +6,7 @@ utfnlen(const char *s, long m)
 	int c;
 	long n;
 	Rune rune;
-	char *es;
+	const char *es;
 
 	es = s + m;
 	for(n = 0; s < es; n++) {

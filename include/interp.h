@@ -10,6 +10,9 @@ typedef float			DISREAL32;	/* 32 float IEEE754 */
 
 #define DISAPI(name) void name(F_##name *f)
 
+#define ASSIGN(place, value) {void* old=(place); (place)=(value); destroy(old);}
+//#define ASSIGN(place, value) {void* old=(place); (place)=H; destroy(old); (place)=(value); } /* memory saver */
+
 enum ProgState
 {
 	Palt,				/* blocked in alt instruction */
@@ -477,8 +480,8 @@ extern	int		dynldable(int);
 extern	void		loadermodinit(void);
 extern	Type*		dtype(void (*destructor)(Heap*, int), int, const char*map, int mapsize, const char*comment);
 extern	Module*		dupmod(Module*);
-extern	NORETURN	error(char*);
-extern	NORETURN	errorf(char*, ...);
+extern	NORETURN	error(const char*);
+extern	NORETURN	errorf(const char*, ...);
 extern	void		extend(void);
 extern	void		freedyncode(Module*);
 extern	void		freedyndata(Modlink*);

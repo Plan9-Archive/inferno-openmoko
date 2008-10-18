@@ -172,27 +172,22 @@ Element_iconseparator(void *fp, int kind)
 		unlockdisplay(icon->display);
 }
 
-void
-Element_icon(void *fp)
+DISAPI(Element_icon)
 {
-	Element_iconseparator(fp, EIcon);
+	Element_iconseparator(f, EIcon);
 }
 
-void
-Element_separator(void *fp)
+DISAPI(Element_separator)
 {
-	Element_iconseparator(fp, ESeparator);
+	Element_iconseparator(f, ESeparator);
 }
 
-void
-Element_text(void *fp)
+DISAPI(Element_text)
 {
-	F_Element_text *f;
 	PElement *pelem;
 	Display *disp;
 	int locked;
 
-	f = fp;
 	badenviron(f->env, 1);
 	if(f->kind!=EText && f->kind!=ETitle)
 		return;
@@ -207,15 +202,12 @@ Element_text(void *fp)
 		unlockdisplay(disp);
 }
 
-void
-Element_layout(void *fp)
+DISAPI(Element_layout)
 {
-	F_Element_layout *f;
 	PElement *pelem;
 	Display *disp;
 	int locked;
 
-	f = fp;
 	badenviron(f->env, 1);
 	if(f->kind!=EText && f->kind!=ETitle)
 		return;
@@ -230,8 +222,7 @@ Element_layout(void *fp)
 		unlockdisplay(disp);
 }
 
-void
-Element_elist(void *fp)
+DISAPI(Element_elist)
 {
 	F_Element_elist *f;
 	PElement *pelist;
@@ -247,16 +238,13 @@ Element_elist(void *fp)
 
 	disp = checkscreen(f->env->screen)->display;
 	locked = lockdisplay(disp);
-	destroy(*f->ret);
-	*f->ret = H;
 	pelist = elistelement(f->env, f->elem, f->kind);
-	*f->ret = (Prefab_Element*)pelist;
+	ASSIGN(*f->ret, (Prefab_Element*)pelist);
 	if(locked)
 		unlockdisplay(disp);
 }
 
-void
-Element_append(void *fp)
+DISAPI(Element_append)
 {
 	F_Element_append *f;
 
@@ -276,14 +264,11 @@ Element_append(void *fp)
 		*f->ret = 1;
 }
 
-void
-Element_adjust(void *fp)
+DISAPI(Element_adjust)
 {
-	F_Element_adjust *f;
 	Display *disp;
 	int locked;
 
-	f = fp;
 	checkelement(f->elem);
 	badenviron(f->elem->environ, 1);
 	disp = checkscreen(f->elem->environ->screen)->display;
@@ -293,14 +278,11 @@ Element_adjust(void *fp)
 		unlockdisplay(disp);
 }
 
-void
-Element_show(void *fp)
+DISAPI(Element_show)
 {
-	F_Element_show *f;
 	Display *disp;
 	int locked;
 
-	f = fp;
 	checkelement(f->elem);
 	checkelement(f->elist);
 	badenviron(f->elem->environ, 1);
@@ -311,15 +293,12 @@ Element_show(void *fp)
 		unlockdisplay(disp);
 }
 
-void
-Element_clip(void *fp)
+DISAPI(Element_clip)
 {
-	F_Element_clip *f;
 	Rectangle r;
 	Display *disp;
 	int locked;
 
-	f = fp;
 	checkelement(f->elem);
 	badenviron(f->elem->environ, 1);
 	R2R(r, f->r);
@@ -354,110 +333,86 @@ Element_translatescroll(void *fp, int trans)
 		unlockdisplay(disp);
 }
 
-void
-Element_scroll(void *fp)
+DISAPI(Element_scroll)
 {
-	Element_translatescroll(fp, 0);
+	Element_translatescroll(f, 0);
 }
 
-void
-Element_translate(void *fp)
+DISAPI(Element_translate)
 {
-	Element_translatescroll(fp, 1);
+	Element_translatescroll(f, 1);
 }
 
-void
-Compound_iconbox(void *fp)
+DISAPI(Compound_iconbox)
 {
-	F_Compound_iconbox *f;
 	Image *icon;
 	int locked;
 	PCompound *pc;
 
-	f = fp;
 	badenviron(f->env, 1);
 	checkimage(f->mask);
 	icon = checkimage(f->icon);
 	locked = lockdisplay(icon->display);
-	destroy(*f->ret);
-	*f->ret = H;
+	ASSIGN(*f->ret, H);
 	pc = iconbox(f->env, f->p, f->title, f->icon, f->mask);
 	*f->ret = &pc->c;
 	if(locked)
 		unlockdisplay(icon->display);
 }
 
-void
-Compound_textbox(void *fp)
+DISAPI(Compound_textbox)
 {
-	F_Compound_textbox *f;
 	Display *disp;
 	int locked;
 	PCompound *pc;
 
-	f = fp;
 	badenviron(f->env, 1);
 	disp = checkscreen(f->env->screen)->display;
 	locked = lockdisplay(disp);
-	destroy(*f->ret);
-	*f->ret = H;
 	pc = textbox(f->env, f->r, f->title, f->text);
-	*f->ret = &pc->c;
+	ASSIGN(*f->ret, &pc->c);
 	if(locked)
 		unlockdisplay(disp);
 }
 
-void
-Compound_layoutbox(void *fp)
+DISAPI(Compound_layoutbox)
 {
-	F_Compound_layoutbox *f;
 	Display *disp;
 	int locked;
 	PCompound *pc;
 
-	f = fp;
 	badenviron(f->env, 1);
 	disp = checkscreen(f->env->screen)->display;
 	locked = lockdisplay(disp);
-	destroy(*f->ret);
-	*f->ret = H;
 	pc = layoutbox(f->env, f->r, f->title, f->lay);
-	*f->ret = &pc->c;
+	ASSIGN(*f->ret, &pc->c);
 	if(locked)
 		unlockdisplay(disp);
 }
 
-void
-Compound_box(void *fp)
+DISAPI(Compound_box)
 {
-	F_Compound_box *f;
 	Display *disp;
 	int locked;
 	PCompound *pc;
 
-	f = fp;
 	badenviron(f->env, 1);
 	if(f->title != H)
 		checkelement(f->title);
 	checkelement(f->elist);
 	disp = checkscreen(f->env->screen)->display;
 	locked = lockdisplay(disp);
-	destroy(*f->ret);
-	*f->ret = H;
 	pc = box(f->env, f->p, f->title, f->elist);
-	*f->ret = &pc->c;
+	ASSIGN(*f->ret, &pc->c);
 	if(locked)
 		unlockdisplay(disp);
 }
 
-void
-Compound_draw(void *fp)
+DISAPI(Compound_draw)
 {
-	F_Compound_draw *f;
 	PCompound *pc;
 	int locked;
 
-	f = fp;
 	if(f->comp == H)
 		return;
 	pc = checkcompound(f->comp);
@@ -469,15 +424,12 @@ Compound_draw(void *fp)
 		unlockdisplay(pc->display);
 }
 
-void
-Compound_redraw(void *fp)
+DISAPI(Compound_redraw)
 {
-	F_Compound_redraw *f;
 	PCompound *pc;
 	Image *i;
 	int locked;
 
-	f = fp;
 	if(f->comp == H)
 		return;
 	pc = checkcompound(f->comp);
@@ -504,16 +456,13 @@ pelement(Prefab_Compound *comp, Prefab_Element *elem)
 	return pe;
 }
 
-void
-Compound_highlight(void *fp)
+DISAPI(Compound_highlight)
 {
-	F_Compound_highlight *f;
 	PCompound *pc;
 	PElement *pe;
 	Image *i;
 	int locked;
 
-	f = fp;
 	pe = pelement(f->comp, f->elem);
 	if(pe == H)
 		return;
@@ -526,17 +475,14 @@ Compound_highlight(void *fp)
 		unlockdisplay(pc->display);
 }
 
-void
-Compound_scroll(void *fp)
+DISAPI(Compound_scroll)
 {
-	F_Compound_scroll *f;
 	PCompound *pc;
 	PElement *pe;
 	int locked;
 	Image *i;
 	int moved;
 
-	f = fp;
 	pe = pelement(f->comp, f->elem);
 	if(pe == H)
 		return;
@@ -553,15 +499,12 @@ Compound_scroll(void *fp)
 		unlockdisplay(pc->display);
 }
 
-void
-Compound_show(void *fp)
+DISAPI(Compound_show)
 {
-	F_Compound_show *f;
 	PCompound *pc;
 	PElement *pe;
 	int locked;
 
-	f = fp;
 	pe = pelement(f->comp, f->elem);
 	if(pe == H)
 		return;
@@ -811,14 +754,12 @@ doselect(void *fp, int dotags)
 	}
 }
 
-void
-Compound_tagselect(void *fp)
+DISAPI(Compound_tagselect)
 {
-	doselect(fp, 1);
+	doselect(f, 1);
 }
 
-void
-Compound_select(void *fp)
+DISAPI(Compound_select)
 {
-	doselect(fp, 0);
+	doselect(f, 0);
 }

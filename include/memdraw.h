@@ -178,7 +178,7 @@ extern void		memimagemove(void*, void*);
  * Kernel cruft
  */
 extern void		rdb(void);
-extern int		iprint(char*, ...);
+extern int		iprint(const char*, ...);
 #pragma varargck argpos iprint 1
 extern int		drawdebug;
 

@@ -253,8 +253,7 @@ OP(movp)
 		ADDREF(sv);
 		Setmark(D2H(sv));
 	}
-	destroy(rd->pvoid); /* FIXME: atomic xchg */
-	rd->pvoid = sv;
+	ASSIGN(rd->pvoid, sv);
 }
 OP(movmp)
 {
@@ -266,13 +265,11 @@ OP(movmp)
 }
 OP(new)
 {
-	destroy(rd->pvoid);  /* FIXME: atomic xchg */
-	rd->pvoid = H2D(void*, heap(rr->M->type[rs->disint]));  /* TODO: check index range */
+	ASSIGN(rd->pvoid, H2D(void*, heap(rr->M->type[rs->disint])));  /* TODO: check index range */
 }
 OP(newz)
 {
-	destroy(rd->pvoid); /* FIXME: atomic xchg */
-	rd->pvoid = H2D(void*, heapz(rr->M->type[rs->disint]));  /* TODO: check index range */
+	ASSIGN(rd->pvoid, H2D(void*, heapz(rr->M->type[rs->disint])));  /* TODO: check index range */
 }
 OP(mnewz)
 {
@@ -281,8 +278,7 @@ OP(mnewz)
 	if(ml == H)
 		error(exModule);
 
-	destroy(rd->pvoid); /* FIXME: atomic xchg */
-	rd->pvoid = H2D(void*, heapz(ml->type[rm->disint]));  /* TODO: check index range */
+	ASSIGN(rd->pvoid, H2D(void*, heapz(ml->type[rm->disint])));  /* TODO: check index range */
 }
 OP(frame) /* == newz */
 {
@@ -334,8 +330,7 @@ OP(newa)
 	a->data = (char*)(a+1);
 	initarray(t, a);
 
-	destroy(rd->parray); /* FIXME: atomic xchg */
-	rd->parray = a;
+	ASSIGN(rd->parray, a);
 }
 OP(newaz)
 {
@@ -356,8 +351,7 @@ OP(newaz)
 	memset(a->data, 0, t->size*sz);
 	initarray(t, a);
 
-	destroy(rd->parray); /* FIXME: atomic xchg */
-	rd->parray = a;
+	ASSIGN(rd->parray, a);
 }
 Channel*
 cnewc(Type *t, void (*mover)(void*d, void*s, Channel*c), int len)
@@ -398,8 +392,8 @@ newc(Type *t, void (*mover)(void*d, void*s, Channel*c), Disdata*rm, Disdata*rd)
 			error(exNegsize);
 	}
 
-	destroy(rd->pchannel); /* FIXME: atomic xchg */
-	return rd->pchannel = cnewc(t, mover, len);
+	ASSIGN(rd->pchannel, cnewc(t, mover, len));
+	return rd->pchannel;
 }
 
 static void moverb(void*d, void*s, Channel*c) { *(DISBYTE*)d = *(DISBYTE*)s; }
@@ -414,8 +408,7 @@ void moverp(void*d, void*s, Channel*c)
 		ADDREF(sv);
 		Setmark(D2H(sv));
 	}
-	destroy(*(void**)d); /* FIXME: atomic xchg */
-	*(void**)d = sv;
+	ASSIGN(*(void**)d, sv);
 }
 void
 movertmp(void*d, void*s, Channel*c)		/* Used by send & receive */
@@ -640,8 +633,7 @@ OP(ret)
 		if(rr->M->compiled != m->compiled) {
 			rr->IC = 1;
 		}
-		destroy(rr->M); /* FIXME: atomic xchg */
-		rr->M = m;
+		ASSIGN(rr->M, m);
 		rr->MP = m->MP;
 	}
 }
@@ -670,8 +662,7 @@ OP(iload)
 		ml = linkmod(m, ldt, 1);
 	}
 
-	destroy(rd->pmodlink); /* FIXME: atomic xchg */
-	rd->pmodlink = ml;
+	ASSIGN(rd->pmodlink, ml);
 }
 OP(mcall)
 {
@@ -1055,8 +1046,7 @@ OP(headp)
 		ADDREF(sv);
 		Setmark(D2H(sv));
 	}
-	destroy(rd->pvoid); /* FIXME: atomic xchg */
-	rd->pvoid = sv;
+	ASSIGN(rd->pvoid, sv);
 }
 OP(headf)
 {
@@ -1103,8 +1093,7 @@ OP(tail)
 		ADDREF(sv);
 		Setmark(D2H(sv));
 	}
-	destroy(rd->plist); /* FIXME: atomic xchg */
-	rd->plist = sv;
+	ASSIGN(rd->plist, sv);
 }
 OP(slicea)
 {
@@ -1137,8 +1126,7 @@ OP(slicea)
 	if(ds->root != H) {			/* slicing a slice */
 		ds = ds->root;
 		ADDREF(ds);
-		destroy(rd->parray); /* FIXME: atomic xchg */
-		rd->parray = ss;
+		ASSIGN(rd->parray, ss);
 		ss->root = ds;
 	}
 	else {
@@ -1477,9 +1465,7 @@ OP(self)
 	Modlink *ml = rr->M;
 
 	ADDREF(ml);
-
-	destroy(rd->pmodlink); /* FIXME: atomic xchg */
-	rd->pmodlink = ml;
+	ASSIGN(rd->pmodlink, ml);
 }
 
 void
@@ -1503,12 +1489,10 @@ destroystack(REG *reg)
 
 		freeptrs(f, D2H(f)->t);
 		if(f->mr != nil) {
-			destroy(reg->M); /* FIXME: atomic xchg */
-			reg->M = f->mr;
+			ASSIGN(reg->M, f->mr);
 		}
 	}
-	destroy(reg->M); /* FIXME: atomic xchg */
-	reg->M = (Modlink*)H;	/* for devprof */
+	ASSIGN(reg->M, (Modlink*)H); 	/* for devprof */
 	print(":destroystack end\n");
 }
 Prog*

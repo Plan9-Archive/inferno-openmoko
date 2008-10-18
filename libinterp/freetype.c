@@ -59,8 +59,7 @@ DISAPI(Face_loadglyph)
 
 	face = ckface(f->face);
 
-	destroy(*f->ret);
-	*f->ret = (Freetype_Glyph *)H;
+	ASSIGN(*f->ret, (Freetype_Glyph *)H);
 
 	release();
 	err = ftloadglyph(face->ftface, f->c, &ftg);
@@ -179,8 +178,7 @@ DISAPI(Face_settransform)
 	 * ftsettransform() has no error return
 	 * we have one for consistency - but always nil for now
 	 */
-	destroy(*f->ret);
-	*f->ret = (String*)H;
+	ASSIGN(*f->ret, (String*)H);
 
 	if (f->m != H)
 		m = (FTmatrix*)(f->m);

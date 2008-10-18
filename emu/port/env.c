@@ -55,7 +55,7 @@ egrpcpy(Egrp *to, Egrp *from)
 }
 
 void
-ksetenv(char *var, char *val, int conf)
+ksetenv(const char *var, const char *val, int conf)
 {
 	Chan *c;
 	char buf[2*KNAMELEN];

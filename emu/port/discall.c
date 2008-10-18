@@ -113,7 +113,7 @@ libwrite(int fd, void *buf, int n)
 }
 
 int
-libopen(char *name, int omode)
+libopen(const char *name, int omode)
 {
 	int fd;
 

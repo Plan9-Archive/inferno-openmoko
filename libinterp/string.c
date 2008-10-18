@@ -220,8 +220,7 @@ OP(addc)
 	String *ns = addstring(rm->pstring, rs->pstring, rm == rd);
 
 	if(ns != rd->pstring) {
-		destroy(rd->pstring);
-		rd->pstring = ns;
+		ASSIGN(rd->pstring, ns);
 	}
 }
 
@@ -248,8 +247,7 @@ OP(cvtca)
 	}
 	a = mem2array(ss->Sascii, ss->len);
 r:
-	destroy(rd->parray);
-	rd->parray = a;
+	ASSIGN(rd->parray, a);
 }
 
 OP(cvtac)
@@ -260,8 +258,7 @@ OP(cvtac)
 	if(a != H)
 		ds = c2string((char*)a->data, a->len);
 
-	destroy(rd->pstring);
-	rd->pstring = ds;
+	ASSIGN(rd->pstring, ds);
 }
 
 OP(lenc)
@@ -311,8 +308,7 @@ OP(cvtwc)
 
 	ds->len = sprint(ds->Sascii, "%d", rs->disint);
 
-	destroy(rd->pstring);
-	rd->pstring = ds;
+	ASSIGN(rd->pstring, ds);
 }
 
 OP(cvtlc)
@@ -321,8 +317,7 @@ OP(cvtlc)
 
 	ds->len = sprint(ds->Sascii, "%lld", rs->disbig);
 
-	destroy(rd->pstring);
-	rd->pstring = ds;
+	ASSIGN(rd->pstring, ds);
 }
 
 OP(cvtfc)
@@ -331,8 +326,7 @@ OP(cvtfc)
 
 	ds->len = sprint(ds->Sascii, "%g", rs->disreal);
 
-	destroy(rd->pstring);
-	rd->pstring = ds;
+	ASSIGN(rd->pstring, ds);
 }
 
 char*

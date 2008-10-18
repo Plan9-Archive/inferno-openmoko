@@ -55,7 +55,7 @@ struct	Fcall
 		/* }; */
 		/* struct { */
 			u16int	nstat;		/* Twstat, Rstat */
-			char	*stat;		/* Twstat, Rstat */
+			const char	*stat;		/* Twstat, Rstat */
 		/* }; */
 	/* }; */
 } Fcall;

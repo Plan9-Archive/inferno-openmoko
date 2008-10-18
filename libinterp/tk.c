@@ -572,14 +572,9 @@ DISAPI(Tk_namechan)
 DISAPI(Tk_quote)
 {
 	String *s, *ns;
-	void *r;
 	int c, i, need, len, userune, last, n;
 	Rune *sr;
 	char *sc;
-
-	r = *f->ret;
-	*f->ret = (String*)H;
-	destroy(r);
 
 	s = f->s;
 	if(s == H){
@@ -637,7 +632,7 @@ DISAPI(Tk_quote)
 		}
 		*sc= '}';
 	}
-	*f->ret = ns;
+	ASSIGN(*f->ret, ns);
 }
 
 static void
@@ -866,19 +861,12 @@ DISAPI(Tk_getimage)
 	TkTop *t;
 	int locked;
 	Display *d;
-	void *r;
 	void (*getimgs)(Tk*, Image**, Image**);
 	Image *image, *mask;
 
-	r = f->ret->t0;
-	f->ret->t0 = (Draw_Image*)H;
-	destroy(r);
-	r = f->ret->t1;
-	f->ret->t1 = (Draw_Image*)H;
-	destroy(r);
-	r = f->ret->t2;
-	f->ret->t2 = (String*)H;
-	destroy(r);
+	ASSIGN(f->ret->t0, (Draw_Image*)H);
+	ASSIGN(f->ret->t1, (Draw_Image*)H);
+	ASSIGN(f->ret->t2, (String*)H);
 
 	t = (TkTop*)f->t;
 	if(t == H || D2H(t)->t != fakeTkTop) {

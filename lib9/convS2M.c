@@ -3,7 +3,7 @@
 
 static
 uchar*
-pstring(uchar *p, char *s)
+pstring(uchar *p, const char *s)
 {
 	uint n;
 
@@ -23,7 +23,7 @@ pstring(uchar *p, char *s)
 
 static
 uchar*
-pqid(uchar *p, Qid *q)
+pqid(uchar *p, const Qid *q)
 {
 	PBIT8(p, q->type);
 	p += BIT8SZ;
@@ -36,7 +36,7 @@ pqid(uchar *p, Qid *q)
 
 static
 uint
-stringsz(char *s)
+stringsz(const char *s)
 {
 	if(s == nil)
 		return BIT16SZ;

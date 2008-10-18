@@ -119,18 +119,16 @@ Srv_ipa2h(void *fp)
 	*f->ret = l;
 }
 
-void
-Srv_ipn2p(void *fp)
+DISAPI(Srv_ipn2p)
 {
 	int n;
 	char buf[16];
-	F_Srv_ipn2p *f;
 	void *r;
 
-	f = (F_Srv_ipn2p*)fp;
-	r = *f->ret;
-	*f->ret = (String*)H;
-	destroy(r);
+	//r = *f->ret;
+	//*f->ret = (String*)H;
+	//destroy(r);
+	ASSIGN(*f->ret, (String*)H);
 	release();
 	qlock(&dbq);
 	if(waserror()){

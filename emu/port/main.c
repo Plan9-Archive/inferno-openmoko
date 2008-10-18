@@ -272,7 +272,7 @@ main(int argc, char *argv[])
  * main() -> os-specific libinit(startmodule) -> emuinit(startmodule)
  */
 NORETURN
-emuinit(void *imod)
+emuinit(const char *imod)
 {
 	Osenv *e;
 
@@ -332,7 +332,7 @@ emuinit(void *imod)
 }
 
 static NORETURN
-errorv(char *fmt, va_list arg)
+errorv(const char *fmt, va_list arg)
 {
 	char buf[PRINTSIZE];
 
@@ -341,7 +341,7 @@ errorv(char *fmt, va_list arg)
 }
 
 NORETURN
-errorf(char *fmt, ...)
+errorf(const char *fmt, ...)
 {
 	va_list arg;
 
@@ -354,7 +354,7 @@ errorf(char *fmt, ...)
  * mainly for libmp
  */
 NORETURN
-sysfatal(char *fmt, ...)
+sysfatal(const char *fmt, ...)
 {
 	va_list arg;
 
@@ -365,7 +365,7 @@ sysfatal(char *fmt, ...)
 
 extern char exBounds[];
 NORETURN
-error(char *err)
+error(const char *err)
 {
 	/*if(err==exBounds)
 		__asm int 3;*/
@@ -377,7 +377,7 @@ error(char *err)
 }
 
 NORETURN
-exhausted(char *resource)
+exhausted(const char *resource)
 {
 	char buf[64];
 	int n;
@@ -431,7 +431,7 @@ panicv(char *fmt, va_list arg)
 }
 
 NORETURN
-panic(char *fmt, ...)
+panic(const char *fmt, ...)
 {
 	va_list arg;
 
@@ -441,9 +441,8 @@ panic(char *fmt, ...)
 }
 
 int
-iprint(char *fmt, ...)
+iprint(const char *fmt, ...)
 {
-
 	int n;
 	va_list va;
 	char buf[1024];

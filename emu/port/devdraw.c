@@ -1022,10 +1022,10 @@ drawread(Chan *c, char *a, long n, vlong off)
 	Refresh *r;
 	DImage *di;
 	Memimage *i;
-	ulong offset = off;
+	//ulong offset = off;
 	char buf[16];
 
-	USED(offset);
+	//USED(offset);
 	if(c->qid.type & QTDIR)
 		return devdirread(c, a, n, 0, 0, drawgen);
 	cl = drawclient(c);

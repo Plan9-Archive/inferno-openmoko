@@ -379,7 +379,7 @@ osreboot(char *file, char **argv)
 }
 
 NORETURN
-libinit(char *imod)
+libinit(const char *imod)
 {
 	WSADATA wasdat;
 	DWORD lasterror, namelen;

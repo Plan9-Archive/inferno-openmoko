@@ -65,4 +65,4 @@ extern char Enoctl[];	/* unknown control request */
 #if !defined(NORETURN)
 #define NORETURN void
 #endif
-extern NORETURN	error(char*);
+extern NORETURN	error(const char*);

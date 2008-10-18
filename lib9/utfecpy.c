@@ -1,13 +1,13 @@
 #include "lib9.h"
 
 char*
-utfecpy(char *to, const char *e, const char *from)
+utfecpy(char *to, char *e, const char *from)
 {
 	char *end;
 
 	if(to >= e)
 		return to;
-	end = memccpy(to, from, '\0', e - to);
+	end = _memccpy(to, from, '\0', e - to);
 	if(end == nil){
 		end = e;
 		while(end>to && (*--end&0xC0)==0x80)

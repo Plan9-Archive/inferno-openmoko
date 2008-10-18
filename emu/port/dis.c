@@ -1071,11 +1071,11 @@ progexit(void)
  * Called from OS-specific code on exception
  */
 NORETURN
-disfault(void *reg, char *msg)
+disfault(void *reg, __in_z const char *msg)
 {
 	Prog *p;
 
-	USED(reg);
+	/*USED(reg);*/
 
 	if(strncmp(msg, Eintr, 6) == 0) /* TODO "interr"? */
 		cleanexit(0);
@@ -1169,7 +1169,7 @@ vmachine(void *a)
 }
 
 NORETURN
-disinit(void *initmod)
+disinit(__in_z const char *initmod)
 {
 	Prog *p;
 	Osenv *o;

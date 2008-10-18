@@ -4,7 +4,7 @@
 size_t
 sizeD2M(const Dir *d)
 {
-	char *sv[4];
+	const char *sv[4];
 	int i, ns;
 
 	sv[0] = d->name;
@@ -24,7 +24,7 @@ size_t
 convD2M(const Dir *d, char *buf, size_t nbuf)
 {
 	char *p, *ebuf;
-	char *sv[4];
+	const char *sv[4];
 	int i, ns, nsv[4], ss;
 
 	if(nbuf < BIT16SZ)

@@ -73,15 +73,14 @@ typedef unsigned long uintptr;
 #define	nelem(x)	(sizeof(x)/sizeof((x)[0]))
 /* freetype macroses are not happy with stddef.h  although they are completely equal */
 #define offsetof(s,m)   (size_t)&(((s *)0)->m)
-extern NORETURN panic(char *fmt, ...);
+extern NORETURN panic(__in_z __format_string const char *fmt, ...);
 
 #define	assert(x)	((x)||(panic("assert failed: %s:%d %s %s", __FILE__, __LINE__, __FUNCTION__, #x),0))
 
 /*
  * most mem and string routines are declared by ANSI/POSIX files above
  */
-
-extern	char*	strecpy(char*, char*, char*);
+extern	char*	strecpy(__out_bcount_z(e-to) char *to, __in char *e, __in_z const char *from);
 extern	int	cistrncmp(char*, char*, int);
 extern	int	cistrcmp(char*, char*);
 extern	char*	cistrstr(char*, char*);
@@ -110,7 +109,7 @@ extern	int	utfnlen(const char*, long);
 extern	const char*	utfrune(const char*, long);
 extern	/*const*/ char*	utfrrune(/*const*/ char*, long);
 extern	const char*	utfutf(const char*, const char*);
-extern	char*	utfecpy(char*, const char*, const char*);
+extern	char*	utfecpy(char*, char*, const char*);
 
 extern	Rune*		runestrcat(Rune*, const Rune*);
 extern	const Rune*	runestrchr(const Rune*, Rune);
@@ -406,7 +405,7 @@ extern	char*		getwd(char*, int);
 extern	char*		getwd(char*, int);
 extern	double		ipow10(int);
 extern	double		pow10(int);
-extern	NORETURN	sysfatal(char*, ...);
+extern	NORETURN	sysfatal(const char*, ...);
 extern	int		dec64(uchar*, int, const char*, int);
 extern	int		enc64(char*, int, const uchar*, int);
 extern	int		dec32(uchar*, int, const char*, int);
@@ -537,9 +536,9 @@ struct Dir {
 	ulong	mtime;	/* last write time */
 	vlong	length;	/* file length */
 	const char	*name;	/* last element of path */
-	char	*uid;	/* owner name */
-	char	*gid;	/* group name */
-	char	*muid;	/* last modifier name */
+	const char	*uid;	/* owner name */
+	const char	*gid;	/* group name */
+	const char	*muid;	/* last modifier name */
 } Dir;
 
 extern	Dir*	dirstat(char*);

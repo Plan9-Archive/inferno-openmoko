@@ -322,8 +322,7 @@ DISAPI(Display_allocate)
 	DRef *dr;
 	Cache *c;
 
-	destroy(*f->ret);
-	*f->ret = (Draw_Display*)H;
+	ASSIGN(*f->ret, (Draw_Display*)H);
 	if(cacheqlock == nil){
 		cacheqlock = libqlalloc();
 		if(cacheqlock == nil)
@@ -384,14 +383,9 @@ DISAPI(Display_getwindow)
 	Image *image;
 	Screen *screen;
 	char *wn;
-	void *r;
 
-	r = f->ret->t0;
-	f->ret->t0 = (Draw_Screen*)H;
-	destroy(r);
-	r = f->ret->t1;
-	f->ret->t1 = (Draw_Image*)H;
-	destroy(r);
+	ASSIGN(f->ret->t0, (Draw_Screen*)H);
+	ASSIGN(f->ret->t1, (Draw_Image*)H);
 	disp = checkdisplay(f->d);
 	if(f->winname == H)
 		wn = "/dev/winname";
@@ -491,11 +485,9 @@ DISAPI(Display_color)
 	Display *d;
 	int locked;
 
-	destroy(*f->ret);
-	*f->ret = (Draw_Image*)H;
 	d = checkdisplay(f->d);
 	locked = lockdisplay(d);
-	*f->ret = color((DDisplay*)f->d, f->color);
+	ASSIGN(*f->ret, color((DDisplay*)f->d, f->color));
 	if(locked)
 		unlockdisplay(d);
 }
@@ -985,14 +977,12 @@ DISAPI(Display_colormix)
 	Image *i;
 	int locked;
 
-	destroy(*f->ret);
-	*f->ret = (Draw_Image*)H;
 	disp = checkdisplay(f->d);
 	locked = lockdisplay(disp);
 	i = allocimagemix(disp, f->c1, f->c2);
 	if(locked)
 		unlockdisplay(disp);
-	*f->ret = mkdrawimage(i, (Draw_Screen*)H, f->d, nil);
+	ASSIGN(*f->ret, mkdrawimage(i, (Draw_Screen*)H, f->d, nil));
 }
 
 DISAPI(Image_readpixels)
@@ -1298,8 +1288,7 @@ DISAPI(Font_build)
 	Display *disp;
 	int locked;
 
-	destroy(*f->ret);
-	*f->ret = (Draw_Font*)H;
+	ASSIGN(*f->ret, (Draw_Font*)H);
 	disp = checkdisplay(f->d);
 
 	name = string2c(f->name);
@@ -1471,8 +1460,7 @@ DISAPI(Font_open)
 	Display *disp;
 	DFont *df;
 
-	destroy(*f->ret);
-	*f->ret = (Draw_Font*)H;
+	ASSIGN(*f->ret, (Draw_Font*)H);
 	disp = checkdisplay(f->d);
 
 	font = font_open(disp, string2c(f->name));
@@ -1548,10 +1536,10 @@ DISAPI(Chans_text)
 {
 	char buf[16];
 
-	destroy(*f->ret);
-	*f->ret = (String*)H;
 	if(chantostr(buf, f->c.desc) != nil)
 		retstr(buf, f->ret);
+	else
+		ASSIGN(*f->ret, (String*)H);
 }
 
 DISAPI(Chans_depth)

@@ -204,7 +204,7 @@ newchan(void)
 static Ref ncname;
 
 Cname*
-newcname(char *s)
+newcname(const char *s)
 {
 	Cname *n;
 	int i;
@@ -902,14 +902,14 @@ cleancname(Cname *n)
 static void
 growparse(Elemlist *e)
 {
-	const char **new;
+	char **new;
 	int *inew;
 	enum { Delta = 8 };
 
 	if(e->nelems % Delta == 0){
-		new = (const char**)smalloc((e->nelems+Delta) * sizeof(char*));
+		new = (char**)smalloc((e->nelems+Delta) * sizeof(char*));
 		memmove(new, e->elems, e->nelems*sizeof(char*));
-		free(e->elems);
+		free((void*)e->elems);
 		e->elems = new;
 		inew = (int*)smalloc((e->nelems+Delta+1) * sizeof(int));
 		memmove(inew, e->off, e->nelems*sizeof(int));
@@ -1065,7 +1065,7 @@ namec(const char *aname, int amode, int omode, ulong perm)
 	if(waserror()){
 		cclose(c);
 		free(e.name);
-		free(e.elems);
+		free((void*)e.elems);
 		free(e.off);
 //dumpmount();
 		nexterror();
@@ -1322,7 +1322,7 @@ if(c->umh != nil){
 	else
 		kstrcpy(up->genbuf, ".", sizeof up->genbuf);
 	free(e.name);
-	free(e.elems);
+	free((void*)e.elems);
 	free(e.off);
 
 	return c;
@@ -1379,7 +1379,7 @@ validname(const char *aname, int slashok)
 }
 
 void
-isdir(Chan *c)
+isdir(const Chan *c)
 {
 	if(c->qid.type & QTDIR)
 		return;

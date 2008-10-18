@@ -4,7 +4,7 @@
 int
 statcheck(const char *buf, size_t nbuf)
 {
-	char *ebuf;
+	const char *ebuf;
 	int i;
 
 	ebuf = buf + nbuf;
