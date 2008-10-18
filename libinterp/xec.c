@@ -679,7 +679,7 @@ OP(mcall)
 
 	rr->FP = f;
 	rr->ML = ml;
-	//ADDREF(ml);	/* pair to ASSIGN in ret */
+	ADDREF(ml);	/* pair to ASSIGN in ret */
 
 	rr->PC = l->pc;
 
@@ -725,9 +725,8 @@ OP(ret)
 		if(rr->ML->compiled != f->ml->compiled) {
 			rr->IC = 1;
 		}
-		//ADDREF(f->ml);
-		//ASSIGN(rr->ML, f->ml); /* pair to ADDREF in mcall */
-		rr->ML = f->ml;
+		ASSIGN(rr->ML, f->ml); /* pair to ADDREF in mcall */
+		//rr->ML = f->ml;
 	}
 
 	if(f->ml != H)
