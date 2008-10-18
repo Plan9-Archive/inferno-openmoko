@@ -16,7 +16,7 @@ String	snil = {0};			/* String known to be zero length */
 OP(runt) { }
 OP(negf) { rd->disreal = -rs->disreal; }
 OP(jmp)  { rr->PC = rd->pinst; }
-OP(movpc){ rd->pinst = rr->M->prog + rs->disint; }
+OP(movpc){ rd->pinst = rr->ML->prog + rs->disint; }
 OP(movm) { memmove(rd, rs, rm->disint); /* TODO: add some assertions here */ }
 OP(lea)  { rd->pdisdata = rs; }
 OP(movb) { rd->disbyte = rs->disbyte; }
@@ -257,7 +257,7 @@ OP(movp)
 }
 OP(movmp)
 {
-	Type *t = rr->M->type[rm->disint];  /* TODO: check index range */
+	Type *t = rr->ML->type[rm->disint];  /* TODO: check index range */
 
 	incmem(rs, t);
 	freeptrs(rd, t);
@@ -265,11 +265,11 @@ OP(movmp)
 }
 OP(new)
 {
-	ASSIGN(rd->pvoid, H2D(void*, heap(rr->M->type[rs->disint])));  /* TODO: check index range */
+	ASSIGN(rd->pvoid, H2D(void*, heap(rr->ML->type[rs->disint])));  /* TODO: check index range */
 }
 OP(newz)
 {
-	ASSIGN(rd->pvoid, H2D(void*, heapz(rr->M->type[rs->disint])));  /* TODO: check index range */
+	ASSIGN(rd->pvoid, H2D(void*, heapz(rr->ML->type[rs->disint])));  /* TODO: check index range */
 }
 OP(mnewz)
 {
@@ -283,13 +283,27 @@ OP(mnewz)
 OP(frame) /* == newz */
 {
 	/*destroy(rd->pframe); /* ??*/
-	rd->pframe = H2D(Frame*, heapz(rr->M->type[rs->disint]));  /* TODO: check index range */
+	Type *t = rr->ML->type[rs->disint];  /* TODO: check index range */
+	Frame *f;
+
+	/*PRINT_TYPE(t);*/
+	/* type fix */
+	if(t->np==0) {t->np=1; t->map[0]=0;}
+	t->map[0] |= 0x40; /* parent */
+	t->map[0] |= 0x20; /* ml */
+
+	f = H2D(Frame*, heapz(t));
+	assert(f->ml == H);
+	assert(f->parent = H);
+
+	rd->pframe = f;
 }
 OP(mframe)
 {
 	Type *t;
 	Modlink *ml = rs->pmodlink;
 	int o = rm->disint;
+	Frame *f;
 
 	if(ml == H)
 		error(exModule);
@@ -301,7 +315,16 @@ OP(mframe)
 	} else
 		t = ml->m->ext[-o-1].frame;   /* TODO: check index range */
 
-	rd->pframe = H2D(Frame*,heapz(t));
+	/*PRINT_TYPE(t);*/
+	/* type fix */
+	if(t->np==0) {t->np=1; t->map[0]=0;}
+	t->map[0] |= 0x40; /* parent */
+	t->map[0] |= 0x20; /* ml */
+
+	f = H2D(Frame*,heapz(t));
+	assert(f->ml == H);
+	assert(f->parent = H);
+	rd->pframe = f;
 }
 void
 acheck(int tsz, int sz)
@@ -314,7 +337,7 @@ acheck(int tsz, int sz)
 }
 OP(newa)
 {
-	Type * const t = rr->M->type[rm->disint];  /* TODO: check index range */
+	Type * const t = rr->ML->type[rm->disint];  /* TODO: check index range */
 	const int sz = rs->disint;
 	Heap *h;
 	Array *a;
@@ -334,7 +357,7 @@ OP(newa)
 }
 OP(newaz)
 {
-	Type * const t = rr->M->type[rm->disint];  /* TODO: check index range */
+	Type * const t = rr->ML->type[rm->disint];  /* TODO: check index range */
 	const int sz = rs->disint;
 	Heap *h;
 	Array *a;
@@ -445,7 +468,7 @@ OP(newcm)
 }
 OP(newcmp)
 {
-	newc(rr->M->type[rs->disint], movertmp, rm, rd);  /* TODO: check index range */
+	newc(rr->ML->type[rs->disint], movertmp, rm, rd);  /* TODO: check index range */
 }
 OP(icase)
 {
@@ -471,11 +494,11 @@ OP(icase)
 		d = l[2];
 		break;
 	}
-	if(rr->M->compiled) {
+	if(rr->ML->compiled) {
 		rr->PC = (Inst*)d;
 		return;
 	}
-	rr->PC = rr->M->prog + d;
+	rr->PC = rr->ML->prog + d;
 }
 OP(casel)
 {
@@ -501,11 +524,11 @@ OP(casel)
 		d = l[4];
 		break;
 	}
-	if(rr->M->compiled) {
+	if(rr->ML->compiled) {
 		rr->PC = (Inst*)d;
 		return;
 	}
-	rr->PC = rr->M->prog + d;
+	rr->PC = rr->ML->prog + d;
 }
 OP(casec)
 {
@@ -560,34 +583,80 @@ OP(casec)
 		}
 	}
 found:
-	if(rr->M->compiled) {
+	if(rr->ML->compiled) {
 		rr->PC = (Inst*)t[0];
 		return;
 	}
-	rr->PC = rr->M->prog + t[0];
+	rr->PC = rr->ML->prog + t[0];
 }
 OP(igoto)
 {
 	DISINT* t = rd->disints + rs->disint;
-	if(rr->M->compiled) {
+	if(rr->ML->compiled) {
 		rr->PC = (Inst*)t[0]; /* FIXME: check index and new PC */
 	}
 	else {
-		rr->PC = rr->M->prog + t[0]; /* FIXME: check index and new PC */
+		rr->PC = rr->ML->prog + t[0]; /* FIXME: check index and new PC */
 	}
 }
 OP(call)
 {
 	Frame *f = rs->pframe;
 
+	assert(f->parent == H); /* virginity check, just curious */
+	assert(f->ml == H);
+	ADDREF(rr->FP); /* protect parent from being destroyed in ret */
 	f->lr = rr->PC;
-	f->fp = rr->FP;
+	f->parent = rr->FP;
 	rr->FP = f;
 	rr->PC = rd->pinst;
 }
+OP(mcall)
+{
+	Prog *p;
+	Frame *f = rs->pframe;
+	Linkpc *l;
+	Modlink *ml = rd->pmodlink;
+	int o;
+
+	assert(f->parent == H); /* virginity check, just curious */
+
+	if(ml == H)
+		error(exModule);
+
+	o = rm->disint;
+	if(o >= 0)
+		l = &ml->links[o].u;   /* TODO: check index range */
+	else
+		l = &ml->m->ext[-o-1].u;   /* TODO: check index range */
+
+	if(ml->prog == nil) { /* build-in module */
+		l->runt(f);
+		ASSIGN(f, H);
+		p = currun();
+		if(p->kill != nil)
+			error(p->kill);
+		return;
+	}
+
+	ADDREF(rr->FP); /* protect parent frame from being destroyed in ret */
+	ADDREF(rr->ML);
+	f->lr = rr->PC;
+	f->parent = rr->FP;
+	f->ml = rr->ML;
+
+	rr->FP = f;
+	rr->ML = ml;
+	ADDREF(ml);	/* pair to ASSIGN in ret */
+
+	rr->PC = l->pc;
+
+	if(f->ml->compiled != rr->ML->compiled)
+		rr->IC = 1;
+}
 OP(spawn)
 {
-	Prog *p = newprog(currun(), rr->M);
+	Prog *p = newprog(currun(), rr->ML);
 
 	p->R.PC = rd->pinst;
 	p->R.FP = rs->pframe;
@@ -613,34 +682,28 @@ OP(mspawn)
 OP(ret)
 {
 	Frame *f = rr->FP;
-	Modlink *m;
+	Modlink *ml = f->ml;
 
-	rr->FP = f->fp;
-	if(rr->FP == nil) {
-		rr->FP = f;
-		error(""); /* 'stack' underflow */
+	if(f->parent == H) {
+		error(""); /* 'stack' underflow, exit */
 	}
 	rr->PC = f->lr;
-	m = f->mr;
 
-	//? destroy(f)
-	// FIXME: huh, what if the return value is array or adt ?
-	assert(D2H(f)->t != nil);
-	freeptrs(f, D2H(f)->t);
+	ASSIGN(rr->FP, f->parent);
 
 	/* return from mcall */
-	if(m != nil) {
-		if(rr->M->compiled != m->compiled) {
+	if(ml != H) {
+		if(rr->ML->compiled != ml->compiled) {
 			rr->IC = 1;
 		}
-		ASSIGN(rr->M, m);
-		rr->MP = m->MP;
+		ASSIGN(rr->ML, ml); /* pair to ADDREF in mcall */
+		/*rr->ML = ml;*/
 	}
 }
 OP(iload)
 {
 	char *n = string2c(rs->pstring);
-	Module *m = rr->M->m;
+	Module *m = rr->ML->m;
 	Import *ldt;
 	Modlink *ml;
 
@@ -653,7 +716,7 @@ OP(iload)
 		m->ref++;
 		ml = linkmod(m, ldt, 0);
 		if(ml != H) {
-			ml->MP = rr->M->MP;
+			ml->MP = rr->ML->MP;
 			ADDREF(ml->MP);
 		}
 	}
@@ -663,51 +726,6 @@ OP(iload)
 	}
 
 	ASSIGN(rd->pmodlink, ml);
-}
-OP(mcall)
-{
-	Prog *p;
-	Frame *f = rs->pframe;
-	Linkpc *l;
-	Modlink *ml = rd->pmodlink;
-	int o;
-
-	if(ml == H)
-		error(exModule);
-
-	f->lr = rr->PC;
-	f->fp = rr->FP;
-	f->mr = rr->M;
-
-	rr->FP = f;
-	rr->M = ml;
-	ADDREF(ml);
-
-	o = rm->disint;
-	if(o >= 0)
-		l = &ml->links[o].u;   /* TODO: check index range */
-	else
-		l = &ml->m->ext[-o-1].u;   /* TODO: check index range */
-	if(ml->prog == nil) {
-		l->runt(f);
-		D2H(ml)->ref--;
-		rr->M = f->mr;
-		rr->FP = f->fp;
-
-		//? destroy(f)
-		assert(D2H(f)->t != nil);
-		freeptrs(f, D2H(f)->t);
-
-		p = currun();
-		if(p->kill != nil)
-			error(p->kill);
-		return;
-	}
-	rr->MP = rr->M->MP;
-	rr->PC = l->pc;
-
-	if(f->mr->compiled != rr->M->compiled)
-		rr->IC = 1;
 }
 OP(lena)
 {
@@ -1000,7 +1018,7 @@ OP(consm)
 }
 OP(consmp)
 {
-	Type *t = rr->M->type[rm->disint];  /* TODO: check index range */
+	Type *t = rr->ML->type[rm->disint];  /* TODO: check index range */
 	List *l = cons(t->size, &rd->plist);
 
 	incmem(rs, t);
@@ -1073,7 +1091,7 @@ OP(headmp)
 		error(exNilref);
 
 	//was rs = &l->data; movmp();
-	t = rr->M->type[rm->disint];  /* TODO: check index range */
+	t = rr->ML->type[rm->disint];  /* TODO: check index range */
 	incmem(&l->data, t);
 	freeptrs(rd, t);
 	memcpy(rd, &l->data, t->size);
@@ -1462,12 +1480,12 @@ OP(cvtxf)
 
 OP(self)
 {
-	Modlink *ml = rr->M;
+	Modlink *ml = rr->ML;
 
 	ADDREF(ml);
 	ASSIGN(rd->pmodlink, ml);
 }
-
+#if 0
 void
 destroystack(REG *reg)
 {
@@ -1476,7 +1494,7 @@ destroystack(REG *reg)
 	Frame *f;
 	Type* t;
 	print("destroystack begin:\n");
-	for(f = reg->FP; f != nil; f = f->fp)
+	for(f = reg->FP; f != H; f = f->parent)
 	{
 		assert(D2H(f)->t!=nil);
 		assert(D2H(f)->t->destructor == &freeheap);
@@ -1488,13 +1506,14 @@ destroystack(REG *reg)
 		}*/
 
 		freeptrs(f, D2H(f)->t);
-		if(f->mr != nil) {
-			ASSIGN(reg->M, f->mr);
+		if(f->ml != H) {
+			ASSIGN(reg->ML, f->ml);
 		}
 	}
-	ASSIGN(reg->M, (Modlink*)H); 	/* for devprof */
+	ASSIGN(reg->ML, (Modlink*)H); 	/* for devprof */
 	print(":destroystack end\n");
 }
+#endif
 Prog*
 isave(void)
 {
@@ -1873,7 +1892,6 @@ xec(Prog *p)
 	int op;
 
 	R = p->R;
-	R.MP = R.M->MP;
 	R.IC = p->quanta;
 
 	if(p->kill != nil) {
@@ -1885,7 +1903,7 @@ xec(Prog *p)
 
 // print("%lux %lux %lux %lux %lux\n", (ulong)&R, R.xpc, R.FP, R.MP, R.PC);
 
-	if(R.M->compiled)
+	if(R.ML->compiled)
 	{
 		/* BUG */
 #if STACK
@@ -1895,14 +1913,14 @@ xec(Prog *p)
 
 		Dec d;
 
-		dec(&d, R.PC, R.MP, R.FP); /* TODO: inline here? */
+		dec(&d, R.PC, R.ML->MP, R.FP); /* TODO: inline here? */
 
 		op = R.PC->op;
 #ifdef DEBUGVM
 		{
 		char sz[100], sz2[200];
-		snprint(sz, sizeof(sz), "%s_%uX:", CURM, R.PC - R.M->m->prog );
-		statebefore(sz2, sizeof(sz2), op, R.M->m->prog);
+		snprint(sz, sizeof(sz), "%s_%uX:", CURM, R.PC - R.ML->m->prog );
+		statebefore(sz2, sizeof(sz2), op, R.ML->m->prog);
 		print("%-16s", sz);
 		print("\t%02ux %02ux %04ux %08ux %08ux", R.PC->op, R.PC->add, R.PC->reg, R.PC->s.imm, R.PC->d.imm);
 		print("\t%-40D", R.PC);

@@ -215,7 +215,7 @@ rootset(Prog *root)
 	sweeper = (gccolor-2)%3;
 
 	while(root != nil) {
-		ml = root->R.M;
+		ml = root->R.ML;
 		h = D2H(ml);
 		Setmark(h);
 		mp = ml->MP;

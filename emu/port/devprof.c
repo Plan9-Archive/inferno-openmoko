@@ -524,7 +524,7 @@ limbomodule(void)
 	const Frame *f;
 	Module *m;
 
-	m = R.M->m;
+	m = R.ML->m;
 	if(LIMBO(m))
 		return m;
 	for (f = R.FP; f != nil; f = f->fp) {
@@ -578,7 +578,7 @@ sampler(void* a)
 			break;
 		lock(&profile.l);
 		profile.time += interval;
-		if(R.M == H || (m = R.M->m) == nil){
+		if(R.ML == H || (m = R.ML->m) == nil){
 			unlock(&profile.l);
 			continue;
 		}
@@ -611,7 +611,7 @@ cpxec(Prog *p)
 	Prog *n;
 
 	R = p->R;
-	R.MP = R.M->MP;
+	R.MP = R.ML->MP;
 	R.IC = p->quanta;
 
 	if(p->kill != nil){
@@ -621,14 +621,14 @@ cpxec(Prog *p)
 		error(m);
 	}
 
-	if(R.M->compiled) {
+	if(R.ML->compiled) {
 		/* BUG */
 #if STACK
 		comvec();
 #endif
 	} else
 	{
-		m = R.M->m;
+		m = R.ML->m;
 		r = profiler == Pcov ? mlook(m, 0, 1, 1, 0) : nil;
 		do{
 			dec[R.PC->add]();
@@ -645,8 +645,8 @@ cpxec(Prog *p)
 				n->xec = cpxec;
 				addrun(n);
 			}
-			if(m != R.M->m){
-				m = R.M->m;
+			if(m != R.ML->m){
+				m = R.ML->m;
 				r = profiler == Pcov ? mlook(m, 0, 1, 1, 0) : nil;
 			}
 		}while(--R.IC != 0);
@@ -685,7 +685,7 @@ memprof(int c, void *v, ulong n)
 	}
 	lock(&profile.l);
 	m = nil;
-	if(c != Mgcfree && (R.M == H || (m = R.M->m) == nil)){
+	if(c != Mgcfree && (R.ML == H || (m = R.ML->m) == nil)){
 		unlock(&profile.l);
 		return;
 	}

@@ -88,7 +88,7 @@ int
 handler(char *estr)
 {
 	Prog *p;
-	Modlink *m, *mr;
+	Modlink *m, *ml;
 	int str, ne;
 	ulong pc, newpc;
 	long eoff;
@@ -110,14 +110,14 @@ handler(char *estr)
 
 	print("handler go on\n");
 	str = p->exval == H || D2H(p->exval)->t == &Tstring;
-	m = R.M;
+	m = R.ML;
 	if(m->compiled)
 		pc = (char*)R.PC-(char*)m->prog;
 	else
 		pc = R.PC-m->prog;
 	pc--;
 
-	for(f = R.FP; f != nil; f = f->fp) {		/* look for a handler */
+	for(f = R.FP; f != H; f = f->parent) {		/* look for a handler */
 		if((h = m->m->htab) != nil){
 			for( ; h->etab != nil; h++){
 				if(pc < h->pc1 || pc >= h->pc2)
@@ -147,12 +147,12 @@ handler(char *estr)
 			continue;
 		}
 		//f = (Frame*)fp;
-		if(f->mr != nil)
-			m = f->mr;
+		if(f->ml != H)
+			m = f->ml;
 		if(m->compiled)
-			pc = (ulong)f->lr-(ulong)m->prog;
+			pc = (char*)f->lr - (char*)m->prog;
 		else
-			pc = f->lr-m->prog;
+			pc = f->lr - m->prog;
 		pc--;
 	}
 	ASSIGN(p->exval, H);
@@ -181,22 +181,22 @@ found:
 	else if(R.FP+t->size < R.SP)
 		freeframe(R.FP+t->size, 1);
 #endif
-	m = R.M;
+	m = R.ML;
 	while(R.FP != f){
 		f = R.FP;
 		R.PC = f->lr;
-		R.FP = f->fp;
+		R.FP = f->parent;
 
-		mr = f->mr;
+		ml = f->ml;
 
 		//? destroy(f)
 		assert(D2H(f)->t != nil);
 		freeptrs(f, D2H(f)->t);
 
-		if(mr != nil){
-			m = mr;
-			ASSIGN(R.M, m);
-			R.MP = m->MP;
+		if(ml != H){
+			m = ml;
+			ASSIGN(R.ML, m);
+			/*R.MP = m->MP;*/
 		}
 	}
 	if(zt != nil){

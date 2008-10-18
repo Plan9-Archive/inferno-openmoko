@@ -311,7 +311,7 @@ scanptrs(void *vw, Type *t, void (*f)(void*))
  * Set pointers to H accorting to type map
  */
 void
-initmem(Type *t, void *vw)
+initmem(const Type *t, void *vw)
 {
 	int c;
 	void **w;

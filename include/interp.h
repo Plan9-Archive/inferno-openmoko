@@ -120,8 +120,8 @@ union Disdata
 struct Frame
 {
 	Inst*		lr;		/* REGLINK isa.h */
-	Frame*		fp;		/* REGFP */ /* parent frame */
-	Modlink*	mr;		/* REGMOD */
+	Frame*		parent;		/* REGFP */ /* parent frame */
+	Modlink*	ml;		/* REGMOD */
 	Type*		_t_;		/* REGTYPE */
 	DISINT		_regret_;	/* REGRET */
 	DISINT		stmp;		/* for fixed-point */
@@ -235,24 +235,21 @@ struct Type
 	int		ref;
 	const char*	comment;	/* debugging */
 	TypeDestructor	destructor;	/* usually freeheap with exception for files and some special types */
-	TypeMark	fnmark;	/* markheap, tkmarktop */
-	//void		(*destructor)(Heap*, int);	/* usually freeheap with exception for files and some special types */
-	//void		(*fnmark)(Type*, void*);	/* markheap, markarray, marklist, tkmarktop */
+	TypeMark	fnmark;		/* markheap, markarray, marklist, tkmarktop */
 	int		size;
 	int		np;		/* map size in bytes, 0 if there is no pointers */
 	void*		destroy;	/* JITted code */
 	void*		initialize;	/* JITted code */
 	char		map[STRUCTALIGN]; /* TODO: int map[] */
 };
-#define PRINT_TYPE(t) {int i; print("<%s %d %02X:", t->comment, t->size, t->np); for(i=0; i<t->np; i++) print("%02X", t->map[i]); print(">"); }
+#define PRINT_TYPE(t) {int i; print("<%s %d %02X:", t->comment, t->size, t->np); for(i=0; i<t->np; i++) print("%02X", (uchar)t->map[i]); print(">"); }
 
 
 struct REG
 {
 	Inst*		PC;		/* Program counter */
-	void*		MP;		/* Module data */
 	Frame*		FP;		/* Frame pointer */
-	Modlink*	M;		/* Module */
+	Modlink*	ML;		/* Module */
 	int		IC;		/* Instruction count for this quanta */
 #if OBJTYPE!=386
 	Inst*		xpc;		/* Saved program counter */
@@ -511,7 +508,7 @@ extern	Heap*		v_nheap(int, const char*, int, const char*);
 extern	int		hmsize(void*);
 extern	void		incmem(const void*, Type*);
 extern	void		initarray(Type*, Array*);
-extern	void		initmem(Type*, void*);
+extern	void		initmem(const Type*, void*);
 extern	void		irestore(Prog*);
 extern	Prog*		isave(void);
 extern	void		keyringmodinit(void);

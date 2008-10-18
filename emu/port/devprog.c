@@ -426,19 +426,19 @@ progsize(Prog *p)
 	const Frame *f;
 	Modlink *m;
 
-	m = p->R.M;
+	m = p->R.ML;
 	size = 0;
 	if(m->MP != H)
 		size += hmsize(D2H(m->MP));
 	if(m->prog != nil)
 		size += msize(m->prog);
 
-	for(f = p->R.FP; f != nil; f = f->fp) {
-		if(f->mr != nil) {
-			if(f->mr->MP != H)
-				size += hmsize(D2H(f->mr->MP));
-			if(f->mr->prog != nil)
-				size += msize(f->mr->prog);
+	for(f = p->R.FP; f != H; f = f->parent) {
+		if(f->ml != H) {
+			if(f->ml->MP != H)
+				size += hmsize(D2H(f->ml->MP));
+			if(f->ml->prog != nil)
+				size += msize(f->ml->prog);
 		}
 	}
 	return size/1024;
@@ -546,7 +546,7 @@ progstack(REG *reg, int state, char *va, int count, long offset)
 	const Modlink *ml;
 
 	n = 0;
-	ml = reg->M;
+	ml = reg->ML;
 	pc = reg->PC;
 
 	/*
@@ -558,7 +558,7 @@ progstack(REG *reg, int state, char *va, int count, long offset)
 	if(ml->compiled && ml->m->pctab != nil)
 		pc = pc2dispc(pc, ml->m);
 
-	for(f = reg->FP; f != nil; f = f->fp) {
+	for(f = reg->FP; f != H; f = f->parent) {
 		n += snprint(va+n, count-n, "%.8p %.8lux %.8p %.8p %d %s\n",
 				f,		/* FP */
 				(ulong)(pc - ml->prog),	/* PC in dis instructions */
@@ -579,8 +579,8 @@ progstack(REG *reg, int state, char *va, int count, long offset)
 
 		pc = f->lr;
 
-		if(f->mr != nil)
-			ml = f->mr;
+		if(f->ml != H)
+			ml = f->ml;
 		if(!ml->compiled)
 			pc--;
 		else if(ml->m->pctab != nil)
@@ -596,7 +596,7 @@ calldepth(REG *reg)
 	const Frame* f;
 
 	n = 0;
-	for(f = reg->FP; f != nil; f = f->fp)
+	for(f = reg->FP; f != H; f = f->parent)
 		n++;
 	return n;
 }
@@ -761,21 +761,21 @@ modstatus(REG *r, char *ptr, int len)
 	Inst *PC;
 	Frame *f;
 
-	if(r->M->m->name[0] == '$') {
+	if(r->ML->m->name[0] == '$') {
 		f = r->FP;
-		snprint(ptr, len, "%s[%s]", f->mr->m->name, r->M->m->name);
-		if(f->mr->compiled)
+		snprint(ptr, len, "%s[%s]", f->ml->m->name, r->ML->m->name);
+		if(f->ml->compiled)
 			return (DISINT)f->lr;
-		return f->lr - f->mr->prog;
+		return f->lr - f->ml->prog;
 	}
-	memmove(ptr, r->M->m->name, len);
-	if(r->M->compiled)
+	memmove(ptr, r->ML->m->name, len);
+	if(r->ML->compiled)
 		return (DISINT)r->PC;
 	PC = r->PC;
 	/* should really check for blocked states */
-	if(PC > r->M->prog)
+	if(PC > r->ML->prog)
 		PC--;
-	return PC - r->M->prog;
+	return PC - r->ML->prog;
 }
 
 static void
@@ -831,7 +831,7 @@ progread(Chan *c, char *va, long n, vlong offset)
 	case Qstatus:
 		acquire();
 		p = progpid(PID(c->qid));
-		if(p == nil || p->state == Pexiting || p->R.M == H) {
+		if(p == nil || p->state == Pexiting || p->R.ML == H) {
 			release();
 			snprint(up->genbuf, sizeof(up->genbuf), "%8lud %8d %10s %s %10s %5dK %s",
 				PID(c->qid),
@@ -1389,7 +1389,7 @@ dbgxec(Prog *p)
 	}
 
 	R = p->R;
-	R.MP = R.M->MP;
+	R.MP = R.ML->MP;
 
 	R.IC = p->quanta;
 	if((ulong)R.IC > ctl->step)
@@ -1400,7 +1400,7 @@ dbgxec(Prog *p)
 
 	buf[0] = '\0';
 
-	if(R.IC != 0 && R.M->compiled) {
+	if(R.IC != 0 && R.ML->compiled) {
 		/* BUG */
 #if STACK
 		comvec();
@@ -1413,7 +1413,7 @@ dbgxec(Prog *p)
 	while(R.IC != 0) {
 		if(0)
 			print("step: %lux: %s %4ld %D\n",
-				(ulong)p, R.M->m->name, R.PC-R.M->prog, R.PC);
+				(ulong)p, R.ML->m->name, R.PC-R.ML->prog, R.PC);
 
 		dec[R.PC->add]();
 		op = R.PC->op;
@@ -1454,11 +1454,11 @@ dbgxec(Prog *p)
 		if(ctl->bpts == nil)
 			continue;
 
-		pc = R.PC - R.M->prog;
+		pc = R.PC - R.ML->prog;
 		for(b = ctl->bpts; b != nil; b = b->next) {
 			if(pc == b->pc &&
-			  (strcmp(R.M->m->path, b->path) == 0 ||
-			   strcmp(R.M->m->path, b->file) == 0)) {
+			  (strcmp(R.ML->m->path, b->path) == 0 ||
+			   strcmp(R.ML->m->path, b->file) == 0)) {
 				strcpy(buf, "breakpoint");
 				goto save;
 			}

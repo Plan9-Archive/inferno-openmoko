@@ -784,7 +784,7 @@ commcall(Inst *i)
 	modrm(Omov, O(Frame, lr), RCX, 0);	// MOVL $.+1, lr(CX)	f->lr = R.PC
 	genw((ulong)base+patch[i-mod->prog+1]);
 	modrm(Ostw, O(Frame, fp), RCX, RFP); 	// MOVL RFP, fp(CX)	f->fp = R.FP
-	modrm(Oldw, O(REG, M), RTMP, RTA);	// MOVL R.M, RTA
+	modrm(Oldw, O(REG, ML), RTMP, RTA);	// MOVL R.M, RTA
 	modrm(Ostw, O(Frame, mr), RCX, RTA);	// MOVL RTA, mr(CX) 	f->mr = R.M
 	opwst(i, Oldw, RTA);			// MOVL ml, RTA
 	cmpl(RTA, (ulong)H);
@@ -881,7 +881,7 @@ static
 void
 compdbg(void)
 {
-	print("%s:%lud@%.8lux\n", R.M->m->name, *(ulong*)R.m, *(ulong*)R.s);
+	print("%s:%lud@%.8lux\n", R.ML->m->name, *(ulong*)R.m, *(ulong*)R.s);
 }
 
 static void
@@ -1643,14 +1643,14 @@ macret(void)
 	modrm(Ocmpw, O(Frame, mr), RFP, RBX);	// CMPL	 mr(FP), RBX
 	gen2(Ojeqb, lnomr-(code-s));		// JEQ	 lnomr
 	con((ulong)&R, RTMP);			// MOVL	 $R, RTMP
-	modrm(Oldw, O(REG, M), RTMP, RTA);	// MOVL	 R.M, RTA
+	modrm(Oldw, O(REG, ML), RTMP, RTA);	// MOVL	 R.M, RTA
 	modrm(Odecrm, O(Heap, ref)-sizeof(Heap), RTA, 1);
 	gen2(Ojneb, lfrmr-(code-s));		// JNE	 lfrmr
 	modrm(Oincrm, O(Heap, ref)-sizeof(Heap), RTA, 0);
 	gen2(Ojmpb, lpunt-(code-s));		// JMP	 lpunt
 	lfrmr = code - s;
 	modrm(Oldw, O(Frame, mr), RFP, RTA);	// MOVL	 mr(FP), RTA
-	modrm(Ostw, O(REG, M), RTMP, RTA);	// MOVL	 RTA, R.M
+	modrm(Ostw, O(REG, ML), RTMP, RTA);	// MOVL	 RTA, R.M
 	modrm(Oldw, O(Modlink, MP), RTA, RMP);	// MOVL	 MP(RTA), RMP
 	modrm(Ostw, O(REG, MP), RTMP, RMP);	// MOVL	 RMP, R.MP
 	modrm(Ocmpi, O(Modlink, compiled), RTA, 7);// CMPL $0, M.compiled
@@ -1724,7 +1724,7 @@ macmcal(void)
 	genb(Oret);				// RET
 	*label = code-label-1;			// patch:
 	gen2(Oldw, (3<<6)|(RFP<<3)|RCX);	// MOVL CX, RFP		R.FP = f
-	modrm(Ostw, O(REG, M), RTMP, RTA);	// MOVL RTA, R.M
+	modrm(Ostw, O(REG, ML), RTMP, RTA);	// MOVL RTA, R.M
 	modrm(Oincrm, O(Heap, ref)-sizeof(Heap), RTA, 0);
 	modrm(Oldw, O(Modlink, MP), RTA, RMP);	// MOVL R.M->mp, RMP
 	modrm(Ostw, O(REG, MP), RTMP, RMP);	// MOVL RMP, R.MP	R.MP = ml->MP

@@ -160,8 +160,7 @@ newprog(Prog *p, Modlink *m)
 
 	ADDREF(m);
 	Setmark(D2H(m));
-	n->R.M = m;
-	n->R.MP = m->MP;
+	n->R.ML = m;
 	if(m->MP != H)
 		Setmark(D2H(m->MP));
 	addrun(n);
@@ -435,11 +434,11 @@ killprog(Prog *p, char *cause)
 
 	propex(p, "killed");
 
-	snprint(msg, sizeof(msg), "%d \"%s\":%s", p->pid, p->R.M->m->name, cause);
+	snprint(msg, sizeof(msg), "%d \"%s\":%s", p->pid, p->R.ML->m->name, cause);
 
 	p->state = Pexiting;
 	gclock();
-	destroystack(&p->R);
+	/*destroystack(&p->R);*/
 	delprog(p, msg);
 	gcunlock();
 
@@ -772,7 +771,15 @@ schedmod(Module *m)
 	DELREF(ml);
 	p->R.PC = m->entry;
 
+	/*PRINT_TYPE(m->entryt);*/
+	/* type fix */
+	if(t->np==0) {t->np=1; t->map[0]=0;}
+	m->entryt->map[0] |= 0x60; /* ml, parent */
+
 	f = H2D(Frame*,heapz(m->entryt));
+	assert(f->ml == H);
+	assert(f->parent = H);
+
 	p->R.FP = f;
 
 	return p;
@@ -949,7 +956,7 @@ progexit(void)
 	if(*estr == '\0' && r->flags & Pkilled)
 		estr = "killed";
 
-	m = R.M->m;
+	m = R.ML->m;
 	if(broken){
 		if(cflag){	/* only works on Plan9 for now */
 			char *pc = strstr(estr, "pc=");
@@ -1058,7 +1065,7 @@ progexit(void)
 
 	gclock();
 
-	destroystack(&R);
+	/*destroystack(&R);*/
 
 	delprog(r, msg);
 	gcunlock();
