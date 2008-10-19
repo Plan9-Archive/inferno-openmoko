@@ -312,7 +312,7 @@ OP(frame) /* == newz */
 
 	f = H2D(Frame*, heapz(t));
 	assert(f->ml == H);
-	assert(f->parent = H);
+	assert(f->parent == H);
 
 	rd->pframe = f;
 }
@@ -341,7 +341,7 @@ OP(mframe)
 
 	f = H2D(Frame*,heapz(t));
 	assert(f->ml == H);
-	assert(f->parent = H);
+	assert(f->parent == H);
 	rd->pframe = f;
 }
 void
@@ -1950,7 +1950,7 @@ xec(Prog *p)
 		print("\t%s", sz2);
 #endif
 		R.PC++;
-		optab[op](d.s, d.m, d.d, &R);
+		optab[op](d.s, d.m, d.d, &R); /* TODO: inline here? */
 #ifdef DEBUGVM
 		stateafter(sz2, sizeof(sz2), op);
 		print("%s\n", sz2);
