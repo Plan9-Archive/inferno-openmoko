@@ -43,7 +43,7 @@ static	DWORD WINAPI	winproc(LPVOID);
 
 static	HINSTANCE	inst = 0;
 static	HINSTANCE	previnst = 0;
-static	int		cmdshow = 0;
+static	int		cmdshow = SW_SHOW;
 static	HWND		window = 0;
 static	HDC		screen = 0;
 static	HPALETTE	palette = 0;
@@ -536,7 +536,11 @@ winproc(LPVOID x)
 			wca.lpszClassName = "inferno";
 			isunicode = 0;
 
-			RegisterClassA(&wca);
+			if(RegisterClassA(&wca) == 0)
+			{
+				fprint(2, "can't register class\n"); /* TODO: oserror */
+				ExitThread(0);
+			}
 		}
 	}
 
@@ -588,7 +592,7 @@ winproc(LPVOID x)
 	}
 
 	if(window == nil){
-		fprint(2, "can't make window\n");
+		fprint(2, "can't make window\n"); /* TODO: oserror */
 		ExitThread(0);
 	}
 

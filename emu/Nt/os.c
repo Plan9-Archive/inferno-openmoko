@@ -228,7 +228,7 @@ void heapview_callback( void* v, size_t size, int tag,
 	if(file==nil) file = "";
 	if(function==nil) function = "";
 	if(comment==nil) comment = "";
-	print("%08p %8d %8x %s:%d %s %s", v, size, tag, file, line, function, comment);
+	print("%08p %8d %8x %s:%d %s [%s]", v, size, tag, file, line, function, comment);
 	PRINT_TYPE(((Heap*)v)->t);
 	print("\n");
 	/*fprint(fdheap, "%08p %8d %8x %s:%d %s %s\n", v, size, tag, file, line, function, comment);*/

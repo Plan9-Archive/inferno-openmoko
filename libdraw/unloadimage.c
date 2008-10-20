@@ -1,7 +1,6 @@
 #include "lib9.h"
 #include "draw.h"
 #include "kernel.h"
-#include "interp.h"
 
 int
 unloadimage(Image *i, Rectangle r, char *data, int ndata)

@@ -98,13 +98,14 @@ handler(char *estr)
 	Handler *h;
 	Except *e;
 	void *v;
+
+	p = currun();
 #if STACK
 #else
-	print("handler |%s|\n", "");
-	print("handler |%s|\n", estr);
+	print("handler:");
+	print(" |%s|%p %d\n", estr, p, p?p->pid:0);
 	/*panic("handler");*/
 #endif
-	p = currun();
 	if(*estr == 0 || p == nil)
 		return 0;
 
@@ -136,13 +137,15 @@ handler(char *estr)
 			}
 		}
 		if(!str && f != R.FP){		/* becomes a string exception in immediate caller */
-			/*v = p->exval;
+			/*
+			v = p->exval;
 			p->exval = *(String**)v;
 			ADDREF(p->exval);
-			ASSIGN(v, H);*/
+			ASSIGN(v, H);
+			*/
 			ADDREF(*(String**)p->exval);
 			ASSIGN(p->exval, *(String**)p->exval);
-			//ADDREF(p->exval);
+			/**/
 			str = 1;
 			continue;
 		}
@@ -158,6 +161,7 @@ handler(char *estr)
 	ASSIGN(p->exval, H);
 	return 0;
 found:
+	print("exc:found\n");
 	{
 		int n;
 		char name[3*KNAMELEN];
@@ -191,12 +195,11 @@ found:
 
 		//? destroy(f)
 		assert(D2H(f)->t != nil);
-		freeptrs(f, D2H(f)->t);
+		freeptrs(f, D2H(f)->t);   /* FIXME */
 
 		if(ml != H){
 			m = ml;
 			ASSIGN(R.ML, m);
-			/*R.MP = m->MP;*/
 		}
 	}
 	if(zt != nil){

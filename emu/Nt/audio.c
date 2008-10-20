@@ -1,7 +1,5 @@
-#define Unknown win_Unknown
 #include <windows.h>
 #include <mmsystem.h>
-#undef Unknown
 
 #include "dat.h"
 #include "fns.h"

@@ -10,8 +10,8 @@ typedef float			DISREAL32;	/* 32 float IEEE754 */
 
 #define DISAPI(name) void name(F_##name *f)
 
-//#define ASSIGN(place, value) {void* old=(place); (place)=(value); destroy(old);}
-#define ASSIGN(place, value) {destroyxx((void**)&(place), (value));}
+//#define ASSIGN(place, value) {destroyxx((void**)&(place), (value));}
+#define ASSIGN(place, value) {void* old=(place); (place)=(value); destroy(old);}
 //#define ASSIGN(place, value) {void* old=(place); (place)=H; destroy(old); (place)=(value); } /* memory saver */
 
 enum ProgState
@@ -75,7 +75,6 @@ typedef struct Altc	Altc;
 typedef struct Except	Except;
 typedef struct Handler	Handler;
 typedef struct Osenv	Osenv;
-typedef struct Prog	Prog;
 typedef struct SrvFile	SrvFile;
 typedef union Disdata Disdata;
 
@@ -469,6 +468,7 @@ extern	void		delprog(Prog*, char*);
 extern	Prog*		delrun(enum ProgState);
 extern	void		delrunq(Prog*);
 extern	Prog*		delruntail(enum ProgState);
+extern	void		destroy(void*v);
 extern	void		destroyxx(void**pp, void*new);
 extern	void		destroyimage(ulong);
 extern	void		destroylinks(Module*);

@@ -40,14 +40,14 @@ struct Btail
 		panic(__FUNCTION__ "(invalid file name b=%p b->file=%p)", z, z->file); \
 	if(IsBadStringPtrA(z->function, 256)) \
 		panic(__FUNCTION__ "(invalid function name b=%p b->file=%p)", z, z->function); \
-	if(b->comment!=0 && IsBadStringPtrA(z->comment, 256)) \
+	if(z->comment!=0 && IsBadStringPtrA(z->comment, 256)) \
 		panic(__FUNCTION__ "(invalid comment b=%p b->file=%p)", z, z->comment); \
 	if(z->guard != GUARD(z)) \
 		panic(__FUNCTION__ "(invalid head guard %lux!=%lux b=%lux size=%d) %s:%d %s", \
 			z->guard, GUARD(z), z, z->size, z->file, z->line, z->function); \
 	if(BTAIL(z)->guard != GUARD(z)) \
 		panic(__FUNCTION__ "(invalid tail guard %lux!=%lux b=%lux size=%d) %s:%d %s", \
-			BTAIL(z)->guard, GUARD(z), b, z->size, z->file, z->line, z->function); \
+			BTAIL(z)->guard, GUARD(z), z, z->size, z->file, z->line, z->function); \
 	}
 
 /* pool aware */
