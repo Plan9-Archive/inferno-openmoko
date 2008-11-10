@@ -51,21 +51,21 @@ struct TkCtext
 static
 TkOption textopts[] =
 {
-	"anchor",	OPTstab,	offsetof(TkCtext, anchor),	tkanchor,
-	"justify",	OPTstab,	offsetof(TkCtext, justify),	tktabjust,
-	"width",	OPTdist,	offsetof(TkCtext, width),	(TkStab*)offsetof(TkCtext, env),
-	"stipple",	OPTbmap,	offsetof(TkCtext, stipple),	nil,
-	"text",		OPTtext,	offsetof(TkCtext, text),	nil,
-	nil
+	{"anchor",	OPTstab,	offsetof(TkCtext, anchor),	{tkanchor}},
+	{"justify",	OPTstab,	offsetof(TkCtext, justify),	{tktabjust}},
+	{"width",	OPTdist,	offsetof(TkCtext, width),	{(TkStab*)offsetof(TkCtext, env)}},
+	{"stipple",	OPTbmap,	offsetof(TkCtext, stipple)	},
+	{"text",	OPTtext,	offsetof(TkCtext, text)		},
+	{nil}
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
-	"font",		OPTfont,	offsetof(TkCitem, env),		nil,
-	"fill",		OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCfill,
-	nil
+	{"tags",	OPTctag,	offsetof(TkCitem, tags)		},
+	{"font",	OPTfont,	offsetof(TkCitem, env)		},
+	{"fill",	OPTcolr,	offsetof(TkCitem, env),		{(TkStab*)TkCfill}},
+	{nil}
 };
 
 static char*

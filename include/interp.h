@@ -10,9 +10,10 @@ typedef float			DISREAL32;	/* 32 float IEEE754 */
 
 #define DISAPI(name) void name(F_##name *f)
 
-//#define ASSIGN(place, value) {destroyxx((void**)&(place), (value));}
-#define ASSIGN(place, value) {void* old=(place); (place)=(value); destroy(old);}
-//#define ASSIGN(place, value) {void* old=(place); (place)=H; destroy(old); (place)=(value); } /* memory saver */
+#define ASSIGN(place, value) {destroyxx((void**)&(place), (value));}
+//#define ASSIGN(place, value) {void* old=(place); (place)=(value); destroy(old);}
+/* memory saver: destroy old value before calc new one */
+//#define ASSIGN(place, value) {void* old=(place); (place)=H; destroy(old); (place)=(value); }
 
 enum ProgState
 {

@@ -8,160 +8,160 @@
 
 TkStab tkorient[] =
 {
-	"vertical",	Tkvertical,
-	"horizontal",	Tkhorizontal,
-	nil
+	{"vertical",	Tkvertical},
+	{"horizontal",	Tkhorizontal},
+	{nil}
 };
 
 #define RGB(r,g,b) ((r<<24)|(g<<16)|(b<<8)|0xff)
 
 TkStab tkcolortab[] =
 {
-	"black",	RGB(0,0,0),
-	"blue",		RGB(0,0,204),
-	"darkblue",	RGB(93,0,187),
-	"red",		RGB(255,0,0),
-	"yellow",	RGB(255,255,0),
-	"green",	RGB(0,128,0),
-	"white",	RGB(255,255,255),
-	"orange",	RGB(255,170,0),
-	"aqua",		RGB(0,255,255),
-	"fuchsia",	RGB(255,0,255),
-	"gray",		RGB(128,128,128),
-	"grey",		RGB(128,128,128),
-	"lime",		RGB(0,255,0),
-	"maroon",	RGB(128,0,0),
-	"navy",		RGB(0,0,128),
-	"olive",	RGB(128,128,0),
-	"purple",	RGB(128,0,128),
-	"silver",	RGB(192,192,192),
-	"teal",		RGB(0,128,128),
-	"transparent",	DTransparent,
-	nil
+	{"black",	RGB(0,0,0)	},
+	{"blue",	RGB(0,0,204)	},
+	{"darkblue",	RGB(93,0,187)	},
+	{"red",		RGB(255,0,0)	},
+	{"yellow",	RGB(255,255,0)	},
+	{"green",	RGB(0,128,0)	},
+	{"white",	RGB(255,255,255)},
+	{"orange",	RGB(255,170,0)	},
+	{"aqua",	RGB(0,255,255)	},
+	{"fuchsia",	RGB(255,0,255)	},
+	{"gray",	RGB(128,128,128)},
+	{"grey",	RGB(128,128,128)},
+	{"lime",	RGB(0,255,0)	},
+	{"maroon",	RGB(128,0,0)	},
+	{"navy",	RGB(0,0,128)	},
+	{"olive",	RGB(128,128,0)	},
+	{"purple",	RGB(128,0,128)	},
+	{"silver",	RGB(192,192,192)},
+	{"teal",	RGB(0,128,128)	},
+	{"transparent",	DTransparent	},
+	{nil}
 };
 
 TkStab tkrelief[] =
 {
-	"raised",	TKraised,
-	"sunken",	TKsunken,
-	"flat",		TKflat,
-	"groove",	TKgroove,
-	"ridge",	TKridge,
-	nil
+	{"raised",	TKraised},
+	{"sunken",	TKsunken},
+	{"flat",	TKflat},
+	{"groove",	TKgroove},
+	{"ridge",	TKridge},
+	{nil}
 };
 
 TkStab tkbool[] =
 {
-	"0",		BoolF,
-	"no",		BoolF,
-	"off",		BoolF,
-	"false",	BoolF,
-	"1",		BoolT,
-	"yes",		BoolT,
-	"on",		BoolT,
-	"true",		BoolT,
-	nil
+	{"0",		BoolF},
+	{"no",		BoolF},
+	{"off",		BoolF},
+	{"false",	BoolF},
+	{"1",		BoolT},
+	{"yes",		BoolT},
+	{"on",		BoolT},
+	{"true",	BoolT},
+	{nil}
 };
 
 TkStab tkanchor[] =
 {
-	"center",	Tkcenter,
-	"c",		Tkcenter,
-	"n",		Tknorth,
-	"ne",		Tknorth|Tkeast,
-	"e",		Tkeast,
-	"se",		Tksouth|Tkeast,
-	"s",		Tksouth,
-	"sw",		Tksouth|Tkwest,
-	"w",		Tkwest,
-	"nw",		Tknorth|Tkwest,
-	nil
+	{"center",	Tkcenter},
+	{"c",		Tkcenter},
+	{"n",		Tknorth},
+	{"ne",		Tknorth|Tkeast},
+	{"e",		Tkeast},
+	{"se",		Tksouth|Tkeast},
+	{"s",		Tksouth},
+	{"sw",		Tksouth|Tkwest},
+	{"w",		Tkwest},
+	{"nw",		Tknorth|Tkwest},
+	{nil}
 };
 
 static
 TkStab tkstate[] =
 {
-	"normal",	0,
-	"active",	Tkactive,
-	"disabled",	Tkdisabled,
-	nil
+	{"normal",	0},
+	{"active",	Tkactive},
+	{"disabled",	Tkdisabled},
+	{nil}
 };
 
 static
 TkStab tktakefocus[] =
 {
-	"0",	0,
-	"1",	Tktakefocus,
-	nil
+	{"0",		0},
+	{"1",		Tktakefocus},
+	{nil}
 };
 
 TkStab tktabjust[] =
 {
-	"left",		Tkleft,
-	"right",	Tkright,
-	"center",	Tkcenter,
-	"numeric",	Tknumeric,
-	nil
+	{"left",	Tkleft},
+	{"right",	Tkright},
+	{"center",	Tkcenter},
+	{"numeric",	Tknumeric},
+	{nil}
 };
 
 TkStab tkwrap[] =
 {
-	"none",		Tkwrapnone,
-	"word",		Tkwrapword,
-	"char",		Tkwrapchar,
-	nil
+	{"none",	Tkwrapnone},
+	{"word",	Tkwrapword},
+	{"char",	Tkwrapchar},
+	{nil}
 };
 
 TkStab tkjustify[] =
 {
-	"left",		Tkleft,
-	"right",	Tkright,
-	"center",	Tkcenter,
-	nil
+	{"left",	Tkleft},
+	{"right",	Tkright},
+	{"center",	Tkcenter},
+	{nil}
 };
 
 TkOption tkgeneric[] =
 {
- "actx",		OPTact,		0,				(TkStab*)0,
- "acty",		OPTact,		0,				(TkStab*)1,
- "actwidth",		OPTdist,	offsetof(Tk, act.width),	(TkStab*)offsetof(Tk, env),
- "actheight",		OPTdist,	offsetof(Tk, act.height),	(TkStab*)offsetof(Tk, env),
- "bd",			OPTnndist,	offsetof(Tk, borderwidth),	nil,
- "borderwidth",		OPTnndist,	offsetof(Tk, borderwidth),	nil,
- "highlightthickness",	OPTnndist,	offsetof(Tk, highlightwidth), 	nil,
- "height",		OPTsize,	0,				(TkStab*)offsetof(Tk, env),
- "width",		OPTsize,	0,				(TkStab*)offsetof(Tk, env),
- "relief",		OPTstab, 	offsetof(Tk, relief),		tkrelief,
- "state",		OPTflag, 	offsetof(Tk, flag),		tkstate,
- "font",		OPTfont, 	offsetof(Tk, env),		nil,
- "foreground",		OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCforegnd,
- "background",		OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCbackgnd,
- "fg",			OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCforegnd,
- "bg",			OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCbackgnd,
- "selectcolor",		OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCselect,
- "selectforeground",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCselectfgnd,
- "selectbackground",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCselectbgnd,
- "activeforeground",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCactivefgnd,
- "activebackground",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCactivebgnd,
- "highlightcolor",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkChighlightfgnd,
- "disabledcolor",	OPTcolr, 	offsetof(Tk, env),		(TkStab*)TkCdisablefgnd,
- "padx",		OPTnndist, 	offsetof(Tk, pad.x),		nil,
- "pady",		OPTnndist, 	offsetof(Tk, pad.y),		nil,
- "takefocus",		OPTflag, 	offsetof(Tk, flag),		tktakefocus,
- nil
+	{"actx",		OPTact,		0,				{(TkStab*)0}},
+	{"acty",		OPTact,		0,				{(TkStab*)1}},
+	{"actwidth",		OPTdist,	offsetof(Tk, act.width),	{(TkStab*)offsetof(Tk, env)}},
+	{"actheight",		OPTdist,	offsetof(Tk, act.height),	{(TkStab*)offsetof(Tk, env)}},
+	{"bd",			OPTnndist,	offsetof(Tk, borderwidth)	},
+	{"borderwidth",		OPTnndist,	offsetof(Tk, borderwidth)	},
+	{"highlightthickness",	OPTnndist,	offsetof(Tk, highlightwidth) 	},
+	{"height",		OPTsize,	0,				{(TkStab*)offsetof(Tk, env)}},
+	{"width",		OPTsize,	0,				{(TkStab*)offsetof(Tk, env)}},
+	{"relief",		OPTstab, 	offsetof(Tk, relief),		{tkrelief}},
+	{"state",		OPTflag, 	offsetof(Tk, flag),		{tkstate}},
+	{"font",		OPTfont, 	offsetof(Tk, env)		},
+	{"foreground",		OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkCforegnd}},
+	{"background",		OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkCbackgnd}},
+	{"fg",			OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkCforegnd}},
+	{"bg",			OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkCbackgnd}},
+	{"selectcolor",		OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkCselect}},
+	{"selectforeground",	OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkCselectfgnd}},
+	{"selectbackground",	OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkCselectbgnd}},
+	{"activeforeground",	OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkCactivefgnd}},
+	{"activebackground",	OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkCactivebgnd}},
+	{"highlightcolor",	OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkChighlightfgnd}},
+	{"disabledcolor",	OPTcolr, 	offsetof(Tk, env),		{(TkStab*)TkCdisablefgnd}},
+	{"padx",		OPTnndist, 	offsetof(Tk, pad.x)		},
+	{"pady",		OPTnndist, 	offsetof(Tk, pad.y)		},
+	{"takefocus",		OPTflag, 	offsetof(Tk, flag),		{tktakefocus}},
+	{nil}
 };
 
 TkOption tktop[] =
 {
-	"x",		OPTdist,	offsetof(TkWin, req.x),		nil,
-	"y",		OPTdist,	offsetof(TkWin, req.y),		nil,
-	nil
+	{"x",			OPTdist,	offsetof(TkWin, req.x)	},
+	{"y",			OPTdist,	offsetof(TkWin, req.y)	},
+	{nil}
 };
 
 TkOption tktopdbg[] =
 {
-	"debug",	OPTbool,	offsetof(TkTop, debug),	nil,
-	nil
+	{"debug",	OPTbool,	offsetof(TkTop, debug)	},
+	{nil},
 };
 
 TkMethod *tkmethod[] =

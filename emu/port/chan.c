@@ -947,7 +947,7 @@ parsename(const char *name, Elemlist *e)
 		growparse(e);
 
 		e->elems[e->nelems++] = name;
-		slash = utfrune(name, '/');
+		slash = utfrune((char*)name, '/');
 		if(slash == nil){
 			e->off[e->nelems] = name+strlen(name) - e->name;
 			e->mustbedir = 0;
@@ -1102,9 +1102,9 @@ namec(const char *aname, int amode, int omode, ulong perm)
 	NameError:
 		len = prefix+e.off[npath];
 		if(len < ERRMAX/3 || (name=kmemrchr(aname, '/', len))==nil || name==aname)
-			snprint(up->genbuf, sizeof up->genbuf, "%.*s", len, aname);
+			snprint(up->genbuf, 128/*sizeof up->genbuf*/, "%.*s", len, aname);
 		else
-			snprint(up->genbuf, sizeof up->genbuf, "...%.*s", (int)(len-(name-aname)), name);
+			snprint(up->genbuf, 128/*sizeof up->genbuf*/, "...%.*s", (int)(len-(name-aname)), name);
 		snprint(up->env->errstr, ERRMAX, "%#q %s", up->genbuf, tmperrbuf);
 		nexterror();
 	}
@@ -1318,9 +1318,9 @@ if(c->umh != nil){
 
 	/* place final element in genbuf for e.g. exec */
 	if(e.nelems > 0)
-		kstrcpy(up->genbuf, e.elems[e.nelems-1], sizeof up->genbuf);
+		kstrcpy(up->genbuf, e.elems[e.nelems-1], 128/*sizeof up->genbuf*/);
 	else
-		kstrcpy(up->genbuf, ".", sizeof up->genbuf);
+		kstrcpy(up->genbuf, ".", 128/*sizeof up->genbuf*/);
 	free(e.name);
 	free(e.elems);
 	free(e.off);

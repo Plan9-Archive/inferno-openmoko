@@ -1,12 +1,13 @@
-#define UNICODE
-#define Unknown win_Unknown
 #include	<windows.h>
 #include	<winbase.h>
-#undef Unknown
 #include	"dat.h"
 #include	"fns.h"
 #include	"error.h"
 #include	<lm.h>
+
+#ifndef SID_MAX_SUB_AUTHORITIES
+#define SID_MAX_SUB_AUTHORITIES 15
+#endif
 
 /* TODO: try using / in place of \ in path names */
 
@@ -22,7 +23,7 @@ typedef struct	User	User;
 typedef struct  Gmem	Gmem;
 typedef	struct	Stat	Stat;
 typedef	struct Fsinfo	Fsinfo;
-typedef	WIN32_FIND_DATA	Fsdir;
+typedef	WIN32_FIND_DATAW	Fsdir;
 
 #ifndef INVALID_SET_FILE_POINTER
 #define	INVALID_SET_FILE_POINTER	((DWORD)-1)
@@ -199,8 +200,8 @@ static	char*	fslastelem(Cname*);
 static	long		fsdirread(Chan*, char*, int, vlong);
 static	ulong		fsqidpath(const char*);
 static	int		fsomode(int);
-static	int		fsdirset(char*, int, WIN32_FIND_DATA*, char*, Chan*, int isdir);
-static 	int		fsdirsize(WIN32_FIND_DATA*, char*, Chan*);
+static	int		fsdirset(char*, int, WIN32_FIND_DATAW*, char*, Chan*, int isdir);
+static 	int		fsdirsize(WIN32_FIND_DATAW*, char*, Chan*);
 static	void		fssettime(char*, long, long);
 static	long		unixtime(FILETIME);
 static	FILETIME	wintime(ulong);
@@ -235,7 +236,7 @@ static	User		*secuser(void);
 
 
 int
-winfilematch(char *path, WIN32_FIND_DATA *data)
+winfilematch(char *path, WIN32_FIND_DATAW *data)
 {
 	char *p;
 	wchar_t *wpath;
@@ -255,11 +256,11 @@ int
 winfileclash(char *path)
 {
 	HANDLE h;
-	WIN32_FIND_DATA data;
+	WIN32_FIND_DATAW data;
 	wchar_t *wpath;
 
 	wpath = widen(path);
-	h = FindFirstFile(wpath, &data);
+	h = FindFirstFileW(wpath, &data);
 	free(wpath);
 	if (h != INVALID_HANDLE_VALUE) {
 		FindClose(h);
@@ -349,7 +350,7 @@ fsinit(void)
 		if(*wp < 32 || (*wp < 256 && isntfrog[*wp] && *wp != '\\' && *wp != ':'))
 			panic("illegal root path");
 	}
-	n = GetFullPathName(wpath, MAXROOT, wrootdir, &last);
+	n = GetFullPathNameW(wpath, MAXROOT, wrootdir, &last);
 	free(wpath);
 	runestoutf(rootdir, wrootdir, MAXROOT);
 	if(n >= MAXROOT || n == 0)
@@ -375,7 +376,7 @@ fsinit(void)
 
 	if(strchr(rootdir, '\\') == nil)
 		strcat(rootdir, "\\.");
-	attr = GetFileAttributes(wrootdir);
+	attr = GetFileAttributesW(wrootdir);
 	if(attr == 0xFFFFFFFF)
 		panic("root path '%s' does not exist", narrowen(wrootdir));
 	rootqid.path = fsqidpath(rootdir);
@@ -666,7 +667,7 @@ fscreate(Chan *c, const char *name, int mode, ulong perm)
 			error(Eisdir);
 		}
 		wpath = widen(path);
-		if(!CreateDirectory(wpath, &sa) || !fsexist(path, &c->qid)) {
+		if(!CreateDirectoryW(wpath, &sa) || !fsexist(path, &c->qid)) {
 			free(wpath);
 			free(acl);
 			oserror();
@@ -681,7 +682,7 @@ fscreate(Chan *c, const char *name, int mode, ulong perm)
 		if (winfileclash(path))
 			error(Eexist);
 		wpath = widen(path);
-		h = CreateFile(wpath, m, FILE_SHARE_READ|FILE_SHARE_WRITE|file_share_delete, &sa, CREATE_ALWAYS, aflag, 0);
+		h = CreateFileW(wpath, m, FILE_SHARE_READ|FILE_SHARE_WRITE|file_share_delete, &sa, CREATE_ALWAYS, aflag, 0);
 		free(wpath);
 		if(h == INVALID_HANDLE_VALUE) {
 			free(acl);
@@ -803,7 +804,7 @@ fswrite(Chan *c, const char *va, long n, vlong offset)
 int
 fsstat(Chan *c, char *buf, int n)
 {
-	WIN32_FIND_DATA data;
+	WIN32_FIND_DATAW data;
 	char path[MAX_PATH];
 	wchar_t *wpath;
 
@@ -816,7 +817,7 @@ fsstat(Chan *c, char *buf, int n)
 		if(strchr(path, '\\') == nil)
 			strcat(path, "\\.");
 		wpath = widen(path);
-		data.dwFileAttributes = GetFileAttributes(wpath);
+		data.dwFileAttributes = GetFileAttributesW(wpath);
 		free(wpath);
 		if(data.dwFileAttributes == 0xffffffff)
 			oserror();
@@ -847,7 +848,7 @@ fsstat(Chan *c, char *buf, int n)
 			data.nFileSizeLow = fi.nFileSizeLow;
 		} else {
 			wpath = widen(path);
-			h = FindFirstFile(wpath, &data);
+			h = FindFirstFileW(wpath, &data);
 			free(wpath);
 			if(h == INVALID_HANDLE_VALUE)
 				oserror();
@@ -873,7 +874,7 @@ fswstat(Chan *c, char *buf, int n)
 	HANDLE h;
 	ulong attr;
 	User *ou, *gu;
-	WIN32_FIND_DATA data;
+	WIN32_FIND_DATAW data;
 	SECURITY_DESCRIPTOR *sd;
 	char *last, sdrock[SD_ROCK], path[MAX_PATH], newpath[MAX_PATH], strs[4*256];
 	wchar_t wspath[MAX_PATH], wsnewpath[MAX_PATH];
@@ -894,7 +895,7 @@ fswstat(Chan *c, char *buf, int n)
 			data.ftLastWriteTime = wintime(dir.mtime);
 		utftorunes(data.cFileName, ".", MAX_PATH);
 	}else{
-		h = FindFirstFile(wspath, &data);
+		h = FindFirstFileW(wspath, &data);
 		if(h == INVALID_HANDLE_VALUE)
 			oserror();
 		if (!winfilematch(path, &data)) {
@@ -990,7 +991,7 @@ fswstat(Chan *c, char *buf, int n)
 		ph = fswalkpath(ph, dir.name, 0);
 		fspath(ph, 0, newpath, FS(c)->spec);
 		utftorunes(wsnewpath, newpath, MAX_PATH);
-		if(GetFileAttributes(wpath) != 0xffffffff && !winfileclash(newpath))
+		if(GetFileAttributesW(wpath) != 0xffffffff && !winfileclash(newpath))
 			error("file already exists");
 		if(fsisroot(c))
 			error(Eperm);
@@ -1015,7 +1016,7 @@ fswstat(Chan *c, char *buf, int n)
 	if(!fsisroot(c)
 	&& attr != data.dwFileAttributes
 	&& (attr & FILE_ATTRIBUTE_READONLY))
-		SetFileAttributes(wspath, attr);
+		SetFileAttributesW(wspath, attr);
 	if(FS(c)->usesec && wsd){
 		ACL *acl = (ACL *) smalloc(ACL_ROCK);
 		st.owner = ou;
@@ -1023,7 +1024,7 @@ fswstat(Chan *c, char *buf, int n)
 		if(dir.mode != ~0)
 			st.mode = dir.mode;
 		sd = secmksd(sdrock, &st, acl, data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-		if(sd == nil || !SetFileSecurity(wspath, DACL_SECURITY_INFORMATION, sd)){
+		if(sd == nil || !SetFileSecurityW(wspath, DACL_SECURITY_INFORMATION, sd)){
 			free(acl);
 			oserror();
 		}
@@ -1033,7 +1034,7 @@ fswstat(Chan *c, char *buf, int n)
 	if(!fsisroot(c)
 	&& attr != data.dwFileAttributes
 	&& !(attr & FILE_ATTRIBUTE_READONLY))
-		SetFileAttributes(wspath, attr);
+		SetFileAttributesW(wspath, attr);
 
 	/* do last so path is valid throughout */
 	wpath = widen(dir.name);
@@ -1057,7 +1058,7 @@ fswstat(Chan *c, char *buf, int n)
 				CloseHandle(h);	/* woe betide it if ORCLOSE */
 			FS(c)->fd = nth2fd(INVALID_HANDLE_VALUE);
 		}
-		if(!MoveFile(wspath, wsnewpath)) {
+		if(!MoveFileW(wspath, wsnewpath)) {
 			oserror();
 		} else if(!file_share_delete && c->flag & COPEN) {
 			int	aflag;
@@ -1069,7 +1070,7 @@ fswstat(Chan *c, char *buf, int n)
 			sa.bInheritHandle = 0;
 			if(c->flag & CRCLOSE)
 				aflag = FILE_FLAG_DELETE_ON_CLOSE;
-			h = CreateFile(wsnewpath, fsomode(c->mode & 0x3), FILE_SHARE_READ|FILE_SHARE_WRITE|file_share_delete, &sa, OPEN_EXISTING, aflag, 0);
+			h = CreateFileW(wsnewpath, fsomode(c->mode & 0x3), FILE_SHARE_READ|FILE_SHARE_WRITE|file_share_delete, &sa, OPEN_EXISTING, aflag, 0);
 			if(h == INVALID_HANDLE_VALUE)
 				oserror();
 			FS(c)->fd = nth2fd(h);
@@ -1102,16 +1103,16 @@ fsremove(Chan *c)
 		*p = '\\';
 	}
 	if(c->qid.type & QTDIR)
-		n = RemoveDirectory(wspath);
+		n = RemoveDirectoryW(wspath);
 	else
-		n = DeleteFile(wspath);
+		n = DeleteFileW(wspath);
 	if (!n) {
 		ulong attr, mode;
 		SECURITY_DESCRIPTOR *sd = nil;
 		char sdrock[SD_ROCK];
 		Stat st;
 		int secok;
-		attr = GetFileAttributes(wspath);
+		attr = GetFileAttributesW(wspath);
 		if(attr != 0xFFFFFFFF) {
 			if (FS(c)->usesec) {
 				sd = secsd(path, sdrock);
@@ -1122,7 +1123,7 @@ fsremove(Chan *c)
 					st.mode |= 0660;
 					sd = secmksd(sdrock, &st, acl, attr & FILE_ATTRIBUTE_DIRECTORY);
 					if(sd != nil) {
-						SetFileSecurity(wspath, DACL_SECURITY_INFORMATION, sd);
+						SetFileSecurityW(wspath, DACL_SECURITY_INFORMATION, sd);
 					}
 					free(acl);
 					if(sd != nil && sd != (void*)sdrock)
@@ -1130,22 +1131,22 @@ fsremove(Chan *c)
 					sd = nil;
 				}
 			}
-			SetFileAttributes(wspath, FILE_ATTRIBUTE_NORMAL);
+			SetFileAttributesW(wspath, FILE_ATTRIBUTE_NORMAL);
 			if(c->qid.type & QTDIR)
-				n = RemoveDirectory(wspath);
+				n = RemoveDirectoryW(wspath);
 			else
-				n = DeleteFile(wspath);
+				n = DeleteFileW(wspath);
 			if (!n) {
 				if (FS(c)->usesec && secok) {
 					ACL *acl = (ACL *) smalloc(ACL_ROCK);
 					st.mode =  mode;
 					sd = secmksd(sdrock, &st, acl, attr & FILE_ATTRIBUTE_DIRECTORY);
 					if(sd != nil) {
-						SetFileSecurity(wspath, DACL_SECURITY_INFORMATION, sd);
+						SetFileSecurityW(wspath, DACL_SECURITY_INFORMATION, sd);
 					}
 					free(acl);
 				}
-				SetFileAttributes(wspath, attr);
+				SetFileAttributesW(wspath, attr);
 				if(sd != nil && sd != (void*)sdrock)
 					free(sd);
 			}
@@ -1262,7 +1263,7 @@ fslastelem(Cname *c)
 }
 
 static int
-fsdirbadentry(WIN32_FIND_DATA *data)
+fsdirbadentry(WIN32_FIND_DATAW *data)
 {
 	wchar_t *s;
 
@@ -1288,7 +1289,7 @@ fsdirent(Chan *c, char *path, Fsdir *data)
 		if(h != INVALID_HANDLE_VALUE)
 			FindClose(h);
 		wpath = widen(path);
-		h = FindFirstFile(wpath, data);
+		h = FindFirstFileW(wpath, data);
 		free(wpath);
 		FS(c)->fd = nth2fd(h);
 		if(h == INVALID_HANDLE_VALUE){
@@ -1299,7 +1300,7 @@ fsdirent(Chan *c, char *path, Fsdir *data)
 			return data;
 	}
 	do{
-		if(!FindNextFile(h, data)){
+		if(!FindNextFileW(h, data)){
 			free(data);
 			return nil;
 		}
@@ -1412,13 +1413,13 @@ static int
 fsexist(char *p, Qid *q)
 {
 	HANDLE h;
-	WIN32_FIND_DATA data;
+	WIN32_FIND_DATAW data;
 	wchar_t *wpath;
 
 	if(devfile(p))
 		return 0;
 	wpath = widen(p);
-	h = FindFirstFile(wpath, &data);
+	h = FindFirstFileW(wpath, &data);
 	free(wpath);
 	if(h == INVALID_HANDLE_VALUE)
 		return 0;
@@ -1440,7 +1441,7 @@ fsexist(char *p, Qid *q)
 }
 
 static int
-fsdirset(char *edir, int n, WIN32_FIND_DATA *data, char *path, Chan *c, int isdir)
+fsdirset(char *edir, int n, WIN32_FIND_DATAW *data, char *path, Chan *c, int isdir)
 {
 	Dir dir;
 	static char neveryone[] = "Everyone";
@@ -1487,7 +1488,7 @@ fsdirset(char *edir, int n, WIN32_FIND_DATA *data, char *path, Chan *c, int isdi
 }
 
 static int
-fsdirsize(WIN32_FIND_DATA *data, char *path, Chan *c)
+fsdirsize(WIN32_FIND_DATAW *data, char *path, Chan *c)
 {
 	int i, n;
 
@@ -1511,7 +1512,7 @@ fssettime(char *path, long at, long mt)
 	wchar_t *wpath;
 
 	wpath = widen(path);
-	h = CreateFile(wpath, GENERIC_WRITE,
+	h = CreateFileW(wpath, GENERIC_WRITE,
 		0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	free(wpath);
 	if(h == INVALID_HANDLE_VALUE)
@@ -1795,7 +1796,7 @@ secsd(char *file, char sdrock[SD_ROCK])
 	sd = (SECURITY_DESCRIPTOR*)sdrock;
 	need = 0;
 	wpath = widen(path);
-	if(GetFileSecurity(wpath, OWNER_SECURITY_INFORMATION|DACL_SECURITY_INFORMATION, sd, SD_ROCK, &need)) {
+	if(GetFileSecurityW(wpath, OWNER_SECURITY_INFORMATION|DACL_SECURITY_INFORMATION, sd, SD_ROCK, &need)) {
 		free(wpath);
 		return sd;
 	}
@@ -1808,7 +1809,7 @@ secsd(char *file, char sdrock[SD_ROCK])
 		free(wpath);
 		error(Enomem);
 	}
-	if(GetFileSecurity(wpath, OWNER_SECURITY_INFORMATION|DACL_SECURITY_INFORMATION, sd, need, &need)) {
+	if(GetFileSecurityW(wpath, OWNER_SECURITY_INFORMATION|DACL_SECURITY_INFORMATION, sd, need, &need)) {
 		free(wpath);
 		return sd;
 	}
@@ -2322,12 +2323,12 @@ filesrv(const char *file)
 		vol[0] = file[0];
 		vol[1] = file[1];
 		vol[2] = 0;
-		if(GetDriveType(vol) != DRIVE_REMOTE)
+		if(GetDriveTypeW(vol) != DRIVE_REMOTE)
 			return 0;
 		n = sizeof(uni);
-		if(WNetGetUniversalName(vol, UNIVERSAL_NAME_INFO_LEVEL, uni, &n) != NO_ERROR)
+		if(WNetGetUniversalNameW(vol, UNIVERSAL_NAME_INFO_LEVEL, uni, &n) != NO_ERROR)
 			return nil;
-		runestoutf(mfile, ((UNIVERSAL_NAME_INFO*)uni)->lpUniversalName, MAX_PATH);
+		runestoutf(mfile, ((UNIVERSAL_NAME_INFOW*)uni)->lpUniversalName, MAX_PATH);
 		file = mfile;
 	}
 	file += 2;
@@ -2378,7 +2379,7 @@ fsacls(const char *file)
 			p[1] = 0;
 	}
 	utftorunes(wpath, path, MAX_PATH);
-	if(!GetVolumeInformation(wpath, NULL, 0, NULL, NULL, &flags, NULL, 0))
+	if(!GetVolumeInformationW(wpath, NULL, 0, NULL, NULL, &flags, NULL, 0))
 		return 0;
 
 	return flags & FS_PERSISTENT_ACLS;

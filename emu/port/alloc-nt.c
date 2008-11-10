@@ -3,6 +3,14 @@
 #include "fns.h"
 #include "pool.h"
 
+#ifndef HEAP_CREATE_ENABLE_EXECUTE
+#define HEAP_CREATE_ENABLE_EXECUTE 0x00040000
+#endif
+
+#ifndef __FUNCTION__
+#define __FUNCTION__ ""
+#endif
+
 typedef struct Bhdr Bhdr;
 typedef struct Btail Btail;
 
@@ -274,13 +282,16 @@ void	poolwalk(Pool* pool, poolwalk_callback callback)
 				phe.lpData, phe.cbData,
 				((Bhdr*)phe.lpData)->size + sizeof(Bhdr) + sizeof(Btail));*/
 			/* do not go to TrapHandler from callback function */
+#ifdef _MSC_VER
 			__try
 			{
+#endif
 				VALIDATE_PTR2(pool, phe.lpData);
 				if(phe.cbData != b->size + sizeof(Bhdr) + sizeof(Btail)) \
 					panic(__FUNCTION__ "(invalid size %p)", b);
 				//assert(phe.cbData == b->size + sizeof(Bhdr) + sizeof(Btail));
 				callback(B2D(b), b->size, b->tag, b->file, b->line, b->function, b->comment);
+#ifdef _MSC_VER
 			}
 			__except(EXCEPTION_EXECUTE_HANDLER)
 			{
@@ -288,6 +299,7 @@ void	poolwalk(Pool* pool, poolwalk_callback callback)
 					phe.lpData, phe.cbData, phe.wFlags);
 				/*continue, break*/
 			}
+#endif
 			++nblock;
 
 		}

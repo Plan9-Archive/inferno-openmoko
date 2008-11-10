@@ -19,18 +19,18 @@
 static
 TkOption windopts[] =
 {
-	"width",	OPTdist,	offsetof(TkCwind, width),	nil,
-	"height",	OPTdist,	offsetof(TkCwind, height),	nil,
-	"anchor",	OPTstab,	offsetof(TkCwind, flags),	tkanchor,
-	"window",	OPTwinp,	offsetof(TkCwind, sub),		nil,
-	nil
+	{"width",	OPTdist,	offsetof(TkCwind, width)	},
+	{"height",	OPTdist,	offsetof(TkCwind, height)	},
+	{"anchor",	OPTstab,	offsetof(TkCwind, flags),	{tkanchor}},
+	{"window",	OPTwinp,	offsetof(TkCwind, sub)		},
+	{nil}
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
-	nil
+	{"tags",	OPTctag,	offsetof(TkCitem, tags)		},
+	{nil}
 };
 
 static void

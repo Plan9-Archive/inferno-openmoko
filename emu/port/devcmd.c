@@ -423,11 +423,11 @@ enum
 
 static
 Cmdtab cmdtab[] = {
-	CMdir,	"dir",	2,
-	CMexec,	"exec",	0,
-	CMkill,	"kill",	1,
-	CMnice,	"nice",	0,
-	CMkillonclose, "killonclose", 0,
+	{CMdir,		"dir",		2},
+	{CMexec,	"exec",		0},
+	{CMkill,	"kill",		1},
+	{CMnice,	"nice",		0},
+	{CMkillonclose, "killonclose",	0},
 };
 
 static long

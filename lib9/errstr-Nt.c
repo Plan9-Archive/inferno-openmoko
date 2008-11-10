@@ -13,8 +13,8 @@ winerror(int e, char *buf, uint nerr)
 {
 	int r;
 	char buf2[ERRMAX], *p, *q;
-	
-	r = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
+
+	r = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM,
 		0, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		buf2, sizeof(buf2), 0);
 
@@ -35,7 +35,7 @@ winerror(int e, char *buf, uint nerr)
 }
 
 void
-werrstr(char *fmt, ...)
+werrstr(const char *fmt, ...)
 {
 	va_list arg;
 

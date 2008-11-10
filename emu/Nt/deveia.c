@@ -5,10 +5,7 @@
  *	scan the registry for serial ports?
  */
 
-#define Unknown win_Unknown
 #include	<windows.h>
-#undef Unknown
-//#undef	Sleep
 #include	"dat.h"
 #include	"fns.h"
 #include	"error.h"
@@ -142,7 +139,7 @@ static void
 eiainit(void)
 {
 	int     i,x;
-	byte    ports;   //bitmask of active host ports
+	int/*byte*/    ports;   //bitmask of active host ports
 	int     nports;  //number of active host ports
 	int     max;     //number of highest port
 	Dirtab *dp;

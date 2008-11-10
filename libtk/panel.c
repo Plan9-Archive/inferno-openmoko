@@ -19,8 +19,8 @@ struct TkPanel
 
 static TkOption tkpanelopts[] =
 {
-	"anchor",	OPTflag,	offsetof(TkPanel, anchor),	tkanchor,
-	nil
+	{"anchor",	OPTflag,	offsetof(TkPanel, anchor),	{tkanchor}},
+	{nil}
 };
 
 static int
@@ -391,15 +391,15 @@ tkpanelorigin(Tk *tk, char *arg, char **val)
 static
 TkCmdtab tkpanelcmd[] =
 {
-	"cget",			tkpanelcget,
-	"configure",		tkpanelconf,
-	"dirty",			tkpaneldirty,
-	"origin",			tkpanelorigin,
-	"panelx",			tkpanelpanelx,
-	"panely",			tkpanelpanely,
-	"screenx",			tkpanelscreenx,
-	"screeny",			tkpanelscreeny,
-	nil
+	{"cget",	tkpanelcget},
+	{"configure",	tkpanelconf},
+	{"dirty",	tkpaneldirty},
+	{"origin",	tkpanelorigin},
+	{"panelx",	tkpanelpanelx},
+	{"panely",	tkpanelpanely},
+	{"screenx",	tkpanelscreenx},
+	{"screeny",	tkpanelscreeny},
+	{nil}
 };
 
 TkMethod panelmethod = {

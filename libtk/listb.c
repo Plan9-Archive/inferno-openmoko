@@ -42,31 +42,31 @@ struct TkListbox
 
 TkStab tkselmode[] =
 {
-	"single",	TKsingle,
-	"browse",	TKbrowse,
-	"multiple",	TKmultiple,
-	"extended",	TKextended,
-	nil
+	{"single",	TKsingle},
+	{"browse",	TKbrowse},
+	{"multiple",	TKmultiple},
+	{"extended",	TKextended},
+	{nil}
 };
 
 static
 TkOption opts[] =
 {
-	"xscrollcommand",	OPTtext,	offsetof(TkListbox, xscroll),	nil,
-	"yscrollcommand",	OPTtext,	offsetof(TkListbox, yscroll),	nil,
-	"selectmode",		OPTstab,	offsetof(TkListbox, selmode),	tkselmode,
-	"selectborderwidth",	OPTnndist,	offsetof(TkListbox, sborderwidth),	nil,
-	nil
+	{"xscrollcommand",	OPTtext,	offsetof(TkListbox, xscroll)		},
+	{"yscrollcommand",	OPTtext,	offsetof(TkListbox, yscroll)		},
+	{"selectmode",		OPTstab,	offsetof(TkListbox, selmode),		{tkselmode}},
+	{"selectborderwidth",	OPTnndist,	offsetof(TkListbox, sborderwidth)	},
+	{nil}
 };
 
 static
 TkEbind b[] =
 {
 	{TkButton1P,		"%W tkListbButton1P %y"},
-	{TkButton1R,	"%W tkListbButton1R"},
+	{TkButton1R,		"%W tkListbButton1R"},
 	{TkButton1P|TkMotion,	"%W tkListbButton1MP %y"},
 	{TkMotion,		""},
-	{TkKey,	"%W tkListbKey 0x%K"},
+	{TkKey,			"%W tkListbKey 0x%K"},
 };
 
 
@@ -1038,25 +1038,25 @@ tklistbkey(Tk *tk, char *arg, char **val)
 static
 TkCmdtab tklistcmd[] =
 {
-	"activate",		tklistbactivate,
-	"cget",			tklistbcget,
-	"configure",		tklistbconf,
-	"curselection",		tklistbcursel,
-	"delete",		tklistbdelete,
-	"get",			tklistbget,
-	"index",		tklistbindex,
-	"insert",		tklistbinsert,
-	"nearest",		tklistbnearest,
-	"selection",		tklistbselection,
-	"see",			tklistbsee,
-	"size",			tklistbsize,
-	"xview",		tklistbxview,
-	"yview",		tklistbyview,
-	"tkListbButton1P",	tklistbbutton1p,
-	"tkListbButton1R",	tklistbbutton1r,
-	"tkListbButton1MP",	tklistbbutton1m,
-	"tkListbKey",	tklistbkey,
-	nil
+	{"activate",		tklistbactivate},
+	{"cget",		tklistbcget},
+	{"configure",		tklistbconf},
+	{"curselection",	tklistbcursel},
+	{"delete",		tklistbdelete},
+	{"get",			tklistbget},
+	{"index",		tklistbindex},
+	{"insert",		tklistbinsert},
+	{"nearest",		tklistbnearest},
+	{"selection",		tklistbselection},
+	{"see",			tklistbsee},
+	{"size",		tklistbsize},
+	{"xview",		tklistbxview},
+	{"yview",		tklistbyview},
+	{"tkListbButton1P",	tklistbbutton1p},
+	{"tkListbButton1R",	tklistbbutton1r},
+	{"tkListbButton1MP",	tklistbbutton1m},
+	{"tkListbKey",		tklistbkey},
+	{nil}
 };
 
 TkMethod listboxmethod = {

@@ -25,16 +25,16 @@ struct TkCimag
 static
 TkOption imgopts[] =
 {
-	"anchor",	OPTstab,	offsetof(TkCimag, anchor),	tkanchor,
-	"image",	OPTimag,	offsetof(TkCimag, tki),	nil,
-	nil
+	{"anchor",	OPTstab,	offsetof(TkCimag, anchor),	{tkanchor}},
+	{"image",	OPTimag,	offsetof(TkCimag, tki)		},
+	{nil}
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
-	nil
+	{"tags",	OPTctag,	offsetof(TkCitem, tags)		},
+	{nil}
 };
 
 void

@@ -41,10 +41,10 @@ enum {
 
 static TkStab tkjust[] =
 {
-	"left",	Eleft,
-	"right",	Eright,
-	"center",	Ecenter,
-	nil
+	{"left",	Eleft},
+	{"right",	Eright},
+	{"center",	Ecenter},
+	{nil}
 };
 
 static
@@ -54,8 +54,8 @@ TkEbind b[] =
 	{TkKey|CNTL('a'),	"%W icursor 0;%W see insert;%W selection clear"},
 	{TkKey|Home,		"%W icursor 0;%W see insert;%W selection clear"},
 	{TkKey|CNTL('d'),	"%W delete insert; %W see insert"},
-	{TkKey|CNTL('e'),    "%W icursor end; %W see insert;%W selection clear"},
-	{TkKey|End,	     "%W icursor end; %W see insert;%W selection clear"},
+	{TkKey|CNTL('e'),    	"%W icursor end; %W see insert;%W selection clear"},
+	{TkKey|End,	     	"%W icursor end; %W see insert;%W selection clear"},
 	{TkKey|CNTL('h'),	"%W tkEntryBS;%W see insert"},
 	{TkKey|CNTL('k'),	"%W delete insert end;%W see insert"},
 	{TkKey|CNTL('u'),	"%W delete 0 end;%W see insert"},
@@ -63,13 +63,13 @@ TkEbind b[] =
 	{TkKey|Del,		"%W tkEntryBS 1;%W see insert"},
 	{TkKey|CNTL('\\'),	"%W selection clear"},
 	{TkKey|CNTL('/'),	"%W selection range 0 end"},
-	{TkKey|Left,	"%W icursor insert-1;%W selection clear;%W selection from insert;%W see insert"},
-	{TkKey|Right,	"%W icursor insert+1;%W selection clear;%W selection from insert;%W see insert"},
+	{TkKey|Left,		"%W icursor insert-1;%W selection clear;%W selection from insert;%W see insert"},
+	{TkKey|Right,		"%W icursor insert+1;%W selection clear;%W selection from insert;%W see insert"},
 	{TkButton1P,		"focus %W; %W tkEntryB1P %X"},
 	{TkButton1P|TkMotion, 	"%W tkEntryB1M %X"},
 	{TkButton1R,		"%W tkEntryB1R"},
 	{TkButton1P|TkDouble,	"%W tkEntryB1P %X;%W selection word @%x"},
-	{TkButton2P,			"%W tkEntryB2P %x"},
+	{TkButton2P,		"%W tkEntryB2P %x"},
 	{TkButton2P|TkMotion,	"%W xview scroll %x scr"},
 	{TkFocusin,		"%W tkEntryFocus in"},
 	{TkFocusout,		"%W tkEntryFocus out"},
@@ -110,10 +110,10 @@ static void blinkreset(Tk*);
 static
 TkOption opts[] =
 {
-	"xscrollcommand",	OPTtext,	offsetof(TkEntry, xscroll),	nil,
-	"justify",		OPTstab,	offsetof(TkEntry, flag),	tkjust,
-	"show",			OPTtext,	offsetof(TkEntry, show),	nil,
-	nil
+	{"xscrollcommand",	OPTtext,	offsetof(TkEntry, xscroll)	},
+	{"justify",		OPTstab,	offsetof(TkEntry, flag),	{tkjust}},
+	{"show",		OPTtext,	offsetof(TkEntry, show)		},
+	{nil}
 };
 
 static int
@@ -1350,25 +1350,25 @@ tkentryfocus(Tk *tk, char* arg, char **ret)
 static
 TkCmdtab tkentrycmd[] =
 {
-	"cget",			tkentrycget,
-	"configure",		tkentryconf,
-	"delete",		tkentrydelete,
-	"get",			tkentryget,
-	"icursor",		tkentryicursor,
-	"index",		tkentryindex,
-	"insert",		tkentryinsert,
-	"selection",		tkentryselect,
-	"xview",		tkentryxview,
-	"tkEntryBS",		tkentrybs,
-	"tkEntryBW",		tkentrybw,
-	"tkEntryB1P",		tkentryb1p,
-	"tkEntryB1M",		tkentryb1m,
-	"tkEntryB1R",		tkentryb1r,
-	"tkEntryB2P",		tkentryb2p,
-	"tkEntryFocus",		tkentryfocus,
-	"bbox",			tkentrybboxcmd,
-	"see",		tkentryseecmd,
-	nil
+	{"cget",		tkentrycget},
+	{"configure",		tkentryconf},
+	{"delete",		tkentrydelete},
+	{"get",			tkentryget},
+	{"icursor",		tkentryicursor},
+	{"index",		tkentryindex},
+	{"insert",		tkentryinsert},
+	{"selection",		tkentryselect},
+	{"xview",		tkentryxview},
+	{"tkEntryBS",		tkentrybs},
+	{"tkEntryBW",		tkentrybw},
+	{"tkEntryB1P",		tkentryb1p},
+	{"tkEntryB1M",		tkentryb1m},
+	{"tkEntryB1R",		tkentryb1r},
+	{"tkEntryB2P",		tkentryb2p},
+	{"tkEntryFocus",	tkentryfocus},
+	{"bbox",		tkentrybboxcmd},
+	{"see",			tkentryseecmd},
+	{nil}
 };
 
 TkMethod entrymethod = {

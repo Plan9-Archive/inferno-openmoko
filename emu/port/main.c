@@ -363,17 +363,19 @@ sysfatal(const char *fmt, ...)
 	va_end(arg);
 }
 
-extern char exBounds[];
 NORETURN
 error(const char *err)
 {
+	print("error(%s)\n", err);
 	/*if(err==exBounds)
 		__asm int 3;*/
 //	o("error '%s'\n",err);
 	if(err != up->env->errstr && up->env->errstr != nil)
 		kstrcpy(up->env->errstr, err, ERRMAX);
 //	ossetjmp(up->estack[NERR-1]);
-	nexterror();
+//	nexterror();
+
+	oslongjmp(nil, up->estack[--up->nerr], 1);
 }
 
 NORETURN
@@ -391,6 +393,7 @@ exhausted(const char *resource)
 NORETURN
 nexterror(void)
 {
+	print("nexterror\n");
 	//assert(0<up->nerr && up->nerr<=NERR-1);
 	oslongjmp(nil, up->estack[--up->nerr], 1);
 }
@@ -425,7 +428,11 @@ panicv(const char *fmt, va_list arg)
 	vfprint(2, fmt, arg);
 	if(sflag)
 	{
+#ifdef _MSC_VER
 		__asm int 3;
+#else
+		asm("int3");
+#endif
 	}
 	cleanexit(1);
 }

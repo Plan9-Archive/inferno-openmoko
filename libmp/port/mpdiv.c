@@ -10,7 +10,7 @@ void
 mpdiv(mpint *dividend, mpint *divisor, mpint *quotient, mpint *remainder)
 {
 	int j, s, vn, sign;
-	mpdigit qd, *up, *vp, *qp;
+	mpdigit qd, *upp, *vp, *qp;
 	mpint *u, *v, *t;
 
 	// divide bv zero
@@ -40,13 +40,13 @@ mpdiv(mpint *dividend, mpint *divisor, mpint *quotient, mpint *remainder)
 		v = mpnew(divisor->top*Dbits);
 		mpleft(divisor, s, v);
 	}
-	up = u->p+u->top-1;
+	upp = u->p+u->top-1;
 	vp = v->p+v->top-1;
 	vn = v->top;
 
 	// D1a: make sure high digit of dividend is less than high digit of divisor
-	if(*up >= *vp){
-		*++up = 0;
+	if(*upp >= *vp){
+		*++upp = 0;
 		u->top++;
 	}
 
@@ -64,25 +64,25 @@ mpdiv(mpint *dividend, mpint *divisor, mpint *quotient, mpint *remainder)
 	for(j = u->top; j > vn; j--){
 
 		// D3: calculate trial divisor
-		mpdigdiv(up-1, *vp, &qd);
+		mpdigdiv(upp-1, *vp, &qd);
 
 		// D3a: rule out trial divisors 2 greater than real divisor
 		if(vn > 1) for(;;){
 			memset(t->p, 0, 3*Dbytes);	// mpvecdigmuladd adds to what's there
 			mpvecdigmuladd(vp-1, 2, qd, t->p);
-			if(mpveccmp(t->p, 3, up-2, 3) > 0)
+			if(mpveccmp(t->p, 3, upp-2, 3) > 0)
 				qd--;
 			else
 				break;
 		}
 
 		// D4: u -= v*qd << j*Dbits
-		sign = mpvecdigmulsub(v->p, vn, qd, up-vn);
+		sign = mpvecdigmulsub(v->p, vn, qd, upp-vn);
 		if(sign < 0){
 
 			// D6: trial divisor was too high, add back borrowed
 			//     value and decrease divisor
-			mpvecadd(up-vn, vn+1, v->p, vn, up-vn);
+			mpvecadd(upp-vn, vn+1, v->p, vn, upp-vn);
 			qd--;
 		}
 
@@ -92,7 +92,7 @@ mpdiv(mpint *dividend, mpint *divisor, mpint *quotient, mpint *remainder)
 
 		// push top of u down one
 		u->top--;
-		*up-- = 0;
+		*upp-- = 0;
 	}
 	if(qp != nil){
 		mpnorm(quotient);

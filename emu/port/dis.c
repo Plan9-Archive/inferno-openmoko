@@ -1199,7 +1199,7 @@ disinit(__in_z const char *initmod)
 
 	root = load((char *)initmod);
 	if(root == 0) {
-		kgerrstr(up->genbuf, sizeof up->genbuf);
+		kgerrstr(up->genbuf, 128/*sizeof up->genbuf*/);
 		panic("loading \"%s\": %s", initmod, up->genbuf);
 	}
 

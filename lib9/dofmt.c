@@ -16,7 +16,7 @@
 
 /* format the output into f->to and return the number of characters fmted  */
 int
-dofmt(Fmt *f, char *fmt)
+dofmt(Fmt *f, const char *fmt)
 {
 	Rune rune, *rt, *rs;
 	int r;

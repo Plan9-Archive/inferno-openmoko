@@ -4,7 +4,7 @@
 #include "memlayer.h"
 
 int
-memload(Memimage *dst, Rectangle r, uchar *data, int n, int iscompressed)
+memload(Memimage *dst, Rectangle r, const uchar *data, int n, int iscompressed)
 {
 	int (*loadfn)(Memimage*, Rectangle, uchar*, int);
 	Memimage *tmp;

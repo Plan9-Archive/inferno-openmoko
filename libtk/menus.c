@@ -60,23 +60,23 @@ enum {
 static
 TkOption mbopts[] =
 {
-	"text",		OPTtext,	offsetof(TkLabel, text),		nil,
-	"anchor",	OPTflag,	offsetof(TkLabel, anchor),	tkanchor,
-	"underline",	OPTdist,	offsetof(TkLabel, ul),		nil,
-	"justify",	OPTstab,	offsetof(TkLabel, justify),	tkjustify,
-	"menu",		OPTtext,	offsetof(TkLabel, menu),		nil,
-	"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap),		nil,
-	"image",	OPTimag,	offsetof(TkLabel, img),		nil,
-	nil
+	{"text",	OPTtext,	offsetof(TkLabel, text)		},
+	{"anchor",	OPTflag,	offsetof(TkLabel, anchor),	{tkanchor}},
+	{"underline",	OPTdist,	offsetof(TkLabel, ul)		},
+	{"justify",	OPTstab,	offsetof(TkLabel, justify),	{tkjustify}},
+	{"menu",	OPTtext,	offsetof(TkLabel, menu)		},
+	{"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap)	},
+	{"image",	OPTimag,	offsetof(TkLabel, img)		},
+	{nil}
 };
 
 static
 TkOption choiceopts[] =
 {
-	"variable",	OPTtext,	offsetof(TkLabel, variable),	nil,
-	"values",	OPTlist,	offsetof(TkLabel, values), nil,
-	"command", OPTtext, offsetof(TkLabel, command), nil,
-	nil
+	{"variable",	OPTtext,	offsetof(TkLabel, variable)	},
+	{"values",	OPTlist,	offsetof(TkLabel, values) 	},
+	{"command",	OPTtext, 	offsetof(TkLabel, command) 	},
+	{nil}
 };
 
 static
@@ -85,7 +85,7 @@ TkEbind mbbindings[] =
 	{TkEnter,		"%W tkMBenter %s"},
 	{TkLeave,		"%W tkMBleave"},
 	{TkButton1P,		"%W tkMBpress 1"},
-	{TkKey,		"%W tkMBkey 0x%K"},
+	{TkKey,			"%W tkMBkey 0x%K"},
 	{TkButton1P|TkMotion,	"%W tkMBpress 0"},
 };
 
@@ -644,8 +644,8 @@ tkfindchoicemenu(Tk *tkb)
 static
 TkOption menuopt[] =
 {
-	"postcommand",	OPTtext,	offsetof(TkWin, postcmd),		nil,
-	nil,
+	{"postcommand",	OPTtext,	offsetof(TkWin, postcmd)	},
+	{nil}
 };
 
 char*
@@ -720,8 +720,8 @@ freemenu(Tk *top)
 static
 TkOption mopt[] =
 {
-	"menu",		OPTtext,	offsetof(TkLabel, menu),		nil,
-	nil,
+	{"menu",	OPTtext,	offsetof(TkLabel, menu)		},
+	{nil}
 };
 
 static void
@@ -1742,54 +1742,54 @@ menuevent(Tk *tk, int event, void *a)
 static
 TkCmdtab menucmd[] =
 {
-	"activate",		tkmenuactivate,
-	"add",			tkmenuadd,
-	"cget",			tkmenucget,
-	"configure",		tkmenuconf,
-	"delete",		tkmenudelete,
-	"entryconfigure",	tkmenuentryconfig,
-	"entrycget",		tkmenuentrycget,
-	"index",		tkmenuindex,
-	"insert",		tkmenuinsert,
-	"invoke",		tkmenuinvoke,
-	"post",			tkmenupost,
-	"postcascade",		tkmenupostcascade,
-	"type",			tkmenutype,
-	"unpost",		tkmenuunpost,
-	"yposition",		tkmenuyposn,
-	"suspend",		tkmenususpend,
-	nil
+	{"activate",		tkmenuactivate},
+	{"add",			tkmenuadd},
+	{"cget",		tkmenucget},
+	{"configure",		tkmenuconf},
+	{"delete",		tkmenudelete},
+	{"entryconfigure",	tkmenuentryconfig},
+	{"entrycget",		tkmenuentrycget},
+	{"index",		tkmenuindex},
+	{"insert",		tkmenuinsert},
+	{"invoke",		tkmenuinvoke},
+	{"post",		tkmenupost},
+	{"postcascade",		tkmenupostcascade},
+	{"type",		tkmenutype},
+	{"unpost",		tkmenuunpost},
+	{"yposition",		tkmenuyposn},
+	{"suspend",		tkmenususpend},
+	{nil}
 };
 
 static
 TkCmdtab menubutcmd[] =
 {
-	"cget",			tkmenubutcget,
-	"configure",		tkmenubutconf,
-	"tkMBenter",		tkMBenter,
-	"tkMBleave",		tkMBleave,
-	"tkMBpress",		tkMBpress,
-	"tkMBkey",		tkMBkey,
-	nil
+	{"cget",		tkmenubutcget},
+	{"configure",		tkmenubutconf},
+	{"tkMBenter",		tkMBenter},
+	{"tkMBleave",		tkMBleave},
+	{"tkMBpress",		tkMBpress},
+	{"tkMBkey",		tkMBkey},
+	{nil}
 };
 
 static
 TkCmdtab choicebutcmd[] =
 {
-	"cget",			tkmenubutcget,
-	"configure",		tkmenubutconf,
-	"set",			tkchoicebutset,
-	"get",			tkchoicebutget,
-	"setvalue",		tkchoicebutsetvalue,
-	"getvalue",		tkchoicebutgetvalue,
-	"invoke",			tkchoicebutinvoke,
-	"valuecount",		tkchoicebutvaluecount,
-	"tkMBenter",		tkMBenter,
-	"tkMBleave",		tkMBleave,
-	"tkMBpress",		tkMBpress,
-	"tkMBkey",		tkMBkey,
-	"suspend",		tkmenususpend,
-	nil
+	{"cget",		tkmenubutcget},
+	{"configure",		tkmenubutconf},
+	{"set",			tkchoicebutset},
+	{"get",			tkchoicebutget},
+	{"setvalue",		tkchoicebutsetvalue},
+	{"getvalue",		tkchoicebutgetvalue},
+	{"invoke",		tkchoicebutinvoke},
+	{"valuecount",		tkchoicebutvaluecount},
+	{"tkMBenter",		tkMBenter},
+	{"tkMBleave",		tkMBleave},
+	{"tkMBpress",		tkMBpress},
+	{"tkMBkey",		tkMBkey},
+	{"suspend",		tkmenususpend},
+	{nil}
 };
 
 TkMethod menumethod = {

@@ -35,7 +35,7 @@ envgen(Chan *c, const char *name, Dirtab *d, int nd, int s, Dir *dp)
 		return -1;
 	}
 	/* make sure name string continues to exist after we release lock */
-	kstrcpy(up->genbuf, e->var, sizeof up->genbuf);
+	kstrcpy(up->genbuf, e->var, 128/*sizeof up->genbuf*/);
 	devdir(c, e->qid, up->genbuf, e->len, eve, 0666, dp);
 	qunlock(&eg->l);
 	return 1;

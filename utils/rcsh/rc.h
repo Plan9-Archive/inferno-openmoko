@@ -1,7 +1,10 @@
 #include	<lib9.h>
 
+#define	panic	rcpanic
+#define	lock	rclock
+#define	unlock	rcunlock
 #define	Lock	Rclock
-#define	Ref		Rcref
+//#define	Ref		Rcref
 
 typedef union Code	Code;
 typedef struct Tree	Tree;

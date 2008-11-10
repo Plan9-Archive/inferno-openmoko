@@ -25,12 +25,14 @@ emit(Decl *globals)
 		}
 	}
 	if(emitstub){
-		print("#pragma hjdicks x4\n");
-		print("#pragma pack x4\n");
+		//print("#pragma hjdicks x4\n");
+		//print("#pragma pack x4\n");
+		print("#pragma pack(4)\n");
 		adtstub(globals);
 		modstub(globals);
-		print("#pragma pack off\n");
-		print("#pragma hjdicks off\n");
+		//print("#pragma pack off\n");
+		print("#pragma pack()\n");
+		//print("#pragma hjdicks off\n");
 	}
 	if(emittab != nil)
 		modtab(globals);
@@ -74,7 +76,7 @@ modcode(Decl *globals)
 
 	if(d == nil)
 		return;
-	
+
 	/*
 	 * stub types
 	 */
@@ -94,7 +96,7 @@ modcode(Decl *globals)
 				print("uchar %s_map[] = %s_%s_map;\n",
 					id->sym->name, emitcode, id->sym->name);
 	}
-	
+
 	/*
 	  * heap allocation and garbage collection for a type
 	 */
@@ -161,25 +163,25 @@ modtab(Decl *globals)
 	Desc *md;
 	Decl *d, *id;
 
-	print("typedef struct{char *name; long sig; void (*fn)(void*); int size; int np; uchar map[16];} Runtab;\n");
+	//print("typedef struct{char *name; long sig; void (*fn)(void*); int size; int np; uchar map[16];} Runtab;\n");
 	for(d = globals; d != nil; d = d->next){
 		if(d->store == Dtype && d->ty->kind == Tmodule && strcmp(d->sym->name, emittab) == 0){
 			n = 0;
 			print("Runtab %smodtab[]={\n", d->sym->name);
 			for(id = d->ty->tof->ids; id != nil; id = id->next){
 				n++;
-				print("\t\"");
+				print("\t{\"");
 				if(id->dot != d)
 					print("%s.", id->dot->sym->name);
-				print("%s\",0x%lux,%s_%s,", id->sym->name, sign(id),
+				print("%s\",0x%08lux,(void(*)(void*))%s_%s,", id->sym->name, sign(id),
 					id->dot->sym->name, id->sym->name);
 				if(id->ty->varargs)
-					print("0,0,{0},");
+					print("0,0,{0}");
 				else{
 					md = mkdesc(idoffsets(id->ty->ids, MaxTemp, MaxAlign), id->ty->ids);
-					print("%ld,%ld,%M,", md->size, md->nmap, md);
+					print("%ld,%ld,%M", md->size, md->nmap, md);
 				}
-				print("\n");
+				print("},\n");
 			}
 			print("\t0\n};\n");
 			print("#define %smodlen	%d\n", d->sym->name, n);
@@ -208,13 +210,13 @@ modstub(Decl *globals)
 				seprint(buf, buf+sizeof(buf), "%s_%s_%s", id->dot->dot->sym->name, id->dot->sym->name, id->sym->name);
 			else
 				seprint(buf, buf+sizeof(buf), "%s_%s", id->dot->sym->name, id->sym->name);
-			print("void %s(void*);\ntypedef struct F_%s F_%s;\nstruct F_%s\n{\n",
-				buf, buf, buf, buf);
-			print("	WORD	regs[NREG-1];\n");
+			print("typedef struct F_%s F_%s;\nvoid %s(F_%s*);\nstruct F_%s\n{\n",
+				buf, buf, buf, buf, buf);
+			print("	DISINT	regs[NREG-1];\n");
 			if(id->ty->tof != tnone)
 				print("	%R*	ret;\n", id->ty->tof);
 			else
-				print("	WORD	noret;\n");
+				print("	DISINT	noret;\n");
 			print("	uchar	temps[%d];\n", MaxTemp-NREG*IBY2WD);
 			offset = MaxTemp;
 			for(m = id->ty->ids; m != nil; m = m->next){
@@ -238,7 +240,7 @@ modstub(Decl *globals)
 				offset += t->size;
 			}
 			if(id->ty->varargs)
-				print("	WORD	vargs;\n");
+				print("	DISINT	vargs;\n");
 			print("};\n");
 		}
 		for(id = d->ty->ids; id != nil; id = id->next)
@@ -436,19 +438,19 @@ char *ckindname[Tend] =
 	/* Tadt */	"struct",
 	/* Tadtpick */	"?adtpick?",
 	/* Tarray */	"Array*",
-	/* Tbig */	"LONG",
-	/* Tbyte */	"BYTE",
+	/* Tbig */	"DISBIG",
+	/* Tbyte */	"DISBYTE",
 	/* Tchan */	"Channel*",
-	/* Treal */	"REAL",
+	/* Treal */	"DISREAL",
 	/* Tfn */	"?fn?",
-	/* Tint */	"WORD",
+	/* Tint */	"DISINT",
 	/* Tlist */	"List*",
 	/* Tmodule */	"Modlink*",
 	/* Tref */	"?ref?",
 	/* Tstring */	"String*",
 	/* Ttuple */	"?tuple?",
-	/* Texception */	"?exception",
-	/* Tfix */		"WORD",
+	/* Texception */"?exception",
+	/* Tfix */	"DISINT",
 	/* Tpoly */	"void*",
 
 	/* Tainit */	"?ainit?",

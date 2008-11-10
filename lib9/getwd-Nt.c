@@ -10,7 +10,7 @@ getwd(char *buf, int size)
 
 	buf[0] = 0;
 
-	n = GetCurrentDirectory(size, buf);
+	n = GetCurrentDirectoryA(size, buf); // TODO: unicode
 	if(n == 0) {
 		/*winerror();*/
 		return 0;

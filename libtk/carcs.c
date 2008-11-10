@@ -43,30 +43,30 @@ enum Style
 static
 TkStab tkstyle[] =
 {
-	"pieslice",	Pieslice,
-	"arc",		Arc,
-	"chord",	Arc,	/* Can't do chords */
-	nil
+	{"pieslice",	Pieslice},
+	{"arc",		Arc},
+	{"chord",	Arc},	/* Can't do chords */
+	{nil}
 };
 
 static
 TkOption arcopts[] =
 {
-	"start",	OPTfrac,	offsetof(TkCarc, start),	nil,
-	"extent",	OPTfrac,	offsetof(TkCarc, extent),	nil,
-	"style",	OPTstab,	offsetof(TkCarc, style),	tkstyle,
-	"width",	OPTnnfrac,	offsetof(TkCarc, width),	nil,
-	"stipple",	OPTbmap,	offsetof(TkCarc, stipple),	nil,
-	nil
+	{"start",	OPTfrac,	offsetof(TkCarc, start) 	},
+	{"extent",	OPTfrac,	offsetof(TkCarc, extent) 	},
+	{"style",	OPTstab,	offsetof(TkCarc, style),	{tkstyle}},
+	{"width",	OPTnnfrac,	offsetof(TkCarc, width) 	},
+	{"stipple",	OPTbmap,	offsetof(TkCarc, stipple) 	},
+	{nil}
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
-	"fill",		OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCfill,
-	"outline",	OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCforegnd,
-	nil
+	{"tags",	OPTctag,	offsetof(TkCitem, tags) 	},
+	{"fill",	OPTcolr,	offsetof(TkCitem, env),		{(TkStab*)TkCfill}},
+	{"outline",	OPTcolr,	offsetof(TkCitem, env),		{(TkStab*)TkCforegnd}},
+	{nil}
 };
 
 void

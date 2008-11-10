@@ -1394,7 +1394,7 @@ secpy(char *p, char *e, char *s)
 }
 
 char*
-seprint(char *buf, char *end, char *fmt, ...)
+seprint(char *buf, char *end, const char *fmt, ...)
 {
 	va_list arg;
 

@@ -215,7 +215,7 @@ spinoff(HANDLE in, HANDLE out, char *args, char *cmd, Envy *e)
 	si.hStdInput = duphandle(in);
 	si.hStdOutput = duphandle(out);
 	si.hStdError = duphandle(GetStdHandle(STD_ERROR_HANDLE));
-	if(CreateProcess(path, args2, 0, 0, 1, 0, eb, 0, &si, &pi) == FALSE) {
+	if(CreateProcessA(path, args2, 0, 0, 1, 0, eb, 0, &si, &pi) == FALSE) {
 		perror("can't find shell");
 		Exit();
 	}

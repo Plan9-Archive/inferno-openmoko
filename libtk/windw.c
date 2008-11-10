@@ -622,10 +622,10 @@ struct TkSee {
 
 static
 TkOption seeopts[] = {
-	"rectangle",		OPTfrac,	offsetof(TkSee, r),	(TkStab*)4,
-	"point",		OPTfrac,	offsetof(TkSee, p),	(TkStab*)2,
-	"where",		OPTbool,	offsetof(TkSee, query),	nil,
-	nil
+	{"rectangle",		OPTfrac,	offsetof(TkSee, r),	{(TkStab*)4}},
+	{"point",		OPTfrac,	offsetof(TkSee, p),	{(TkStab*)2}},
+	{"where",		OPTbool,	offsetof(TkSee, query)	},
+	{nil}
 };
 
 char*

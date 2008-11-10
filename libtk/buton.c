@@ -26,43 +26,43 @@ enum {
 
 TkOption tkbutopts[] =
 {
-	"text",		OPTtext,	offsetof(TkLabel, text),	nil,
-	"label",	OPTtext,	offsetof(TkLabel, text),	nil,
-	"underline",	OPTdist,	offsetof(TkLabel, ul),		nil,
-	"justify",	OPTstab,	offsetof(TkLabel, justify),	tkjustify,
-	"anchor",	OPTflag,	offsetof(TkLabel, anchor),	tkanchor,
-	"command",	OPTtext,	offsetof(TkLabel, command),	nil,
-	"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap),	nil,
-	"image",	OPTimag,	offsetof(TkLabel, img),	nil,
-	nil
+	{"text",	OPTtext,	offsetof(TkLabel, text)		},
+	{"label",	OPTtext,	offsetof(TkLabel, text)		},
+	{"underline",	OPTdist,	offsetof(TkLabel, ul)		},
+	{"justify",	OPTstab,	offsetof(TkLabel, justify),	{tkjustify}},
+	{"anchor",	OPTflag,	offsetof(TkLabel, anchor),	{tkanchor}},
+	{"command",	OPTtext,	offsetof(TkLabel, command)	},
+	{"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap)	},
+	{"image",	OPTimag,	offsetof(TkLabel, img)		},
+	{nil}
 };
 
 TkOption tkcbopts[] =
 {
-	"variable",	OPTtext,	offsetof(TkLabel, variable),	nil,
-	"indicatoron",	OPTstab,	offsetof(TkLabel, indicator),	tkbool,
-	"onvalue",	OPTtext,	offsetof(TkLabel, value),	nil,
-	"offvalue",	OPTtext,	offsetof(TkLabel, offvalue), nil,
-	nil,
+	{"variable",	OPTtext,	offsetof(TkLabel, variable) 	},
+	{"indicatoron",	OPTstab,	offsetof(TkLabel, indicator),	{tkbool}},
+	{"onvalue",	OPTtext,	offsetof(TkLabel, value)	},
+	{"offvalue",	OPTtext,	offsetof(TkLabel, offvalue)	},
+	{nil}
 };
 
 TkOption tkradopts[] =
 {
-	"variable",	OPTtext,	offsetof(TkLabel, variable),	nil,
-	"value",	OPTtext,	offsetof(TkLabel, value), nil,
-	"indicatoron",	OPTstab,	offsetof(TkLabel, indicator),	tkbool,
-	nil,
+	{"variable",	OPTtext,	offsetof(TkLabel, variable)	},
+	{"value",	OPTtext,	offsetof(TkLabel, value)	},
+	{"indicatoron",	OPTstab,	offsetof(TkLabel, indicator),	{tkbool}},
+	{nil}
 };
 
 static
 TkEbind bb[] =
 {
-	{TkEnter,	"%W configure -state active"},
-	{TkLeave,	"%W configure -state normal"},
-	{TkButton1P,	"%W tkButton1P"},
-	{TkButton1R,	"%W tkButton1R %x %y"},
+	{TkEnter,		"%W configure -state active"},
+	{TkLeave,		"%W configure -state normal"},
+	{TkButton1P,		"%W tkButton1P"},
+	{TkButton1R,		"%W tkButton1R %x %y"},
 	{TkMotion|TkButton1P, 	"" },
-	{TkKey,	"%W tkButtonKey 0x%K"},
+	{TkKey,			"%W tkButtonKey 0x%K"},
 };
 
 static
@@ -72,7 +72,7 @@ TkEbind cb[] =
 	{TkLeave,		"%W configure -state normal"},
 	{TkButton1P,		"%W invoke"},
 	{TkMotion|TkButton1P, 	"" },
-	{TkKey,	"%W tkButtonKey 0x%K"},
+	{TkKey,			"%W tkButtonKey 0x%K"},
 };
 
 
@@ -538,38 +538,38 @@ tkbuttondeselect(Tk *tk, char *arg, char **val)
 static
 TkCmdtab tkbuttoncmd[] =
 {
-	"cget",			tkbuttoncget,
-	"configure",		tkbuttonconf,
-	"invoke",		tkbuttoninvoke,
-	"tkButton1P",		tkbutton1p,
-	"tkButton1R",		tkbutton1r,
-	"tkButtonKey",		tkbuttonkey,
-	nil
+	{"cget",		tkbuttoncget},
+	{"configure",		tkbuttonconf},
+	{"invoke",		tkbuttoninvoke},
+	{"tkButton1P",		tkbutton1p},
+	{"tkButton1R",		tkbutton1r},
+	{"tkButtonKey",		tkbuttonkey},
+	{nil}
 };
 
 static
 TkCmdtab tkchkbuttoncmd[] =
 {
-	"cget",			tkbuttoncget,
-	"configure",		tkbuttonconf,
-	"invoke",		tkbuttoninvoke,
-	"select",		tkbuttonselect,
-	"deselect",		tkbuttondeselect,
-	"toggle",		tkbuttontoggle,
-	"tkButtonKey",		tkbuttonkey,
-	nil
+	{"cget",		tkbuttoncget},
+	{"configure",		tkbuttonconf},
+	{"invoke",		tkbuttoninvoke},
+	{"select",		tkbuttonselect},
+	{"deselect",		tkbuttondeselect},
+	{"toggle",		tkbuttontoggle},
+	{"tkButtonKey",		tkbuttonkey},
+	{nil}
 };
 
 static
 TkCmdtab tkradbuttoncmd[] =
 {
-	"cget",			tkbuttoncget,
-	"configure",		tkbuttonconf,
-	"invoke",		tkbuttoninvoke,
-	"select",		tkbuttonselect,
-	"deselect",		tkbuttondeselect,
-	"tkButtonKey",		tkbuttonkey,
-	nil
+	{"cget",		tkbuttoncget},
+	{"configure",		tkbuttonconf},
+	{"invoke",		tkbuttoninvoke},
+	{"select",		tkbuttonselect},
+	{"deselect",		tkbuttondeselect},
+	{"tkButtonKey",		tkbuttonkey},
+	{nil}
 };
 
 TkMethod buttonmethod = {

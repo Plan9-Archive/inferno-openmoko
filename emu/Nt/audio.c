@@ -83,11 +83,11 @@ audioerror(unsigned int code, int in_out, char *msg)
 	if (code != MMSYSERR_NOERROR) {
 		switch(in_out) {
 		case AUDIOIN:
-			waveInGetErrorText(code, errorText, sizeof(errorText));
+			waveInGetErrorTextA(code, errorText, sizeof(errorText));
 			//print("ERROR -- %s: %s\n", msg, errorText);
 			return(-1);
 		case AUDIOOUT:
-			waveOutGetErrorText(code, errorText, sizeof(errorText));
+			waveOutGetErrorTextA(code, errorText, sizeof(errorText));
 			//print("ERROR -- %s: %s\n", msg, errorText);
 			return(-1);
 		default:

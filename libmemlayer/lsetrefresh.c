@@ -4,7 +4,7 @@
 #include "memlayer.h"
 
 int
-memlsetrefresh(Memimage *i, Refreshfn fn, void *ptr)
+memlsetrefresh(Memimage *i, Refreshfn fn, Refx *ptr)
 {
 	Memlayer *l;
 

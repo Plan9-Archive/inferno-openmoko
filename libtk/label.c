@@ -16,14 +16,14 @@ enum {
 
 TkOption tklabelopts[] =
 {
-	"text",		OPTtext,	offsetof(TkLabel, text),	nil,
-	"label",	OPTtext,	offsetof(TkLabel, text),	nil,
-	"underline",	OPTdist,	offsetof(TkLabel, ul),		nil,
-	"justify",	OPTflag,	offsetof(TkLabel, justify),	tkjustify,
-	"anchor",	OPTflag,	offsetof(TkLabel, anchor),	tkanchor,
-	"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap),	nil,
-	"image",	OPTimag,	offsetof(TkLabel, img),		nil,
-	nil
+	{"text",	OPTtext,	offsetof(TkLabel, text)		},
+	{"label",	OPTtext,	offsetof(TkLabel, text)		},
+	{"underline",	OPTdist,	offsetof(TkLabel, ul)		},
+	{"justify",	OPTflag,	offsetof(TkLabel, justify),	{tkjustify}},
+	{"anchor",	OPTflag,	offsetof(TkLabel, anchor),	{tkanchor}},
+	{"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap)	},
+	{"image",	OPTimag,	offsetof(TkLabel, img)		},
+	{nil}
 };
 
 char*
@@ -527,9 +527,9 @@ tklabelgetimgs(Tk *tk, Image **image, Image **mask)
 static
 TkCmdtab tklabelcmd[] =
 {
-	"cget",			tklabelcget,
-	"configure",		tklabelconf,
-	nil
+	{"cget",		tklabelcget},
+	{"configure",		tklabelconf},
+	{nil}
 };
 
 TkMethod labelmethod = {

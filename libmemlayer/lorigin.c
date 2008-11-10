@@ -98,7 +98,7 @@ memlorigin(Memimage *i, Point log, Point scr)
 }
 
 void
-memlnorefresh(Memimage *l, Rectangle r, void *v)
+memlnorefresh(Memimage *l, Rectangle r, Refx *v)
 {
 	USED(l);
 	USED(r.min.x);

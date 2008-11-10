@@ -862,7 +862,7 @@ rwrite(int fd, const char *va, long n, vlong *offp)
 }
 
 long
-kwrite(int fd, char *va, long n)
+kwrite(int fd, const char *va, long n)
 {
 	return rwrite(fd, va, n, nil);
 }

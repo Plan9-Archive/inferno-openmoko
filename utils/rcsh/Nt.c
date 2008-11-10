@@ -21,8 +21,8 @@ winerror(void)
 	char buf[100], *p, *q;
 
 	e = GetLastError();
-	
-	r = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
+
+	r = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM,
 		0, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		buf, sizeof(buf), 0);
 
@@ -62,11 +62,11 @@ readdirect(char *path)
 	HANDLE h;
 	Direntry *d;
 	char fullpath[MAX_PATH];
-	WIN32_FIND_DATA data;
+	WIN32_FIND_DATAA data; // TODO: unicode
 
 	snprint(fullpath, MAX_PATH, "%s\\*.*", path);
 
-	h = FindFirstFile(fullpath, &data);
+	h = FindFirstFileA(fullpath, &data);
 	if(h == INVALID_HANDLE_VALUE)
 		return 0;
 
@@ -91,7 +91,7 @@ readdirect(char *path)
 				d[n].isdir = 0;
 			n++;
 		}
-		if(FindNextFile(h, &data) == 0)
+		if(FindNextFileA(h, &data) == 0)
 			break;
 	}
 	FindClose(h);
@@ -118,16 +118,18 @@ fatal(char *fmt, ...)
 
 static int
 tas(int *p)
-{	
+{
 	int v;
-	
+#ifdef _MSC_VER
 	_asm {
 		mov	eax, p
 		mov	ebx, 1
 		xchg	ebx, [eax]
 		mov	v, ebx
 	}
-
+#else
+	asm("xchgl %0,%1" : "=r" (v), "=m" (*p));
+#endif
 	return v;
 }
 
@@ -175,7 +177,7 @@ refinc(Ref *r)
 	return i;
 }
 
-int	
+int
 refdec(Ref *r)
 {
 	int i;
@@ -249,7 +251,7 @@ proccmd(char **argv)
 		n += 2*strlen(argv[i]);
 	}
 	n++;
-	
+
 	cmd = malloc(n);
 	for(i=0,p=cmd; argv[i]; i++) {
 		p = dblquote(p, argv[i]);
@@ -315,7 +317,7 @@ setpath(char *path, char *file)
 	}
 
 	path[0] = 0;
-	n = GetFullPathName(tmp, MAX_PATH, path, &last);
+	n = GetFullPathNameA(tmp, MAX_PATH, path, &last);
 	if(n >= MAX_PATH) {
 		werrstr("file name too long");
 		return -1;
@@ -378,12 +380,12 @@ execpath(char *path, char *file)
 
 	n = strlen(path)-4;
 	if(path[n] == '.') {
-		if(GetFileAttributes(path) != -1)
+		if(GetFileAttributesA(path) != -1)
 			return 1;
 	}
 	strncat(path, ".exe", MAX_PATH);
 	path[MAX_PATH-1] = 0;
-	if(GetFileAttributes(path) != -1)
+	if(GetFileAttributesA(path) != -1)
 		return 1;
 	return 0;
 }
@@ -411,7 +413,7 @@ static int
 addchild(int pid, HANDLE handle)
 {
 	int i;
-	
+
 	for(i=0; i<Nchild; i++) {
 		if(child[i].handle == 0) {
 			child[i].handle = handle;
@@ -428,7 +430,7 @@ procwait(uint pid)
 {
 	HANDLE h;
 	int i, exit;
-	
+
 	if(pid == 0)
 		return 0;
 
@@ -463,7 +465,7 @@ procwait(uint pid)
 }
 
 uint
-proc(char **argv, int stdin, int stdout, int stderr)
+proc(char **argv, int _stdin, int _stdout, int _stderr)
 {
 	char *p, *arg0, *q, buf[MAX_PATH], path[MAX_PATH], *cmd, *eb;
 	STARTUPINFO si;
@@ -509,15 +511,15 @@ proc(char **argv, int stdin, int stdout, int stderr)
 	si.cb = sizeof(si);
 	si.dwFlags = STARTF_USESHOWWINDOW|STARTF_USESTDHANDLES;
 	si.wShowWindow = SW_SHOW;
-	si.hStdInput = fdexport(stdin);
-	si.hStdOutput = fdexport(stdout);
-	si.hStdError = fdexport(stderr);
+	si.hStdInput = fdexport(_stdin);
+	si.hStdOutput = fdexport(_stdout);
+	si.hStdError = fdexport(_stderr);
 
 	eb = exportenv(_environ);
 
 	cmd = proccmd(argv);
 
-	r = CreateProcess(path, cmd, 0, 0, 1, 0, eb, 0, &si, &pi);
+	r = CreateProcessA(path, cmd, 0, 0, 1, 0, eb, 0, &si, &pi);
 
 	/* allow child to run */
 	Sleep(0);

@@ -1,7 +1,7 @@
 #include "lib9.h"
 
-const char*
-utfrune(const char *s, long c)
+char*
+utfrune(char *s, long c)
 {
 	long c1;
 	Rune r;

@@ -2,6 +2,15 @@
 #include <float.h>
 #include "mathi.h"
 
+#ifndef _SW_INEXACT
+/* _statusfp bit flags */
+#define _SW_INEXACT    0x00000001 /* inexact (precision) */
+#define _SW_UNDERFLOW  0x00000002 /* underflow */
+#define _SW_OVERFLOW   0x00000004 /* overflow */
+#define _SW_ZERODIVIDE 0x00000008 /* zero divide */
+#define _SW_INVALID    0x00000010 /* invalid */
+#endif
+
 void
 FPinit(void)
 {

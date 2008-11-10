@@ -32,7 +32,7 @@ struct Quoteinfo
 };
 
 void	*_fmtflush(Fmt*, void*, int);
-void	*_fmtdispatch(Fmt*, void*, int);
+const void*_fmtdispatch(Fmt*, const void*, int);
 int	_floatfmt(Fmt*, double);
 int	_fmtpad(Fmt*, int);
 int	_rfmtpad(Fmt*, int);

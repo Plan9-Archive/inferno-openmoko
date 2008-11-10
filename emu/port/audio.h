@@ -57,8 +57,8 @@ enum
 void	audio_file_init(void);
 void	audio_file_open(Chan*, int);
 long	audio_file_read(Chan*, void*, long, vlong);
-long	audio_file_write(Chan*, const void*, long, vlong);
-long	audio_ctl_write(Chan*, const void*, long, vlong);
+long	audio_file_write(Chan*, const char*, long, vlong);
+long	audio_ctl_write(Chan*, const char*, long, vlong);
 void	audio_file_close(Chan*);
 
 typedef struct _svp_t {

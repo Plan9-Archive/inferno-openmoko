@@ -12,7 +12,7 @@ static char*	skattr[] = { "p", "q", "alpha", "key", "!secret", nil };
 static char*	sigattr[] = { "r", "s", nil };
 
 static void*
-dsa_str2sk(char *str, char **strp)
+dsa_str2sk(const char *str, const char **strp)
 {
 	DSApriv *dsa;
 	char *p;
@@ -29,7 +29,7 @@ dsa_str2sk(char *str, char **strp)
 }
 
 static void*
-dsa_str2pk(char *str, char **strp)
+dsa_str2pk(const char *str, const char **strp)
 {
 	DSApub *dsa;
 	char *p;
@@ -45,7 +45,7 @@ dsa_str2pk(char *str, char **strp)
 }
 
 static void*
-dsa_str2sig(char *str, char **strp)
+dsa_str2sig(const char *str, const char **strp)
 {
 	DSAsig *dsa;
 	char *p;

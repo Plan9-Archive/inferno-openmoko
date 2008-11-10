@@ -209,7 +209,7 @@ procargv(char *s0, char *s1, char *s2, char *s3, Word *w)
 
 	for(p=w,n=5; p; p=p->next,n++);
 		;
-	
+
 	argv = malloc(n*sizeof(char*));
 	i = 0;
 	if(s0)
@@ -225,4 +225,3 @@ procargv(char *s0, char *s1, char *s2, char *s3, Word *w)
 	argv[i] = 0;
 	return argv;
 }
-

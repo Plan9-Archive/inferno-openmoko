@@ -309,7 +309,7 @@ double	scale2(Type*, Type*);
 Node*	scheck(Node*, Type*, int);
 void	scom(Node*);
 char	*secpy(char*, char*, char*);
-char	*seprint(char*, char*, char*, ...);
+char	*seprint(char*, char*, const char*, ...);
 #pragma	varargck	argpos	seprint	3
 void	shareloc(Decl*);
 int	shiftchk(Node*);

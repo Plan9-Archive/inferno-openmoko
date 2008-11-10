@@ -28,18 +28,18 @@ struct TkCrect
 static
 TkOption rectopts[] =
 {
-	"width",	OPTnnfrac,	offsetof(TkCrect, width),	nil,
-	"stipple",	OPTbmap,	offsetof(TkCrect, stipple),	nil,
-	nil
+	{"width",	OPTnnfrac,	offsetof(TkCrect, width)	},
+	{"stipple",	OPTbmap,	offsetof(TkCrect, stipple)	},
+	{nil}
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
-	"fill",		OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCfill,
-	"outline",	OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCforegnd,
-	nil
+	{"tags",	OPTctag,	offsetof(TkCitem, tags)		},
+	{"fill",	OPTcolr,	offsetof(TkCitem, env),		{(TkStab*)TkCfill}},
+	{"outline",	OPTcolr,	offsetof(TkCitem, env),		{(TkStab*)TkCforegnd}},
+	{nil}
 };
 
 void

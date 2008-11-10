@@ -23,9 +23,9 @@ struct TkCpoly
 static
 TkStab tkwinding[] =
 {
-	"nonzero",	~0,
-	"odd",		1,
-	nil
+	{"nonzero",	~0},
+	{"odd",		1},
+	{nil}
 };
 
 /* Polygon Options (+ means implemented)
@@ -40,21 +40,21 @@ TkStab tkwinding[] =
 static
 TkOption polyopts[] =
 {
-	"width",	OPTnnfrac,	offsetof(TkCpoly, width),	nil,
-	"stipple",	OPTbmap,	offsetof(TkCpoly, stipple),	nil,
-	"smooth",	OPTstab,	offsetof(TkCpoly, smooth),	tkbool,
-	"splinesteps",	OPTdist,	offsetof(TkCpoly, steps),	nil,
-	"winding",	OPTstab, offsetof(TkCpoly, winding), tkwinding,
-	nil
+	{"width",	OPTnnfrac,	offsetof(TkCpoly, width)	},
+	{"stipple",	OPTbmap,	offsetof(TkCpoly, stipple)	},
+	{"smooth",	OPTstab,	offsetof(TkCpoly, smooth),	{tkbool}},
+	{"splinesteps",	OPTdist,	offsetof(TkCpoly, steps)	},
+	{"winding",	OPTstab, 	offsetof(TkCpoly, winding), 	{tkwinding}},
+	{nil}
 };
 
 static
 TkOption itemopts[] =
 {
-	"tags",		OPTctag,	offsetof(TkCitem, tags),	nil,
-	"fill",		OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCfill,
-	"outline",	OPTcolr,	offsetof(TkCitem, env),		(TkStab*)TkCforegnd,
-	nil
+	{"tags",	OPTctag,	offsetof(TkCitem, tags)		},
+	{"fill",	OPTcolr,	offsetof(TkCitem, env),		{(TkStab*)TkCfill}},
+	{"outline",	OPTcolr,	offsetof(TkCitem, env),		{(TkStab*)TkCforegnd}},
+	{nil}
 };
 
 void

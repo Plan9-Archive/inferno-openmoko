@@ -12,7 +12,7 @@ static char*	skattr[] = { "n", "ek", "!dk", "!p", "!q", "!kp", "!kq", "!c2", nil
 static char*	sigattr[] = { "val", nil };
 
 static void*
-rsa_str2sk(char *str, char **strp)
+rsa_str2sk(const char *str, const char **strp)
 {
 	RSApriv *rsa;
 	char *p;
@@ -33,7 +33,7 @@ rsa_str2sk(char *str, char **strp)
 }
 
 static void*
-rsa_str2pk(char *str, char **strp)
+rsa_str2pk(const char *str, const char **strp)
 {
 	RSApub *rsa;
 	char *p;
@@ -48,7 +48,7 @@ rsa_str2pk(char *str, char **strp)
 }
 
 static void*
-rsa_str2sig(char *str, char **strp)
+rsa_str2sig(const char *str, const char **strp)
 {
 	mpint *rsa;
 	char *p;

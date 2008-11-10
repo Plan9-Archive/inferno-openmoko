@@ -1128,7 +1128,7 @@ ip6w(uchar *a)
 	uchar v4[IPv4addrlen];
 
 	v6tov4(v4, a);
-	return (((((v4[0]<<8)|v4[1])<<8)|v4[2])<<8)|v4[3];
+	return (((((v4[0]<<8)|v4[1])<<8)|v4[2])<<8)|v4[3]; // TODO
 }
 
 static void

@@ -461,7 +461,7 @@ struct Proc
 };
 
 #define poperror()	up->nerr--
-#define	waserror()	(up->nerr++, ossetjmp(up->estack[up->nerr-1]))
+#define	waserror()	ossetjmp(up->estack[up->nerr++])
 
 typedef int KProcFlags;
 enum

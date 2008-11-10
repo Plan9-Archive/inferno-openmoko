@@ -1,7 +1,7 @@
 #include "rc.h"
 #include "y.tab.h"
 
-extern char **_environ;
+extern char **environ;
 
 typedef struct Kw	Kw;
 
@@ -52,7 +52,7 @@ vinit(void)
 	int n;
 	Var *v;
 
-	env = _environ;
+	env = environ;
 	for(i=0; env[i]; free(name), i++) {
 		name = strdup(env[i]);
 		p = strchr(name, '=');
@@ -156,7 +156,7 @@ execfinit(void)
 {
 }
 
-void 
+void
 updenv(void)
 {
 	Var *v, **h;

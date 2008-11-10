@@ -12,7 +12,7 @@ static char*	skattr[] = { "p", "alpha", "key", "!secret", nil };
 static char*	sigattr[] = { "r", "s", nil };
 
 static void*
-eg_str2sk(char *str, char **strp)
+eg_str2sk(const char *str, const char **strp)
 {
 	EGpriv *eg;
 	char *p;
@@ -28,7 +28,7 @@ eg_str2sk(char *str, char **strp)
 }
 
 static void*
-eg_str2pk(char *str, char **strp)
+eg_str2pk(const char *str, const char **strp)
 {
 	EGpub *eg;
 	char *p;
@@ -43,7 +43,7 @@ eg_str2pk(char *str, char **strp)
 }
 
 static void*
-eg_str2sig(char *str, char **strp)
+eg_str2sig(const char *str, const char **strp)
 {
 	EGsig *eg;
 	char *p;

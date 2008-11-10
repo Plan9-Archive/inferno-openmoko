@@ -30,52 +30,52 @@ static char* tkttagremove(Tk*, char*, char**);
 static
 TkOption tagopts[] =
 {
-	"borderwidth",	OPTnndist, offsetof(TkTtaginfo, opts[TkTborderwidth]),	nil,
-	"justify",	OPTstab, offsetof(TkTtaginfo, opts[TkTjustify]),	tkjustify,
-	"lineheight",	OPTnndist, offsetof(TkTtaginfo, opts[TkTlineheight]),	(TkStab*)TKTEO,
-	"lmargin1",	OPTdist, offsetof(TkTtaginfo, opts[TkTlmargin1]),	(TkStab*)TKTEO,
-	"lmargin2",	OPTdist, offsetof(TkTtaginfo, opts[TkTlmargin2]),	(TkStab*)TKTEO,
-	"lmargin3",	OPTdist, offsetof(TkTtaginfo, opts[TkTlmargin3]),	(TkStab*)TKTEO,
-	"rmargin",	OPTdist, offsetof(TkTtaginfo, opts[TkTrmargin]),	(TkStab*)TKTEO,
-	"spacing1",	OPTnndist, offsetof(TkTtaginfo, opts[TkTspacing1]),	(TkStab*)TKTEO,
-	"spacing2",	OPTnndist, offsetof(TkTtaginfo, opts[TkTspacing2]),	(TkStab*)TKTEO,
-	"spacing3",	OPTnndist, offsetof(TkTtaginfo, opts[TkTspacing3]),	(TkStab*)TKTEO,
-	"offset",	OPTdist, offsetof(TkTtaginfo, opts[TkToffset]),		(TkStab*)TKTEO,
-	"underline",	OPTstab, offsetof(TkTtaginfo, opts[TkTunderline]),	tkbool,
-	"overstrike",	OPTstab, offsetof(TkTtaginfo, opts[TkToverstrike]),	tkbool,
-	"relief",	OPTstab, offsetof(TkTtaginfo, opts[TkTrelief]),		tkrelief,
-	"tabs",		OPTtabs, offsetof(TkTtaginfo, tabs),			(TkStab*)TKTEO,
-	"wrap",		OPTstab, offsetof(TkTtaginfo, opts[TkTwrap]),		tkwrap,
-	nil,
+	{"borderwidth",	OPTnndist,	offsetof(TkTtaginfo, opts[TkTborderwidth])	},
+	{"justify",	OPTstab,	offsetof(TkTtaginfo, opts[TkTjustify]),		{tkjustify}},
+	{"lineheight",	OPTnndist,	offsetof(TkTtaginfo, opts[TkTlineheight]),	{(TkStab*)TKTEO}},
+	{"lmargin1",	OPTdist,	offsetof(TkTtaginfo, opts[TkTlmargin1]),	{(TkStab*)TKTEO}},
+	{"lmargin2",	OPTdist,	offsetof(TkTtaginfo, opts[TkTlmargin2]),	{(TkStab*)TKTEO}},
+	{"lmargin3",	OPTdist,	offsetof(TkTtaginfo, opts[TkTlmargin3]),	{(TkStab*)TKTEO}},
+	{"rmargin",	OPTdist,	offsetof(TkTtaginfo, opts[TkTrmargin]),		{(TkStab*)TKTEO}},
+	{"spacing1",	OPTnndist,	offsetof(TkTtaginfo, opts[TkTspacing1]),	{(TkStab*)TKTEO}},
+	{"spacing2",	OPTnndist,	offsetof(TkTtaginfo, opts[TkTspacing2]),	{(TkStab*)TKTEO}},
+	{"spacing3",	OPTnndist,	offsetof(TkTtaginfo, opts[TkTspacing3]),	{(TkStab*)TKTEO}},
+	{"offset",	OPTdist,	offsetof(TkTtaginfo, opts[TkToffset]),		{(TkStab*)TKTEO}},
+	{"underline",	OPTstab,	offsetof(TkTtaginfo, opts[TkTunderline]),	{tkbool}},
+	{"overstrike",	OPTstab,	offsetof(TkTtaginfo, opts[TkToverstrike]),	{tkbool}},
+	{"relief",	OPTstab,	offsetof(TkTtaginfo, opts[TkTrelief]),		{tkrelief}},
+	{"tabs",	OPTtabs,	offsetof(TkTtaginfo, tabs),			{(TkStab*)TKTEO}},
+	{"wrap",	OPTstab,	offsetof(TkTtaginfo, opts[TkTwrap]),		{tkwrap}},
+	{nil}
 };
 
 static
 TkOption tagenvopts[] =
 {
-	"foreground",	OPTcolr,	offsetof(TkTtaginfo, env),	(TkStab*)TkCforegnd,
-	"background",	OPTcolr,	offsetof(TkTtaginfo, env),	(TkStab*)TkCbackgnd,
-	"fg",		OPTcolr,	offsetof(TkTtaginfo, env),	(TkStab*)TkCforegnd,
-	"bg",		OPTcolr,	offsetof(TkTtaginfo, env),	(TkStab*)TkCbackgnd,
-	"font",		OPTfont,	offsetof(TkTtaginfo, env),	nil,
-	nil
+	{"foreground",	OPTcolr,	offsetof(TkTtaginfo, env),	{(TkStab*)TkCforegnd}},
+	{"background",	OPTcolr,	offsetof(TkTtaginfo, env),	{(TkStab*)TkCbackgnd}},
+	{"fg",		OPTcolr,	offsetof(TkTtaginfo, env),	{(TkStab*)TkCforegnd}},
+	{"bg",		OPTcolr,	offsetof(TkTtaginfo, env),	{(TkStab*)TkCbackgnd}},
+	{"font",	OPTfont,	offsetof(TkTtaginfo, env)	},
+	{nil}
 };
 
 TkCmdtab
 tkttagcmd[] =
 {
-	"add",		tkttagadd,
-	"bind",		tkttagbind,
-	"cget",		tkttagcget,
-	"configure",	tkttagconfigure,
-	"delete",	tkttagdelete,
-	"lower",	tkttaglower,
-	"names",	tkttagnames,
-	"nextrange",	tkttagnextrange,
-	"prevrange",	tkttagprevrange,
-	"raise",	tkttagraise,
-	"ranges",	tkttagranges,
-	"remove",	tkttagremove,
-	nil
+	{"add",		tkttagadd},
+	{"bind",	tkttagbind},
+	{"cget",	tkttagcget},
+	{"configure",	tkttagconfigure},
+	{"delete",	tkttagdelete},
+	{"lower",	tkttaglower},
+	{"names",	tkttagnames},
+	{"nextrange",	tkttagnextrange},
+	{"prevrange",	tkttagprevrange},
+	{"raise",	tkttagraise},
+	{"ranges",	tkttagranges},
+	{"remove",	tkttagremove},
+	{nil}
 };
 
 int

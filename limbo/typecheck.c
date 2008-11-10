@@ -27,7 +27,7 @@ fninline(Decl *d)
 	n = n->right;
 	if(n->op == Oseq && n->right == nil)
 		n = n->left;
-	/* 
+	/*
 	  *	inline
 	  *		(a) return e;
 	  *		(b) if(c) return e1; else return e2;
@@ -105,7 +105,7 @@ argncompat(Node *n, Decl *f, Node *a)
 }
 
 static void
-rewind(Node *n)
+_rewind(Node *n)
 {
 	Node *r, *nn;
 
@@ -247,7 +247,7 @@ typecheck(int checkimp)
 				return nil;
 			}
 		}
-	
+
 		/*
 		 * can't check the module spec until all types and imports are determined,
 		 * which happens in scheck
@@ -261,7 +261,7 @@ typecheck(int checkimp)
 				return nil;
 			}
 		}
-	
+
 		/* now check any multiple implementations */
 		impdecl = modimp(impdecls, impmods);
 
@@ -272,13 +272,13 @@ typecheck(int checkimp)
 			for(m = im->ty->ids; m != nil; m = m->next){
 				m->ty = usetype(m->ty);
 				m->refs++;
-	
+
 				if(m->sym == s && m->ty->kind == Tfn && entry == nil)
 					entry = m;
-	
+
 				if(m->store == Dglobal || m->store == Dfn)
 					modrefable(m->ty);
-	
+
 				if(m->store == Dtype && m->ty->kind == Tadt){
 					for(d = m->ty->ids; d != nil; d = d->next){
 						d->ty = usetype(d->ty);
@@ -297,7 +297,7 @@ typecheck(int checkimp)
 	tree = nil;
 	return entry;
 }
-	
+
 /*
  * introduce all global declarations
  * also adds all fields to adts and modules
@@ -991,7 +991,7 @@ echeck(Node *n, int typeok, int isglobal, Node *par)
 	ok.ok = ok.allok = 1;
 	if(n == nil)
 		return ok;
-	
+
 	/* avoid deep recursions */
 	if(n->op == Oseq){
 		for( ; n != nil && n->op == Oseq; n = n->right){
@@ -1213,7 +1213,7 @@ n->ty->decl->refs++;
 		default:
 			fatal("echeck: unknown symbol storage");
 		}
-		
+
 		if(n->ty == nil){
 			nerror(n, "%K's type is not fully defined", id);
 			id->store = Dwundef;
@@ -1695,7 +1695,7 @@ n->ty->decl->refs++;
 		}
 		if(0 && right->op == Oseq){	/* a[e1, e2, ...] */
 			/* array creation to do before we allow this */
-			rewind(n);
+			_rewind(n);
 			return echeck(n, typeok, isglobal, par);
 		}
 		t = left->ty;
@@ -2503,7 +2503,7 @@ if(debug['U']) print("fp: %s %s %s\n", fn->sym->name, mod ? mod->decl->sym->name
 				*args = na;
 			else
 				(*a)->right = na;
-			
+
 			n = mkn(Ofnptr, mod, mkdeclname(src, id));
 			n->src = *src;
 			n->decl = fn;
@@ -2531,7 +2531,7 @@ passfns(Src *src, Decl *fn, Node *left, Node *args, Type *adt, Tpair *tp)
 	passfns0(src, fn, args0, &args, &a, tp, ispoly(fn) ? fn->ty->polys : left->ty->tof->polys);
 	if(adt != nil)
 		passfns0(src, fn, args0, &args, &a, adt->u.tmap, ispoly(fn) ? encpolys(fn) : nil);
-	return args;	
+	return args;
 }
 
 /*
@@ -3558,7 +3558,7 @@ raisecheck(Node *n, Elist *ql)
 					el->nxt = nel;
 					nel = el;
 				}
-			}		
+			}
 			return emerge(nel, raisecheck(n->right, ql));
 		case Oraise:
 			e = n->left;

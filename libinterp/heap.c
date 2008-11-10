@@ -260,7 +260,7 @@ freetype(Type *t)
 }
 
 void
-incmem(void *vw, Type *t)
+incmem(const void *vw, Type *t)
 {
 	char *p;
 	int i, c, m;

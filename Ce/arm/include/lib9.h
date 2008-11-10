@@ -96,7 +96,7 @@ enum
 extern	int	runetochar(char*, Rune*);
 extern	int	chartorune(Rune*, char*);
 extern	int	runelen(long);
-extern	int	runenlen(Rune*, int);
+extern	int	runenlen(const Rune*, int);
 extern	int	fullrune(char*, int);
 extern	int	utflen(char*);
 extern	int	utfnlen(char*, long);

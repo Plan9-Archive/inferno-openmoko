@@ -1,4 +1,3 @@
-#define Unknown WUnknown
 #define Colormap	WColormap
 #define Cursor		WCursor
 #define Display		WDisplay
@@ -58,7 +57,7 @@ static	VOID *	data = 0;
 
 extern	DWORD	PlatformId;
 char*	gkscanid = "emu_win32vk";
-
+#ifndef __TINYC__
 int WINAPI
 WinMain(HINSTANCE winst, HINSTANCE wprevinst, LPSTR cmdline, int wcmdshow)
 {
@@ -72,7 +71,7 @@ WinMain(HINSTANCE winst, HINSTANCE wprevinst, LPSTR cmdline, int wcmdshow)
 	main(__argc, __argv);
 	return 0;
 }
-
+#endif
 static void
 dprint(char *fmt, ...)
 {

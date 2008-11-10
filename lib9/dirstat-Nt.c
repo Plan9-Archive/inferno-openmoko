@@ -4,11 +4,11 @@
 
 #define ISTYPE(s, t)	(((s)->st_mode&S_IFMT) == t)
 
-static char nullstring[] = "";
-static char Enovmem[] = "out of memory";
+static const char nullstring[] = "";
+static const char Enovmem[] = "out of memory";
 
 static Dir*
-statconv(struct stat *s, char *name)
+statconv(struct stat *s, const char *name)
 {
 	Dir *dir;
 
@@ -24,7 +24,9 @@ statconv(struct stat *s, char *name)
 		return nil;
 	}
 	dir->name = name;
-	dir->uid = dir->gid = dir->muid = nullstring;
+	dir->uid = nullstring;
+	dir->gid = nullstring;
+	dir->muid = nullstring;
 	dir->qid.type = ISTYPE(s, _S_IFDIR)? QTDIR: QTFILE;
 	dir->qid.path = s->st_ino;
 	dir->qid.vers = s->st_mtime;
@@ -51,7 +53,7 @@ Dir*
 dirstat(char *f)
 {
 	struct stat sbuf;
-	char *p;
+	const char *p;
 
 	if(stat(f, &sbuf) < 0)
 		return nil;

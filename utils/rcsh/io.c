@@ -42,7 +42,7 @@ void
 perr(Io *f)
 {
 	char err[ERRMAX];
-	
+
 	err[0] = 0;
 	errstr(err, sizeof err);
 	pstr(f, err);
@@ -153,7 +153,7 @@ flush(Io *f)
 	else{
 		n=f->bufp-f->buf;
 		if(n && write(f->fd, f->buf, n) < 0){
-/*			write(3, "Write error\n", 12); 
+/*			write(3, "Write error\n", 12);
 			if(ntrap.ref)
 				dotrap();
 */
@@ -205,7 +205,7 @@ opencore(char *s, int len)
 
 	return f;
 }
-
+/*
 void
 rewind(Io *io)
 {
@@ -216,7 +216,7 @@ rewind(Io *io)
 		seek(io->fd, 0L, 0);
 	}
 }
-
+*/
 void
 closeio(Io *io)
 {
@@ -227,7 +227,7 @@ closeio(Io *io)
 	free(io);
 }
 
-int 
+int
 emptybuf(Io *f)
 {
 	int n;

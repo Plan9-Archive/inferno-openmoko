@@ -58,11 +58,11 @@ enum
 
 static
 Cmdtab progcmd[] = {
-	CMkill,	"kill",	1,
-	CMkillgrp,	"killgrp",	1,
-	CMrestricted, "restricted", 1,
-	CMexceptions, "exceptions", 2,
-	CMprivate, "private",	1,
+	{CMkill,	"kill",		1},
+	{CMkillgrp,	"killgrp",	1},
+	{CMrestricted,	"restricted",	1},
+	{CMexceptions,	"exceptions",	2},
+	{CMprivate,	"private",	1},
 };
 
 enum
@@ -79,14 +79,14 @@ enum
 
 static
 Cmdtab progdbgcmd[] = {
-	CDstep,	"step",	0,	/* known below to be first, to cope with stepN */
-	CDtoret,	"toret",	1,
-	CDcont,	"cont",	1,
-	CDstart,	"start",	1,
-	CDstop,	"stop",	1,
-	CDunstop,	"unstop",	1,
-	CDmaim,	"maim",	1,
-	CDbpt,	"bpt",	4,
+	{CDstep,	"step",		0},	/* known below to be first, to cope with stepN */
+	{CDtoret,	"toret",	1},
+	{CDcont,	"cont",		1},
+	{CDstart,	"start",	1},
+	{CDstop,	"stop",		1},
+	{CDunstop,	"unstop",	1},
+	{CDmaim,	"maim",		1},
+	{CDbpt,		"bpt",		4},
 };
 
 typedef struct Heapqry Heapqry;

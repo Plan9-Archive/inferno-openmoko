@@ -25,13 +25,26 @@ static	int sleepers = 0;
 	Rune	*widen(const char *s);
 	char		*narrowen(const Rune *ws);
 	int		widebytes(const Rune *ws);
-	int		runeslen(const Rune*);
+//	int		runeslen(const Rune*);
 	Rune*	runesdup(const Rune*);
 	Rune*	utftorunes(Rune*, const char*, int);
 	char*	runestoutf(char*, const Rune*, int);
 	int		runescmp(const Rune*, const Rune*);
 
+#ifdef _MSC_VER
 __declspec(thread)       Proc    *up;
+#define setup(p) up=(p);
+#else
+static DWORD tlsi_up;
+Proc* getup()
+{
+	return (Proc*)TlsGetValue(tlsi_up);
+}
+static void setup(Proc*v)
+{
+	TlsSetValue(tlsi_up, v);
+}
+#endif
 
 HANDLE	ntfd2h(int);
 int	nth2fd(HANDLE);
@@ -99,7 +112,7 @@ tramp(LPVOID p)
 	if(sflag == 0)
 		SetUnhandledExceptionFilter(&TrapHandler); /* Win2000+, does not work on NT4 and Win95 */
 #endif
-	up = (Proc*)p;
+	setup((Proc*)p);
 	up->func(up->arg);
 	pexit("", 0);
 	/* not reached */
@@ -329,7 +342,11 @@ TrapHandler(LPEXCEPTION_POINTERS ureg)
 	case EXCEPTION_FLT_STACK_CHECK:
 	case EXCEPTION_FLT_UNDERFLOW:
 		/* clear exception flags and register stack */
+#ifdef _MSC_VER
 		_asm { fnclex };
+#else
+		asm volatile("fnclex"); // TODO ; fwait ?
+#endif
 		ureg->ContextRecord->FloatSave.StatusWord = 0x0000;
 		ureg->ContextRecord->FloatSave.TagWord = 0xffff;
 	}
@@ -414,7 +431,7 @@ libinit(const char *imod)
 	if(path == nil)
 		path = ".";
 
-	up = newproc(); /* create Proc for main thread */
+	setup(newproc()); /* create Proc for main thread */
 	if(up == nil)
 		panic("cannot create kernel process");
 
@@ -437,35 +454,27 @@ libinit(const char *imod)
 void
 FPsave(void *fptr)
 {
+#ifdef _MSC_VER
 	_asm {
 		mov	eax, fptr
 		fstenv	[eax]
 	}
+#else
+ 	asm ("fstenv %0" : : "m" (fptr));
+#endif
 }
 
 void
 FPrestore(void *fptr)
 {
+#ifdef _MSC_VER
 	_asm {
 		mov	eax, fptr
 		fldenv	[eax]
 	}
-}
-
-ulong
-umult(ulong a, ulong b, ulong *high)
-{
-	ulong lo, hi;
-
-	_asm {
-		mov	eax, a
-		mov	ecx, b
-		MUL	ecx
-		mov	lo, eax
-		mov	hi, edx
-	}
-	*high = hi;
-	return lo;
+#else
+ 	asm ("fldenv %0" : : "m" (fptr));
+#endif
 }
 
 int
@@ -549,6 +558,7 @@ void* mem_commit(void* p, ulong size)
 ulong
 getcallerpc(void *arg)
 {
+/*
 	ulong cpc;
 	_asm {
 		mov eax, dword ptr [ebp]
@@ -556,6 +566,8 @@ getcallerpc(void *arg)
 		mov dword ptr cpc, eax
 	}
 	return cpc;
+*/
+	return 0;
 }
 
 /*
@@ -724,7 +736,7 @@ narrowen(const Rune *ws)
 
 
 int
-widebytes(wchar_t *ws)
+widebytes(const wchar_t *ws)
 {
 	int n = 0;
 

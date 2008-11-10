@@ -51,38 +51,38 @@ struct TkDump
 static
 TkOption dumpopts[] =
 {
-	"sgml",		OPTbool,	offsetof(TkDump, sgml),	nil,
-	"metrics",	OPTbool,	offsetof(TkDump, metrics),	nil,
-	nil
+	{"sgml",	OPTbool,	offsetof(TkDump, sgml)		},
+	{"metrics",	OPTbool,	offsetof(TkDump, metrics)	},
+	{nil}
 };
 
 static
 TkStab tkcompare[] =
 {
-	"<",		TkLt,
-	"<=",		TkLte,
-	"==",		TkEq,
-	">=",		TkGte,
-	">",		TkGt,
-	"!=",		TkNeq,
-	nil
+	{"<",		TkLt},
+	{"<=",		TkLte},
+	{"==",		TkEq},
+	{">=",		TkGte},
+	{">",		TkGt},
+	{"!=",		TkNeq},
+	{nil}
 };
 
 static
 TkOption textopts[] =
 {
-	"wrap",			OPTstab, offsetof(TkText, opts[TkTwrap]),	tkwrap,
-	"spacing1",		OPTnndist, offsetof(TkText, opts[TkTspacing1]),	(TkStab*)offsetof(Tk, env),
-	"spacing2",		OPTnndist, offsetof(TkText, opts[TkTspacing2]),	(TkStab*)offsetof(Tk, env),
-	"spacing3",		OPTnndist, offsetof(TkText, opts[TkTspacing3]),	(TkStab*)offsetof(Tk, env),
-	"tabs",			OPTtabs, offsetof(TkText, tabs), 		(TkStab*)offsetof(Tk, env),
-	"xscrollcommand",	OPTtext, offsetof(TkText, xscroll),		nil,
-	"yscrollcommand",	OPTtext, offsetof(TkText, yscroll),		nil,
-	"insertwidth",		OPTnndist, offsetof(TkText, inswidth),		nil,
-	"tagshare",		OPTwinp, offsetof(TkText, tagshare),		nil,
-	"propagate",		OPTstab, offsetof(TkText, propagate),	tkbool,
-	"selectborderwidth",	OPTnndist, offsetof(TkText, sborderwidth), nil,
-	nil
+	{"wrap",		OPTstab,	offsetof(TkText, opts[TkTwrap]),	{tkwrap}},
+	{"spacing1",		OPTnndist,	offsetof(TkText, opts[TkTspacing1]),	{(TkStab*)offsetof(Tk, env)}},
+	{"spacing2",		OPTnndist,	offsetof(TkText, opts[TkTspacing2]),	{(TkStab*)offsetof(Tk, env)}},
+	{"spacing3",		OPTnndist,	offsetof(TkText, opts[TkTspacing3]),	{(TkStab*)offsetof(Tk, env)}},
+	{"tabs",		OPTtabs,	offsetof(TkText, tabs), 		{(TkStab*)offsetof(Tk, env)}},
+	{"xscrollcommand",	OPTtext,	offsetof(TkText, xscroll)		},
+	{"yscrollcommand",	OPTtext,	offsetof(TkText, yscroll)		},
+	{"insertwidth",		OPTnndist,	offsetof(TkText, inswidth)		},
+	{"tagshare",		OPTwinp,	offsetof(TkText, tagshare)		},
+	{"propagate",		OPTstab,	offsetof(TkText, propagate),		{tkbool}},
+	{"selectborderwidth",	OPTnndist,	offsetof(TkText, sborderwidth) 		},
+	{nil}
 };
 
 #define CNTL(c) ((c)&0x1f)
@@ -116,9 +116,9 @@ static TkEbind tktbinds[] = {
 	{TkKey|Up,		"%W tkTextSetCursor {insert-1l}"},
 	{TkKey|CNTL('u'),	"%W tkTextDelIns -l"},
 	{TkKey|CNTL('v'),	"%W yview scroll 0.75 page"},
-	{TkKey|Pgdown,	"%W yview scroll 0.75 page"},
+	{TkKey|Pgdown,		"%W yview scroll 0.75 page"},
 	{TkKey|CNTL('w'),	"%W tkTextDelIns -w"},
-	{TkKey|Pgup,	"%W yview scroll -0.75 page"},
+	{TkKey|Pgup,		"%W yview scroll -0.75 page"},
 	{TkFocusout,            "%W tkTextCursor delete"},
 	{TkKey|APP|'\t',	""},
 	{TkKey|BackTab,		""},
@@ -3650,35 +3650,35 @@ tktextfocusorder(Tk *tk)
 
 TkCmdtab tktextcmd[] =
 {
-	"bbox",			tktextbbox,
-	"cget",			tktextcget,
-	"compare",		tktextcompare,
-	"configure",		tktextconfigure,
-	"debug",		tktextdebug,
-	"delete",		tktextdelete,
-	"dlineinfo",		tktextdlineinfo,
-	"dump",			tktextdump,
-	"get",			tktextget,
-	"index",		tktextindex,
-	"insert",		tktextinsert,
-	"mark",			tktextmark,
-	"scan",			tktextscan,
-	"search",		tktextsearch,
-	"see",			tktextsee,
-	"selection",		tktextselection,
-	"tag",			tktexttag,
-	"window",		tktextwindow,
-	"xview",		tktextxview,
-	"yview",		tktextyview,
-	"tkTextButton1",	tktextbutton1,
-	"tkTextButton1R",	tktextbutton1r,
-	"tkTextDelIns",		tktextdelins,
-	"tkTextInsert",		tktextinserti,
-	"tkTextSelectTo",	tktextselectto,
-	"tkTextSetCursor",	tktextsetcursor,
-	"tkTextScrollPages",	tktextscrollpages,
-	"tkTextCursor",		tktextcursor,
-	nil
+	{"bbox",		tktextbbox},
+	{"cget",		tktextcget},
+	{"compare",		tktextcompare},
+	{"configure",		tktextconfigure},
+	{"debug",		tktextdebug},
+	{"delete",		tktextdelete},
+	{"dlineinfo",		tktextdlineinfo},
+	{"dump",		tktextdump},
+	{"get",			tktextget},
+	{"index",		tktextindex},
+	{"insert",		tktextinsert},
+	{"mark",		tktextmark},
+	{"scan",		tktextscan},
+	{"search",		tktextsearch},
+	{"see",			tktextsee},
+	{"selection",		tktextselection},
+	{"tag",			tktexttag},
+	{"window",		tktextwindow},
+	{"xview",		tktextxview},
+	{"yview",		tktextyview},
+	{"tkTextButton1",	tktextbutton1},
+	{"tkTextButton1R",	tktextbutton1r},
+	{"tkTextDelIns",	tktextdelins},
+	{"tkTextInsert",	tktextinserti},
+	{"tkTextSelectTo",	tktextselectto},
+	{"tkTextSetCursor",	tktextsetcursor},
+	{"tkTextScrollPages",	tktextscrollpages},
+	{"tkTextCursor",	tktextcursor},
+	{nil}
 };
 
 TkMethod textmethod = {
