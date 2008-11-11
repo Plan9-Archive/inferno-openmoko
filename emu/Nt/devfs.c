@@ -1900,7 +1900,7 @@ secsdstat(SECURITY_DESCRIPTOR *sd, Stat *st, Rune *srv)
 		else
 			continue;
 
-		sid = (SID*)&ace->SidStart;
+		sid = (PSID)&ace->SidStart;
 		if(EqualSid(sid, creatorowner) || EqualSid(sid, creatorgroup))
 			continue;
 
@@ -1933,7 +1933,7 @@ secsdhasperm(SECURITY_DESCRIPTOR *sd, ulong access, Rune *srv)
 	ACL *acl;
 	BOOL hasacl, b;
 	/*LPVOID aceh;*/
-	SID *sid, *osid, *gsid;
+	PSID sid, osid, gsid;
 	int i, allow, deny, *p, m;
 	ACCESS_ALLOWED_ACE *ace;
 	ACL_SIZE_INFORMATION size;
@@ -1965,7 +1965,7 @@ secsdhasperm(SECURITY_DESCRIPTOR *sd, ulong access, Rune *srv)
 		else
 			continue;
 
-		sid = (SID*)&ace->SidStart;
+		sid = (PSID)&ace->SidStart;
 		if(EqualSid(sid, creatorowner) || EqualSid(sid, creatorgroup))
 			continue;
 
@@ -2098,12 +2098,12 @@ static User*
 nametouser(Rune *srv, Rune *name)
 {
 	char sidrock[MAX_SID];
-	SID *sid;
+	PSID sid;
 	SID_NAME_USE type;
 	Rune dom[MAX_PATH];
 	DWORD nsid, ndom;
 
-	sid = (SID*)sidrock;
+	sid = (PSID)sidrock;
 	nsid = sizeof(sidrock);
 	ndom = sizeof(dom);
 	if(!LookupAccountNameW(srv, name, sid, &nsid, dom, &ndom, &type))
