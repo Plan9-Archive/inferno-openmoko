@@ -113,6 +113,6 @@ struct SigAlg
 };
 
 int	bigtobase64(mpint* b, char *buf, int blen);
-mpint*	base64tobig(char *str, char **strp);
+mpint*	base64tobig(const char *str, const char **strp);
 SigAlgVec*	findsigalg(char*);
 Keyring_IPint*	newIPint(mpint*);

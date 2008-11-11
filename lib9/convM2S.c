@@ -47,9 +47,9 @@ gqid(uchar *p, uchar *ep, Qid *q)
  * to test at end of routine.
  */
 size_t
-convM2S(const char *ap, size_t nap, Fcall *f)
+convM2S(char *ap, size_t nap, Fcall *f)
 {
-	const char *p, *ep;
+	char *p, *ep;
 	size_t i, size;
 
 	p = ap;

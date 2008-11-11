@@ -315,7 +315,7 @@ initmem(const Type *t, void *vw)
 {
 	int c;
 	void **w;
-	char *p, *ep;
+	const char *p, *ep;
 
 	w = (void**)vw;
 	p = t->map;

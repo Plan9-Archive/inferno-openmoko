@@ -15,7 +15,7 @@ static void*
 dsa_str2sk(const char *str, const char **strp)
 {
 	DSApriv *dsa;
-	char *p;
+	const char *p;
 
 	dsa = dsaprivalloc();
 	dsa->pub.p = base64tobig(str, &p);
@@ -32,7 +32,7 @@ static void*
 dsa_str2pk(const char *str, const char **strp)
 {
 	DSApub *dsa;
-	char *p;
+	const char *p;
 
 	dsa = dsapuballoc();
 	dsa->p = base64tobig(str, &p);
@@ -48,7 +48,7 @@ static void*
 dsa_str2sig(const char *str, const char **strp)
 {
 	DSAsig *dsa;
-	char *p;
+	const char *p;
 
 	dsa = dsasigalloc();
 	dsa->r = base64tobig(str, &p);

@@ -470,13 +470,10 @@ zsort(Seg **seg, Seg **ep)
 static int __cdecl
 ycompare(const void *a, const void *b)
 {
-	Seg **s0, **s1;
-	long y0, y1;
-
-	s0 = a;
-	s1 = b;
-	y0 = (*s0)->p0.y;
-	y1 = (*s1)->p0.y;
+	const Seg **s0 = ((const Seg **)a);
+	const Seg **s1 = ((const Seg **)b);
+	long y0 = (*s0)->p0.y;
+	long y1 = (*s1)->p0.y;
 
 	if(y0 < y1)
 		return -1;
@@ -488,13 +485,10 @@ ycompare(const void *a, const void *b)
 static int __cdecl
 xcompare(const void *a, const void *b)
 {
-	Seg **s0, **s1;
-	long x0, x1;
-
-	s0 = a;
-	s1 = b;
-	x0 = (*s0)->p0.x;
-	x1 = (*s1)->p0.x;
+	const Seg **s0 = ((const Seg **)a);
+	const Seg **s1 = ((const Seg **)b);
+	long x0 = (*s0)->p0.x;
+	long x1 = (*s1)->p0.x;
 
 	if(x0 < x1)
 		return -1;
@@ -506,13 +500,10 @@ xcompare(const void *a, const void *b)
 static int __cdecl
 zcompare(const void *a, const void *b)
 {
-	Seg **s0, **s1;
-	long z0, z1;
-
-	s0 = a;
-	s1 = b;
-	z0 = (*s0)->z;
-	z1 = (*s1)->z;
+	const Seg **s0 = ((const Seg **)a);
+	const Seg **s1 = ((const Seg **)b);
+	long z0 = (*s0)->z;
+	long z1 = (*s1)->z;
 
 	if(z0 < z1)
 		return -1;

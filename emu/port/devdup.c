@@ -1,7 +1,8 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	"interp.h"
+#include "dat.h"
+#include "fns.h"
+#include "error.h"
+#include "isa.h"
+#include "interp.h"
 
 /* Qid is (2*fd + (file is ctl))+1 */
 

@@ -81,7 +81,7 @@ vlong	timeoffset;
 extern int	dflag;
 
 static int	sysconwrite(const char*, ulong);
-extern char**	rebootargv;
+extern const char**	rebootargv;
 
 static struct
 {

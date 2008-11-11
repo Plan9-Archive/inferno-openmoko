@@ -81,8 +81,8 @@ dprint(char *fmt, ...)
 	va_start(arg, fmt);
 	vseprint(buf, buf+sizeof(buf), fmt, (LPSTR)arg);
 	va_end(arg);
-	OutputDebugString("inferno: ");
-	OutputDebugString(buf);
+	OutputDebugStringA("inferno: ");
+	OutputDebugStringA(buf);
 }
 
 static void

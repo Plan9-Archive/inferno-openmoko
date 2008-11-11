@@ -10,8 +10,8 @@ typedef float			DISREAL32;	/* 32 float IEEE754 */
 
 #define DISAPI(name) void name(F_##name *f)
 
-#define ASSIGN(place, value) {destroyxx((void**)&(place), (value));}
-//#define ASSIGN(place, value) {void* old=(place); (place)=(value); destroy(old);}
+//#define ASSIGN(place, value) {destroyxx((void**)&(place), (value));}
+#define ASSIGN(place, value) {void* old=(place); (place)=(value); destroy(old);}
 /* memory saver: destroy old value before calc new one */
 //#define ASSIGN(place, value) {void* old=(place); (place)=H; destroy(old); (place)=(value); }
 
@@ -302,18 +302,6 @@ struct Prog
 	void		(*xec)(Prog*);
 	Osenv*		osenv;
 };
-
-enum ModRtFlags
-{
-	MUSTCOMPILE	= (1<<0),
-	DONTCOMPILE	= (1<<1),
-	SHAREMP		= (1<<2),
-	DYNMOD		= (1<<3),
-	HASLDT0		= (1<<4),
-	HASEXCEPT	= (1<<5),
-	HASLDT		= (1<<6),
-};
-
 
 struct Module
 {

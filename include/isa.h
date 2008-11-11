@@ -216,10 +216,22 @@ enum
 
 	DADEPTH = 4,		/* Array address stack size */
 
-    IBY2WD  = 4,    // sizeof DISINT
-    IBY2FT  = 8,    // sizeof DISREAL
-    IBY2LG  = 8,    // sizeof DISBIG
+	IBY2WD  = 4,    // sizeof DISINT
+	IBY2FT  = 8,    // sizeof DISREAL
+	IBY2LG  = 8,    // sizeof DISBIG
 };
+
+enum ModRtFlags
+{
+	MUSTCOMPILE	= (1<<0),
+	DONTCOMPILE	= (1<<1),
+	SHAREMP		= (1<<2),
+	DYNMOD		= (1<<3),
+	HASLDT0		= (1<<4),
+	HASEXCEPT	= (1<<5),
+	HASLDT		= (1<<6),
+};
+
 
 //#define REGLINK	 (offsetof(Frame,lr)/IBY2WD)
 //#define REGFRAME (offsetof(Frame,fp)/IBY2WD)

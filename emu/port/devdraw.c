@@ -155,7 +155,7 @@ static	Rectangle	flushrect;
 static	int		waste;
 static	DScreen*	dscreen;
 extern	void		flushmemscreen(Rectangle);
-	void		drawmesg(Client*, const uchar*, int);
+	void		drawmesg(Client*, uchar*, int);
 	void		drawuninstall(Client*, int);
 	void		drawfreedimage(DImage*);
 	Client*		drawclientofpath(ulong);
@@ -1206,7 +1206,7 @@ drawwrite(Chan *c, const char *a, long n, vlong off)
 		break;
 
 	case Qdata:
-		drawmesg(cl, (const uchar*)a, n); /* FIXME */
+		drawmesg(cl, (uchar *)a, n); /* FIXME: a is changeable */
 		drawwakeall();
 		break;
 
@@ -1296,7 +1296,7 @@ printmesg(char *fmt, const uchar *a, int plsprnt)
 }
 
 void
-drawmesg(Client *client, const uchar *a, int n)
+drawmesg(Client *client, uchar *a, int n)
 {
 	int c, op, repl, m, y, dstid, scrnid, ni, ci, j, nw, e0, e1, ox, oy, esize, oesize, doflush;
 	const uchar *u;

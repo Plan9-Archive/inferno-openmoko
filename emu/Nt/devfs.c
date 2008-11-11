@@ -1657,7 +1657,7 @@ secinit(void)
 		priv = (TOKEN_PRIVILEGES*)privrock;
 		priv->PrivilegeCount = 1;
 		priv->Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-		if(LookupPrivilegeValue(NULL, SE_RESTORE_NAME, &priv->Privileges[0].Luid)
+		if(LookupPrivilegeValue(NULL, /*SE_RESTORE_NAME*/L"SeRestorePrivilege", &priv->Privileges[0].Luid)
 		&& AdjustTokenPrivileges(token, 0, priv, 0, NULL, NULL))
 			isserver = 1;
 		CloseHandle(token);

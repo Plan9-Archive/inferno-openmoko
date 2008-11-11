@@ -176,15 +176,15 @@ extern  void*   v_calloc(size_t num, size_t size, const char*, int, const char*)
 extern  size_t  v_msize(void *v, const char*, int, const char*);
 extern  char*   v_strdup(const char*, const char*, int, const char*);
 
-#define kmalloc(size)       v_kmalloc(size, __FILE__, __LINE__, __FUNCTION__)
-#define smalloc(size)       v_smalloc(size, __FILE__, __LINE__, __FUNCTION__)
-#define malloc(size)        v_malloc(size, __FILE__, __LINE__, __FUNCTION__)
-#define mallocz(size, clr)  v_mallocz(size, clr, __FILE__, __LINE__, __FUNCTION__)
-#define free(v)         {v_free((void*)(v), __FILE__, __LINE__, __FUNCTION__); *(void**)&(v)=(void*)0xDEAFBEEF; }
-#define realloc(v, size)    v_realloc(v, size, __FILE__, __LINE__, __FUNCTION__)
-#define calloc(num, size)   v_calloc(num, size, __FILE__, __LINE__, __FUNCTION__)
-#define msize(v)        v_msize(v, __FILE__, __LINE__, __FUNCTION__)
-#define strdup(v)       v_strdup(v, __FILE__, __LINE__, __FUNCTION__)
+#define kmalloc(size)		v_kmalloc(size, __FILE__, __LINE__, __FUNCTION__)
+#define smalloc(size)		v_smalloc(size, __FILE__, __LINE__, __FUNCTION__)
+#define malloc(size)		v_malloc(size, __FILE__, __LINE__, __FUNCTION__)
+#define mallocz(size, clr)	v_mallocz(size, clr, __FILE__, __LINE__, __FUNCTION__)
+#define free(v)			{v_free((void*)(v), __FILE__, __LINE__, __FUNCTION__); *(void**)&(v)=(void*)0xDEAFBEEFL; }
+#define realloc(v, size)	v_realloc(v, size, __FILE__, __LINE__, __FUNCTION__)
+#define calloc(num, size)	v_calloc(num, size, __FILE__, __LINE__, __FUNCTION__)
+#define msize(v)		v_msize(v, __FILE__, __LINE__, __FUNCTION__)
+#define strdup(v)		v_strdup(v, __FILE__, __LINE__, __FUNCTION__)
 
 #endif
 
@@ -381,6 +381,7 @@ extern  ulong   ntruerand(ulong);
 /*
  * math
  */
+extern	double	pow(double, double);
 extern  int isNaN(double);
 extern  int isInf(double, int);
 

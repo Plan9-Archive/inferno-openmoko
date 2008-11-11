@@ -15,7 +15,7 @@ static void*
 eg_str2sk(const char *str, const char **strp)
 {
 	EGpriv *eg;
-	char *p;
+	const char *p;
 
 	eg = egprivalloc();
 	eg->pub.p = base64tobig(str, &p);
@@ -31,7 +31,7 @@ static void*
 eg_str2pk(const char *str, const char **strp)
 {
 	EGpub *eg;
-	char *p;
+	const char *p;
 
 	eg = egpuballoc();
 	eg->p = base64tobig(str, &p);
@@ -46,7 +46,7 @@ static void*
 eg_str2sig(const char *str, const char **strp)
 {
 	EGsig *eg;
-	char *p;
+	const char *p;
 
 	eg = egsigalloc();
 	eg->r = base64tobig(str, &p);

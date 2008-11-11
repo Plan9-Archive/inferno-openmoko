@@ -8,7 +8,7 @@
 void
 prng(char *p, int n)
 {
-	uchar *e;
+	char *e;
 
 	for(e = p+n; p < e; p++)
 		*p = rand();

@@ -1,7 +1,8 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	"interp.h"
+#include "dat.h"
+#include "fns.h"
+#include "error.h"
+#include "isa.h"
+#include "interp.h"
 
 Proc*
 newproc(void)

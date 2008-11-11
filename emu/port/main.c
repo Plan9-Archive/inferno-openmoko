@@ -1,10 +1,11 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	"interp.h"
-#include	"kernel.h"
-#include	"draw.h"
-#include	"version.h"
+#include "dat.h"
+#include "fns.h"
+#include "error.h"
+#include "isa.h"
+#include "interp.h"
+#include "kernel.h"
+#include "draw.h"
+#include "version.h"
 
 extern	char*	hosttype;
 extern	char*	cputype;
@@ -24,7 +25,7 @@ int	vflag = 0;
 Procs	procs = {0};
 ulong	displaychan = 0;
 int	rebootargc = 0;
-char**	rebootargv = 0;
+const char**	rebootargv = 0;
 
 static	char*	imod = "/dis/emuinit.dis";
 
@@ -198,7 +199,7 @@ savestartup(int argc, char *argv[])
 	int i;
 
 	rebootargc = argc;
-	rebootargv = (char**)malloc((argc+1)*sizeof(char*));
+	rebootargv = (const char**)malloc((argc+1)*sizeof(char*));
 	if(rebootargv == nil)
 		panic("can't save startup args");
 	for(i = 0; i < argc; i++) {
@@ -218,7 +219,7 @@ putenvq(char *name, char *val, int conf)
 }
 
 static void
-putenvqv(char *name, char **v, int n, int conf)
+putenvqv(char *name, const char * const *v, int n, int conf)
 {
 	Fmt f;
 	int i;

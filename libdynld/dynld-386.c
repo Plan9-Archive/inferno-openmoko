@@ -16,12 +16,12 @@ dynreloc(uchar *b, ulong p, int m, Dynsym **tab, int ntab)
 	int i;
 	ulong v, *pp;
 
-	p += (ulong)b;
-	pp = (ulong*)p;
+	p += (ulong)b; /* XXX */
+	pp = (ulong*)p; /* XXX */
 	v = *pp;
 	switch(m){
 	case 0:
-		v += (ulong)b;
+		v += (ulong)b; /* XXX */
 		break;
 	case 1:
 		i = v>>22;

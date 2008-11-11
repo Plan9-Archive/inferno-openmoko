@@ -1,6 +1,7 @@
 #include "lib9.h"
 #include "isa.h"
 #include "interp.h"
+#include "mathi.h" /* strtod */
 #include "raise.h"
 #include "pool.h"
 

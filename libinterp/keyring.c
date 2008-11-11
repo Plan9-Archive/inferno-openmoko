@@ -164,10 +164,10 @@ ipcopymp(mpint* b)
 
 /* convert a base64 string to a big */
 mpint*
-base64tobig(char *str, char **strp)
+base64tobig(const char *str, const char **strp)
 {
 	int n;
-	char *p;
+	const char *p;
 	mpint *b;
 	uchar hex[(MaxBigBytes*6 + 7)/8];
 
@@ -1917,7 +1917,7 @@ getbuf(int fd, char *buf, int n, char *err, int nerr)
 	}
 	if(buf[0] == 0)
 		return len-1;
-	if(buf[0] != 0xff){
+	if((uchar)buf[0] != 0xff){
 		/*
 		 * this happens when the client's password is wrong: both sides use a digest of the
 		 * password as a crypt key for devssl. When they don't match decryption garbles

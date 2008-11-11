@@ -36,7 +36,7 @@ struct	Fcall
 		/* }; */
 		/* struct { */
 			u32int	perm;		/* Tcreate */
-			const char	*name;		/* Tcreate */
+			/*const*/ char	*name;		/* Tcreate */
 			uchar	mode;		/* Tcreate, Topen */
 		/* }; */
 		/* struct { */
@@ -108,7 +108,7 @@ enum
 	Tmax,
 };
 
-size_t	convM2S(const char*, size_t, Fcall*);
+size_t	convM2S(char*, size_t, Fcall*);
 size_t	convS2M(const Fcall*, char*, size_t);
 size_t	sizeS2M(const Fcall*);
 

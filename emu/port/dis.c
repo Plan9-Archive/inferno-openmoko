@@ -193,7 +193,7 @@ newprog(Prog *p, Modlink *m)
 	return n;
 }
 
-static void
+/*static*/ void
 delprog(Prog *p, char *msg)
 {
 	Osenv *o;
@@ -707,7 +707,7 @@ delrun(enum ProgState state)
 	return p;
 }
 
-static void
+/*static*/ void
 delrunq(Prog *p)
 {
 	Prog *prev, *f;
@@ -872,7 +872,7 @@ release(void)
 	strcpy(up->text, "released");
 }
 
-static void
+/*static*/ void
 iyield(void)
 {
 	Proc *p;

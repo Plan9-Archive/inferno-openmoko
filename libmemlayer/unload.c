@@ -4,7 +4,7 @@
 #include "memlayer.h"
 
 int
-memunload(Memimage *src, Rectangle r, const uchar *data, int n)
+memunload(Memimage *src, Rectangle r, uchar *data, int n)
 {
 	Memimage *tmp;
 	Memlayer *dl;

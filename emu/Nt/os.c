@@ -5,6 +5,8 @@
 #include "dat.h"
 #include "fns.h"
 #include "error.h"
+
+#include "isa.h"
 #include "interp.h" /* debug */
 
 
@@ -385,7 +387,7 @@ termrestore(void)
 static	int	rebootok = 0;	/* is shutdown -r supported? */
 
 void
-osreboot(char *file, char **argv)
+osreboot(const char *file, const char **argv)
 {
 	if(rebootok){
 		termrestore();

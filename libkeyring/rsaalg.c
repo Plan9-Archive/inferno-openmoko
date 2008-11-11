@@ -15,7 +15,7 @@ static void*
 rsa_str2sk(const char *str, const char **strp)
 {
 	RSApriv *rsa;
-	char *p;
+	const char *p;
 
 	rsa = rsaprivalloc();
 	rsa->pub.n = base64tobig(str, &p);
@@ -36,7 +36,7 @@ static void*
 rsa_str2pk(const char *str, const char **strp)
 {
 	RSApub *rsa;
-	char *p;
+	const char *p;
 
 	rsa = rsapuballoc();
 	rsa->n = base64tobig(str, &p);
@@ -51,7 +51,7 @@ static void*
 rsa_str2sig(const char *str, const char **strp)
 {
 	mpint *rsa;
-	char *p;
+	const char *p;
 
 	rsa = base64tobig(str, &p);
 	if(strp)

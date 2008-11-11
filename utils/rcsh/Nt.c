@@ -128,7 +128,7 @@ tas(int *p)
 		mov	v, ebx
 	}
 #else
-	asm("xchgl %0,%1" : "=r" (v), "=m" (*p));
+	asm("xchgl %0,%1" : "=r" (v), "=m" (*p) : "0"(1));
 #endif
 	return v;
 }

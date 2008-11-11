@@ -1,6 +1,7 @@
 #include "dat.h"
 #include "fns.h"
-#include <interp.h>
+#include "isa.h"
+#include "interp.h"
 
 #define	QP(l)	(Prog**)((char*)(l)+sizeof(QLock))
 

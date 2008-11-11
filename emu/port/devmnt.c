@@ -508,7 +508,7 @@ mntopencreate(int type, Chan *c, const char *name, int omode, ulong perm)
 	r->request.mode = omode;
 	if(type == Tcreate){
 		r->request.perm = perm;
-		r->request.name = name;
+		r->request.name = (char*)name; /* XXX */
 	}
 	mountrpc(m, r);
 
