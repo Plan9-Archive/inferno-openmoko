@@ -211,13 +211,13 @@ freeheap(Heap *h, int swept)
 }
 
 void
-//destroy(void *v)
-destroyxx(void**pp, void*new)
+destroy(void *v)
+//destroyxx(void**pp, void*new)
 {
 	Heap *h;
 	Type *t;
-	void* v = *pp; /*XCHG*/
-	*pp = new;
+//	void* v = *pp; /*XCHG*/
+//	*pp = new;
 
 	if(v == H)
 		return;
@@ -349,6 +349,18 @@ v_nheap(int n, const char*file, int line, const char*function)
 	if(h == nil)
 		error(exHeap);
 
+	{
+	Prog *p=currun();
+	if(p==nil) {
+		setmemcomment(h, "nil");
+	}
+	else{
+		char* sz = malloc(32);
+		sprint(sz, "pid=%d", p->pid);
+		setmemcomment(h, sz);
+	}
+	}
+
 	h->t = nil;
 	h->ref = 1;
 	h->color = mutator;
@@ -366,6 +378,19 @@ v_heapz(Type *t, const char*file, int line, const char*function)
 	h = (Heap *)v_poolalloc(heapmem, sizeof(Heap)+t->size, file, line, function);
 	if(h == nil)
 		error(exHeap);
+
+	{
+	Prog *p=currun();
+	if(p==nil) {
+		setmemcomment(h, "nil");
+	}
+	else{
+		char* sz = malloc(32);
+		sprint(sz, "pid=%d", p->pid);
+		setmemcomment(h, sz);
+	}
+	}
+
 	h->t = t;
 	t->ref++;
 	h->ref = 1;
@@ -385,6 +410,18 @@ v_heap(Type *t, const char*file, int line, const char*function)
 	h = (Heap *)v_poolalloc(heapmem, sizeof(Heap)+t->size, file, line, function);
 	if(h == nil)
 		error(exHeap);
+
+	{
+	Prog *p=currun();
+	if(p==nil) {
+		setmemcomment(h, "nil");
+	}
+	else{
+		char* sz = malloc(32);
+		sprint(sz, "pid=%d", p->pid);
+		setmemcomment(h, sz);
+	}
+	}
 
 	h->t = t;
 	t->ref++;
