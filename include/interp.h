@@ -275,7 +275,7 @@ struct Progs
 struct Prog
 {
 	REG		R;		/* Register set */
-	DISINT*		iii;		/* Alt FIXME: Altc */
+	DISINT*		iii;		/* Alt */
 	Alt*		aaa;		/* Alt */
 	Prog*		link;		/* Run queue */
 	Channel*	chan;		/* Channel pointer */
@@ -598,7 +598,7 @@ extern	int		bigxprint(Prog*, const void*, const void*, String*, char**, int);
 extern	void		iyield(void);
 extern	String*		newrunes(int);
 extern	String*		newstring(int);
-extern	int		runeslen(Rune*, int);
+extern	int		runeslen(const Rune*, int);
 extern	String*		c2string(const char*, int);
 extern	char*		string2c(String*);
 extern	List*		cons(ulong, List**);

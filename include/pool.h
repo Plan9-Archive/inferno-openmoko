@@ -52,18 +52,20 @@ extern	void*	v_calloc(size_t num, size_t size, const char*, int, const char*);
 extern	size_t	v_msize(void *v, const char*, int, const char*);
 extern	char*	v_strdup(const char*, const char*, int, const char*);
 
+#ifndef malloc
 #define kmalloc(size)		v_kmalloc(size, __FILE__, __LINE__, __FUNCTION__)
 #define smalloc(size)		v_smalloc(size, __FILE__, __LINE__, __FUNCTION__)
 #define malloc(size)		v_malloc(size, __FILE__, __LINE__, __FUNCTION__)
 #define mallocz(size, clr)	v_mallocz(size, clr, __FILE__, __LINE__, __FUNCTION__)
-#define free(v)			{v_free((void*)(v), __FILE__, __LINE__, __FUNCTION__); *(void**)&(v)=(void*)0xDEAFBEEF; }
+#define free(v)			{v_free((void*)(v), __FILE__, __LINE__, __FUNCTION__); *(void**)&(v)=(void*)0xDEAFBEEFL; }
 #define realloc(v, size)	v_realloc(v, size, __FILE__, __LINE__, __FUNCTION__)
 #define calloc(num, size)	v_calloc(num, size, __FILE__, __LINE__, __FUNCTION__)
 #define msize(v)		v_msize(v, __FILE__, __LINE__, __FUNCTION__)
 #define strdup(v)		v_strdup(v, __FILE__, __LINE__, __FUNCTION__)
+#endif
 
 #define poolalloc(p,size)	v_poolalloc(p,size, __FILE__, __LINE__, __FUNCTION__)
-#define poolfree(p,v)		{v_poolfree(p,(void*)(v), __FILE__, __LINE__, __FUNCTION__); *(void**)&(v)=(void*)0xDEAFBEEF; }
+#define poolfree(p,v)		{v_poolfree(p,(void*)(v), __FILE__, __LINE__, __FUNCTION__); *(void**)&(v)=(void*)0xDEAFBEEFL; }
 #define poolrealloc(p,v, size)	v_poolrealloc(p,v, size, __FILE__, __LINE__, __FUNCTION__)
 #define poolmsize(p,v)		v_poolmsize(p,v, __FILE__, __LINE__, __FUNCTION__)
 
