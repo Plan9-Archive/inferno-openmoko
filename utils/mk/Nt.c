@@ -25,7 +25,7 @@ static Child child[Nchild];
 
 extern char **environ;
 
-DWORD WINAPI writecmd(LPVOID a);
+static DWORD WINAPI writecmd(LPVOID a);
 
 void
 readenv(void)
@@ -86,7 +86,8 @@ exportenv(Envy *e)
 int
 waitfor(char *msg)
 {
-	int pid, n, i, r, code;
+	int pid, n, i, r;
+	DWORD code;
 	HANDLE tab[Nchild];
 
 	for(i=0,n=0; i<Nchild; i++)
@@ -174,7 +175,7 @@ static DWORD WINAPI
 spinoff(HANDLE in, HANDLE out, char *args, char *cmd, Envy *e)
 {
 	char args2[4096], path[MAX_PATH], *s, *eb;
-	STARTUPINFO si;
+	STARTUPINFOA si;
 	PROCESS_INFORMATION pi;
 	Symtab *sym;
 
@@ -233,7 +234,8 @@ spinoff(HANDLE in, HANDLE out, char *args, char *cmd, Envy *e)
 int
 execsh(char *args, char *cmd, Bufblock *buf, Envy *e)
 {
-	int tot, n, tid, pid;
+	int tot, pid;
+	DWORD tid, n;
 	HANDLE outin, outout, inout, inin;
 	struct { char *cmd; HANDLE handle; } *arg;
 
@@ -288,7 +290,7 @@ writecmd(LPVOID a)
 {
 	struct {char *cmd; HANDLE handle;} *arg;
 	char *cmd, *p;
-	int n;
+	DWORD n;
 
 	arg = a;
 	cmd = arg->cmd;

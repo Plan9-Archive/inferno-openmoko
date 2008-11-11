@@ -1,9 +1,6 @@
 #pragma src "/usr/inferno/libmemlayer"
 
 typedef struct Memscreen Memscreen;
-typedef struct Refx Refx;
-typedef void (*Refreshfn)(Memimage*, Rectangle, Refx*);
-
 
 struct Memscreen
 {

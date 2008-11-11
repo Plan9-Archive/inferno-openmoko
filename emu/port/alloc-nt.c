@@ -1,7 +1,6 @@
 #include <windows.h>
 #include "dat.h"
 #include "fns.h"
-#include "pool.h"
 
 #ifndef HEAP_CREATE_ENABLE_EXECUTE
 #define HEAP_CREATE_ENABLE_EXECUTE 0x00040000

@@ -228,17 +228,6 @@ enum
 #define REGRET	 4
 #define NREG	 5
 
-enum ModRtFlags
-{
-	MUSTCOMPILE	= (1<<0),
-	DONTCOMPILE	= (1<<1),
-	SHAREMP		= (1<<2),
-	DYNMOD		= (1<<3),
-	HASLDT0		= (1<<4),
-	HASEXCEPT	= (1<<5),
-	HASLDT		= (1<<6),
-};
-
 #define DTYPE(x)	(((x)>>4)&0x0F)
 #define DBYTE(x, l)	((x<<4)|l)
 #define DMAX		(1<<4)

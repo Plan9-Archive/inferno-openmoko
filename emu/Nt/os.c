@@ -1,12 +1,11 @@
-#define UNICODE
-#include	<windows.h>
-#include	<Lmcons.h>
-#include	<winsock.h>
+#include <windows.h>
+#include <Lmcons.h>
+#include <winsock.h>
 
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	"interp.h" /* debug */
+#include "dat.h"
+#include "fns.h"
+#include "error.h"
+#include "interp.h" /* debug */
 
 
 #define	MAXSLEEPERS	1500 /* WTF */

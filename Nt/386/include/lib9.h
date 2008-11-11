@@ -12,6 +12,8 @@
 #include <direct.h>
 /*#include <stddef.h>*/
 
+#define strtod infstrtod
+
 #ifdef __cplusplus
 #define this _this
 #define new _new
@@ -33,7 +35,10 @@
 #define STACK 0
 
 typedef struct Proc Proc;
-
+typedef struct Prog Prog;
+typedef struct Chan Chan;
+typedef struct Osenv	Osenv;
+typedef struct SrvFile	SrvFile;
 
 /*
  * math module dtoa
@@ -415,6 +420,7 @@ extern  char*       getuser(void);
 extern  char*       getwd(char*, int);
 extern  char*       getwd(char*, int);
 extern  double      ipow10(int);
+#define	pow10	infpow10
 extern  double      pow10(int);
 extern  NORETURN    sysfatal(const char*, ...);
 extern  int     dec64(uchar*, int, const char*, int);

@@ -7,7 +7,6 @@
 #define NETID(x)	(((ulong)(x))>>5)
 #define NETQID(i,t)	(((i)<<5)|(t))
 
-typedef struct Pipe	Pipe;
 struct Pipe
 {
 	QLock	l;

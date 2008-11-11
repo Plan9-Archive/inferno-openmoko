@@ -429,7 +429,8 @@ int
 procwait(uint pid)
 {
 	HANDLE h;
-	int i, exit;
+	int i;
+	DWORD dwExitCode;
 
 	if(pid == 0)
 		return 0;
@@ -455,20 +456,20 @@ procwait(uint pid)
 		fatal("procwait: ");
 	}
 
-	if(!GetExitCodeProcess(h, &exit)) {
+	if(!GetExitCodeProcess(h, &dwExitCode)) {
 		winerror();
-		exit = 1;
+		dwExitCode = 1;
 	}
 
 	CloseHandle(h);
-	return exit;
+	return dwExitCode;
 }
 
 uint
 proc(char **argv, int _stdin, int _stdout, int _stderr)
 {
 	char *p, *arg0, *q, buf[MAX_PATH], path[MAX_PATH], *cmd, *eb;
-	STARTUPINFO si;
+	STARTUPINFOA si;
 	PROCESS_INFORMATION pi;
 	int r, found, full;
 	extern char **_environ;

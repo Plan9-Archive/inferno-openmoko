@@ -155,7 +155,7 @@ eiainit(void)
 	// keep results in a bitmask
 	ports = nports = max = 0;
 	for(i=0; (sysdev[i] != NULL) && (i<8); i++) {
-		HANDLE comfh = CreateFile(sysdev[i], 0, 0, NULL,	/* no security attrs */
+		HANDLE comfh = CreateFileA(sysdev[i], 0, 0, NULL,	/* no security attrs */
 			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 		if(comfh != INVALID_HANDLE_VALUE) {
@@ -406,7 +406,7 @@ openport(int port)
 	Eia* p = &eia[port];
 
 	// open the port
-	p->comfh = CreateFile(sysdev[p->id],
+	p->comfh = CreateFileA(sysdev[p->id],
 		GENERIC_READ|GENERIC_WRITE,     //open underlying port for rd/wr
 		0,	                            //comm port can't be shared
 		NULL,	                        //no security attrs
@@ -464,7 +464,7 @@ rdstat(int port, void *buf, long n, ulong offset)
 	int frame, overrun, i;
 
 	// valid line control ids
-	static enum {
+	enum {
 		L_CTS, L_DSR, L_RING, L_DCD, L_DTR, L_RTS, L_MAX
 	};
 	int status[L_MAX];

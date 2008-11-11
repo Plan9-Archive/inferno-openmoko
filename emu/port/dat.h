@@ -1,5 +1,4 @@
 typedef struct Block	Block;
-typedef struct Chan	Chan;
 typedef struct Cmdbuf	Cmdbuf;
 typedef struct Cmdtab	Cmdtab;
 typedef struct Cname	Cname;
@@ -15,9 +14,7 @@ typedef struct Mntrpc	Mntrpc;
 typedef struct Mntwalk	Mntwalk;
 typedef struct Mnt	Mnt;
 typedef struct Mhead	Mhead;
-typedef struct Osenv	Osenv;
 typedef struct Pgrp	Pgrp;
-typedef struct Proc	Proc;
 typedef struct Queue	Queue;
 typedef struct Ref	Ref;
 typedef struct Rendez	Rendez;
@@ -103,9 +100,7 @@ enum
 
 typedef struct Pipe Pipe;
 typedef struct Fsinfo Fsinfo;
-typedef struct SrvFile SrvFile;
 typedef struct Heapqry Heapqry;
-typedef struct Mntwalk Mntwalk;
 typedef struct Progctl Progctl;
 typedef struct Value Value;
 struct Chan
@@ -380,7 +375,6 @@ struct Uqidtab
 #ifdef _WIN32_WINNT
 	typedef struct User User; /* devfs.h */
 #endif
-typedef struct Progctl	Progctl;
 struct Osenv
 {
 	char*		syserrstr;	/* last error from a system call, errbuf0 or 1 */
@@ -421,7 +415,6 @@ enum Syscalls
 	SYSCALL_SOCK_SELECT = 3
 };
 
-typedef struct Prog Prog;
 /**
  *	Kernel process
  *	Thread on Windows

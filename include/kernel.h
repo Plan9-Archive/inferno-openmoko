@@ -1,4 +1,3 @@
-typedef struct Chan Chan;
 extern	vlong	libseek(int, vlong, int);
 extern	int	libread(int, void*, int);
 extern	int	libreadn(int, void*, long);

@@ -1,10 +1,10 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	<isa.h>
-#include	<interp.h>
-#include	<kernel.h>
-#include	"error.h"
-#include	"raise.h"
+#include "dat.h"
+#include "fns.h"
+#include "isa.h"
+#include "interp.h"
+#include "kernel.h"
+#include "error.h"
+#include "raise.h"
 
 struct
 {
@@ -255,7 +255,7 @@ renameproguser(char *old, char *new)
 	release();
 }*/
 
-static void
+/*static*/ void
 tellsomeone(Prog *p, char *buf)
 {
 	Osenv *o;

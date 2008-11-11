@@ -2,8 +2,6 @@
 #include "draw.h"
 #include "kernel.h"
 
-typedef struct Memimage Memimage;
-
 static int	screenid;
 
 Screen*

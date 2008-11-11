@@ -16,7 +16,6 @@ typedef struct	RGB RGB;
 typedef struct	Refreshq Refreshq;
 typedef struct	Screen Screen;
 typedef struct	Subfont Subfont;
-typedef struct	Chan Chan;
 
 #pragma varargck	type	"R"	Rectangle
 #pragma varargck	type	"P"	Point

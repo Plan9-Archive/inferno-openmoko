@@ -1,7 +1,7 @@
-#include        "dat.h"
-#include        "fns.h"
-#include        "error.h"
-#include        "kernel.h"
+#include "dat.h"
+#include "fns.h"
+#include "error.h"
+#include "kernel.h"
 
 static int
 growfd(Fgrp *f, int fd)

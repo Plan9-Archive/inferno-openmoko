@@ -1,6 +1,5 @@
 #pragma	src	"/usr/inferno/libmemdraw"
 
-typedef struct	Memimage Memimage;
 typedef struct	Memdata Memdata;
 typedef struct	Memsubfont Memsubfont;
 typedef struct	Memlayer Memlayer;

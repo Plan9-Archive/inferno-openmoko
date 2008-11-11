@@ -19,10 +19,8 @@ enum
 	MAXCOMP		= 128,
 };
 
-typedef struct	User	User;
 typedef struct  Gmem	Gmem;
 typedef	struct	Stat	Stat;
-typedef	struct Fsinfo	Fsinfo;
 typedef	WIN32_FIND_DATAW	Fsdir;
 
 #ifndef INVALID_SET_FILE_POINTER

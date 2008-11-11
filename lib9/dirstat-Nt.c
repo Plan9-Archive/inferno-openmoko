@@ -24,8 +24,8 @@ statconv(struct stat *s, const char *name)
 		return nil;
 	}
 	dir->name = name;
-	dir->uid = nullstring;
-	dir->gid = nullstring;
+	dir->uid = (char*)nullstring;
+	dir->gid = (char*)nullstring;
 	dir->muid = nullstring;
 	dir->qid.type = ISTYPE(s, _S_IFDIR)? QTDIR: QTFILE;
 	dir->qid.path = s->st_ino;

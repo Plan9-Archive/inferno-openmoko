@@ -89,7 +89,6 @@ Cmdtab progdbgcmd[] = {
 	{CDbpt,		"bpt",		4},
 };
 
-typedef struct Heapqry Heapqry;
 struct Heapqry
 {
 	char	fmt;
@@ -108,7 +107,6 @@ struct Bpt
 	char	path[1];
 };
 
-typedef struct Progctl Progctl;
 struct Progctl
 {
 	Rendez	r;

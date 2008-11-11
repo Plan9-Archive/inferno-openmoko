@@ -42,7 +42,6 @@ typedef struct DScreen DScreen;
 typedef struct CScreen CScreen;
 typedef struct FChar FChar;
 typedef struct Refresh Refresh;
-typedef struct Refx Refx;
 typedef struct DName DName;
 
 ulong blanktime = 30;	/* in minutes; a half hour */

@@ -5,7 +5,6 @@
 #include	"isa.h"
 #include	"runt.h"
 
-typedef struct SrvFile SrvFile;
 struct SrvFile
 {
 	char*	spec;

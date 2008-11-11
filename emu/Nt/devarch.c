@@ -2,15 +2,12 @@
  *  platform-specific interface
  */
 
-#define Unknown win_Unknown
-#define UNICODE
-#include	<windows.h>
+#include <windows.h>
 #include <winbase.h>
-#include	<winsock.h>
-#undef Unknown
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
+#include <winsock.h>
+#include "dat.h"
+#include "fns.h"
+#include "error.h"
 
 
 enum{
@@ -30,7 +27,6 @@ Dirtab archtab[]={
 	"hostmem",	{Qhostmem},	0,	0444,
 };
 
-typedef struct Value Value;
 struct Value {
 	int	type;
 	int	size;

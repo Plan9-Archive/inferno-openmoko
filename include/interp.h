@@ -60,7 +60,6 @@ typedef struct Module	Module;
 typedef struct Modlink	Modlink;
 typedef struct Modl	Modl;
 typedef struct Type	Type;
-typedef struct Prog	Prog;
 typedef struct Progs	Progs;
 typedef struct Heap	Heap;
 typedef struct Link	Link;
@@ -75,8 +74,6 @@ typedef struct Atidle	Atidle;
 typedef struct Altc	Altc;
 typedef struct Except	Except;
 typedef struct Handler	Handler;
-typedef struct Osenv	Osenv;
-typedef struct SrvFile	SrvFile;
 typedef union Disdata Disdata;
 
 
@@ -305,6 +302,18 @@ struct Prog
 	void		(*xec)(Prog*);
 	Osenv*		osenv;
 };
+
+enum ModRtFlags
+{
+	MUSTCOMPILE	= (1<<0),
+	DONTCOMPILE	= (1<<1),
+	SHAREMP		= (1<<2),
+	DYNMOD		= (1<<3),
+	HASLDT0		= (1<<4),
+	HASEXCEPT	= (1<<5),
+	HASLDT		= (1<<6),
+};
+
 
 struct Module
 {
