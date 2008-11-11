@@ -1,6 +1,6 @@
-#include <lib9.h>
-#include <kernel.h>
-#include <isa.h>
+#include "lib9.h"
+#include "kernel.h"
+#include "isa.h"
 #include "interp.h"
 #include "../libinterp/runt.h"
 #include "mp.h"
