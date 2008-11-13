@@ -7,13 +7,13 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
 
 /*
- * modf(double x, double *iptr) 
+ * modf(double x, double *iptr)
  * return fraction part of x, and return x's integral part in *iptr.
  * Method:
  *	Bit twiddling.
@@ -24,7 +24,10 @@
 
 #include "fdlibm.h"
 
-static const double one = 1.0;
+#ifndef DBL_CONST_one
+#define DBL_CONST_one
+static const double one = 1.00000000000000000000e+00; /* 0x3FF00000, 0x00000000 */
+#endif
 
 	double modf(double x, double *iptr)
 {

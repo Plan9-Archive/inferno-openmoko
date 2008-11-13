@@ -1,10 +1,10 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
 typedef struct Pack Pack;
 struct Pack
@@ -63,7 +63,7 @@ TkStab tkfill[] =
 };
 
 static
-TkOption opts[] =
+TkOption opts_packr[] =
 {
 	{"padx",	OPTnndist,	offsetof(TkParam, pad.x)	},
 	{"pady",	OPTnndist,	offsetof(TkParam, pad.y)	},
@@ -365,7 +365,7 @@ tkpack(TkTop *t, char *arg, char **val)
 	free(buf);
 
 	tko[0].ptr = p;
-	tko[0].optab = opts;
+	tko[0].optab = opts_packr;
 	tko[1].ptr = nil;
 
 	names = nil;

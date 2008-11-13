@@ -1,13 +1,13 @@
 #include <lib9.h>
 #include <kernel.h>
-#include "interp.h"
-#include "isa.h"
-#include "runt.h"
-#include "prefabmod.h"
-#include "draw.h"
-#include "drawif.h"
-#include "prefab.h"
-#include "raise.h"
+#include <interp.h>
+#include <isa.h>
+#include <runt.h>
+#include <prefabmod.h>
+#include <draw.h>
+#include <drawif.h>
+#include <prefab.h>
+#include <raise.h>
 
 uchar elementmap[] = Prefab_Element_map;
 uchar compoundmap[] = Prefab_Compound_map;

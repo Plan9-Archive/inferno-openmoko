@@ -29,7 +29,7 @@ THE SOFTWARE.
 #define __PCFUTIL_H__
 
 
-#include <ft2build.h>
+
 
 
   void

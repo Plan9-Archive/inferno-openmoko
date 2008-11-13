@@ -1,6 +1,6 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
 
 static int depth;
 
@@ -32,4 +32,3 @@ memchk(void *p, Type *t)
 	}
 	depth--;
 }
-

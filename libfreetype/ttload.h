@@ -21,12 +21,14 @@
 #define __TTLOAD_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_TRUETYPE_TYPES_H
+
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/tttypes.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   FT_LOCAL( TT_Table  )
@@ -129,7 +131,9 @@ FT_BEGIN_HEADER
 #endif /* TT_CONFIG_OPTION_EMBEDDED_BITMAPS */
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __TTLOAD_H__ */
 

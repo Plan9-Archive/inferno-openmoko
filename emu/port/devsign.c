@@ -1,12 +1,12 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	"interp.h"
-#include	<isa.h>
-#include	"runt.h"
-#include "mp.h"
-#include "libsec.h"
-#include "../../libkeyring/keys.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <mp.h>
+#include <libsec.h>
+#include <keys.h>
 
 /*
  * experimental version of signed modules
@@ -14,18 +14,18 @@
 
 enum
 {
-	Qdir,
-	Qkey,
-	Qctl,
+	Qsign_dir,
+	Qsign_key,
+	Qsign_ctl,
 
 	Maxkey = 2048
 };
 
 static Dirtab signdir[] =
 {
-	".",		{Qdir, 0, QTDIR},	0,	DMDIR|0555,
-	"signerkey",	{Qkey},	0,			0644,
-	"signerctl",	{Qctl},	0,			0600,
+	".",		{Qsign_dir, 0, QTDIR},	0,	DMDIR|0555,
+	"signerkey",	{Qsign_key},		0,	0644,
+	"signerctl",	{Qsign_ctl},		0,	0600,
 };
 
 typedef struct Get Get;

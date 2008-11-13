@@ -1,4 +1,4 @@
-#include "lib9.h"
+#include <lib9.h>
 #include <Windows.h>
 
 static char	errstring[ERRMAX];

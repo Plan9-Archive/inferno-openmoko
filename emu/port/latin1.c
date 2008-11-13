@@ -1,4 +1,4 @@
-#include "dat.h"
+#include <dat.h>
 
 /*
  * The code makes two assumptions: strlen(ld) is 1 or 2; latintab[i].ld can be a
@@ -11,7 +11,7 @@ struct cvlist
 	char	*si;		/* options for last input characters */
 	char	*so;		/* the corresponding Rune for each si entry */
 } latintab[] = {
-#include "latin1.h"
+#include <latin1.h>
 	0,	0,		0
 };
 

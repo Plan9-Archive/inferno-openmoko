@@ -27,7 +27,7 @@
  *	documentation and/or software.
  */
 
-static void encode(uchar*, u32int*, ulong);
+static void encode5(uchar*, u32int*, ulong);
 
 extern void _md5block(uchar*, ulong, u32int*);
 
@@ -114,14 +114,14 @@ md5(uchar *p, ulong len, uchar *digest, MD5state *s)
 	/* append the count */
 	x[0] = s->len<<3;
 	x[1] = s->len>>29;
-	encode(p+len, x, 8);
+	encode5(p+len, x, 8);
 
 	/* digest the last part */
 	_md5block(p, len+8, s->state);
 	s->len += len;
 
 	/* return result and free state */
-	encode(digest, s->state, MD5dlen);
+	encode5(digest, s->state, MD5dlen);
 	if(s->malloced == 1)
 		free(s);
 	return nil;
@@ -132,7 +132,7 @@ md5(uchar *p, ulong len, uchar *digest, MD5state *s)
  *	a multiple of 4.
  */
 static void
-encode(uchar *output, u32int *input, ulong len)
+encode5(uchar *output, u32int *input, ulong len)
 {
 	u32int x;
 	uchar *e;

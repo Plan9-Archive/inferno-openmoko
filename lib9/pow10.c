@@ -2,7 +2,7 @@
 #define	_MATH_H
 #endif
 
-#include	"lib9.h"
+#include <lib9.h>
 
 /*
  * this table might overflow 127-bit exponent representations.

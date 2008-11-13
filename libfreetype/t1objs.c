@@ -16,9 +16,9 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
+
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
 
 #include "t1gload.h"
 #include "t1load.h"
@@ -29,8 +29,8 @@
 #include "t1afm.h"
 #endif
 
-#include FT_INTERNAL_POSTSCRIPT_NAMES_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/internal/psnames.h>
+#include <freetype/internal/psaux.h>
 
 
   /*************************************************************************/

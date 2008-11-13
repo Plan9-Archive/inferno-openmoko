@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "raise.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <raise.h>
 
 enum
 {
@@ -307,7 +307,7 @@ modrm(int inst, ulong disp, int rm, int r)
 				inst&=0xffc7;
 				inst|=0x0010;
 			}
-			genw(inst | (r<<9) | rm);	
+			genw(inst | (r<<9) | rm);
 			if (disp)
 				genw(disp);
 			break;
@@ -520,7 +520,7 @@ dojmp:
 				genl(dst);
 				genw(OjmpRind|RCX);
 			}
-			break;	
+			break;
 		case Ojhi:
 		case Ojhs:
 		case Ojlo:
@@ -534,10 +534,10 @@ dojmp:
 			genw(swapbraop(op)|0x8);
 			goto dojmp;
 		default:
-			print("bra: urk op opcode 0x%ux\n",op);	
+			print("bra: urk op opcode 0x%ux\n",op);
 			urk();
 			break;
-	}		
+	}
 }
 
 static void
@@ -559,7 +559,7 @@ literal(ulong imm, int roff)
 		return;
 
 	*litpool = imm;
-	litpool++;	
+	litpool++;
 }
 
 
@@ -680,7 +680,7 @@ midD(Inst *i, int mi, int r)
 
 static void
 arithimms(Inst *i, int opcode, int opmode)
-{	
+{
 	uchar off[3];
 	int hasoff;
 	if(i->add&ARM) {
@@ -694,15 +694,15 @@ arithimms(Inst *i, int opcode, int opmode)
 			else
 				genw(i->s.imm);
 		}
-		opwstD(i, (opmode)?OstwD:OstbD, DTMP);	
-		return;	
+		opwstD(i, (opmode)?OstwD:OstbD, DTMP);
+		return;
 	}
 	if (hasoff=opwst(i, opcode|0x28|(((opmode)?0x2:0)<<6), 0)) {
 		code-=2;
 		off[0]=code[0]; off[1]=code[1];
 	}
 	if (((opcode==Oaddi)||(opcode==Osubi))&&(i->s.imm>0)&&(i->s.imm<=8)) {
-		code-=2; 
+		code-=2;
 		off[2]=code[1];
 		genw(0x5000|((opcode==Osubi)?0x100:0)|(((opmode)?0x2:0x0)<<6)|(((uchar)i->s.imm)<<9)|((hasoff)?0x28:0x10)|(off[2]&0x7));
 	}
@@ -712,19 +712,19 @@ arithimms(Inst *i, int opcode, int opmode)
 		else
 			genw(i->s.imm);
 	}
-	if (hasoff) 
+	if (hasoff)
 		gen2(off[0],off[1]);
 }
 
 static void
 arith(Inst *i, int opcode, int opmode)
-{	
+{
 	opwldD(i, (opmode)?OldwD:OldbD, DTMP1);
 	if(i->add&ARM) {
 		midD(i,(opmode)?OldwD:OldbD,DTMP);
 		genw(opcode|(DTMP<<9)|DTMP1|(((opmode)?0x2:0)<<6));
 		opwstD(i, (opmode)?OstwD:OstbD, DTMP);
-		return;	
+		return;
 	}
 	opwst(i, opcode|0x28|(((opmode)?0x6:0x4)<<6), DTMP1);
 }
@@ -738,7 +738,7 @@ oldarithsub(Inst *i, int opmode)
 	else
 		opwstD(i, (opmode)?OldwD:OldbD, DTMP);
 	genw(Osub|(DTMP<<9)|DTMP1|(((opmode)?0x2:0)<<6));
-	opwstD(i, (opmode)?OstwD:OstbD, DTMP);	
+	opwstD(i, (opmode)?OstwD:OstbD, DTMP);
 }
 
 static void
@@ -842,13 +842,13 @@ comcase(Inst *i, int w)
 {
 	int l;
 	WORD *t, *e;
-	
+
 	USED (w);
 
 	t = (WORD*)(mod->origmp+i->d.ind+4);
 	l = t[-1];
-	
-	/* have to take care not to relocate the same table twice - 
+
+	/* have to take care not to relocate the same table twice -
 	 * the limbo compiler can duplicate a case instruction
 	 * during its folding phase
 	 */
@@ -926,7 +926,7 @@ commcall(Inst *i)
 	opwld(i, OldwR, RTA);
 	genw(OmovwR|(RTA<<9));			// MOVL $.+1, lr(RTA)	f->lr = R.PC
 	genl((ulong)base+patch[i-mod->prog+1]);
-	genw(O(Frame, lr));	
+	genw(O(Frame, lr));
 	modrm(OstwR, O(Frame, fp), RTA, RFP); 	// MOVL RFP, fp(RTA)	f->fp = R.FP
 	modrm(OldwD, O(REG, M), RTMP, DTMP);	// MOVL R.M, DTMP
 	modrm(OstwD, O(Frame, mr), RTA, DTMP);	// MOVL RTA, mr(RTA) 	f->mr = R.M
@@ -950,7 +950,7 @@ laritha(Inst *i, int opc)
 		genw(0x5088|RTA);		// ADDQ.l #8, RTA
 		}
 
-	opwld(i, OleaR, RTMP);		
+	opwld(i, OleaR, RTMP);
 	genw(0x5088|RTMP);			// ADDQ.l #8, RTMP
 
 	genw(0x44FC);				// MOVE imm16, CCR
@@ -987,7 +987,7 @@ shll(Inst *i)
 
 	opwldD(i, OldwD, DTMP);		// The number of shifts -> DTMP
 	mid(i, OleaR, RTA);		// LEA source, RTA
-	genw(0x2018|(DTMP1<<9)|RTA);	// move (RTA+), DTMP1 
+	genw(0x2018|(DTMP1<<9)|RTA);	// move (RTA+), DTMP1
 	genw(0x2010|(DTMP2<<9)|RTA);	// move (RTA), DTMP2
 
 	genw(Obra);
@@ -1011,7 +1011,7 @@ shrl(Inst *i)
 
 	opwldD(i, OldwD, DTMP);		// The number of shifts -> DTMP
 	mid(i, OleaR, RTA);		// LEA source, RTA
-	genw(0x2018|(DTMP1<<9)|RTA);	// move (RTA+), DTMP1 
+	genw(0x2018|(DTMP1<<9)|RTA);	// move (RTA+), DTMP1
 	genw(0x2010|(DTMP2<<9)|RTA);	// move (RTA), DTMP2
 
 	genw(Obra);
@@ -1205,7 +1205,7 @@ comp(Inst *i)
 		if(i->op == IHEADP)
 			modrm(OldwR, OA(List, data), RTMP, RTMP);
 	movp:
-		{uchar *label;	
+		{uchar *label;
 			cmpl(RTMP, (ulong)H);
 			genw(Ojeq);
 			label=code-1;
@@ -1299,13 +1299,13 @@ comp(Inst *i)
 		cbrab(i, Ojhs);
 		break;
 	case ISUBW:
-		if (UXSRC(i->add)==SRC(AIMM)) 
+		if (UXSRC(i->add)==SRC(AIMM))
 			arithimms(i,Osubi,1);
 		else
 			arith(i, Osub, 1);
 		break;
 	case ISUBB:
-		if (UXSRC(i->add)==SRC(AIMM)) 
+		if (UXSRC(i->add)==SRC(AIMM))
 			arithimms(i,Osubi,1);
 		else
 			arith(i, Osub, 0);
@@ -1314,13 +1314,13 @@ comp(Inst *i)
 		punt(i, SRCOP|DSTOP|THREOP, optab[i->op]);
 		break;
 	case IADDW:
-		if (UXSRC(i->add)==SRC(AIMM)) 
+		if (UXSRC(i->add)==SRC(AIMM))
 			arithimms(i,Oaddi,1);
 		else
 			arith(i, Oadd, 1);
 		break;
 	case IADDB:
-		if (UXSRC(i->add)==SRC(AIMM)) 
+		if (UXSRC(i->add)==SRC(AIMM))
 			arithimms(i,Oaddi,0);
 		else
 			arith(i, Oadd, 0);
@@ -1329,13 +1329,13 @@ comp(Inst *i)
 		punt(i, SRCOP|DSTOP|THREOP, optab[i->op]);
 		break;
 	case IORW:
-		if (UXSRC(i->add)==SRC(AIMM)) 
+		if (UXSRC(i->add)==SRC(AIMM))
 			arithimms(i,Oori,1);
 		else
 			arith(i, Oor, 1);
 		break;
 	case IORB:
-		if (UXSRC(i->add)==SRC(AIMM)) 
+		if (UXSRC(i->add)==SRC(AIMM))
 			arithimms(i,Oori,0);
 		else
 			arith(i, Oor, 0);
@@ -1347,13 +1347,13 @@ comp(Inst *i)
 		arith(i, Oand, 0);
 		break;
 	case IXORW:
-		if (UXSRC(i->add)==SRC(AIMM)) 
+		if (UXSRC(i->add)==SRC(AIMM))
 			arithimms(i,Oeori,1);
 		else
 			arith(i, Oeor, 1);
 		break;
 	case IXORB:
-		if (UXSRC(i->add)==SRC(AIMM)) 
+		if (UXSRC(i->add)==SRC(AIMM))
 			arithimms(i,Oeori,0);
 		else
 			arith(i, Oeor, 0);
@@ -1430,16 +1430,16 @@ comp(Inst *i)
 			case IMULW:
 				bra((ulong)_mull,Obsr);
 				genw(OaddqwR|(4<<9)|R7);
-				genw(OpopwR|(RAX<<9));	
+				genw(OpopwR|(RAX<<9));
 				break;
 			case IMODW:
 				bra((ulong)_divsl,Obsr);
 				genw(OaddqwR|(4<<9)|R7);
-				genw(OpopwR|(RAX<<9));	
+				genw(OpopwR|(RAX<<9));
 				break;
 			case IDIVW:
 				bra((ulong)_divsl,Obsr);
-				genw(OpopwR|(RAX<<9));	
+				genw(OpopwR|(RAX<<9));
 				genw(OaddqwR|(4<<9)|R7);
 				break;
 		}
@@ -1472,7 +1472,7 @@ comp(Inst *i)
 		genl(0x70204283);				// loop to MULW DTMP1, DTMP2, DTMP3
 		genl(0xe2996402);
 		genl(0xd682e38a);
-		genl(0x57c8fff6);		
+		genl(0x57c8fff6);
 
 		modrm(OldwR, O(Array, data), RTMP, RTMP);
 		genw(Oadd|(DTMP3<<9)|0x0088|RTMP);		// ADDL data(RTMP), DTMP3
@@ -1497,8 +1497,8 @@ comp(Inst *i)
 		opwstD(i, OldwD, DTMP);
 		modrm(OldwR, O(Array, data), RAX, RTMP);
 
-		if (r) 
-			genw(0xE188|(r<<9)|DTMP);		
+		if (r)
+			genw(0xE188|(r<<9)|DTMP);
 		genw(Oadd|(RTMP<<9)|(7<<6)|DTMP);		/* lea  (AX)(DTMP*r) */
 
 		r = RMP;
@@ -1511,8 +1511,8 @@ comp(Inst *i)
 			opwld(i, OldwR, RAX);			// string
 			midD(i, OldwD, DTMP);			// index
 			modrm(OtstwR,O(String, len),RAX,0);
-			modrm(OleaR, O(String, data), RAX, RAX); 
-			genw(Ojge);				// Ascii only, jump 
+			modrm(OleaR, O(String, data), RAX, RAX);
+			genw(Ojge);				// Ascii only, jump
 			label=code-1;
 
 			genw(OnegwD|DTMP);
@@ -1619,7 +1619,7 @@ preamble(void)
 	modrm(OldwR, O(REG, MP), RAX, RMP);
 	modrm(OldwR, O(REG, PC), RAX, RAX);
 	genw(OjmpRind|RAX);
-	
+
 	segflush(comvec, 32);
 
 	if(cflag > 2) {
@@ -1706,7 +1706,7 @@ macret(void)
 
 	modrm(OtstwR, O(Modlink, compiled), RTA, 0);	// CMPL $0, M.compiled
 	genw(Ojeq|(uchar)(linterp-(code-s)));
-	
+
 	lnomr = code - s;
 	genw(OjsrRind|RAX);				// CALL* AX
 	conR((ulong)&R, RTMP);				// MOVL	 $R, RTMP
@@ -1742,10 +1742,10 @@ maccolr(void)
 	s=code;
 	modrm(OincrwRind, O(Heap, ref)-sizeof(Heap), RTMP, 0);	// INCL	ref(RTMP)
 	genw(0x2079|(RAX<<9));			// MOVL	(mutator), RAX
-	genl((ulong)&mutator);	
+	genl((ulong)&mutator);
 	modrm(OcmpwR, O(Heap, color)-sizeof(Heap), RTMP, RAX);	// CMPL	color(RTMP), RAX
-	genw(Ojne|0x02);			
-	genw(Orts);				
+	genw(Ojne|0x02);
+	genw(Orts);
 	conR(propagator, RAX);			// MOVL $propagator,RAX
 	modrm(OstwR, O(Heap, color)-sizeof(Heap), RTMP, RAX);	// MOVL	RAX, color(RTMP)
 	genw(0x23C8|RAX);			// can be any !0 value

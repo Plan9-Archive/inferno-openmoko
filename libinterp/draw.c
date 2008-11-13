@@ -1,14 +1,14 @@
 #include <lib9.h>
 #include <kernel.h>
-#include "isa.h"
-#include "interp.h"
-#include "runt.h"
-#include "raise.h"
-#include "drawmod.h"
-#include "draw.h"
-#include "drawif.h"
-#include "memdraw.h"
-#include "memlayer.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <raise.h>
+#include <drawmod.h>
+#include <draw.h>
+#include <drawif.h>
+#include <memdraw.h>
+#include <memlayer.h>
 
 /*
  * When a Display is remote, it must be locked to synchronize the

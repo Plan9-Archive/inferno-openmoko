@@ -16,9 +16,9 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_XFREE86_H
-#include FT_INTERNAL_OBJECTS_H
+
+#include <freetype/ftxf86.h>
+#include <freetype/internal/ftobjs.h>
 
   /* XXX: This really is a sad hack, but I didn't want to change every     */
   /*      driver just to support this at the moment, since other important */

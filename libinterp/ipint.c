@@ -1,13 +1,13 @@
-#include "lib9.h"
-#include "kernel.h"
+#include <lib9.h>
+#include <kernel.h>
 #include <isa.h>
-#include "interp.h"
-#include "runt.h"
+#include <interp.h>
+#include <runt.h>
 #include <mp.h>
 #include <libsec.h>
-#include "pool.h"
-#include "../libkeyring/keys.h"
-#include "raise.h"
+#include <pool.h>
+#include <keys.h>
+#include <raise.h>
 
 extern Type	*TIPint;
 #define	MP(x)	checkIPint((x))

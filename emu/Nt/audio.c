@@ -1,9 +1,9 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
 #define 	Audio_Mic_Val		0
 #define 	Audio_Linein_Val	-1

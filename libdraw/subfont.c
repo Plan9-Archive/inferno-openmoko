@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 Subfont*
 allocsubfont(char *name, int n, int height, int ascent, Fontchar *info, Image *i)

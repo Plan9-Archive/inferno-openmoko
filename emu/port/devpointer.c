@@ -2,9 +2,9 @@
  * mouse or stylus
  */
 
-#include	"dat.h"
-#include	"fns.h"
-#include	"../port/error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
 #include <draw.h>
 #include <memdraw.h>
@@ -14,9 +14,9 @@
 #define	cursordisable()
 
 enum{
-	Qdir,
-	Qpointer,
-	Qcursor
+	Qpointer_dir,
+	Qpointer_pointer,
+	Qpointer_cursor
 };
 
 typedef struct Pointer Pointer;
@@ -40,9 +40,9 @@ static struct
 
 static
 Dirtab pointertab[]={
-	".",			{Qdir, 0, QTDIR},	0,	0555,
-	"pointer",		{Qpointer},	0,	0666,
-	"cursor",		{Qcursor},		0,	0222,
+	".",		{Qpointer_dir, 0, QTDIR},	0,	0555,
+	"pointer",	{Qpointer_pointer},	0,	0666,
+	"cursor",	{Qpointer_cursor},		0,	0222,
 };
 
 enum {
@@ -146,7 +146,7 @@ pointerwalk(Chan *c, Chan *nc, const char **name, int nname)
 	Walkqid *wq;
 
 	wq = devwalk(c, nc, name, nname, pointertab, nelem(pointertab), devgen);
-	if(wq != nil && wq->clone != c && wq->clone != nil && (ulong)c->qid.path == Qpointer)
+	if(wq != nil && wq->clone != c && wq->clone != nil && (ulong)c->qid.path == Qpointer_pointer)
 		incref(&mouse.ref);	/* can this happen? */
 	return wq;
 }
@@ -161,7 +161,7 @@ static Chan*
 pointeropen(Chan* c, int omode)
 {
 	c = devopen(c, omode, pointertab, nelem(pointertab), devgen);
-	if((ulong)c->qid.path == Qpointer){
+	if((ulong)c->qid.path == Qpointer_pointer){
 		if(waserror()){
 			c->flag &= ~COPEN;
 			nexterror();
@@ -185,7 +185,7 @@ pointerclose(Chan* c)
 	if((c->flag & COPEN) == 0)
 		return;
 	switch((ulong)c->qid.path){
-	case Qpointer:
+	case Qpointer_pointer:
 		qlock(&mouse.q);
 		if(decref(&mouse.ref) == 0){
 			cursordisable();
@@ -204,9 +204,9 @@ pointerread(Chan* c, char* a, long n, vlong off)
 
 	USED(&off);
 	switch((ulong)c->qid.path){
-	case Qdir:
+	case Qpointer_dir:
 		return devdirread(c, a, n, pointertab, nelem(pointertab), devgen);
-	case Qpointer:
+	case Qpointer_pointer:
 		qlock(&mouse.q);
 		if(waserror()) {
 			qunlock(&mouse.q);
@@ -237,7 +237,7 @@ pointerwrite(Chan* c, const char* va, long n, vlong off)
 
 	USED(&off);
 	switch((ulong)c->qid.path){
-	case Qpointer:
+	case Qpointer_pointer:
 		if(n > sizeof buf-1)
 			n = sizeof buf -1;
 		memmove(buf, va, n);
@@ -254,7 +254,7 @@ pointerwrite(Chan* c, const char* va, long n, vlong off)
 		setpointer(x, y);
 		USED(b);
 		break;
-	case Qcursor:
+	case Qpointer_cursor:
 		/* TO DO: perhaps interpret data as an Image */
 		/*
 		 *  hotx[4] hoty[4] dx[4] dy[4] clr[dx/8 * dy/2] set[dx/8 * dy/2]

@@ -3,10 +3,6 @@
  */
 #define _LARGEFILE64_SOURCE	1
 #define _FILE_OFFSET_BITS 64
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-
 #include	<sys/types.h>
 #include	<sys/stat.h>
 #include	<sys/fcntl.h>
@@ -18,6 +14,11 @@
 #include	<unistd.h>
 #include	<pwd.h>
 #include	<grp.h>
+
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+
 
 typedef struct Fsinfo Fsinfo;
 struct Fsinfo

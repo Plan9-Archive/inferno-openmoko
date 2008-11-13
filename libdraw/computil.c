@@ -1,8 +1,8 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 /*
- * compressed data are seuences of byte codes.  
+ * compressed data are seuences of byte codes.
  * if the first byte b has the 0x80 bit set, the next (b^0x80)+1 bytes
  * are data.  otherwise, it's two bytes specifying a previous string to repeat.
  */

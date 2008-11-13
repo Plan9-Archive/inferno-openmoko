@@ -3,28 +3,28 @@
  */
 
 #include <windows.h>
-#include <winbase.h>
 #include <winsock.h>
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
+
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
 
 enum{
-	Qdir,
-	Qarchctl,
-	Qcputype,
-	Qregquery,
-	Qhostmem
+	Qarch_dir,
+	Qarch_archctl,
+	Qarch_cputype,
+	Qarch_regquery,
+	Qarch_hostmem
 };
 
 static
 Dirtab archtab[]={
-	".",		{Qdir, 0, QTDIR},	0,	0555,
-	"archctl",	{Qarchctl, 0},	0,	0444,
-	"cputype",	{Qcputype},	0,	0444,
-	"regquery",	{Qregquery}, 0,	0666,
-	"hostmem",	{Qhostmem},	0,	0444,
+	".",		{Qarch_dir, 0, QTDIR},	0,	0555,
+	"archctl",	{Qarch_archctl, 0},	0,	0444,
+	"cputype",	{Qarch_cputype},	0,	0444,
+	"regquery",	{Qarch_regquery},	0,	0666,
+	"hostmem",	{Qarch_hostmem},	0,	0444,
 };
 
 struct Value {
@@ -61,7 +61,7 @@ static struct {
 
 static	QLock	reglock;
 
-extern wchar_t	*widen(char*);
+extern Rune	*widen(const char*);
 static	Value*	getregistry(HKEY, Rune*, Rune*);
 static int nprocs(void);
 
@@ -147,7 +147,7 @@ archopen(Chan* c, int omode)
 static void
 archclose(Chan* c)
 {
-	if((ulong)c->qid.path == Qregquery && c->aux.value != nil)
+	if((ulong)c->qid.path == Qarch_regquery && c->aux.value != nil)
 		free(c->aux.value);
 }
 
@@ -160,12 +160,12 @@ archread(Chan* c, char* a, long n, vlong offset)
 	MEMORYSTATUS mem;
 
 	switch((ulong)c->qid.path){
-	case Qdir:
+	case Qarch_dir:
 		return devdirread(c, a, n, archtab, nelem(archtab), devgen);
-	case Qarchctl:
-	case Qcputype:
+	case Qarch_archctl:
+	case Qarch_cputype:
 		l = 0;
-		if((ulong)c->qid.path == Qcputype)
+		if((ulong)c->qid.path == Qarch_cputype)
 			l = 4;
 		p = (char*)smalloc(READSTR);
 		if(waserror()){
@@ -177,7 +177,7 @@ archread(Chan* c, char* a, long n, vlong offset)
 		poperror();
 		free(p);
 		break;
-	case Qregquery:
+	case Qarch_regquery:
 		v = c->aux.value;
 		if(v == nil)
 			return 0;
@@ -239,7 +239,7 @@ archread(Chan* c, char* a, long n, vlong offset)
 		c->aux.value = nil;
 		free(v);
 		break;
-	case Qhostmem:
+	case Qarch_hostmem:
 		mem.dwLength = sizeof(mem);
 		GlobalMemoryStatus(&mem);	/* GlobalMemoryStatusEx isn't on NT */
 		p = (char*)smalloc(READSTR);
@@ -270,7 +270,7 @@ archwrite(Chan* c, const char* a, long n, vlong offset)
 	Cmdbuf *cb;
 	Rune *key, *item;
 
-	if((ulong)c->qid.path != Qregquery)
+	if((ulong)c->qid.path != Qarch_regquery)
 		error(Eperm);
 	USED(offset);
 	if(c->aux.value != nil){

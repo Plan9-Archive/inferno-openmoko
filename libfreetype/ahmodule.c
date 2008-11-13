@@ -19,8 +19,8 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_MODULE_H
+
+#include <freetype/ftmodule.h>
 #include "ahhint.h"
 
 

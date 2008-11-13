@@ -1,10 +1,10 @@
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
-#include "isa.h"
-#include "interp.h"
-#include "runt.h"
-#include "kernel.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <kernel.h>
 
 /*
  * here because Sys_FileIO is not public

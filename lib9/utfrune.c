@@ -1,4 +1,4 @@
-#include "lib9.h"
+#include <lib9.h>
 
 char*
 utfrune(char *s, long c)

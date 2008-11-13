@@ -41,9 +41,9 @@
   /*************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_DEBUG_H
+
+#include <freetype/freetype.h>
+#include <freetype/internal/ftdebug.h>
 
 
 #if defined( FT_DEBUG_LEVEL_ERROR )
@@ -87,7 +87,7 @@
 
   static const char*  ft_trace_toggles[trace_count + 1] =
   {
-#include FT_INTERNAL_TRACE_H
+#include <freetype/internal/fttrace.h>
     NULL
   };
 
@@ -133,7 +133,7 @@
         q = p;
         while ( *p && *p != ':' )
           p++;
-          
+
         if ( *p == ':' && p > q )
         {
           FT_Int  n, i, len = (FT_Int)(p - q);

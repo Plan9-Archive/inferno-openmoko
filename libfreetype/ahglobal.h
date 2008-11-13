@@ -24,12 +24,14 @@
 #define __AHGLOBAL_H__
 
 
-#include <ft2build.h>
+
 #include "ahtypes.h"
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/ftobjs.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 #define AH_IS_TOP_BLUE( b )  ( (b) == AH_BLUE_CAPITAL_TOP || \
@@ -41,7 +43,9 @@ FT_BEGIN_HEADER
   ah_hinter_compute_globals( AH_Hinter  hinter );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __AHGLOBAL_H__ */
 

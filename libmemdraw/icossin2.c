@@ -2,7 +2,7 @@
 #include	"draw.h"
 
 /*
- * Sine and Cosine of arctangents, calculated by 
+ * Sine and Cosine of arctangents, calculated by
  *   (sin(atan(index/100.0))*1024.+0.5)
  *   (cos(atan(index/100.0))*1024.+0.5)
  * To use, get rational tangent between 0<=tan<=1, scale by 100,
@@ -10,7 +10,7 @@
  * Maximum error is 0.0020.  Without linear interpolation, it's 0.010.
  */
 static
-short sinus[] = {
+short sinus2[] = {
 	0,	/* 0.00 */
 	10,	/* 0.01 */
 	20,	/* 0.02 */
@@ -247,11 +247,11 @@ icossin2(int x, int y, int *cosp, int *sinp)
 		tan = 1000*x/y;
 		tan10 = tan/10;
 		stp = &cosinus[tan10];
-		ctp = &sinus[tan10];
+		ctp = &sinus2[tan10];
 	}else{
 		tan = 1000*y/x;
 		tan10 = tan/10;
-		stp = &sinus[tan10];
+		stp = &sinus2[tan10];
 		ctp = &cosinus[tan10];
 	}
 	rem = tan-(tan10*10);

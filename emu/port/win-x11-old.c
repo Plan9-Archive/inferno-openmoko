@@ -1,7 +1,3 @@
-#include "dat.h"
-#include "fns.h"
-#include "cursor.h"
-#include "keyboard.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -10,6 +6,11 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+
+#include <dat.h>
+#include <fns.h>
+#include <cursor.h>
+#include <keyboard.h>
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 
@@ -45,7 +46,7 @@ struct IRectangle
 struct CRemapTbl
 {
 	ulong inferno[256];	/* The corresponding inferno colormap vals */
-	ulong openslot[256];	
+	ulong openslot[256];
 	Bool cellused[256];
 	int cnt;
 	int opencnt;
@@ -256,7 +257,7 @@ xproc(void *arg)
 		Button3MotionMask|
 		ExposureMask;
 
-	XSelectInput(xkmcon, xdrawable, mask);		
+	XSelectInput(xkmcon, xdrawable, mask);
 	for(;;) {
 		XWindowEvent(xkmcon, xdrawable, mask, &event);
 		switch(event.type) {
@@ -308,7 +309,7 @@ xinitscreen(int xsize, int ysize)
 	XClassHint classhints;
 	XSizeHints normalhints;
 	XSetWindowAttributes attrs;
- 
+
 	xscreenid = 0;
 	xdrawable = 0;
 
@@ -495,8 +496,8 @@ graphicscmap(XColor *map)
 /*
  * Initialize and install the Inferno colormap as a private colormap for this
  * application.  Inferno gets the best colors here when it has the cursor focus.
- */  
-static void 
+ */
+static void
 initmap(Window w)
 {
 	XColor c;
@@ -522,10 +523,10 @@ initmap(Window w)
 			/* The pixel value returned from XGetPixel needs to
 			 * be converted to RGB so we can call rgb2cmap()
 			 * to translate between 24 bit X and our color. Unfortunately,
-			 * the return value appears to be display server endian 
+			 * the return value appears to be display server endian
 			 * dependant. Therefore, we run some heuristics to later
 			 * determine how to mask the int value correctly.
-			 * Yeah, I know we can look at xvis->byte_order but 
+			 * Yeah, I know we can look at xvis->byte_order but
 			 * some displays say MSB even though they run on LSB.
 			 * Besides, this is more anal.
 			 */
@@ -564,7 +565,7 @@ initmap(Window w)
 	}
 	else if(xvis->class == PseudoColor) {
 		if(xtblbit == 0){
-			xcmap = XCreateColormap(xdisplay, w, xvis, AllocAll); 
+			xcmap = XCreateColormap(xdisplay, w, xvis, AllocAll);
 			XStoreColors(xdisplay, xcmap, map, 256);
 			for(i = 0; i < 256; i++) {
 				infernotox11[i] = i;
@@ -655,7 +656,7 @@ xkeyboard(XEvent *e)
 		qproduce(gkscanq, &ch, 1);
 		return;
 	}
-	
+
 	/*
 	 * I tried using XtGetActionKeysym, but it didn't seem to
 	 * do case conversion properly
@@ -757,10 +758,10 @@ xkeyboard(XEvent *e)
 		k &= 0x9f;
 	if(k == '\t' && ind)
 		k = BackTab;
-	
+
 	if(md & Mod1Mask)
 		k = APP|(k&0xff);
-	if(k == NoSymbol) 
+	if(k == NoSymbol)
 		return;
 
 	gkbdputc(gkbdq, k);
@@ -844,4 +845,3 @@ xmouse(XEvent *e)
 	m.modify = 1;
 	mouseproduce(m);
 }
-

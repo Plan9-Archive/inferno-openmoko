@@ -1,10 +1,10 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
 /*
  * XXX TODO
@@ -35,7 +35,7 @@ struct TkBeamparam{
 };
 
 static
-TkOption opts[] =
+TkOption opts_grids[] =
 {
 	{"padx",	OPTnndist,	offsetof(TkGridparam, pad.x)	},
 	{"pady",	OPTnndist,	offsetof(TkGridparam, pad.y)	},
@@ -293,7 +293,7 @@ inscols(TkGrid *grid, int x0, int n)
 }
 
 static int
-maximum(int a, int b)
+maximum_grids(int a, int b) /* XXX */
 {
 	if(a > b)
 		return a;
@@ -315,7 +315,7 @@ beamsize(TkGridbeam *cols, int x0, int x1)
 	tot = cols[x0].act;
 	fpad = cols[x0].pad;
 	for(x = x0 + 1; x < x1; x++){
-		tot += cols[x].act + maximum(cols[x].pad, fpad);
+		tot += cols[x].act + maximum_grids(cols[x].pad, fpad);
 		fpad = cols[x].pad;
 	}
 	return tot;
@@ -333,7 +333,7 @@ beamcellpos(TkGridbeam *beam, int blen, int index)
 		return 0;
 	x = beam[0].pad + beamsize(beam, 0, index);
 	if(index > 0)
-		x += maximum(beam[index-1].pad, beam[index].pad);
+		x += maximum_grids(beam[index-1].pad, beam[index].pad);
 	return x;
 }
 
@@ -715,7 +715,7 @@ gridfindloc(TkGridbeam *beam, int blen, int f)
 	fpad = 0;
 	x =  0;
 	for(i = 0; i < blen; i++){
-		x += maximum(fpad, beam[i].pad);
+		x += maximum_grids(fpad, beam[i].pad);
 		if(x <= f && f < x + beam[i].act)
 			return i;
 		x += beam[i].act;
@@ -1337,7 +1337,7 @@ tkgrid(TkTop *t, char *arg, char **val)
 		if(p == nil)
 			return TkNomem;
 		tko[0].ptr = p;
-		tko[0].optab = opts;
+		tko[0].optab = opts_grids;
 		tko[1].ptr = nil;
 
 		p->span.x = 1;
@@ -1529,14 +1529,14 @@ tkgridder(Tk *master)
 	pos.y = org.y;
 	fpady = 0;
 	for(y = 0; y < dy; y++){
-		pos.y += maximum(fpady, rows[y].pad);
+		pos.y += maximum_grids(fpady, rows[y].pad);
 		fpady = rows[y].pad;
 
 		pos.x = org.x;
 		fpadx = 0;
 		for(x = 0; x < dx; x++){
 			cell = &cells[y][x];
-			pos.x += maximum(fpadx, cols[x].pad);
+			pos.x += maximum_grids(fpadx, cols[x].pad);
 			fpadx = cols[x].pad;
 			if((slave = cell->tk) != nil && cell->span.x > 0){
 				pos.width = beamsize(cols, x, x + cell->span.x);

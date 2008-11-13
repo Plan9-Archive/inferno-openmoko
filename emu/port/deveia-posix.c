@@ -1,12 +1,12 @@
 /*
  * Driver for POSIX serial ports
  */
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 #undef _POSIX_C_SOURCE       /* for deveia-bsd.c */
 #include <sys/stat.h>
-#include	<termios.h>
+#include <termios.h>
 
 enum
 {
@@ -106,7 +106,7 @@ rdstat(int port, void *buf, long n, ulong offset)
 		oserror();
 
 	s = str;
-	s += sprint(s, "opens %d ferr %d oerr %d baud %s", 
+	s += sprint(s, "opens %d ferr %d oerr %d baud %s",
 		    eia[port].r.ref-1, eia[port].frame, eia[port].overrun,
 		    ftos(sbuf, bps, (tcflag_t)cfgetospeed(&ts)));
 	s = rdxtra(port, &ts, s);
@@ -195,7 +195,7 @@ Error:
 		case 'x':
 			if(n == 0)
 			        ts.c_iflag &= ~(IXON|IXOFF);
-			else 
+			else
 			        ts.c_iflag |= (IXON|IXOFF);
 			break;
 		case 'i':
@@ -380,9 +380,9 @@ eiaread(Chan *c, char *buf, long n, vlong offset)
 
 	switch(NETTYPE(c->qid.path)) {
 	case Ndataqid:
-	  	osenter(); 
+	  	osenter();
 		cnt = read(eia[port].fd, buf, n);
-		osleave(); 
+		osleave();
 		if(cnt == -1)
 			oserror();
 		return cnt;
@@ -409,9 +409,9 @@ eiawrite(Chan *c, const char *buf, long n, vlong offset)
 
 	switch(NETTYPE(c->qid.path)) {
 	case Ndataqid:
-	  	osenter(); 
+	  	osenter();
 		cnt = write(eia[port].fd, buf, n);
-		osleave(); 
+		osleave();
 		if(cnt == -1)
 			oserror();
 		return cnt;

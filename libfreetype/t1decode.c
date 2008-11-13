@@ -16,10 +16,10 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
-#include FT_OUTLINE_H
+
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/pshints.h>
+#include <freetype/ftoutln.h>
 
 #include "t1decode.h"
 #include "psobjs.h"
@@ -1166,5 +1166,12 @@
     t1_builder_done( &decoder->builder );
   }
 
+
+#undef start_point
+#undef check_points
+#undef add_point
+#undef add_point1
+#undef add_contour
+#undef close_contour
 
 /* END */

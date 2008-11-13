@@ -1,10 +1,10 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
 /* Layout constants */
 enum {
@@ -42,7 +42,7 @@ enum {
 };
 
 static
-TkOption opts[] =
+TkOption opts_scrol[] =
 {
 	{"activerelief",	OPTstab,	offsetof(TkScroll, activer),	{tkrelief}},
 	{"command",		OPTtext,	offsetof(TkScroll, cmd),	},
@@ -53,7 +53,7 @@ TkOption opts[] =
 };
 
 static
-TkEbind b[] =
+TkEbind b_scrol[] =
 {
 	{TkLeave,		"%W activate {}"},
 	{TkEnter,		"%W activate [%W identify %x %y]"},
@@ -88,7 +88,7 @@ tkinitscroll(Tk *tk)
 	}
 
 
-	return tkbindings(tk->env->top, tk, b, nelem(b));
+	return tkbindings(tk->env->top, tk, b_scrol, nelem(b_scrol));
 }
 
 char*
@@ -114,7 +114,7 @@ tkscrollbar(TkTop *t, char *arg, char **ret)
 	tko[0].ptr = tk;
 	tko[0].optab = tkgeneric;
 	tko[1].ptr = tks;
-	tko[1].optab = opts;
+	tko[1].optab = opts_scrol;
 	tko[2].ptr = nil;
 
 	names = nil;
@@ -151,7 +151,7 @@ tkscrollcget(Tk *tk, char *arg, char **val)
 	tko[0].ptr = tk;
 	tko[0].optab = tkgeneric;
 	tko[1].ptr = tks;
-	tko[1].optab = opts;
+	tko[1].optab = opts_scrol;
 	tko[2].ptr = nil;
 
 	return tkgencget(tko, arg, val, tk->env->top);
@@ -412,7 +412,7 @@ tkscrollconf(Tk *tk, char *arg, char **val)
 	tko[0].ptr = tk;
 	tko[0].optab = tkgeneric;
 	tko[1].ptr = tks;
-	tko[1].optab = opts;
+	tko[1].optab = opts_scrol;
 	tko[2].ptr = nil;
 
 	if(*arg == '\0')

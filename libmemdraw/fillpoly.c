@@ -119,7 +119,7 @@ _memfillpolysc(Memimage *dst, Point *vert, int nvert, int w, Memimage *src, Poin
 }
 
 static long
-mod(long x, long y)
+_mod(long x, long y)
 {
 	long z;
 
@@ -197,9 +197,9 @@ xscan(Memimage *dst, Seg **seg, Seg *segtab, int nseg, int wind, Memimage *src, 
 		s->num = s->p1.x - s->p0.x;
 		s->den = s->p1.y - s->p0.y;
 		s->dz = sdiv(s->num, s->den) << fixshift;
-		s->dzrem = mod(s->num, s->den) << fixshift;
+		s->dzrem = _mod(s->num, s->den) << fixshift;
 		s->dz += sdiv(s->dzrem, s->den);
-		s->dzrem = mod(s->dzrem, s->den);
+		s->dzrem = _mod(s->dzrem, s->den);
 		p++;
 	}
 	n = p-seg;
@@ -327,9 +327,9 @@ yscan(Memimage *dst, Seg **seg, Seg *segtab, int nseg, int wind, Memimage *src, 
 		s->num = s->p1.y - s->p0.y;
 		s->den = s->p1.x - s->p0.x;
 		s->dz = sdiv(s->num, s->den) << fixshift;
-		s->dzrem = mod(s->num, s->den) << fixshift;
+		s->dzrem = _mod(s->num, s->den) << fixshift;
 		s->dz += sdiv(s->dzrem, s->den);
-		s->dzrem = mod(s->dzrem, s->den);
+		s->dzrem = _mod(s->dzrem, s->den);
 		p++;
 	}
 	n = p-seg;

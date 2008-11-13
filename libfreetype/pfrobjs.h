@@ -22,7 +22,9 @@
 #include "pfrtypes.h"
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
   typedef struct PFR_FaceRec_*  PFR_Face;
 
@@ -88,7 +90,9 @@ FT_BEGIN_HEADER
                  FT_Int32  load_flags );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __PFROBJS_H__ */
 

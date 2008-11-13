@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "raise.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <raise.h>
 
 #define	P4(o)	((o) < (1 << 4))
 #define	N4(o)	(~(o) < (1 << 4))
@@ -816,7 +816,7 @@ punt(Inst *i, int m, void (*fn)(void))
 	if(m & TCHECK) {
 		mem(Oldw, O(REG, t), RREG, RA0);
 		combt(RA0, Cequal, RZ, 3);
-		nop();				
+		nop();
 		mem(Oldw, O(REG, xpc), RREG, RLINK);
 		leafret();
 	}
@@ -919,8 +919,8 @@ comcase(Inst *i, int w)
 
 	t = (WORD*)(mod->origmp+i->d.ind+4);
 	l = t[-1];
-	
-	/* have to take care not to relocate the same table twice - 
+
+	/* have to take care not to relocate the same table twice -
 	 * the limbo compiler can duplicate a case instruction
 	 * during its folding phase
 	 */
@@ -975,7 +975,7 @@ commframe(Inst *i)
 	mlnil = code;
 	comibt(RA0, Cequal, -1, 0);
 	nop();
-	
+
 	o = OA(Modlink, links)+i->reg*sizeof(Modl)+O(Modl, frame);
 	mem(Oldw, o, RA0, RA3);
 	mem(Oldw, O(Type, initialize), RA3, RA1);
@@ -1176,7 +1176,7 @@ comp(Inst *i)
 				con(i->reg>>2, RA3, 1);
 				movloop(i, Oldw, Ostw);
 				break;
-			} 
+			}
 		}
 		mid(i, Oldw, RA3);
 		movloop(i, Oldb, Ostb);
@@ -1275,7 +1275,7 @@ comp(Inst *i)
 		mid(i, Oldw, RA1);
 		combdis(RA0, r, RA1, f, i->d.ins-mod->prog);
 		nop();
-		break;		
+		break;
 	case IBNEW:
 		r = Cequal;
 		f = 1;
@@ -1304,7 +1304,7 @@ comp(Inst *i)
 		mid(i, Oldb, RA1);
 		combdis(RA0, r, RA1, f, i->d.ins-mod->prog);
 		nop();
-		break;		
+		break;
 	case IBNEB:
 		r = Cequal;
 		f = 1;
@@ -1333,7 +1333,7 @@ comp(Inst *i)
 		FCMP(FR1, r, FR0);
 		bra(displ(i->d.ins-mod->prog));
 		nop();
-		break;		
+		break;
 	case IBNEF:
 		r = Fequal;
 		goto braf;
@@ -1689,7 +1689,7 @@ macret(void)
 
 	opatch(cp6);
 	callindir(RA0);				// call destroy(t(fp))
-	
+
 	mem(Ostw, O(REG, SP), RREG, RFP);
 	mem(Oldw, O(Frame, lr), RFP, RA1);
 	mem(Oldw, O(Frame, fp), RFP, RFP);

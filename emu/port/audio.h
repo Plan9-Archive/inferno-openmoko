@@ -46,13 +46,6 @@ struct Audio_t {
 void audio_info_init(Audio_t*);
 int audioparse(const char*, int n, Audio_t*);
 
-enum
-{
-	Qdir = 0,		/* must start at 0 representing a directory */
-	Qaudio,
-	Qaudioctl
-};
-
 /* required external platform specific functions */
 void	audio_file_init(void);
 void	audio_file_open(Chan*, int);

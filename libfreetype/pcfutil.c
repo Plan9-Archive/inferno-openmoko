@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 
-#include <ft2build.h>
+
 #include "pcfutil.h"
 
 

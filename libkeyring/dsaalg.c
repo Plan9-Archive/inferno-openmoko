@@ -1,15 +1,15 @@
-#include "lib9.h"
-#include "kernel.h"
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "mp.h"
-#include "libsec.h"
-#include "keys.h"
+#include <lib9.h>
+#include <kernel.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <mp.h>
+#include <libsec.h>
+#include <keys.h>
 
-static char*	pkattr[] = { "p", "q", "alpha", "key", nil };
-static char*	skattr[] = { "p", "q", "alpha", "key", "!secret", nil };
-static char*	sigattr[] = { "r", "s", nil };
+static char*	dsa_pkattr[] = { "p", "q", "alpha", "key", nil };
+static char*	dsa_skattr[] = { "p", "q", "alpha", "key", "!secret", nil };
+static char*	dsa_sigattr[] = { "r", "s", nil };
 
 static void*
 dsa_str2sk(const char *str, const char **strp)
@@ -176,9 +176,9 @@ dsainit(void)
 
 	vec->name = "dsa";
 
-	vec->pkattr = pkattr;
-	vec->skattr = skattr;
-	vec->sigattr = sigattr;
+	vec->pkattr = dsa_pkattr;
+	vec->skattr = dsa_skattr;
+	vec->sigattr = dsa_sigattr;
 
 	vec->str2sk = dsa_str2sk;
 	vec->str2pk = dsa_str2pk;

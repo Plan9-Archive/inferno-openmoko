@@ -1,5 +1,5 @@
-#include	"dat.h"
-#include	<dynld.h>
+#include <dat.h>
+#include <dynld.h>
 
 /* dummy export table */
 

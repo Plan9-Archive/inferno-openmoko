@@ -1,6 +1,6 @@
-#include "lib9.h"
-#include "draw.h"
-#include "kernel.h"
+#include <lib9.h>
+#include <draw.h>
+#include <kernel.h>
 
 Image*
 allocimage(Display *d, Rectangle r, ulong chan, int repl, ulong val)

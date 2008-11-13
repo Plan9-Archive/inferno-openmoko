@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 Point
 Pt(int x, int y)
@@ -200,4 +200,3 @@ Pfmt(Fmt *f)
 	p = va_arg(f->args, Point);
 	return fmtprint(f, "[%d %d]", p.x, p.y);
 }
-

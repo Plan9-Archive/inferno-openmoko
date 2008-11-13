@@ -37,62 +37,62 @@ struct MD4Table
 static MD4Table tab[] =
 {
 	/* round 1 */
-/*[0]*/	{ 0,	S11},	
-	{ 1,	S12},	
-	{ 2,	S13},	
-	{ 3,	S14},	
-	{ 4,	S11},	
-	{ 5,	S12},	
-	{ 6,	S13},	
-	{ 7,	S14},	
-	{ 8,	S11},	
-	{ 9,	S12},	
-	{ 10,	S13},	
-	{ 11,	S14},	
-	{ 12,	S11},	
-	{ 13,	S12},	
-	{ 14,	S13},	
+/*[0]*/	{ 0,	S11},
+	{ 1,	S12},
+	{ 2,	S13},
+	{ 3,	S14},
+	{ 4,	S11},
+	{ 5,	S12},
+	{ 6,	S13},
+	{ 7,	S14},
+	{ 8,	S11},
+	{ 9,	S12},
+	{ 10,	S13},
+	{ 11,	S14},
+	{ 12,	S11},
+	{ 13,	S12},
+	{ 14,	S13},
 	{ 15,	S14},
 
 	/* round 2 */
-/*[16]*/{ 0,	S21},	
-	{ 4,	S22},	
-	{ 8,	S23},	
-	{ 12,	S24},	
-	{ 1,	S21},	
-	{ 5,	S22},	
-	{ 9,	S23},	
-	{ 13,	S24},	
-	{ 2,	S21},	
-	{ 6,	S22},	
-	{ 10,	S23},	
-	{ 14,	S24},	
-	{ 3,	S21},	
-	{ 7,	S22},	
-	{ 11,	S23},	
+/*[16]*/{ 0,	S21},
+	{ 4,	S22},
+	{ 8,	S23},
+	{ 12,	S24},
+	{ 1,	S21},
+	{ 5,	S22},
+	{ 9,	S23},
+	{ 13,	S24},
+	{ 2,	S21},
+	{ 6,	S22},
+	{ 10,	S23},
+	{ 14,	S24},
+	{ 3,	S21},
+	{ 7,	S22},
+	{ 11,	S23},
 	{ 15,	S24},
 
 	/* round 3 */
-/*[32]*/{ 0,	S31},	
-	{ 8,	S32},	
-	{ 4,	S33},	
-	{ 12,	S34},	
-	{ 2,	S31},	
-	{ 10,	S32},	
-	{ 6,	S33},	
-	{ 14,	S34},	
-	{ 1,	S31},	
-	{ 9,	S32},	
-	{ 5,	S33},	
-	{ 13,	S34},	
-	{ 3,	S31},	
-	{ 11,	S32},	
-	{ 7,	S33},	
-	{ 15,	S34},	
+/*[32]*/{ 0,	S31},
+	{ 8,	S32},
+	{ 4,	S33},
+	{ 12,	S34},
+	{ 2,	S31},
+	{ 10,	S32},
+	{ 6,	S33},
+	{ 14,	S34},
+	{ 1,	S31},
+	{ 9,	S32},
+	{ 5,	S33},
+	{ 13,	S34},
+	{ 3,	S31},
+	{ 11,	S32},
+	{ 7,	S33},
+	{ 15,	S34},
 };
 
-static void encode(uchar*, u32int*, ulong);
-static void decode(u32int*, uchar*, ulong);
+static void encode4(uchar*, u32int*, ulong);
+static void decode4(u32int*, uchar*, ulong);
 
 static void
 md4block(uchar *p, ulong len, MD4state *s)
@@ -109,8 +109,8 @@ md4block(uchar *p, ulong len, MD4state *s)
 		c = s->state[2];
 		d = s->state[3];
 
-		decode(x, p, 64);
-	
+		decode4(x, p, 64);
+
 		for(i = 0; i < 48; i++){
 			t = tab + i;
 			switch(i>>4){
@@ -126,7 +126,7 @@ md4block(uchar *p, ulong len, MD4state *s)
 			}
 			a += x[t->x];
 			a = (a << t->rot) | (a >> (32 - t->rot));
-	
+
 			/* rotate variables */
 			tmp = d;
 			d = c;
@@ -225,13 +225,13 @@ md4(uchar *p, ulong len, uchar *digest, MD4state *s)
 	/* append the count */
 	x[0] = s->len<<3;
 	x[1] = s->len>>29;
-	encode(p+len, x, 8);
+	encode4(p+len, x, 8);
 
 	/* digest the last part */
 	md4block(p, len+8, s);
 
 	/* return result and free state */
-	encode(digest, s->state, MD4dlen);
+	encode4(digest, s->state, MD4dlen);
 	if(s->malloced == 1)
 		free(s);
 	return nil;
@@ -242,7 +242,7 @@ md4(uchar *p, ulong len, uchar *digest, MD4state *s)
  *	a multiple of 4.
  */
 static void
-encode(uchar *output, u32int *input, ulong len)
+encode4(uchar *output, u32int *input, ulong len)
 {
 	u32int x;
 	uchar *e;
@@ -261,7 +261,7 @@ encode(uchar *output, u32int *input, ulong len)
  *	a multiple of 4.
  */
 static void
-decode(u32int *output, uchar *input, ulong len)
+decode4(u32int *output, uchar *input, ulong len)
 {
 	uchar *e;
 

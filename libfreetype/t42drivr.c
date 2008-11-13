@@ -39,7 +39,7 @@
 #include "t42drivr.h"
 #include "t42objs.h"
 #include "t42error.h"
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
 
 #undef  FT_COMPONENT

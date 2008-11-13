@@ -16,13 +16,13 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
-#include FT_CACHE_MANAGER_H
-#include FT_CACHE_INTERNAL_LRU_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_SIZES_H
+
+#include <freetype/ftcache.h>
+#include <freetype/cache/ftcmanag.h>
+#include <freetype/cache/ftlru.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftsizes.h>
 
 #include "ftcerror.h"
 
@@ -576,7 +576,7 @@
   FTC_Manager_Check( FTC_Manager  manager )
   {
     FTC_Node  node, first;
-    
+
 
     first = manager->nodes_list;
 
@@ -584,7 +584,7 @@
     if ( first )
     {
       FT_ULong  weight = 0;
-      
+
 
       node = first;
 

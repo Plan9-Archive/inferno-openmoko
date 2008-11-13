@@ -2,21 +2,21 @@
  * host's snarf buffer
  */
 
-#include "dat.h"
-#include "fns.h"
-#include "../port/error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
 enum{
-	Qdir,
-	Qsnarf,
+	Qsnarf_dir,
+	Qsnarf_snarf,
 
 	Maxsnarf=	100*1024
 };
 
 static
 Dirtab snarftab[]={
-	".",		{Qdir, 0, QTDIR},	0,	0555,
-	"snarf",	{Qsnarf},			0,	0666,
+	".",		{Qsnarf_dir, 0, QTDIR},	0,	0555,
+	"snarf",	{Qsnarf_snarf},		0,	0666,
 };
 
 static QLock snarflock;	/* easiest to synchronise all access */
@@ -43,7 +43,7 @@ static Chan*
 snarfopen(Chan* c, int omode)
 {
 	c = devopen(c, omode, snarftab, nelem(snarftab), devgen);
-	if(c->qid.path == Qsnarf){
+	if(c->qid.path == Qsnarf_snarf){
 		if(c->mode == ORDWR || c->mode == OWRITE){
 			qlock(&snarflock);
 			free(c->aux.pchar);
@@ -59,7 +59,7 @@ snarfclose(Chan* c)
 {
 	if((c->flag & COPEN) == 0)
 		return;
-	if(c->qid.path == Qsnarf){
+	if(c->qid.path == Qsnarf_snarf){
 		/* this must be the last reference: no need to lock */
 		if(c->mode == ORDWR || c->mode == OWRITE){
 			if(!waserror()){
@@ -77,9 +77,9 @@ snarfread(Chan* c, char* a, long n, vlong offset)
 	void *p;
 
 	switch((ulong)c->qid.path){
-	case Qdir:
+	case Qsnarf_dir:
 		return devdirread(c, a, n, snarftab, nelem(snarftab), devgen);
-	case Qsnarf:
+	case Qsnarf_snarf:
 		qlock(&snarflock);
 		if(waserror()){
 			qunlock(&snarflock);
@@ -112,7 +112,7 @@ snarfwrite(Chan* c, const char* va, long n, vlong offset)
 	char *p;
 
 	switch((ulong)c->qid.path){
-	case Qsnarf:
+	case Qsnarf_snarf:
 		/* append only */
 		USED(offset);	/* not */
 		qlock(&snarflock);

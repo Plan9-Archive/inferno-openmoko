@@ -1,12 +1,12 @@
 #include <windows.h>
-#include <winbase.h>
 #include <winsock.h>
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
+
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
 extern int	nth2fd(HANDLE);
-extern wchar_t	*widen(char*);
+extern wchar_t	*widen(const char*);
 
 /*
  * thanks to rcsh for these.

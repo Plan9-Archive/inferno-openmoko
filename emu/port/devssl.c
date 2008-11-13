@@ -1,12 +1,11 @@
 /*
  *  devssl - secure sockets layer
  */
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-
-#include	"mp.h"
-#include	"libsec.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <mp.h>
+#include <libsec.h>
 
 typedef struct OneWay OneWay;
 struct OneWay
@@ -86,20 +85,20 @@ int	maxdstate = 20;
 Dstate** dstate;
 
 enum{
-	Qtopdir		= 1,	/* top level directory */
-	Qclonus,
-	Qconvdir,			/* directory for a conversation */
-	Qdata,
-	Qctl,
-	Qsecretin,
-	Qsecretout,
-	Qencalgs,
-	Qhashalgs
+	Qssl_topdir		= 1,	/* top level directory */
+	Qssl_clonus,
+	Qssl_convdir,			/* directory for a conversation */
+	Qssl_data,
+	Qssl_ctl,
+	Qssl_secretin,
+	Qssl_secretout,
+	Qssl_encalgs,
+	Qssl_hashalgs
 };
 
-#define TYPE(x) 	((ulong)(x).path & 0xf)
-#define CONV(x) 	(((ulong)(x).path >> 4)&(Maxdstate-1))
-#define QID(c, y) 	(((c)<<4) | (y))
+#define DEVSSLTYPE(x) 	((ulong)(x).path & 0xf)
+#define DEVSSLCONV(x) 	(((ulong)(x).path >> 4)&(Maxdstate-1))
+#define DEVSSLQID(c, y) 	(((c)<<4) | (y))
 
 static char*	encalgs = 0;
 static char*	hashalgs = 0;
@@ -132,15 +131,15 @@ sslgen(Chan *c, const char *dname, Dirtab *d, int nd, int s, Dir *dp)
 	q.type = QTFILE;
 	q.vers = 0;
 	if(s == DEVDOTDOT){
-		q.path = QID(0, Qtopdir);
+		q.path = DEVSSLQID(0, Qssl_topdir);
 		q.type = QTDIR;
 		devdir(c, q, "#D", 0, eve, 0555, dp);
 		return 1;
 	}
-	switch(TYPE(c->qid)) {
-	case Qtopdir:
+	switch(DEVSSLTYPE(c->qid)) {
+	case Qssl_topdir:
 		if(s < dshiwat) {
-			q.path = QID(s, Qconvdir);
+			q.path = DEVSSLQID(s, Qssl_convdir);
 			q.type = QTDIR;
 			ds = dstate[s];
 			if(ds != 0)
@@ -154,12 +153,12 @@ sslgen(Chan *c, const char *dname, Dirtab *d, int nd, int s, Dir *dp)
 		if(s > dshiwat)
 			return -1;
 		/* fall through */
-	case Qclonus:
-		q.path = QID(0, Qclonus);
+	case Qssl_clonus:
+		q.path = DEVSSLQID(0, Qssl_clonus);
 		devdir(c, q, "clone", 0, eve, 0666, dp);
 		return 1;
-	case Qconvdir:
-		ds = dstate[CONV(c->qid)];
+	case Qssl_convdir:
+		ds = dstate[DEVSSLCONV(c->qid)];
 		if(ds != 0)
 			nm = ds->user;
 		else
@@ -168,27 +167,27 @@ sslgen(Chan *c, const char *dname, Dirtab *d, int nd, int s, Dir *dp)
 		default:
 			return -1;
 		case 0:
-			q.path = QID(CONV(c->qid), Qctl);
+			q.path = DEVSSLQID(DEVSSLCONV(c->qid), Qssl_ctl);
 			p = "ctl";
 			break;
 		case 1:
-			q.path = QID(CONV(c->qid), Qdata);
+			q.path = DEVSSLQID(DEVSSLCONV(c->qid), Qssl_data);
 			p = "data";
 			break;
 		case 2:
-			q.path = QID(CONV(c->qid), Qsecretin);
+			q.path = DEVSSLQID(DEVSSLCONV(c->qid), Qssl_secretin);
 			p = "secretin";
 			break;
 		case 3:
-			q.path = QID(CONV(c->qid), Qsecretout);
+			q.path = DEVSSLQID(DEVSSLCONV(c->qid), Qssl_secretout);
 			p = "secretout";
 			break;
 		case 4:
-			q.path = QID(CONV(c->qid), Qencalgs);
+			q.path = DEVSSLQID(DEVSSLCONV(c->qid), Qssl_encalgs);
 			p = "encalgs";
 			break;
 		case 5:
-			q.path = QID(CONV(c->qid), Qhashalgs);
+			q.path = DEVSSLQID(DEVSSLCONV(c->qid), Qssl_hashalgs);
 			p = "hashalgs";
 			break;
 		}
@@ -212,7 +211,7 @@ sslattach(const char *spec)
 	Chan *c;
 
 	c = devattach('D', spec);
-	c->qid.path = QID(0, Qtopdir);
+	c->qid.path = DEVSSLQID(0, Qssl_topdir);
 	c->qid.vers = 0;
 	c->qid.type = QTDIR;
 	return c;
@@ -250,27 +249,27 @@ sslopen(Chan *c, int omode)
 		break;
 	}
 
-	switch(TYPE(c->qid)) {
+	switch(DEVSSLTYPE(c->qid)) {
 	default:
 		panic("sslopen");
-	case Qtopdir:
-	case Qconvdir:
+	case Qssl_topdir:
+	case Qssl_convdir:
 		if(omode != OREAD)
 			error(Eperm);
 		break;
-	case Qclonus:
+	case Qssl_clonus:
 		dsclone(c);
 		break;
-	case Qctl:
-	case Qdata:
-	case Qsecretin:
-	case Qsecretout:
+	case Qssl_ctl:
+	case Qssl_data:
+	case Qssl_secretin:
+	case Qssl_secretout:
 		if(waserror()) {
 			unlock(&dslock);
 			nexterror();
 		}
 		lock(&dslock);
-		pp = &dstate[CONV(c->qid)];
+		pp = &dstate[DEVSSLCONV(c->qid)];
 		s = *pp;
 		if(s == 0)
 			dsnew(c, pp);
@@ -285,8 +284,8 @@ sslopen(Chan *c, int omode)
 		unlock(&dslock);
 		poperror();
 		break;
-	case Qencalgs:
-	case Qhashalgs:
+	case Qssl_encalgs:
+	case Qssl_hashalgs:
 		if(omode != OREAD)
 			error(Eperm);
 		break;
@@ -304,7 +303,7 @@ sslwstat(Chan *c, char *db, int n)
 	Dstate *s;
 	int m;
 
-	s = dstate[CONV(c->qid)];
+	s = dstate[DEVSSLCONV(c->qid)];
 	if(s == 0)
 		error(Ebadusefd);
 	if(strcmp(s->user, up->env->user) != 0)
@@ -331,15 +330,15 @@ sslclose(Chan *c)
 {
 	Dstate *s;
 
-	switch(TYPE(c->qid)) {
-	case Qctl:
-	case Qdata:
-	case Qsecretin:
-	case Qsecretout:
+	switch(DEVSSLTYPE(c->qid)) {
+	case Qssl_ctl:
+	case Qssl_data:
+	case Qssl_secretin:
+	case Qssl_secretout:
 		if((c->flag & COPEN) == 0)
 			break;
 
-		s = dstate[CONV(c->qid)];
+		s = dstate[DEVSSLCONV(c->qid)];
 		if(s == 0)
 			break;
 
@@ -348,7 +347,7 @@ sslclose(Chan *c)
 			unlock(&dslock);
 			break;
 		}
-		dstate[CONV(c->qid)] = 0;
+		dstate[DEVSSLCONV(c->qid)] = 0;
 		unlock(&dslock);
 
 		sslhangup(s);
@@ -481,7 +480,7 @@ sslbread(Chan *c, long n, ulong offset)
 	int len, pad;
 
 	USED(offset);
-	s.s = dstate[CONV(c->qid)];
+	s.s = dstate[DEVSSLCONV(c->qid)];
 	if(s.s == 0)
 		panic("sslbread");
 	if(s.s->state == Sincomplete)
@@ -585,18 +584,18 @@ sslread(Chan *c, char *a, long n, vlong offset)
 	if(c->qid.type & QTDIR)
 		return devdirread(c, a, n, 0, 0, sslgen);
 
-	switch(TYPE(c->qid)) {
+	switch(DEVSSLTYPE(c->qid)) {
 	default:
 		error(Ebadusefd);
-	case Qctl:
-		sprint(buf, "%ld", CONV(c->qid));
+	case Qssl_ctl:
+		sprint(buf, "%ld", DEVSSLCONV(c->qid));
 		return readstr(offset, a, n, buf);
-	case Qdata:
+	case Qssl_data:
 		b.b = sslbread(c, n, offset);
 		break;
-	case Qencalgs:
+	case Qssl_encalgs:
 		return readstr(offset, a, n, encalgs);
-	case Qhashalgs:
+	case Qssl_hashalgs:
 		return readstr(offset, a, n, hashalgs);
 	}
 
@@ -636,7 +635,7 @@ sslbwrite(Chan *c, Block *b, ulong offset)
 	char *p;
 
 	bb.b = b;
-	s.s = dstate[CONV(c->qid)];
+	s.s = dstate[DEVSSLCONV(c->qid)];
 	if(s.s == 0)
 		panic("sslbwrite");
 	if(s.s->state == Sincomplete){
@@ -980,12 +979,12 @@ sslwrite(Chan *c, const char *a, long n, vlong offset)
 	const char *e, *p;
 	uchar *x;
 
-	s.s = dstate[CONV(c->qid)];
+	s.s = dstate[DEVSSLCONV(c->qid)];
 	if(s.s == 0)
 		panic("sslwrite");
 
-	t = TYPE(c->qid);
-	if(t == Qdata){
+	t = DEVSSLTYPE(c->qid);
+	if(t == Qssl_data){
 		if(s.s->state == Sincomplete)
 			error(Ebadusefd);
 
@@ -1019,13 +1018,13 @@ sslwrite(Chan *c, const char *a, long n, vlong offset)
 	switch(t){
 	default:
 		panic("sslwrite");
-	case Qsecretin:
+	case Qssl_secretin:
 		setsecret(&s.s->in, (const uchar*)a, n);
 		goto out;
-	case Qsecretout:
+	case Qssl_secretout:
 		setsecret(&s.s->out, (const uchar*)a, n);
 		goto out;
-	case Qctl:
+	case Qssl_ctl:
 		break;
 	}
 
@@ -1420,10 +1419,10 @@ dsnew(Chan *ch, Dstate **pp)
 	s->ref = 1;
 	kstrdup(&s->user, up->env->user);
 	s->perm = 0660;
-	t = TYPE(ch->qid);
-	if(t == Qclonus)
-		t = Qctl;
-	ch->qid.path = QID(pp - dstate, t);
+	t = DEVSSLTYPE(ch->qid);
+	if(t == Qssl_clonus)
+		t = Qssl_ctl;
+	ch->qid.path = DEVSSLQID(pp - dstate, t);
 	ch->qid.vers = 0;
 	ch->qid.type = QTFILE;
 }

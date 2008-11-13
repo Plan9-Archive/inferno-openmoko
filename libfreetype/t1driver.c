@@ -16,7 +16,7 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
+
 #include "t1driver.h"
 #include "t1gload.h"
 #include "t1load.h"
@@ -27,9 +27,9 @@
 #include "t1afm.h"
 #endif
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_POSTSCRIPT_NAMES_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/psnames.h>
 
 
   /*************************************************************************/
@@ -205,7 +205,7 @@
   /*    They can be implemented by format-specific interfaces.             */
   /*                                                                       */
   static FT_Error
-  Get_Kerning( T1_Face     face,
+  T1__Get_Kerning( T1_Face     face,
                FT_UInt     left_glyph,
                FT_UInt     right_glyph,
                FT_Vector*  kerning )
@@ -269,7 +269,7 @@
     (FT_Face_GetKerningFunc)  0,
     (FT_Face_AttachFunc)      0,
 #else
-    (FT_Face_GetKerningFunc)  Get_Kerning,
+    (FT_Face_GetKerningFunc)  T1__Get_Kerning,
     (FT_Face_AttachFunc)      T1_Read_AFM,
 #endif
     (FT_Face_GetAdvancesFunc) 0

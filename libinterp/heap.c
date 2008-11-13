@@ -1,11 +1,11 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "pool.h"
-#include "raise.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <raise.h>
+#include <pool.h>
 
 void	freearray(Heap*, int);
-void	freelist(Heap*, int);
+void	free_list(Heap*, int);
 void	freemodlink(Heap*, int);
 void	freechan(Heap*, int);
 /**
@@ -13,7 +13,7 @@ void	freechan(Heap*, int);
  */
 Type	Tarray = { 1, "array", freearray, (TypeMark)markarray, sizeof(Array) };
 Type	Tstring = { 1, "string", freestring, noptrs, sizeof(String) };
-Type	Tlist = { 1, "list", freelist, (TypeMark)marklist, sizeof(List) };
+Type	Tlist = { 1, "list", free_list, (TypeMark)marklist, sizeof(List) };
 Type	Tmodlink = { 1, "modlink", freemodlink, markheap, -1, 1, 0, 0, { 0x80 } };
 Type	Tchannel = { 1, "channel", freechan, markheap, sizeof(Channel), 1,0,0,{0x80} };
 Type	Tptr = { 1, "ptr", 0, markheap, sizeof(DISINT*), 1, 0, 0, { 0x80 } };
@@ -135,7 +135,7 @@ freearray(Heap *h, int swept)
 }
 
 void
-freelist(Heap *h, int swept)
+free_list(Heap *h, int swept)
 {
 	Heap *th;
 	List *l = H2D(List*, h);

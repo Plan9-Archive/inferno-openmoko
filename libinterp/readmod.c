@@ -1,8 +1,8 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "kernel.h"
-#include "dynld.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <kernel.h>
+#include <dynld.h>
 
 Module*
 readmod(const char *path, Module *m /*=lookmod(path)*/, int sync)

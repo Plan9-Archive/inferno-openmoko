@@ -1,7 +1,7 @@
-#include "dat.h"
-#include "fns.h"
-#include "isa.h"
-#include "interp.h"
+#include <dat.h>
+#include <fns.h>
+#include <isa.h>
+#include <interp.h>
 
 #define	QP(l)	(Prog**)((char*)(l)+sizeof(QLock))
 
@@ -72,7 +72,7 @@ libseek(int fd, vlong off, int whence)
 }
 
 int
-libread(int fd, void *buf, int n)
+libread(int fd, char *buf, int n)
 {
 	release();
 	n = kread(fd, buf, n);

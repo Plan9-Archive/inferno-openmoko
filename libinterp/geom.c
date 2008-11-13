@@ -1,9 +1,9 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "draw.h"
-#include "runt.h"
-#include "raise.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <draw.h>
+#include <runt.h>
+#include <raise.h>
 
 DISAPI(Point_add)
 {

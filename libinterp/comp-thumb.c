@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "raise.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <raise.h>
 
 #define	RESCHED 1	/* check for interpreter reschedule */
 
@@ -124,7 +124,7 @@ OP(int o, int o1, int o2, char *s)
 }
 
 static void
-IMM(int i, int i1, int i2, char *s)	
+IMM(int i, int i1, int i2, char *s)
 {
 	if(i < i1 || i > i2) print("error: bad imm %d in %s\n", i, s);
 }
@@ -134,7 +134,7 @@ MULT(int o, int m, char *s)
 {
 	if((o/m)*m != o) print("error: %d not multiple of %d in %s\n", o, m, s);
 }
-	
+
 static void
 LOWREG(int r, char *s)
 {
@@ -315,8 +315,8 @@ CKBL(int o)
 #define RELPC(pc)		(ulong)(base+(pc))
 
 #define RINV(c)		((c)&1 ? (c)-1 : (c)+1)
-#define FPX(fp)			(((ulong)(fp))&~1)	
-#define NOBR			4	
+#define FPX(fp)			(((ulong)(fp))&~1)
+#define NOBR			4
 
 #define BRAU(o)		((28<<11) | (((o)>>1)&0x7ff))
 #define BRAC(c, o)		((13<<12) | ((c)<<8) | (((o)>>1)&0xff))
@@ -332,7 +332,7 @@ CKBL(int o)
 #define RETURN		MOVHH(RLINK, RPC)
 #define CALL(o)		call((ulong)(FPX(o))-(ulong)CODE)
 #define CALLMAC(o)	call(IA(macro, o)-(ulong)CODE)
-		
+
 #define PATCH(ptr)		(CKB((ulong)code-(ulong)ptr-4), *ptr |= (((ulong)code-(ulong)(ptr)-4)>>1) & 0x7ff)
 #define CPATCH(ptr)	(CKBCC((ulong)code-(ulong)ptr-4), *ptr |= (((ulong)code-(ulong)(ptr)-4)>>1) & 0xff)
 #define BPATCH(ptr)		((ulong)ptr-(ulong)code)
@@ -412,7 +412,7 @@ typedef struct Con Con;
 struct Con
 {
 	int	ptr;
-	Const	table[NCON];	
+	Const	table[NCON];
 };
 static Con rcon;
 
@@ -548,7 +548,7 @@ genc(ulong o)
 	*code++ = BRAL1(o>>12);
 	*code++ = BRAL2(o>>1);
 }
-	
+
 static void
 flushcon(int genbr)
 {
@@ -1017,7 +1017,7 @@ cbraf(Inst *i, int r)
 	if(RESCHED)
 		schedcheck(i);
 	punt(i, SRCOP|THREOP|DBRAN|NEWPC|WRTPC, optab[i->op]);
-}	
+}
 
 static void
 comcase(Inst *i, int w)
@@ -1033,8 +1033,8 @@ comcase(Inst *i, int w)
 
 	t = (WORD*)(mod->origmp+i->d.ind+4);
 	l = t[-1];
-	
-	/* have to take care not to relocate the same table twice - 
+
+	/* have to take care not to relocate the same table twice -
 	 * the limbo compiler can duplicate a case instruction
 	 * during its folding phase
 	 */
@@ -1546,7 +1546,7 @@ comp(Inst *i)
 		break;
 	case IBEQW:
 		cbra(i, EQ);
-		break;		
+		break;
 	case IBNEW:
 		cbra(i, NE);
 		break;

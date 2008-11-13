@@ -16,10 +16,10 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
+
+#include <freetype/freetype.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>
 #include "pshrec.h"
 #include "pshalgo.h"
 
@@ -1008,7 +1008,7 @@
         FT_ERROR(( "ps_hints_t2mask: "
                    "called with invalid bitcount %d (instead of %d)\n",
                    bit_count, count1 + count2 ));
-        
+
         /* simply ignore the operator */
         return;
       }
@@ -1053,7 +1053,7 @@
         FT_ERROR(( "ps_hints_t2counter: "
                    "called with invalid bitcount %d (instead of %d)\n",
                    bit_count, count1 + count2 ));
-                   
+
         /* simply ignore the operator */
         return;
       }

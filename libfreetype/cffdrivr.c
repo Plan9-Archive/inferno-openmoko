@@ -16,13 +16,13 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_TRUETYPE_IDS_H
-#include FT_INTERNAL_POSTSCRIPT_NAMES_H
+
+#include <freetype/freetype.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/ttnameid.h>
+#include <freetype/internal/psnames.h>
 
 #include "cffdrivr.h"
 #include "cffgload.h"
@@ -92,7 +92,7 @@
   /*    They can be implemented by format-specific interfaces.             */
   /*                                                                       */
   static FT_Error
-  Get_Kerning( TT_Face     face,
+  CFF_Get_Kerning( TT_Face     face,
                FT_UInt     left_glyph,
                FT_UInt     right_glyph,
                FT_Vector*  kerning )
@@ -174,7 +174,7 @@
   /*    FreeType error code.  0 means success.                             */
   /*                                                                       */
   static FT_Error
-  Load_Glyph( CFF_GlyphSlot  slot,
+  CFF_Load_Glyph( CFF_GlyphSlot  slot,
               CFF_Size       size,
               FT_UShort      glyph_index,
               FT_Int32       load_flags )
@@ -409,9 +409,9 @@
     (FT_Size_ResetPointsFunc)cff_size_reset,
     (FT_Size_ResetPixelsFunc)cff_size_reset,
 
-    (FT_Slot_LoadFunc)       Load_Glyph,
+    (FT_Slot_LoadFunc)       CFF_Load_Glyph,
 
-    (FT_Face_GetKerningFunc) Get_Kerning,
+    (FT_Face_GetKerningFunc) CFF_Get_Kerning,
     (FT_Face_AttachFunc)     0,
     (FT_Face_GetAdvancesFunc)0,
   };

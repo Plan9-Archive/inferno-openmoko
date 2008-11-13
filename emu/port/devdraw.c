@@ -1,23 +1,23 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
-#include	<draw.h>
-#include	<memdraw.h>
-#include	<memlayer.h>
-#include	<cursor.h>
+#include <draw.h>
+#include <memdraw.h>
+#include <memlayer.h>
+#include <cursor.h>
 //#include	"screen.h"
 
 enum
 {
-	Qtopdir		= 0,
-	Qnew,
-	Q3rd,
-	Q2nd,
-	Qcolormap,
-	Qctl,
-	Qdata,
-	Qrefresh
+	Qdraw_topdir		= 0,
+	Qdraw_new,
+	Qdraw_3rd,
+	Qdraw_2nd,
+	Qdraw_colormap,
+	Qdraw_ctl,
+	Qdraw_data,
+	Qdraw_refresh
 };
 
 /*
@@ -27,7 +27,7 @@ enum
  */
 #define	QSHIFT	4	/* location in qid of client # */
 
-#define	QID(q)		((((ulong)(q).path)&0x0000000F)>>0)
+#define	DEVDRAWQID(q)		((((ulong)(q).path)&0x0000000F)>>0)
 #define	CLIENTPATH(q)	((((ulong)q)&0x7FFFFFF0)>>QSHIFT)
 #define	CLIENT(q)	CLIENTPATH((q).path)
 
@@ -37,8 +37,8 @@ enum
 
 typedef struct Client Client;
 typedef struct Draw Draw;
-typedef struct DImage DImage;
-typedef struct DScreen DScreen;
+typedef struct DDImage DDImage;
+typedef struct DDScreen DDScreen;
 typedef struct CScreen CScreen;
 typedef struct FChar FChar;
 typedef struct Refresh Refresh;
@@ -64,7 +64,7 @@ struct Draw
 struct Client
 {
 	Ref		r;
-	DImage*		dimage[NHASH];
+	DDImage*		dimage[NHASH];
 	CScreen*	cscreen;
 	Refresh*	refresh;
 	Rendez		refrend;
@@ -80,7 +80,7 @@ struct Client
 
 struct Refresh
 {
-	DImage*		dimage;
+	DDImage*		dimage;
 	Rectangle	r;
 	Refresh*	next;
 };
@@ -88,14 +88,14 @@ struct Refresh
 struct Refx
 {
 	Client*		client;
-	DImage*		dimage;
+	DDImage*		dimage;
 };
 
 struct DName
 {
 	char			*name;
 	Client	*client;
-	DImage*		dimage;
+	DDImage*		dimage;
 	int			vers;
 };
 
@@ -115,7 +115,7 @@ struct FChar
  *	one per screen image or fill
  * 	one per image derived from this one by name
  */
-struct DImage
+struct DDImage
 {
 	int		id;
 	int		ref;
@@ -125,27 +125,27 @@ struct DImage
 	int		ascent;
 	int		nfchar;
 	FChar*		fchar;
-	DScreen*	dscreen;	/* 0 if not a window */
-	DImage*	fromname;	/* image this one is derived from, by name */
-	DImage*		next;
+	DDScreen*	dscreen;	/* 0 if not a window */
+	DDImage*	fromname;	/* image this one is derived from, by name */
+	DDImage*		next;
 };
 
 struct CScreen
 {
-	DScreen*	dscreen;
+	DDScreen*	dscreen;
 	CScreen*	next;
 };
 
-struct DScreen
+struct DDScreen
 {
 	int		id;
 	int		public;
 	int		ref;
-	DImage	*dimage;
-	DImage	*dfill;
+	DDImage	*dimage;
+	DDImage	*dfill;
 	Memscreen*	screen;
 	Client*		owner;
-	DScreen*	next;
+	DDScreen*	next;
 };
 
 static	Draw		sdraw;
@@ -153,11 +153,11 @@ static	Draw		sdraw;
 static	Memdata	screendata;
 static	Rectangle	flushrect;
 static	int		waste;
-static	DScreen*	dscreen;
+static	DDScreen*	dscreen;
 extern	void		flushmemscreen(Rectangle);
 	void		drawmesg(Client*, uchar*, int);
 	void		drawuninstall(Client*, int);
-	void		drawfreedimage(DImage*);
+	void		drawfreedimage(DDImage*);
 	Client*		drawclientofpath(ulong);
 static int	drawclientop(Client*);
 
@@ -193,19 +193,19 @@ drawgen(Chan *c, const char *name, Dirtab *tab, int x, int s, Dir *dp)
 	q.vers = 0;
 
 	if(s == DEVDOTDOT){
-		switch(QID(c->qid)){
-		case Qtopdir:
-		case Q2nd:
-			mkqid(&q, Qtopdir, 0, QTDIR);
+		switch(DEVDRAWQID(c->qid)){
+		case Qdraw_topdir:
+		case Qdraw_2nd:
+			mkqid(&q, Qdraw_topdir, 0, QTDIR);
 			devdir(c, q, "#i", 0, eve, 0500, dp);
 			break;
-		case Q3rd:
+		case Qdraw_3rd:
 			cl = drawclientofpath(c->qid.path);
 			if(cl == nil)
 				strcpy(up->genbuf, "??");
 			else
 				sprint(up->genbuf, "%d", cl->clientid);
-			mkqid(&q, Q2nd, 0, QTDIR);
+			mkqid(&q, Qdraw_2nd, 0, QTDIR);
 			devdir(c, q, up->genbuf, 0, eve, 0500, dp);
 			break;
 		default:
@@ -217,11 +217,11 @@ drawgen(Chan *c, const char *name, Dirtab *tab, int x, int s, Dir *dp)
 	/*
 	 * Top level directory contains the name of the device.
 	 */
-	t = QID(c->qid);
-	if(t == Qtopdir){
+	t = DEVDRAWQID(c->qid);
+	if(t == Qdraw_topdir){
 		switch(s){
 		case 0:
-			mkqid(&q, Q2nd, 0, QTDIR);
+			mkqid(&q, Qdraw_2nd, 0, QTDIR);
 			devdir(c, q, "draw", 0, eve, 0555, dp);
 			break;
 		default:
@@ -233,9 +233,9 @@ drawgen(Chan *c, const char *name, Dirtab *tab, int x, int s, Dir *dp)
 	/*
 	 * Second level contains "new" plus all the clients.
 	 */
-	if(t == Q2nd || t == Qnew){
+	if(t == Qdraw_2nd || t == Qdraw_new){
 		if(s == 0){
-			mkqid(&q, Qnew, 0, QTFILE);
+			mkqid(&q, Qdraw_new, 0, QTFILE);
 			devdir(c, q, "new", 0, eve, 0666, dp);
 		}
 		else if(s <= sdraw.nclient){
@@ -243,7 +243,7 @@ drawgen(Chan *c, const char *name, Dirtab *tab, int x, int s, Dir *dp)
 			if(cl == 0)
 				return 0;
 			sprint(up->genbuf, "%d", cl->clientid);
-			mkqid(&q, (s<<QSHIFT)|Q3rd, 0, QTDIR);
+			mkqid(&q, (s<<QSHIFT)|Qdraw_3rd, 0, QTDIR);
 			devdir(c, q, up->genbuf, 0, eve, 0555, dp);
 			return 1;
 		}
@@ -260,19 +260,19 @@ drawgen(Chan *c, const char *name, Dirtab *tab, int x, int s, Dir *dp)
 	q.type = QTFILE;
 	switch(s){
 	case 0:
-		q.path = path|Qcolormap;
+		q.path = path|Qdraw_colormap;
 		devdir(c, q, "colormap", 0, eve, 0600, dp);
 		break;
 	case 1:
-		q.path = path|Qctl;
+		q.path = path|Qdraw_ctl;
 		devdir(c, q, "ctl", 0, eve, 0600, dp);
 		break;
 	case 2:
-		q.path = path|Qdata;
+		q.path = path|Qdraw_data;
 		devdir(c, q, "data", 0, eve, 0600, dp);
 		break;
 	case 3:
-		q.path = path|Qrefresh;
+		q.path = path|Qdraw_refresh;
 		devdir(c, q, "refresh", 0, eve, 0400, dp);
 		break;
 	default:
@@ -293,7 +293,7 @@ drawrefactive(void *a)
 
 static
 void
-drawrefreshscreen(DImage *l, Client *client)
+drawrefreshscreen(DDImage *l, Client *client)
 {
 	while(l != nil && l->dscreen == nil)
 		l = l->fromname;
@@ -305,7 +305,7 @@ static
 void
 drawrefresh(Memimage *l, Rectangle r, Refx *x)
 {
-	DImage *d;
+	DDImage *d;
 	Client *c;
 	Refresh *ref;
 
@@ -426,7 +426,7 @@ drawlookupname(int n, char *str)
 }
 
 int
-drawgoodname(DImage *d)
+drawgoodname(DDImage *d)
 {
 	DName *n;
 
@@ -443,10 +443,10 @@ drawgoodname(DImage *d)
 	return 1;
 }
 
-DImage*
+DDImage*
 drawlookup(Client *client, int id, int checkname)
 {
-	DImage *d;
+	DDImage *d;
 
 	d = client->dimage[id&HASHMASK];
 	while(d){
@@ -460,10 +460,10 @@ drawlookup(Client *client, int id, int checkname)
 	return 0;
 }
 
-DScreen*
+DDScreen*
 drawlookupdscreen(int id)
 {
-	DScreen *s;
+	DDScreen *s;
 
 	s = dscreen;
 	while(s){
@@ -474,7 +474,7 @@ drawlookupdscreen(int id)
 	return 0;
 }
 
-DScreen*
+DDScreen*
 drawlookupscreen(Client *client, int id, CScreen **cs)
 {
 	CScreen *s;
@@ -492,11 +492,11 @@ drawlookupscreen(Client *client, int id, CScreen **cs)
 }
 
 Memimage*
-drawinstall(Client *client, int id, Memimage *i, DScreen *dscreen)
+drawinstall(Client *client, int id, Memimage *i, DDScreen *dscreen)
 {
-	DImage *d;
+	DDImage *d;
 
-	d = (DImage *)malloc(sizeof(DImage));
+	d = (DDImage *)malloc(sizeof(DDImage));
 	if(d == 0)
 		return 0;
 	d->id = id;
@@ -514,7 +514,7 @@ drawinstall(Client *client, int id, Memimage *i, DScreen *dscreen)
 }
 
 Memscreen*
-drawinstallscreen(Client *client, DScreen *d, int id, DImage *dimage, DImage *dfill, int public)
+drawinstallscreen(Client *client, DDScreen *d, int id, DDImage *dimage, DDImage *dfill, int public)
 {
 	Memscreen *s;
 	CScreen *c;
@@ -526,7 +526,7 @@ drawinstallscreen(Client *client, DScreen *d, int id, DImage *dimage, DImage *df
 	if(c == 0)
 		return 0;
 	if(d == 0){
-		d = (DScreen *)malloc(sizeof(DScreen));
+		d = (DDScreen *)malloc(sizeof(DDScreen));
 		if(d == 0){
 			free(c);
 			return 0;
@@ -575,9 +575,9 @@ drawdelname(DName *name)
 }
 
 void
-drawfreedscreen(DScreen *this)
+drawfreedscreen(DDScreen *this)
 {
-	DScreen *ds, *next;
+	DDScreen *ds, *next;
 
 	this->ref--;
 	if(this->ref < 0)
@@ -608,11 +608,11 @@ drawfreedscreen(DScreen *this)
 }
 
 void
-drawfreedimage(DImage *dimage)
+drawfreedimage(DDImage *dimage)
 {
 	int i;
 	Memimage *l;
-	DScreen *ds;
+	DDScreen *ds;
 
 	dimage->ref--;
 	if(dimage->ref < 0)
@@ -678,7 +678,7 @@ drawuninstallscreen(Client *client, CScreen *this)
 void
 drawuninstall(Client *client, int id)
 {
-	DImage *d, *next;
+	DDImage *d, *next;
 
 	d = client->dimage[id&HASHMASK];
 	if(d == 0)
@@ -700,7 +700,7 @@ drawuninstall(Client *client, int id)
 }
 
 void
-drawaddname(Client *client, DImage *di, int n, char *str)
+drawaddname(Client *client, DDImage *di, int n, char *str)
 {
 	DName *name, *ename, *new, *t;
 
@@ -805,7 +805,7 @@ drawclient(Chan *c)
 Memimage*
 drawimage(Client *client, const uchar *a)
 {
-	DImage *d;
+	DDImage *d;
 
 	d = drawlookup(client, BGLONG(a), 1);
 	if(d == nil)
@@ -830,7 +830,7 @@ drawpoint(Point *p, const uchar *a)
 }
 
 Point
-drawchar(Memimage *dst, Point p, Memimage *src, Point *sp, DImage *font, int index, int op)
+drawchar(Memimage *dst, Point p, Memimage *src, Point *sp, DDImage *font, int index, int op)
 {
 	FChar *fc;
 	Rectangle r;
@@ -928,18 +928,18 @@ drawopen(Chan *c, int omode)
 		nexterror();
 	}
 
-	if(QID(c->qid) == Qnew){
+	if(DEVDRAWQID(c->qid) == Qdraw_new){
 		cl = drawnewclient();
 		if(cl == 0)
 			error(Enodev);
-		c->qid.path = Qctl|((cl->slot+1)<<QSHIFT);
+		c->qid.path = Qdraw_ctl|((cl->slot+1)<<QSHIFT);
 	}
 
-	switch(QID(c->qid)){
-	case Qnew:
+	switch(DEVDRAWQID(c->qid)){
+	case Qdraw_new:
 		break;
 
-	case Qctl:
+	case Qdraw_ctl:
 		cl = drawclient(c);
 		if(cl->busy)
 			error(Einuse);
@@ -948,9 +948,9 @@ drawopen(Chan *c, int omode)
 		drawinstall(cl, 0, screenimage, 0);
 		incref(&cl->r);
 		break;
-	case Qcolormap:
-	case Qdata:
-	case Qrefresh:
+	case Qdraw_colormap:
+	case Qdraw_data:
+	case Qdraw_refresh:
 		cl = drawclient(c);
 		incref(&cl->r);
 		break;
@@ -968,11 +968,11 @@ static void
 drawclose(Chan *c)
 {
 	int i;
-	DImage *d, **dp;
+	DDImage *d, **dp;
 	Client *cl;
 	Refresh *r;
 
-	if(QID(c->qid) < Qcolormap)	/* Qtopdir, Qnew, Q3rd, Q2nd have no client */
+	if(DEVDRAWQID(c->qid) < Qdraw_colormap)	/* Qtopdir, Qnew, Q3rd, Q2nd have no client */
 		return;
 	qlock(&sdraw.q);
 	if(waserror()){
@@ -981,7 +981,7 @@ drawclose(Chan *c)
 	}
 
 	cl = drawclient(c);
-	if(QID(c->qid) == Qctl)
+	if(DEVDRAWQID(c->qid) == Qdraw_ctl)
 		cl->busy = 0;
 	if((c->flag&COPEN) && (decref(&cl->r)==0)){
 		while(r = cl->refresh){	/* assign = */
@@ -1019,7 +1019,7 @@ drawread(Chan *c, char *a, long n, vlong off)
 	Client *cl;
 	char *p;
 	Refresh *r;
-	DImage *di;
+	DDImage *di;
 	Memimage *i;
 	//ulong offset = off;
 	char buf[16];
@@ -1033,8 +1033,8 @@ drawread(Chan *c, char *a, long n, vlong off)
 		qunlock(&sdraw.q);
 		nexterror();
 	}
-	switch(QID(c->qid)){
-	case Qctl:
+	switch(DEVDRAWQID(c->qid)){
+	case Qdraw_ctl:
 		if(n < 12*12)
 			error(Eshortread);
 		if(cl->infoid < 0)
@@ -1056,7 +1056,7 @@ drawread(Chan *c, char *a, long n, vlong off)
 		cl->infoid = -1;
 		break;
 
-	case Qcolormap:
+	case Qdraw_colormap:
 #ifdef COLORMAP
 		{
 		int index, m;
@@ -1078,7 +1078,7 @@ drawread(Chan *c, char *a, long n, vlong off)
 #endif
 		break;
 
-	case Qdata:
+	case Qdraw_data:
 		if(cl->readdata == nil)
 			error("no draw data");
 		if(n < cl->nreaddata)
@@ -1089,7 +1089,7 @@ drawread(Chan *c, char *a, long n, vlong off)
 		cl->readdata = nil;
 		break;
 
-	case Qrefresh:
+	case Qdraw_refresh:
 		if(n < 5*4)
 			error(Ebadarg);
 		for(;;){
@@ -1154,14 +1154,14 @@ drawwrite(Chan *c, const char *a, long n, vlong off)
 		qunlock(&sdraw.q);
 		nexterror();
 	}
-	switch(QID(c->qid)){
-	case Qctl:
+	switch(DEVDRAWQID(c->qid)){
+	case Qdraw_ctl:
 		if(n != 4)
 			error("unknown draw control request");
 		cl->infoid = BGLONG((uchar*)a);
 		break;
 
-	case Qcolormap:
+	case Qdraw_colormap:
 #ifdef COLORMAP
 		{
 		char buf[128], *fields[4], *q;
@@ -1205,7 +1205,7 @@ drawwrite(Chan *c, const char *a, long n, vlong off)
 #endif
 		break;
 
-	case Qdata:
+	case Qdraw_data:
 		drawmesg(cl, (uchar *)a, n); /* FIXME: a is changeable */
 		drawwakeall();
 		break;
@@ -1308,9 +1308,9 @@ drawmesg(Client *client, uchar *a, int n)
 	Memimage *i, *dst, *src, *mask;
 	Memimage *l, **lp;
 	Memscreen *scrn;
-	DImage *font, *ll, *di, *ddst, *dsrc;
+	DDImage *font, *ll, *di, *ddst, *dsrc;
 	DName *dn;
-	DScreen *dscrn;
+	DDScreen *dscrn;
 	FChar *fc;
 	Refx *refx;
 	CScreen *cs;
@@ -1967,7 +1967,7 @@ drawmesg(Client *client, uchar *a, int n)
 int
 drawlsetrefresh(ulong qidpath, int id, Refreshfn reffn, Refx *refx)
 {
-	DImage *d;
+	DDImage *d;
 	Memimage *i;
 	Client *client;
 
@@ -2020,3 +2020,6 @@ Dev drawdevtab = {
 	devremove,
 	devwstat,
 };
+
+#undef NHASH
+#undef HASHMASK

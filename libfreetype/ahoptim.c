@@ -31,8 +31,8 @@
   /*************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H       /* for FT_ALLOC_ARRAY() and FT_FREE() */
+
+#include <freetype/internal/ftobjs.h>       /* for FT_ALLOC_ARRAY() and FT_FREE() */
 #include "ahoptim.h"
 
 

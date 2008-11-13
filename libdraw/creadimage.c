@@ -1,6 +1,6 @@
-#include "lib9.h"
-#include "draw.h"
-#include "kernel.h"
+#include <lib9.h>
+#include <draw.h>
+#include <kernel.h>
 
 Image *
 creadimage(Display *d, int fd, int dolock)

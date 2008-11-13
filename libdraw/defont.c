@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 /*
  * lucm/latin1.9, in uncompressed form

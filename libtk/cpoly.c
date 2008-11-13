@@ -1,12 +1,12 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "canvs.h"
+#include <canvs.h>
 
 typedef struct TkCpoly TkCpoly;
 struct TkCpoly
@@ -49,7 +49,7 @@ TkOption polyopts[] =
 };
 
 static
-TkOption itemopts[] =
+TkOption itemopts_cpoly[] =
 {
 	{"tags",	OPTctag,	offsetof(TkCitem, tags)		},
 	{"fill",	OPTcolr,	offsetof(TkCitem, env),		{(TkStab*)TkCfill}},
@@ -101,7 +101,7 @@ tkcvspolycreat(Tk* tk, char *arg, char **val)
 	tko[0].ptr = p;
 	tko[0].optab = polyopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_cpoly;
 	tko[2].ptr = nil;
 	e = tkparse(tk->env->top, arg, tko, nil);
 	if(e != nil) {
@@ -140,7 +140,7 @@ tkcvspolycget(TkCitem *i, char *arg, char **val)
 	tko[0].ptr = p;
 	tko[0].optab = polyopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_cpoly;
 	tko[2].ptr = nil;
 
 	return tkgencget(tko, arg, val, i->env->top);
@@ -156,7 +156,7 @@ tkcvspolyconf(Tk *tk, TkCitem *i, char *arg)
 	tko[0].ptr = p;
 	tko[0].optab = polyopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_cpoly;
 	tko[2].ptr = nil;
 
 	e = tkparse(tk->env->top, arg, tko, nil);

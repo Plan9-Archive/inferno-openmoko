@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 void
 _setdrawop(Display *d, Drawop op)
@@ -14,7 +14,7 @@ _setdrawop(Display *d, Drawop op)
 		a[1] = op;
 	}
 }
-		
+
 static void
 draw1(Image *dst, Rectangle *r, Image *src, Point *p0, Image *mask, Point *p1, Drawop op)
 {

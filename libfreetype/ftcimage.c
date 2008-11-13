@@ -16,11 +16,11 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
-#include FT_CACHE_IMAGE_H
-#include FT_CACHE_INTERNAL_GLYPH_H
-#include FT_INTERNAL_MEMORY_H
+
+#include <freetype/ftcache.h>
+#include <freetype/cache/ftcimage.h>
+#include <freetype/cache/ftcglyph.h>
+#include <freetype/internal/ftmemory.h>
 
 #include "ftcerror.h"
 

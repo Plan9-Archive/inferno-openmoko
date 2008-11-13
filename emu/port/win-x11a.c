@@ -6,17 +6,17 @@
  * performance penalty (although it tries to use the X11 shared memory extension
  * to copy the result to the screen, which might reduce the latter).
  *
- *       CraigN 
+ *       CraigN
  */
 
 #define _GNU_SOURCE 1
 #define XTHREADS
-#include "dat.h"
-#include "fns.h"
+#include <dat.h>
+#include <fns.h>
 #undef log2
 #include <draw.h>
-#include "cursor.h"
-#include "keyboard.h"
+#include <cursor.h>
+#include <keyboard.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -76,7 +76,7 @@ XColor	map7[128];	/* Inferno colormap array */
 uchar	map7to8[128][2];
 
 /* for copy/paste, lifted from plan9ports via drawterm */
-static Atom clipboard; 
+static Atom clipboard;
 static Atom utf8string;
 static Atom targets;
 static Atom text;
@@ -142,10 +142,10 @@ clean_errhandlers(void)
 {
 	/* remove X11 error handler(s) */
 	if(old_handler)
-		XSetErrorHandler(old_handler); 
+		XSetErrorHandler(old_handler);
 	old_handler = 0;
 	if(old_io_handler)
-		XSetErrorHandler(old_io_handler); 
+		XSetErrorHandler(old_io_handler);
 	old_io_handler = 0;
 }
 
@@ -180,7 +180,7 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 
 	/* check for X Shared Memory Extension */
 	is_shm = XShmQueryExtension(xdisplay);
-	
+
 	if(is_shm) {
 		shminfo = malloc(sizeof(XShmSegmentInfo));
 		if(shminfo == nil) {
@@ -189,14 +189,14 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 		}
 
 		/* setup to catch X11 error(s) */
-		XSync(xdisplay, 0); 
-		shm_got_x_error = 0; 
+		XSync(xdisplay, 0);
+		shm_got_x_error = 0;
 		if(old_handler != shm_ehandler)
 			old_handler = XSetErrorHandler(shm_ehandler);
 		if(old_io_handler != shm_ehandler)
 			old_io_handler = XSetErrorHandler(shm_ehandler);
 
-		img = XShmCreateImage(xdisplay, xvis, xscreendepth, ZPixmap, 
+		img = XShmCreateImage(xdisplay, xvis, xscreendepth, ZPixmap,
 				      NULL, shminfo, Xsize, Ysize);
 		XSync(xdisplay, 0);
 
@@ -208,12 +208,12 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 			clean_errhandlers();
 			goto next;
 		}
-		
+
 		if(img == nil) {
 			fprint(2, "emu: cannot allocate virtual screen buffer\n");
 			cleanexit(0);
 		}
-		
+
 		shminfo->shmid = shmget(IPC_PRIVATE, img->bytes_per_line * img->height,
 					IPC_CREAT|0777);
 		shminfo->shmaddr = img->data = shmat(shminfo->shmid, 0, 0);
@@ -251,7 +251,7 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 			cleanexit(0);
 		}
 		xscreendata = (uchar*)img->data;
-		
+
 		clean_errhandlers();
 	}
  next:
@@ -260,20 +260,20 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 		if(depth == 24)
 			depth = 32;
 
-		/* allocate virtual screen */	
+		/* allocate virtual screen */
 		gscreendata = malloc(Xsize * Ysize * (displaydepth >> 3));
 		xscreendata = malloc(Xsize * Ysize * (depth >> 3));
 		if(!gscreendata || !xscreendata) {
 			fprint(2, "emu: can not allocate virtual screen buffer (%dx%dx%d[%d])\n", Xsize, Ysize, displaydepth, depth);
 			return 0;
 		}
-		img = XCreateImage(xdisplay, xvis, xscreendepth, ZPixmap, 0, 
+		img = XCreateImage(xdisplay, xvis, xscreendepth, ZPixmap, 0,
 				   (char*)xscreendata, Xsize, Ysize, 8, Xsize * (depth >> 3));
 		if(img == nil) {
 			fprint(2, "emu: can not allocate virtual screen buffer (%dx%dx%d)\n", Xsize, Ysize, depth);
 			return 0;
 		}
-		
+
 	}
 
 	if(!triedscreen){
@@ -302,7 +302,7 @@ flushmemscreen(Rectangle r)
 	if(r.max.y >= Ysize)
                 r.max.y = Ysize - 1;
 
-	// is there anything left ...	
+	// is there anything left ...
 	width = r.max.x-r.min.x;
 	height = r.max.y-r.min.y;
 	if(width <= 0 || height <= 0)
@@ -311,7 +311,7 @@ flushmemscreen(Rectangle r)
 	// Blit the pixel data ...
 	if(displaydepth == 32){
 		u32int v, w, *dp, *wp, *edp;
-	
+
 		dx = Xsize - width;
 		dp = (unsigned int *)(gscreendata + (r.min.y * Xsize + r.min.x) * 4);
 		wp = (unsigned int *)(xscreendata + (r.min.y * Xsize + r.min.x) * 4);
@@ -332,7 +332,7 @@ flushmemscreen(Rectangle r)
 	else if(displaydepth == 16 && xscreendepth == 16){
 		u32int v, w;
 		u16int *dp, *wp, *edp;
-	
+
 		dx = Xsize - width;
 		dp = (unsigned short *)(gscreendata + (r.min.y * Xsize + r.min.x) * 2);
 		wp = (unsigned short *)(xscreendata + (r.min.y * Xsize + r.min.x) * 2);
@@ -353,7 +353,7 @@ flushmemscreen(Rectangle r)
 	else if(displaydepth == 8){
 		if(xscreendepth == 24 || xscreendepth == 32) {
 			u32int *wp;
-	
+
 			dx = Xsize - width;
 			p = gscreendata + r.min.y * Xsize + r.min.x;
 			wp = (u32int *)(xscreendata + (r.min.y * Xsize + r.min.x) * 4);
@@ -361,7 +361,7 @@ flushmemscreen(Rectangle r)
 			while (p < ep) {
 				const uchar *lp = p + width;
 
-				while (p < lp) 
+				while (p < lp)
 					*wp++ = infernotox11[*p++];
 
 				p += dx;
@@ -392,7 +392,7 @@ flushmemscreen(Rectangle r)
 
 		} else if(xscreendepth == 16) {
 			u16int *sp;
-	
+
 			dx = Xsize - width;
 			p = gscreendata + r.min.y * Xsize + r.min.x;
 			sp = (unsigned short *)(xscreendata + (r.min.y * Xsize + r.min.x) * 2);
@@ -400,7 +400,7 @@ flushmemscreen(Rectangle r)
 			while (p < ep) {
 				const uchar *lp = p + width;
 
-				while (p < lp) 
+				while (p < lp)
 					*sp++ = infernotox11[*p++];
 
 				p += dx;
@@ -483,7 +483,7 @@ xkbdproc(void *arg)
 	/* BEWARE: the value of up is not defined for this proc on some systems */
 
 	XLockDisplay(xd);	/* should be ours alone */
-	XSelectInput(xd, xdrawable, KeyPressMask | KeyReleaseMask);		
+	XSelectInput(xd, xdrawable, KeyPressMask | KeyReleaseMask);
 	for(;;){
 		XNextEvent(xd, &event);
 		xkeyboard(&event);
@@ -516,7 +516,7 @@ xproc(void *arg)
 		StructureNotifyMask;
 
 	XLockDisplay(xd);	/* should be ours alone */
-	XSelectInput(xd, xdrawable, mask);		
+	XSelectInput(xd, xdrawable, mask);
 	for(;;){
 		XNextEvent(xd, &event);
 		xselect(&event, xd);
@@ -693,7 +693,7 @@ xinitscreen(int xsize, int ysize, ulong c, ulong *chan, int *d)
 	XSetWindowAttributes attrs;
 	XPixmapFormatValues *pfmt;
 	int i, n;
- 
+
 	xdrawable = 0;
 
 	dispname = getenv("DISPLAY");
@@ -730,7 +730,7 @@ xinitscreen(int xsize, int ysize, ulong c, ulong *chan, int *d)
 			fprint(2, "emu: win-x11 could not determine pixel format.\n");
 			cleanexit(0);
 		}
-			
+
 		switch(*d){
 		case 1:	/* untested */
 			*chan = GREY1;
@@ -777,7 +777,7 @@ xinitscreen(int xsize, int ysize, ulong c, ulong *chan, int *d)
 	attrs.background_pixel = 0;
 	attrs.border_pixel = 0;
 	/* attrs.override_redirect = 1;*/ /* WM leave me alone! |CWOverrideRedirect */
-	xdrawable = XCreateWindow(xdisplay, rootwin, 0, 0, xsize, ysize, 0, xscreendepth, 
+	xdrawable = XCreateWindow(xdisplay, rootwin, 0, 0, xsize, ysize, 0, xscreendepth,
 				  InputOutput, xvis, CWBackPixel|CWBorderPixel|CWColormap, &attrs);
 
 	/*
@@ -931,8 +931,8 @@ graphicsrgbmap(XColor *mapr, XColor *mapg, XColor *mapb)
 /*
  * Initialize and install the Inferno colormap as a private colormap for this
  * application.  Inferno gets the best colors here when it has the cursor focus.
- */  
-static void 
+ */
+static void
 initmap(XWindow w)
 {
 	XColor c;
@@ -968,7 +968,7 @@ initmap(XWindow w)
 
 	case PseudoColor:
 		if(xtblbit == 0){
-			xcmap = XCreateColormap(xdisplay, w, xvis, AllocAll); 
+			xcmap = XCreateColormap(xdisplay, w, xvis, AllocAll);
 			XStoreColors(xdisplay, xcmap, map, 256);
 			for(i = 0; i < 256; i++)
 				infernotox11[i] = i;
@@ -1128,7 +1128,7 @@ xkeyboard(XEvent *e)
 		case XK_KP_End:
 			k = End;
 			break;
-//		case XK_Page_Up:	
+//		case XK_Page_Up:
 //		case XK_KP_Page_Up:
 //			k = Kpgup;
 //			break;
@@ -1209,7 +1209,7 @@ xmouse(XEvent *e)
 	switch(e->type){
 	case ButtonPress:
 		be = (XButtonEvent *)e;
-		/* 
+		/*
 		 * Fake message, just sent to make us announce snarf.
 		 * Apparently state and button are 16 and 8 bits on
 		 * the wire, since they are truncated by the time they
@@ -1364,7 +1364,7 @@ _xgetsnarf(XDisplay *xd)
 		data = nil;
 		goto out;
 	}
-		
+
 	/*
 	 * We should be waiting for SelectionNotify here, but it might never
 	 * come, and we have no way to time out.  Instead, we will clear
@@ -1393,7 +1393,7 @@ _xgetsnarf(XDisplay *xd)
 	}
 	/* get the property */
 	data = nil;
-	XGetWindowProperty(xd, xdrawable, prop, 0, SnarfSize/sizeof(unsigned long), 0, 
+	XGetWindowProperty(xd, xdrawable, prop, 0, SnarfSize/sizeof(unsigned long), 0,
 		AnyPropertyType, &type, &fmt, &len, &dummy, &xdata);
 	if((type != XA_STRING && type != utf8string) || len == 0){
 		if(xdata)

@@ -343,7 +343,7 @@ static int replmul[1+8] = {
 static void
 mktables(void)
 {
-	int i, j, mask, sh, small;
+	int i, j, mask, sh, smal;
 
 	if(tablesbuilt)
 		return;
@@ -355,8 +355,8 @@ mktables(void)
 	/* bit replication up to 8 bits */
 	for(i=0; i<256; i++){
 		for(j=0; j<=8; j++){	/* j <= 8 [sic] */
-			small = i & ((1<<j)-1);
-			replbit[j][i] = (small*replmul[j])>>8;
+			smal = i & ((1<<j)-1);
+			replbit[j][i] = (smal*replmul[j])>>8;
 		}
 	}
 

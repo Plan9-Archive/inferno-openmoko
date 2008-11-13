@@ -1,5 +1,5 @@
-#include	"dat.h"
-#include	"fns.h"
+#include <dat.h>
+#include <fns.h>
 
 /*
  * General OS interface to errors

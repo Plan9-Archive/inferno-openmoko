@@ -1,10 +1,10 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
 extern void	rptwakeup(void*, void*);
 extern void*	rptproc(char*, int, void*, int (*)(void*), int (*)(void*,int), void (*)(void*));
@@ -1835,7 +1835,7 @@ tkhaskeyfocus(Tk *tk)
 }
 
 static int
-rptactive(void *v)
+rpt_active(void *v)
 {
 	int id = (int)v;
 	if (id == rptid)
@@ -1893,7 +1893,7 @@ tkrepeat(Tk *tk, void (*callback)(Tk*, const char*, int), const char *note, int 
 	rptto = pause;
 	rptint = interval;
 	if (!autorpt)
-		autorpt = rptproc("autorepeat", TkRptclick, (void*)rptid, rptactive, ckrpt, dorpt);
+		autorpt = rptproc("autorepeat", TkRptclick, (void*)rptid, rpt_active, ckrpt, dorpt);
 	else
 		rptwakeup((void*)rptid, autorpt);
 }

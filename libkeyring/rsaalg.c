@@ -1,15 +1,15 @@
-#include "lib9.h"
-#include "kernel.h"
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "mp.h"
-#include "libsec.h"
-#include "keys.h"
+#include <lib9.h>
+#include <kernel.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <mp.h>
+#include <libsec.h>
+#include <keys.h>
 
-static char*	pkattr[] = { "n", "ek", nil };
-static char*	skattr[] = { "n", "ek", "!dk", "!p", "!q", "!kp", "!kq", "!c2", nil };
-static char*	sigattr[] = { "val", nil };
+static char* rsa_pkattr[] = { "n", "ek", nil };
+static char* rsa_skattr[] = { "n", "ek", "!dk", "!p", "!q", "!kp", "!kq", "!c2", nil };
+static char* rsa_sigattr[] = { "val", nil };
 
 static void*
 rsa_str2sk(const char *str, const char **strp)
@@ -191,9 +191,9 @@ rsainit(void)
 
 	vec->name = "rsa";
 
-	vec->pkattr = pkattr;
-	vec->skattr = skattr;
-	vec->sigattr = sigattr;
+	vec->pkattr = rsa_pkattr;
+	vec->skattr = rsa_skattr;
+	vec->sigattr = rsa_sigattr;
 
 	vec->str2sk = rsa_str2sk;
 	vec->str2pk = rsa_str2pk;

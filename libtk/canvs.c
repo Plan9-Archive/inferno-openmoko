@@ -1,13 +1,13 @@
-#include "lib9.h"
-#include "kernel.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
+#include <kernel.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "canvs.h"
+#include <canvs.h>
 
 /* Widget Commands (+ means implemented)
 	+addtag
@@ -62,7 +62,7 @@ TkStab tkbuffer[] = {
 
 
 static
-TkOption opts[] =
+TkOption opts_canvs[] =
 {
 	{"closeenough",		OPTfrac,	offsetof(TkCanvas, close) 	},
 	{"confine",		OPTfrac,	offsetof(TkCanvas, confine) 	},
@@ -149,7 +149,7 @@ tkcanvas(TkTop *t, char *arg, char **ret)
 	tkc->sborderwidth = 1;
 
 	tko[0].ptr = tkc;
-	tko[0].optab = opts;
+	tko[0].optab = opts_canvs;
 	tko[1].ptr = tk;
 	tko[1].optab = tkgeneric;
 	tko[2].ptr = nil;
@@ -265,7 +265,7 @@ tkcvscget(Tk *tk, char *arg, char **val)
 	TkCanvas *tkc = TKobj(TkCanvas, tk);
 
 	tko[0].ptr = tkc;
-	tko[0].optab = opts;
+	tko[0].optab = opts_canvs;
 	tko[1].ptr = tk;
 	tko[1].optab = tkgeneric;
 	tko[2].ptr = nil;
@@ -284,7 +284,7 @@ tkcvsconf(Tk *tk, char *arg, char **val)
 	TkCanvas *c = TKobj(TkCanvas, tk);
 
 	tko[0].ptr = c;
-	tko[0].optab = opts;
+	tko[0].optab = opts_canvs;
 	tko[1].ptr = tk;
 	tko[1].optab = tkgeneric;
 	tko[2].ptr = nil;

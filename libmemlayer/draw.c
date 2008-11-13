@@ -4,7 +4,7 @@
 #include "memlayer.h"
 #include "pool.h"
 
-struct Draw
+struct Draw2
 {
 	Point	deltas;
 	Point	deltam;
@@ -18,7 +18,7 @@ static
 void
 ldrawop(Memimage *dst, Rectangle screenr, Rectangle clipr, void *etc, int insave)
 {
-	struct Draw *d;
+	struct Draw2 *d;
 	Point p0, p1;
 	Rectangle oclipr, srcr, r, mr;
 	int ok;
@@ -53,7 +53,7 @@ ldrawop(Memimage *dst, Rectangle screenr, Rectangle clipr, void *etc, int insave
 void
 memdraw(Memimage *dst, Rectangle r, Memimage *src, Point p0, Memimage *mask, Point p1, int op)
 {
-	struct Draw d;
+	struct Draw2 d;
 	Rectangle srcr, tr, mr;
 	Memlayer *dl, *sl;
 

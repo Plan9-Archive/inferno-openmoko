@@ -1,9 +1,9 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "runt.h"
-#include "loadermod.h"
-#include "raise.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <loadermod.h>
+#include <raise.h>
 #include <kernel.h>
 
 static char	Instmap[] = Loader_Inst_map;

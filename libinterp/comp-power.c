@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "raise.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <raise.h>
 
 /*
  * Copyright © 1997 C H Forsyth (forsyth@terzarima.net)
@@ -637,7 +637,7 @@ literal(ulong imm, int roff)
 		return;
 
 	*litpool = imm;
-	litpool++;	
+	litpool++;
 }
 
 static void
@@ -714,7 +714,7 @@ punt(Inst *i, int m, void (*fn)(void))
 		jr(Ro1);
 	}
 }
-				
+
 static void
 comgoto(Inst *i)
 {
@@ -752,8 +752,8 @@ comcase(Inst *i, int w)
 
 	t = (WORD*)(mod->origmp+i->d.ind+4);
 	l = t[-1];
-	
-	/* have to take care not to relocate the same table twice - 
+
+	/* have to take care not to relocate the same table twice -
 	 * the limbo compiler can duplicate a case instruction
 	 * during its folding phase
 	 */

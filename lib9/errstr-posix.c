@@ -1,5 +1,4 @@
-#include "lib9.h"
-
+#include <lib9.h>
 #include <errno.h>
 
 static char errstring[ERRMAX];

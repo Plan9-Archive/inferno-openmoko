@@ -11,8 +11,8 @@
  * REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
  * OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
  */
-#include "lib9.h"
-#include "fmtdef.h"
+#include <lib9.h>
+#include <fmtdef.h>
 
 
 /*
@@ -43,4 +43,3 @@ fmtvprint(Fmt *f, const char *fmt, va_list args)
 		return 0;
 	return n;
 }
-

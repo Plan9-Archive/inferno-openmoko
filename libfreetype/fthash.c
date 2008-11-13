@@ -1,8 +1,8 @@
-#include <ft2build.h>
-#include FT_TYPES_H
-#include FT_INTERNAL_HASH_H
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_DEBUG_H
+
+#include <freetype/fttypes.h>
+#include <freetype/internal/fthash.h>
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftdebug.h>
 
 #define  FT_HASH_MAX_LOAD  2
 #define  FT_HASH_MIN_LOAD  1

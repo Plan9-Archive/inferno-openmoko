@@ -7,7 +7,7 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -16,7 +16,7 @@
  * __kernel_cos( x,  y )
  * kernel cos function on [-pi/4, pi/4], pi/4 ~ 0.785398164
  * Input x is assumed to be bounded by ~pi/4 in magnitude.
- * Input y is the tail of x. 
+ * Input y is the tail of x.
  *
  * Algorithm
  *	1. Since cos(-x) = cos(x), we need only to consider positive x.
@@ -26,15 +26,15 @@
  *		  	                 4            14
  *	   	cos(x) ~ 1 - x*x/2 + C1*x + ... + C6*x
  *	   where the remez error is
- *	
+ *
  * 	|              2     4     6     8     10    12     14 |     -58
  * 	|cos(x)-(1-.5*x +C1*x +C2*x +C3*x +C4*x +C5*x  +C6*x  )| <= 2
- * 	|    					               | 
- * 
- * 	               4     6     8     10    12     14 
+ * 	|    					               |
+ *
+ * 	               4     6     8     10    12     14
  *	4. let r = C1*x +C2*x +C3*x +C4*x +C5*x  +C6*x  , then
  *	       cos(x) = 1 - x*x/2 + r
- *	   since cos(x+y) ~ cos(x) - sin(x)*y 
+ *	   since cos(x+y) ~ cos(x) - sin(x)*y
  *			  ~ cos(x) - x*y,
  *	   a correction term is necessary in cos(x) and hence
  *		cos(x+y) = 1 - (x*x/2 - (r - x*y))
@@ -49,8 +49,12 @@
 
 #include "fdlibm.h"
 
-static const double 
-one =  1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
+#ifndef DBL_CONST_one
+#define DBL_CONST_one
+static const double one = 1.00000000000000000000e+00; /* 0x3FF00000, 0x00000000 */
+#endif
+
+static const double
 C1  =  4.16666666666666019037e-02, /* 0x3FA55555, 0x5555554C */
 C2  = -1.38888888888741095749e-03, /* 0xBF56C16C, 0x16C15177 */
 C3  =  2.48015872894767294178e-05, /* 0x3EFA01A0, 0x19CB1590 */
@@ -68,7 +72,7 @@ C6  = -1.13596475577881948265e-11; /* 0xBDA8FAE9, 0xBE8838D4 */
 	}
 	z  = x*x;
 	r  = z*(C1+z*(C2+z*(C3+z*(C4+z*(C5+z*C6)))));
-	if(ix < 0x3FD33333) 			/* if |x| < 0.3 */ 
+	if(ix < 0x3FD33333) 			/* if |x| < 0.3 */
 	    return one - (0.5*z - (z*r - x*y));
 	else {
 	    if(ix > 0x3fe90000) {		/* x > 0.78125 */

@@ -25,9 +25,9 @@
   /*************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
+
+#include <freetype/internal/ftstream.h>
+#include <freetype/tttags.h>
 #include "ttpost.h"
 #include "ttload.h"
 
@@ -50,7 +50,7 @@
 #ifdef FT_CONFIG_OPTION_POSTSCRIPT_NAMES
 
 
-#include FT_INTERNAL_POSTSCRIPT_NAMES_H
+#include <freetype/internal/psnames.h>
 
 #define MAC_NAME( x )  ( (FT_String*)psnames->macintosh_name( x ) )
 
@@ -510,7 +510,7 @@
         *PSname = MAC_NAME( idx );
       }
     }
-    
+
     /* nothing to do for format == 0x00030000L */
 
   End:

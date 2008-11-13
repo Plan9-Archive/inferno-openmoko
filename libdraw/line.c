@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 void
 line(Image *dst, Point p0, Point p1, int end0, int end1, int radius, Image *src, Point sp)

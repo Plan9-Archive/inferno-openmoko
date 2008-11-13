@@ -1,6 +1,6 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
 
 /* s800 disassembler. */
 /* does not handle stuff that won't be generated */

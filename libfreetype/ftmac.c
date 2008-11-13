@@ -59,9 +59,9 @@
   */
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_STREAM_H
+
+#include <freetype/freetype.h>
+#include <freetype/internal/ftstream.h>
 #include "truetype/ttobjs.h"
 #include "type1/t1objs.h"
 
@@ -72,7 +72,7 @@
 #include <TextUtils.h>
 
 
-#include FT_MAC_H
+#include <freetype/ftmac.h>
 
 
   /* Set PREFER_LWFN to 1 if LWFN (Type 1) is preferred over

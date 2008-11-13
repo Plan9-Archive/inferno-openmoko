@@ -22,9 +22,9 @@
   /*************************************************************************/
 
 
-#include <ft2build.h>
+
 #include "ftraster.h"
-#include FT_INTERNAL_CALC_H   /* for FT_MulDiv only */
+#include <freetype/internal/ftcalc.h>   /* for FT_MulDiv only */
 
 
   /*************************************************************************/
@@ -170,8 +170,8 @@
 #else /* _STANDALONE_ */
 
 
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H        /* for FT_TRACE() and FT_ERROR() */
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>        /* for FT_TRACE() and FT_ERROR() */
 
 #include "rasterrs.h"
 
@@ -304,12 +304,12 @@
 
   /* Simple record used to implement a stack of bands, required */
   /* by the sub-banding mechanism                               */
-  typedef struct  TBand_
+  typedef struct  TBand2_
   {
     Short  y_min;   /* band's minimum */
     Short  y_max;   /* band's maximum */
 
-  } TBand;
+  } TBand2;
 
 
 #define AlignProfileSize \
@@ -448,7 +448,7 @@
 
     TPoint    arcs[3 * MaxBezier + 1]; /* The Bezier stack                 */
 
-    TBand     band_stack[16];       /* band stack used for sub-banding     */
+    TBand2    band_stack[16];       /* band stack used for sub-banding     */
     Int       band_top;             /* band stack top                      */
 
     Int       count_table[256];     /* Look-up table used to quickly count */
@@ -3284,5 +3284,9 @@
     (FT_Raster_Done_Func)    ft_black_done
   };
 
-
+#undef RAS_ARG
+#undef TRUNC
+#undef FLOOR
+#undef CEILING
+#undef SCALED
 /* END */

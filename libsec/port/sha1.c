@@ -1,7 +1,7 @@
 #include "os.h"
 #include <libsec.h>
 
-static void encode(uchar*, u32int*, ulong);
+static void encode1(uchar*, u32int*, ulong);
 
 extern void _sha1block(uchar*, ulong, u32int*);
 
@@ -94,14 +94,14 @@ sha1(uchar *p, ulong len, uchar *digest, SHA1state *s)
 	/* append the count */
 	x[0] = s->len>>29;
 	x[1] = s->len<<3;
-	encode(p+len, x, 8);
+	encode1(p+len, x, 8);
 
 	/* digest the last part */
 	_sha1block(p, len+8, s->state);
 	s->len += len+8;
 
 	/* return result and free state */
-	encode(digest, s->state, SHA1dlen);
+	encode1(digest, s->state, SHA1dlen);
 	if(s->malloced == 1)
 		free(s);
 	return nil;
@@ -112,7 +112,7 @@ sha1(uchar *p, ulong len, uchar *digest, SHA1state *s)
  *	a multiple of 4.
  */
 static void
-encode(uchar *output, u32int *input, ulong len)
+encode1(uchar *output, u32int *input, ulong len)
 {
 	u32int x;
 	uchar *e;

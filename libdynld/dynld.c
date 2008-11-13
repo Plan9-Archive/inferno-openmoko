@@ -1,6 +1,6 @@
-#include	"lib9.h"
-#include	<a.out.h>
-#include	<dynld.h>
+#include <lib9.h>
+#include <a.out.h>
+#include <dynld.h>
 
 static ulong
 get2(uchar *b)

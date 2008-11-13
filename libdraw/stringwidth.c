@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 int
 _stringnwidth(Font *f, char *s, Rune *r, int len)

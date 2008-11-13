@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 void
 borderop(Image *im, Rectangle r, int i, Image *color, Point sp, Drawop op)

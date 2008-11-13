@@ -19,7 +19,9 @@
 #ifndef __PSHALGO_H__
 #define __PSHALGO_H__
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* define to choose hinting algorithm */
 #define PSH_ALGORITHM_3
@@ -45,7 +47,9 @@ FT_BEGIN_HEADER
 
 #endif
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __PSHALGO_H__ */
 

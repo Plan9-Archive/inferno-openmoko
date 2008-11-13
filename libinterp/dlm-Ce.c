@@ -1,10 +1,10 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "raise.h"
-#include "pool.h"
-#include "kernel.h"
-#include "dynld.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <raise.h>
+#include <pool.h>
+#include <kernel.h>
+#include <dynld.h>
 
 Module*
 newdyncode(int fd, char *path, Dir *dir)

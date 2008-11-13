@@ -1,8 +1,8 @@
-#include "lib9.h"
+#include <lib9.h>
 
 char*
-strdup(const char *s) 
-{  
+strdup(const char *s)
+{
 	char *os;
 
 	os = malloc(strlen(s) + 1);

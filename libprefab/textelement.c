@@ -2,7 +2,7 @@
 #include <draw.h>
 #include <interp.h>
 #include <isa.h>
-#include "../libinterp/runt.h"
+#include <runt.h>
 #include <drawif.h>
 #include <prefab.h>
 #include <kernel.h>
@@ -175,7 +175,7 @@ growtext(PElement *pline, State *state, char *w, int minx, int maxx)
 	}
 
 	if(state->kind == EIcon){
-		/* guaranteed OK by buildine */	
+		/* guaranteed OK by buildine */
 		image = lookupimage(state->icon);
 		size = iconsize(image);
 		/* put one pixel on each side */

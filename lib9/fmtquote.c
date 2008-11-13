@@ -11,8 +11,8 @@
  * REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
  * OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
  */
-#include "lib9.h"
-#include "fmtdef.h"
+#include <lib9.h>
+#include <fmtdef.h>
 
 /*
  * How many bytes of output UTF will be produced by quoting (if necessary) this string?

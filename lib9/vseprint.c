@@ -11,8 +11,8 @@
  * REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
  * OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
  */
-#include "lib9.h"
-#include "fmtdef.h"
+#include <lib9.h>
+#include <fmtdef.h>
 
 char*
 vseprint(char *buf, char *e, const char *fmt, va_list args)
@@ -34,4 +34,3 @@ vseprint(char *buf, char *e, const char *fmt, va_list args)
 	*(char*)f.to = '\0';
 	return f.to;
 }
-

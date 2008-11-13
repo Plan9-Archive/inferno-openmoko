@@ -16,13 +16,13 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_CACHE_H
-#include FT_CACHE_CHARMAP_H
-#include FT_CACHE_MANAGER_H
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_DEBUG_H
+
+#include <freetype/freetype.h>
+#include <freetype/ftcache.h>
+#include <freetype/cache/ftccmap.h>
+#include <freetype/cache/ftcmanag.h>
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftdebug.h>
 
 #include "ftcerror.h"
 
@@ -131,7 +131,7 @@
   ftc_cmap_node_weight( FTC_CMapNode  cnode )
   {
     FT_UNUSED( cnode );
-    
+
     return sizeof ( *cnode );
   }
 

@@ -13,7 +13,6 @@ enum
 
 typedef struct Fs Fs;
 typedef struct Proto	Proto;
-typedef struct Conv	Conv;
 
 extern int		so_socket(int type);
 extern void		so_connect(int, unsigned long, unsigned short);

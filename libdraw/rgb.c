@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 // todo: there are tables for fast computation in libmemdraw (memdefcmap)
 

@@ -1,9 +1,9 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "mathi.h" /* strtod */
-#include "raise.h"
-#include "pool.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <raise.h>
+#include <pool.h>
+#include <mathi.h> /* strtod */
 
 #define OP(fn)	void fn(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr)
 
@@ -328,6 +328,7 @@ OP(cvtfc)
 	ASSIGN(rd->pstring, ds);
 }
 
+#undef OP
 char*
 string2c(String *s)
 {

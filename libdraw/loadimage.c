@@ -1,6 +1,6 @@
-#include "lib9.h"
-#include "draw.h"
-#include "kernel.h"
+#include <lib9.h>
+#include <draw.h>
+#include <kernel.h>
 
 int
 loadimage(Image *i, Rectangle r, const char *data, int ndata)
@@ -67,4 +67,3 @@ loadimage(Image *i, Rectangle r, const char *data, int ndata)
 		return -1;
 	return ndata;
 }
-

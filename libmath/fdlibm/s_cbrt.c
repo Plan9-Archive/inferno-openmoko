@@ -7,7 +7,7 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  *
@@ -18,18 +18,18 @@
 /* cbrt(x)
  * Return cube root of x
  */
-static const unsigned 
+static const unsigned
 	B1 = 715094163, /* B1 = (682-0.03306235651)*2**20 */
 	B2 = 696219795; /* B2 = (664-0.03306235651)*2**20 */
 
 static const double
-C =  5.42857142857142815906e-01, /* 19/35     = 0x3FE15F15, 0xF15F15F1 */
-D = -7.05306122448979611050e-01, /* -864/1225 = 0xBFE691DE, 0x2532C834 */
-E =  1.41428571428571436819e+00, /* 99/70     = 0x3FF6A0EA, 0x0EA0EA0F */
-F =  1.60714285714285720630e+00, /* 45/28     = 0x3FF9B6DB, 0x6DB6DB6E */
-G =  3.57142857142857150787e-01; /* 5/14      = 0x3FD6DB6D, 0xB6DB6DB7 */
+C_cbrt =  5.42857142857142815906e-01, /* 19/35     = 0x3FE15F15, 0xF15F15F1 */
+D_cbrt = -7.05306122448979611050e-01, /* -864/1225 = 0xBFE691DE, 0x2532C834 */
+E_cbrt =  1.41428571428571436819e+00, /* 99/70     = 0x3FF6A0EA, 0x0EA0EA0F */
+F_cbrt =  1.60714285714285720630e+00, /* 45/28     = 0x3FF9B6DB, 0x6DB6DB6E */
+G_cbrt =  3.57142857142857150787e-01; /* 5/14      = 0x3FD6DB6D, 0xB6DB6DB7 */
 
-	double cbrt(double x) 
+	double cbrt(double x)
 {
 	int	hx;
 	double r,s,t=0.0,w;
@@ -40,7 +40,7 @@ G =  3.57142857142857150787e-01; /* 5/14      = 0x3FD6DB6D, 0xB6DB6DB7 */
 	sign=hx&0x80000000; 		/* sign= sign(x) */
 	hx  ^=sign;
 	if(hx>=0x7ff00000) return(x+x); /* cbrt(NaN,INF) is itself */
-	if((hx|__LO(x))==0) 
+	if((hx|__LO(x))==0)
 	    return(x);		/* cbrt(0) is itself */
 
 	__HI(x) = hx;	/* x <- |x| */
@@ -50,15 +50,15 @@ G =  3.57142857142857150787e-01; /* 5/14      = 0x3FD6DB6D, 0xB6DB6DB7 */
 	   t*=x; __HI(t)=__HI(t)/3+B2;
 	  }
 	else
-	  __HI(t)=hx/3+B1;	
+	  __HI(t)=hx/3+B1;
 
 
     /* new cbrt to 23 bits, may be implemented in single precision */
 	r=t*t/x;
-	s=C+r*t;
-	t*=G+F/(s+E+D/s);	
+	s=C_cbrt+r*t;
+	t*=G_cbrt+F_cbrt/(s+E_cbrt+D_cbrt/s);
 
-    /* chopped to 20 bits and make it larger than cbrt(x) */ 
+    /* chopped to 20 bits and make it larger than cbrt(x) */
 	__LO(t)=0; __HI(t)+=0x00000001;
 
 

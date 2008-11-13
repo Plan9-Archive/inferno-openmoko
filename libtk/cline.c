@@ -1,12 +1,12 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "canvs.h"
+#include <canvs.h>
 
 
 /* Line Options (+ means implemented)
@@ -55,7 +55,7 @@ TkOption lineopts[] =
 };
 
 static
-TkOption itemopts[] =
+TkOption itemopts_cline[] =
 {
 	{"tags",	OPTctag,	offsetof(TkCitem, tags)		},
 	{"fill",	OPTcolr,	offsetof(TkCitem, env),		{(TkStab*)TkCforegnd}},
@@ -123,7 +123,7 @@ tkcvslinecreat(Tk* tk, char *arg, char **val)
 	tko[0].ptr = l;
 	tko[0].optab = lineopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_cline;
 	tko[2].ptr = nil;
 	e = tkparse(tk->env->top, arg, tko, nil);
 	if(e != nil) {
@@ -160,7 +160,7 @@ tkcvslinecget(TkCitem *i, char *arg, char **val)
 	tko[0].ptr = l;
 	tko[0].optab = lineopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_cline;
 	tko[2].ptr = nil;
 
 	return tkgencget(tko, arg, val, i->env->top);
@@ -176,7 +176,7 @@ tkcvslineconf(Tk *tk, TkCitem *i, char *arg)
 	tko[0].ptr = l;
 	tko[0].optab = lineopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_cline;
 	tko[2].ptr = nil;
 
 	e = tkparse(tk->env->top, arg, tko, nil);

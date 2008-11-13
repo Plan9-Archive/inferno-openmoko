@@ -1,9 +1,9 @@
 /*
  *	devenv - environment
  */
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
 enum
 {

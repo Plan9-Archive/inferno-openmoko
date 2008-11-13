@@ -18,7 +18,7 @@
 
 #include "pfrcmap.h" 
 #include "pfrobjs.h"
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
 
   FT_CALLBACK_DEF( FT_Error )

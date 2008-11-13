@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 void
 replclipr(Image *i, int repl, Rectangle clipr)

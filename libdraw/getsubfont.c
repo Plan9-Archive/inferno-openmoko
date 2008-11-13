@@ -1,6 +1,6 @@
-#include "lib9.h"
-#include "kernel.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
+#include <kernel.h>
 
 /*
  * Default version: treat as file name
@@ -13,7 +13,7 @@ _getsubfont(Display *d, char *name)
 	Subfont *f;
 
 	fd = libopen(name, OREAD);
-		
+
 	if(fd < 0){
 		_drawprint(2, "getsubfont: can't open %s: %r\n", name);
 		return 0;

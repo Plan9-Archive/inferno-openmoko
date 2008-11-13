@@ -1,7 +1,7 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	"kernel.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <kernel.h>
 
 typedef	struct Fid	Fid;
 typedef	struct Export	Export;

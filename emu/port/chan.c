@@ -1,6 +1,6 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
 char*
 c2name(Chan *c)		/* DEBUGGING */
@@ -38,7 +38,7 @@ struct Elemlist
 	int	mustbedir;
 };
 
-#define SEP(c) ((c) == 0 || (c) == '/')
+//#define SEP(c) ((c) == 0 || (c) == '/')
 void cleancname(Cname*);
 
 int

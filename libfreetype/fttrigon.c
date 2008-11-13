@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_TRIGONOMETRY_H
+
+#include <freetype/fttrigon.h>
 
 
   /* the following is 0.2715717684432231 * 2^30 */

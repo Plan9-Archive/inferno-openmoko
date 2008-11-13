@@ -1,7 +1,7 @@
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECT_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_OBJECTS_H
+
+#include <freetype/internal/ftobject.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftobjs.h>
 
 #define  FT_MAGIC_DEATH   0xDEADdead
 #define  FT_MAGIC_CLASS   0x12345678

@@ -20,10 +20,12 @@
 #define __PFRLOAD_H__
 
 #include "pfrobjs.h"
-#include FT_INTERNAL_STREAM_H
+#include <freetype/internal/ftstream.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef PFR_CONFIG_NO_CHECKS
 #define PFR_CHECK( x )  do { } while ( 0 )
@@ -54,11 +56,11 @@ FT_BEGIN_HEADER
   {
     FT_UInt                  type;
     PFR_ExtraItem_ParseFunc  parser;
-  
+
   } PFR_ExtraItemRec;
-  
+
   typedef const struct PFR_ExtraItemRec_*  PFR_ExtraItem;
- 
+
 
   FT_LOCAL( FT_Error )
   pfr_extra_items_skip( FT_Byte*  *pp,
@@ -109,8 +111,10 @@ FT_BEGIN_HEADER
                      FT_Memory    memory );
 
   /* */
- 
-FT_END_HEADER
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __PFRLOAD_H__ */
 

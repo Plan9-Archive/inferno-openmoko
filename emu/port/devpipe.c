@@ -1,8 +1,8 @@
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
-#include "isa.h"
-#include "interp.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <isa.h>
+#include <interp.h>
 
 #define NETTYPE(x)	((ulong)(x)&0x1f)
 #define NETID(x)	(((ulong)(x))>>5)
@@ -29,16 +29,16 @@ static struct
 
 enum
 {
-	Qdir,
-	Qdata0,
-	Qdata1
+	Qpipe_dir,
+	Qpipe_data0,
+	Qpipe_data1
 };
 
 Dirtab pipedir[] =
 {
-	".",		{Qdir,0,QTDIR},	0,		DMDIR|0500,
-	"data",		{Qdata0},	0,			0660,
-	"data1",	{Qdata1},	0,			0660,
+	".",		{Qpipe_dir,0,QTDIR},	0,	DMDIR|0500,
+	"data",		{Qpipe_data0},		0,	0660,
+	"data1",	{Qpipe_data1},		0,	0660,
 };
 
 static void
@@ -95,7 +95,7 @@ pipeattach(const char *spec)
 	p->path = ++pipealloc.path;
 	unlock(&pipealloc.l);
 
-	c->qid.path = NETQID(2*p->path, Qdir);
+	c->qid.path = NETQID(2*p->path, Qpipe_dir);
 	c->qid.vers = 0;
 	c->qid.type = QTDIR;
 	c->aux.pipe = p;
@@ -121,10 +121,10 @@ pipegen(Chan *c, const char *name, Dirtab *tab, int ntab, int i, Dir *dp)
 	tab += i;
 	p = c->aux.pipe;
 	switch(NETTYPE(tab->qid.path)){
-	case Qdata0:
+	case Qpipe_data0:
 		len = qlen(p->q[0]);
 		break;
-	case Qdata1:
+	case Qpipe_data1:
 		len = qlen(p->q[1]);
 		break;
 	default:
@@ -152,10 +152,10 @@ pipewalk(Chan *c, Chan *nc, const char **name, int nname)
 		p->ref++;
 		if(c->flag & COPEN){
 			switch(NETTYPE(c->qid.path)){
-			case Qdata0:
+			case Qpipe_data0:
 				p->qref[0]++;
 				break;
-			case Qdata1:
+			case Qpipe_data1:
 				p->qref[1]++;
 				break;
 			}
@@ -176,13 +176,13 @@ pipestat(Chan *c, char *db, int n)
 	tab = p->pipedir;
 
 	switch(NETTYPE(c->qid.path)){
-	case Qdir:
+	case Qpipe_dir:
 		devdir(c, c->qid, ".", 0, eve, DMDIR|0555, &dir);
 		break;
-	case Qdata0:
+	case Qpipe_data0:
 		devdir(c, c->qid, tab[1].name, qlen(p->q[0]), eve, tab[1].perm, &dir);
 		break;
-	case Qdata1:
+	case Qpipe_data1:
 		devdir(c, c->qid, tab[2].name, qlen(p->q[1]), eve, tab[2].perm, &dir);
 		break;
 	default:
@@ -220,11 +220,11 @@ pipeopen(Chan *c, int omode)
 		nexterror();
 	}
 	switch(NETTYPE(c->qid.path)){
-	case Qdata0:
+	case Qpipe_data0:
 		devpermcheck(p->user, p->pipedir[1].perm, omode);
 		p->qref[0]++;
 		break;
-	case Qdata1:
+	case Qpipe_data1:
 		devpermcheck(p->user, p->pipedir[2].perm, omode);
 		p->qref[1]++;
 		break;
@@ -252,14 +252,14 @@ pipeclose(Chan *c)
 		 *  closing either side hangs up the stream
 		 */
 		switch(NETTYPE(c->qid.path)){
-		case Qdata0:
+		case Qpipe_data0:
 			p->qref[0]--;
 			if(p->qref[0] == 0){
 				qhangup(p->q[1], 0);
 				qclose(p->q[0]);
 			}
 			break;
-		case Qdata1:
+		case Qpipe_data1:
 			p->qref[1]--;
 			if(p->qref[1] == 0){
 				qhangup(p->q[0], 0);
@@ -298,11 +298,11 @@ piperead(Chan *c, char *va, long n, vlong junk)
 
 	USED(junk);
 	switch(NETTYPE(c->qid.path)){
-	case Qdir:
+	case Qpipe_dir:
 		return devdirread(c, va, n, p->pipedir, nelem(pipedir), pipegen);
-	case Qdata0:
+	case Qpipe_data0:
 		return qread(p->q[0], va, n);
-	case Qdata1:
+	case Qpipe_data1:
 		return qread(p->q[1], va, n);
 	default:
 		panic("piperead");
@@ -318,9 +318,9 @@ pipebread(Chan *c, long n, ulong offset)
 	p = c->aux.pipe;
 
 	switch(NETTYPE(c->qid.path)){
-	case Qdata0:
+	case Qpipe_data0:
 		return qbread(p->q[0], n);
-	case Qdata1:
+	case Qpipe_data1:
 		return qbread(p->q[1], n);
 	}
 
@@ -351,11 +351,11 @@ pipewrite(Chan *c, const char *va, long n, vlong junk)
 	p = c->aux.pipe;
 
 	switch(NETTYPE(c->qid.path)){
-	case Qdata0:
+	case Qpipe_data0:
 		n = qwrite(p->q[1], va, n);
 		break;
 
-	case Qdata1:
+	case Qpipe_data1:
 		n = qwrite(p->q[0], va, n);
 		break;
 
@@ -387,11 +387,11 @@ pipebwrite(Chan *c, Block *bp, ulong junk)
 
 	p = c->aux.pipe;
 	switch(NETTYPE(c->qid.path)){
-	case Qdata0:
+	case Qpipe_data0:
 		n = qbwrite(p->q[1], bp);
 		break;
 
-	case Qdata1:
+	case Qpipe_data1:
 		n = qbwrite(p->q[0], bp);
 		break;
 
@@ -424,7 +424,7 @@ pipewstat(Chan *c, char *dp, int n)
 	n = convM2D(dp, n, d, (char*)&d[1]);
 	if(n == 0)
 		error(Eshortstat);
-	d1 = NETTYPE(c->qid.path) == Qdata1;
+	d1 = NETTYPE(c->qid.path) == Qpipe_data1;
 	if(!emptystr(d->name)){
 		validwstatname(d->name);
 		if(strlen(d->name) >= KNAMELEN)
@@ -439,6 +439,10 @@ pipewstat(Chan *c, char *dp, int n)
 	free(d);
 	return n;
 }
+
+#undef NETTYPE
+#undef NETID
+#undef NETQID
 
 Dev pipedevtab = {
 	'|',

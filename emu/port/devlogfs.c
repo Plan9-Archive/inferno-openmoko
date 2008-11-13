@@ -3,18 +3,13 @@
 #include "../port/lib.h"
 #include "../port/error.h"
 #else
-#include	"error.h"
+#include <error.h>
 #endif
-#include	<dat.h>
-#include	<fns.h>
-#include	<kernel.h>
-#include	<logfs.h>
-#include	<nandfs.h>
-
-
-#ifndef offsetof
-#define offsetof(T,X) ((ulong)&(((T*)0)->X))
-#endif
+#include <dat.h>
+#include <fns.h>
+#include <kernel.h>
+#include <logfs.h>
+#include <nandfs.h>
 
 typedef struct Devlogfs Devlogfs;
 typedef struct DevlogfsSession DevlogfsSession;
@@ -28,13 +23,13 @@ enum {
 };
 
 enum {
-	Qdir,
-	Qctl,
-	Qusers,
-	Qdump,
-	Qfs,
-	Qfsboot,
-	Qend,
+	Qlogfs_dir,
+	Qlogfs_ctl,
+	Qlogfs_users,
+	Qlogfs_dump,
+	Qlogfs_fs,
+	Qlogfs_fsboot,
+	Qlogfs_end,
 };
 
 typedef enum DevlogfsServerState { Closed, BootOpen, NeedVersion, NeedAttach, Attached, Hungup } DevlogfsServerState;

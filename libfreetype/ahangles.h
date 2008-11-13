@@ -24,12 +24,14 @@
 #define __AHANGLES_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
+
+#include <freetype/internal/ftobjs.h>
 #include "ahtypes.h"
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /* PI expressed in ah_angles -- we don't really need an important */
@@ -56,7 +58,9 @@ FT_BEGIN_HEADER
                  AH_Angle  angle2 );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __AHANGLES_H__ */
 

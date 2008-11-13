@@ -1,4 +1,4 @@
-#include "lib9.h"
+#include <lib9.h>
 
 char*
 strecpy(char *to, char *e, const char *from)

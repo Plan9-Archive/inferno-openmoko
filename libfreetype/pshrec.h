@@ -32,12 +32,14 @@
 #define __PSHREC_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
+
+#include <freetype/internal/pshints.h>
 #include "pshglob.h"
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -171,7 +173,9 @@ FT_BEGIN_HEADER
  /* */
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __PS_HINTER_RECORD_H__ */

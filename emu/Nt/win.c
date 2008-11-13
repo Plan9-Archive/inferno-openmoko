@@ -1,42 +1,19 @@
-#define Colormap	WColormap
-#define Cursor		WCursor
-#define Display		WDisplay
-#define Drawable	WDrawable
-#define Font		WFont
-#define GC		WGC
-#define Point		WPoint
 #define Rectangle	WRectangle
-#define Screen		WScreen
-#define Visual		WVisual
-#define Window		WWindow
-
-#include	<windows.h>
-
-#undef Colormap
-#undef Cursor
-#undef Display
-#undef XDrawable
-#undef Font
-#undef GC
-#undef Point
+#include <windows.h>
 #undef Rectangle
-#undef Screen
-#undef Visual
-#undef Window
-#undef Unknown
 
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	<draw.h>
-#include	"keyboard.h"
-#include	"cursor.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <draw.h>
+#include <keyboard.h>
+#include <cursor.h>
 
 extern ulong displaychan;
 
-extern	char*	runestoutf(char*, Rune*, int);
+extern	char*	runestoutf(char*, const Rune*, int);
 extern	int	bytesperline(Rectangle, int);
-extern	int	main(int argc, char **argv);
+extern	NORETURN main(int argc, char **argv);
 static	void	dprint(char*, ...);
 static	DWORD WINAPI	winproc(LPVOID);
 

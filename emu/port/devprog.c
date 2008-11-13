@@ -1,9 +1,9 @@
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
-#include "isa.h"
-#include "interp.h"
-#include "runt.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
 
 /*
  * Enable the heap device for environments that allow debugging =>
@@ -13,19 +13,19 @@ int	SECURE = 0;
 
 enum
 {
-	Qdir,
-	Qctl,
-	Qdbgctl,
-	Qheap,
-	Qns,
-	Qnsgrp,
-	Qpgrp,
-	Qstack,
-	Qstatus,
-	Qtext,
-	Qwait,
-	Qfd,
-	Qexception,
+	Qprog_dir,
+	Qprog_ctl,
+	Qprog_dbgctl,
+	Qprog_heap,
+	Qprog_ns,
+	Qprog_nsgrp,
+	Qprog_pgrp,
+	Qprog_stack,
+	Qprog_status,
+	Qprog_text,
+	Qprog_wait,
+	Qprog_fd,
+	Qprog_exception,
 };
 
 /*
@@ -33,18 +33,18 @@ enum
  */
 Dirtab progdir[] =
 {
-	"ctl",		{Qctl},		0,			0200,
-	"dbgctl",	{Qdbgctl},	0,			0600,
-	"heap",		{Qheap},	0,			0600,
-	"ns",		{Qns},		0,			0400,
-	"nsgrp",	{Qnsgrp},	0,			0444,
-	"pgrp",		{Qpgrp},	0,			0444,
-	"stack",	{Qstack},	0,			0400,
-	"status",	{Qstatus},	0,			0444,
-	"text",		{Qtext},	0,			0000,
-	"wait",		{Qwait},	0,			0400,
-	"fd",		{Qfd},		0,			0400,
-	"exception",	{Qexception},	0,	0400,
+	"ctl",		{Qprog_ctl},		0,	0200,
+	"dbgctl",	{Qprog_dbgctl},		0,	0600,
+	"heap",		{Qprog_heap},		0,	0600,
+	"ns",		{Qprog_ns},		0,	0400,
+	"nsgrp",	{Qprog_nsgrp},		0,	0444,
+	"pgrp",		{Qprog_pgrp},		0,	0444,
+	"stack",	{Qprog_stack},		0,	0400,
+	"status",	{Qprog_status},		0,	0444,
+	"text",		{Qprog_text},		0,	0000,
+	"wait",		{Qprog_wait},		0,	0400,
+	"fd",		{Qprog_fd},		0,	0400,
+	"exception",	{Qprog_exception},	0,	0400,
 };
 
 enum
@@ -120,7 +120,7 @@ struct Progctl
 };
 
 #define	QSHIFT		4		/* location in qid of pid */
-#define	QID(q)		(((ulong)(q).path&0x0000000F)>>0)
+#define	DEVPROGQID(q)		(((ulong)(q).path&0x0000000F)>>0)
 #define QPID(pid)	(((pid)<<QSHIFT))
 #define	PID(q)		((q).vers)
 #define PATH(q)		((ulong)(q).path&~((1<<QSHIFT)-1))
@@ -160,12 +160,12 @@ proggen(Chan *c, const char *name, Dirtab *tab, int ntab, int s, Dir *dp)
 	USED(ntab);
 
 	if(s == DEVDOTDOT){
-		mkqid(&qid, Qdir, 0, QTDIR);
+		mkqid(&qid, Qprog_dir, 0, QTDIR);
 		devdir(c, qid, "#p", 0, eve, DMDIR|0555, dp);
 		return 1;
 	}
 
-	if((ulong)c->qid.path == Qdir) {
+	if((ulong)c->qid.path == Qprog_dir) {
 		if(name != nil){
 			/* ignore s and use name to find pid */
 			pid = strtoul(name, &e, 0);
@@ -261,43 +261,43 @@ progopen(Chan *c, int omode)
 	if(p == nil)
 		error(Ethread);
 	o = p->osenv;
-	perm = progdir[QID(c->qid)-1].perm;
+	perm = progdir[DEVPROGQID(c->qid)-1].perm;
 	if((perm & 7) == 0)
 		perm = (perm|(perm>>3)|(perm>>6)) & o->pgrp->progmode;
 	devpermcheck(o->user, perm, omode);
 	omode = openmode(omode);
 
-	switch(QID(c->qid)){
+	switch(DEVPROGQID(c->qid)){
 	default:
 		error(Egreg);
-	case Qnsgrp:
-	case Qpgrp:
-	case Qtext:
-	case Qstatus:
-	case Qstack:
-	case Qctl:
-	case Qfd:
-	case Qexception:
+	case Qprog_nsgrp:
+	case Qprog_pgrp:
+	case Qprog_text:
+	case Qprog_status:
+	case Qprog_stack:
+	case Qprog_ctl:
+	case Qprog_fd:
+	case Qprog_exception:
 		break;
-	case Qwait:
+	case Qprog_wait:
 		c->aux.queue = qopen(1024, Qmsg, nil, nil);
 		if(c->aux.queue == nil)
 			error(Enomem);
 		o->childq = c->aux.queue;
 		break;
-	case Qns:
+	case Qprog_ns:
 		c->aux.mntwalk = (Mntwalk*)malloc(sizeof(Mntwalk));
 		if(c->aux.mntwalk == nil)
 			error(Enomem);
 		break;
-	case Qheap:
+	case Qprog_heap:
 		if(SECURE || o->pgrp->privatemem || omode != ORDWR)
 			error(Eperm);
 		c->aux.heapqry = (Heapqry*)malloc(sizeof(Heapqry));
 		if(c->aux.heapqry == nil)
 			error(Enomem);
 		break;
-	case Qdbgctl:
+	case Qprog_dbgctl:
 		if(SECURE || o->pgrp->privatemem || omode != ORDWR)
 			error(Eperm);
 		ctl = (Progctl*)malloc(sizeof(Progctl));
@@ -386,12 +386,12 @@ progclose(Chan *c)
 	Osenv *o;
 	Progctl *ctl;
 
-	switch(QID(c->qid)) {
-	case Qns:
-	case Qheap:
+	switch(DEVPROGQID(c->qid)) {
+	case Qprog_ns:
+	case Qprog_heap:
 		free(c->aux.heapqry);
 		break;
-	case Qdbgctl:
+	case Qprog_dbgctl:
 		if((c->flag & COPEN) == 0)
 			return;
 		ctl = c->aux.progctl;
@@ -399,7 +399,7 @@ progclose(Chan *c)
 		closedbgctl(ctl, progpid(PID(c->qid)));
 		release();
 		break;
-	case Qwait:
+	case Qprog_wait:
 		acquire();
 		i = 0;
 		for(;;) {
@@ -822,11 +822,11 @@ progread(Chan *c, char *va, long n, vlong offset)
 	if(c->qid.type & QTDIR)
 		return devdirread(c, va, n, 0, 0, proggen);
 
-	switch(QID(c->qid)){
-	case Qdbgctl:
+	switch(DEVPROGQID(c->qid)){
+	case Qprog_dbgctl:
 		ctl = c->aux.progctl;
 		return qread(ctl->q, va, n);
-	case Qstatus:
+	case Qprog_status:
 		acquire();
 		p = progpid(PID(c->qid));
 		if(p == nil || p->state == Pexiting || p->R.ML == H) {
@@ -853,9 +853,9 @@ progread(Chan *c, char *va, long n, vlong offset)
 			mbuf);
 		release();
 		return readstr(offset, va, n, up->genbuf);
-	case Qwait:
+	case Qprog_wait:
 		return qread(c->aux.queue, va, n);
-	case Qns:
+	case Qprog_ns:
 		acquire();
 		if(waserror()){
 			release();
@@ -890,7 +890,7 @@ progread(Chan *c, char *va, long n, vlong offset)
 		poperror();
 		release();
 		return i;
-	case Qnsgrp:
+	case Qprog_nsgrp:
 		acquire();
 		p = progpid(PID(c->qid));
 		if(p == nil) {
@@ -900,7 +900,7 @@ progread(Chan *c, char *va, long n, vlong offset)
 		grpid = ((Osenv *)p->osenv)->pgrp->pgrpid;
 		release();
 		return readnum(offset, va, n, grpid, NUMSIZE);
-	case Qpgrp:
+	case Qprog_pgrp:
 		acquire();
 		p = progpid(PID(c->qid));
 		if(p == nil) {
@@ -910,7 +910,7 @@ progread(Chan *c, char *va, long n, vlong offset)
 		grpid = p->group!=nil? p->group->id: 0;
 		release();
 		return readnum(offset, va, n, grpid, NUMSIZE);
-	case Qstack:
+	case Qprog_stack:
 		acquire();
 		p = progpid(PID(c->qid));
 		if(p == nil || p->state == Pexiting) {
@@ -924,7 +924,7 @@ progread(Chan *c, char *va, long n, vlong offset)
 		n = progstack(&p->R, p->state, va, n, offset);
 		release();
 		return n;
-	case Qheap:
+	case Qprog_heap:
 		acquire();
 		if(waserror()){
 			release();
@@ -936,7 +936,7 @@ progread(Chan *c, char *va, long n, vlong offset)
 		poperror();
 		release();
 		return n;
-	case Qfd:
+	case Qprog_fd:
 		acquire();
 		if(waserror()) {
 			release();
@@ -950,7 +950,7 @@ progread(Chan *c, char *va, long n, vlong offset)
 		poperror();
 		release();
 		return n;
-	case Qexception:
+	case Qprog_exception:
 		acquire();
 		p = progpid(PID(c->qid));
 		if(p == nil) {
@@ -1032,8 +1032,8 @@ progwrite(Chan *c, const char *va, long n, vlong offset)
 	if(p == nil)
 		error(Ethread);
 
-	switch(QID(c->qid)){
-	case Qctl:
+	switch(DEVPROGQID(c->qid)){
+	case Qprog_ctl:
 		cb = parsecmd(va, n);
 		if(waserror()){
 			free(cb);
@@ -1068,7 +1068,7 @@ progwrite(Chan *c, const char *va, long n, vlong offset)
 		poperror();
 		free(cb);
 		break;
-	case Qdbgctl:
+	case Qprog_dbgctl:
 		cb = parsecmd(va, n);
 		if(waserror()){
 			free(cb);
@@ -1128,7 +1128,7 @@ progwrite(Chan *c, const char *va, long n, vlong offset)
 		poperror();
 		free(cb);
 		break;
-	case Qheap:
+	case Qprog_heap:
 		/*
 		 * Heap query:
 		 *	addr.Fn

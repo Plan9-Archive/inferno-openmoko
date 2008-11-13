@@ -20,7 +20,7 @@
 #define __TTGLOAD_H__
 
 
-#include <ft2build.h>
+
 #include "ttobjs.h"
 
 #ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
@@ -28,7 +28,9 @@
 #endif
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   FT_LOCAL( void )
@@ -47,7 +49,9 @@ FT_BEGIN_HEADER
                  FT_Int32      load_flags );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __TTGLOAD_H__ */
 

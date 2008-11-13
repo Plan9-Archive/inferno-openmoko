@@ -17,10 +17,10 @@
 
 #include "t42parse.h"
 #include "t42error.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_LIST_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/ftlist.h>
+#include <freetype/internal/psaux.h>
 
 
   /*************************************************************************/
@@ -36,22 +36,22 @@
   static void
   t42_parse_font_name( T42_Face    face,
                        T42_Loader  loader );
-                       
+
   static void
   t42_parse_font_bbox( T42_Face    face,
                        T42_Loader  loader );
-                       
+
   static void
   t42_parse_font_matrix( T42_Face    face,
                          T42_Loader  loader );
   static void
   t42_parse_encoding( T42_Face    face,
                       T42_Loader  loader );
-                      
+
   static void
   t42_parse_charstrings( T42_Face    face,
                          T42_Loader  loader );
-                         
+
   static void
   t42_parse_sfnts( T42_Face    face,
                    T42_Loader  loader );
@@ -515,28 +515,28 @@
   t42_hexval( FT_Byte  v )
   {
     FT_UInt  d;
-    
+
     d = (FT_UInt)( v - 'A' );
     if ( d < 6 )
     {
       d += 10;
       goto Exit;
     }
-      
+
     d = (FT_UInt)( v - 'a' );
     if ( d < 6 )
     {
       d += 10;
       goto Exit;
     }
-      
+
     d = (FT_UInt)( v - '0' );
     if ( d < 10 )
       goto Exit;
-      
+
     d = 0;
- 
-  Exit:         
+
+  Exit:
     return d;
   }
 
@@ -668,7 +668,7 @@
           for ( i = 0; i < num_tables; i++ )
           {
             FT_Byte*  p = face->ttf_data + 12 + 16*i + 12;
-            
+
             len = FT_PEEK_ULONG( p );
 
             /* Pad to a 4-byte boundary length */
@@ -867,7 +867,7 @@
     T42_Parser  parser = &loader->parser;
     FT_Byte*    cur    = base;
     FT_Byte*    limit  = cur + size;
-    FT_UInt     n_keywords = sizeof ( t42_keywords ) / 
+    FT_UInt     n_keywords = sizeof ( t42_keywords ) /
                              sizeof ( t42_keywords[0] );
 
 

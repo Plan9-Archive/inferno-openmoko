@@ -1,6 +1,6 @@
-#include "lib9.h"
-#include "draw.h"
-#include "kernel.h"
+#include <lib9.h>
+#include <draw.h>
+#include <kernel.h>
 
 #define	HSHIFT	3	/* HSHIFT==5 runs slightly faster, but hash table is 64x bigger */
 #define	NHASH	(1<<(HSHIFT*NMATCH))
@@ -183,3 +183,6 @@ writeimage(int fd, Image *i, int dolock)
 	free(chain);
 	return 0;
 }
+
+#undef NHASH
+#undef HMASK

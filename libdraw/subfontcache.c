@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 /*
  * Easy versions of the cache routines; may be substituted by fancier ones for other purposes

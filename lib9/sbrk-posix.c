@@ -1,6 +1,6 @@
 #ifdef __APPLE_CC__	/* look for a better way */
-#include "lib9.h"
-#undef _POSIX_C_SOURCE 
+#include <lib9.h>
+#undef _POSIX_C_SOURCE
 #undef getwd
 
 #include	<unistd.h>
@@ -32,14 +32,14 @@ sbrk(int size)
 {
     void *brk;
     kern_return_t   err;
-    
+
     err = vm_allocate( (vm_map_t) mach_task_self(),
                        (vm_address_t *)&brk,
                        size,
                        VM_FLAGS_ANYWHERE);
     if (err != KERN_SUCCESS)
         brk = (void*)-1;
-    
+
     return brk;
 }
 #else

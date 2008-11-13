@@ -1,10 +1,10 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
 TkStab tkorient[] =
 {
@@ -13,32 +13,33 @@ TkStab tkorient[] =
 	{nil}
 };
 
-#define RGB(r,g,b) ((r<<24)|(g<<16)|(b<<8)|0xff)
+#define TKRGB(r,g,b) ((r<<24)|(g<<16)|(b<<8)|0xff)
 
 TkStab tkcolortab[] =
 {
-	{"black",	RGB(0,0,0)	},
-	{"blue",	RGB(0,0,204)	},
-	{"darkblue",	RGB(93,0,187)	},
-	{"red",		RGB(255,0,0)	},
-	{"yellow",	RGB(255,255,0)	},
-	{"green",	RGB(0,128,0)	},
-	{"white",	RGB(255,255,255)},
-	{"orange",	RGB(255,170,0)	},
-	{"aqua",	RGB(0,255,255)	},
-	{"fuchsia",	RGB(255,0,255)	},
-	{"gray",	RGB(128,128,128)},
-	{"grey",	RGB(128,128,128)},
-	{"lime",	RGB(0,255,0)	},
-	{"maroon",	RGB(128,0,0)	},
-	{"navy",	RGB(0,0,128)	},
-	{"olive",	RGB(128,128,0)	},
-	{"purple",	RGB(128,0,128)	},
-	{"silver",	RGB(192,192,192)},
-	{"teal",	RGB(0,128,128)	},
+	{"black",	TKRGB(0,0,0)	},
+	{"blue",	TKRGB(0,0,204)	},
+	{"darkblue",	TKRGB(93,0,187)	},
+	{"red",		TKRGB(255,0,0)	},
+	{"yellow",	TKRGB(255,255,0)	},
+	{"green",	TKRGB(0,128,0)	},
+	{"white",	TKRGB(255,255,255)},
+	{"orange",	TKRGB(255,170,0)	},
+	{"aqua",	TKRGB(0,255,255)	},
+	{"fuchsia",	TKRGB(255,0,255)	},
+	{"gray",	TKRGB(128,128,128)},
+	{"grey",	TKRGB(128,128,128)},
+	{"lime",	TKRGB(0,255,0)	},
+	{"maroon",	TKRGB(128,0,0)	},
+	{"navy",	TKRGB(0,0,128)	},
+	{"olive",	TKRGB(128,128,0)	},
+	{"purple",	TKRGB(128,0,128)	},
+	{"silver",	TKRGB(192,192,192)},
+	{"teal",	TKRGB(0,128,128)	},
 	{"transparent",	DTransparent	},
 	{nil}
 };
+#undef TKRGB
 
 TkStab tkrelief[] =
 {

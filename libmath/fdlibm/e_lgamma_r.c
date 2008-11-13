@@ -7,19 +7,19 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  *
  */
 
 /* __ieee754_lgamma_r(x, signgamp)
- * Reentrant version of the logarithm of the Gamma function 
- * with user provide pointer for the sign of Gamma(x). 
+ * Reentrant version of the logarithm of the Gamma function
+ * with user provide pointer for the sign of Gamma(x).
  *
  * Method:
  *   1. Argument Reduction for 0 < x <= 8
- * 	Since gamma(1+s)=s*gamma(s), for x in [0,8], we may 
+ * 	Since gamma(1+s)=s*gamma(s), for x in [0,8], we may
  * 	reduce x to a number in [1.5,2.5] by
  * 		lgamma(1+s) = log(s) + lgamma(s)
  *	for example,
@@ -57,36 +57,45 @@
  *	by
  *	  			    3       5             11
  *		w = w0 + w1*z + w2*z  + w3*z  + ... + w6*z
- *	where 
+ *	where
  *		|w - f(z)| < 2**-58.74
- *		
+ *
  *   4. For negative x, since (G is gamma function)
  *		-x*G(-x)*G(x) = pi/sin(pi*x),
  * 	we have
  * 		G(x) = pi/(sin(pi*x)*(-x)*G(-x))
  *	since G(-x) is positive, sign(G(x)) = sign(sin(pi*x)) for x<0
- *	Hence, for x<0, signgam = sign(sin(pi*x)) and 
+ *	Hence, for x<0, signgam = sign(sin(pi*x)) and
  *		lgamma(x) = log(|Gamma(x)|)
  *			  = log(pi/(|x*sin(pi*x)|)) - lgamma(-x);
- *	Note: one should avoid compute pi*(-x) directly in the 
+ *	Note: one should avoid compute pi*(-x) directly in the
  *	      computation of sin(pi*(-x)).
- *		
+ *
  *   5. Special Cases
  *		lgamma(2+s) ~ s*(1-Euler) for tiny s
  *		lgamma(1)=lgamma(2)=0
  *		lgamma(x) ~ -log(x) for tiny x
  *		lgamma(0) = lgamma(inf) = inf
  *	 	lgamma(-integer) = +-inf
- *	
+ *
  */
 
 #include "fdlibm.h"
 
-static const double 
+#ifndef DBL_CONST_one
+#define DBL_CONST_one
+static const double one = 1.00000000000000000000e+00; /* 0x3FF00000, 0x00000000 */
+#endif
+#ifndef DBL_CONST_half
+#define DBL_CONST_half
+static const double half = 0.5;
+#endif
+#ifndef DBL_CONST_pi
+#define DBL_CONST_pi
+static const double pi = 3.14159265358979311600e+00; /* 0x400921FB, 0x54442D18 */
+#endif
+static const double
 two52=  4.50359962737049600000e+15, /* 0x43300000, 0x00000000 */
-half=  5.00000000000000000000e-01, /* 0x3FE00000, 0x00000000 */
-one =  1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
-pi  =  3.14159265358979311600e+00, /* 0x400921FB, 0x54442D18 */
 a0  =  7.72156649015328655494e-02, /* 0x3FB3C467, 0xE37DB0C8 */
 a1  =  3.22467033424113591611e-01, /* 0x3FD4A34C, 0xC4A60FAD */
 a2  =  6.73523010531292681824e-02, /* 0x3FB13E00, 0x1A5562A7 */
@@ -150,7 +159,10 @@ w4  = -5.95187557450339963135e-04, /* 0xBF4380CB, 0x8C0FE741 */
 w5  =  8.36339918996282139126e-04, /* 0x3F4B67BA, 0x4CDAD5D1 */
 w6  = -1.63092934096575273989e-03; /* 0xBF5AB89D, 0x0B9E43E4 */
 
-static double zero=  0.00000000000000000000e+00;
+#ifndef DBL_CONST_zero
+#define DBL_CONST_zero
+static const double zero = 0.0;
+#endif
 
 	static double sin_pi(double x)
 {
@@ -183,9 +195,9 @@ static double zero=  0.00000000000000000000e+00;
         }
 	switch (n) {
 	    case 0:   y =  __kernel_sin(pi*y,zero,0); break;
-	    case 1:   
+	    case 1:
 	    case 2:   y =  __kernel_cos(pi*(0.5-y),zero); break;
-	    case 3:  
+	    case 3:
 	    case 4:   y =  __kernel_sin(pi*(one-y),zero,0); break;
 	    case 5:
 	    case 6:   y = -__kernel_cos(pi*(y-1.5),zero); break;
@@ -254,7 +266,7 @@ static double zero=  0.00000000000000000000e+00;
 		p3 = t2+w*(t5+w*(t8+w*(t11+w*t14)));
 		p  = z*p1-(tt-w*(p2+y*p3));
 		r += (tf + p); break;
-	      case 2:	
+	      case 2:
 		p1 = y*(u0+y*(u1+y*(u2+y*(u3+y*(u4+y*u5)))));
 		p2 = one+y*(v1+y*(v2+y*(v3+y*(v4+y*v5))));
 		r += (-0.5*y + p1/p2);
@@ -283,7 +295,7 @@ static double zero=  0.00000000000000000000e+00;
 	    y = z*z;
 	    w = w0+z*(w1+y*(w2+y*(w3+y*(w4+y*(w5+y*w6)))));
 	    r = (x-half)*(t-one)+w;
-	} else 
+	} else
     /* 2**58 <= x <= inf */
 	    r =  x*(__ieee754_log(x)-one);
 	if(hx<0) r = nadj - r;

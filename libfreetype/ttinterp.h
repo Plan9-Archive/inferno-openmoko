@@ -20,11 +20,13 @@
 #define __TTINTERP_H__
 
 
-#include <ft2build.h>
+
 #include "ttobjs.h"
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 #ifndef TT_CONFIG_OPTION_STATIC_INTEPRETER  /* indirect implementation */
@@ -309,7 +311,9 @@ FT_BEGIN_HEADER
   TT_RunIns( TT_ExecContext  exec );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __TTINTERP_H__ */
 

@@ -7,7 +7,7 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  *
@@ -20,7 +20,7 @@
  *                  1              2x                          x
  *	atanh(x) = --- * log(1 + -------) = 0.5 * log1p(2 * --------)
  *                  2             1 - x                      1 - x
- *	
+ *
  * 	For x<0.5
  *	atanh(x) = 0.5*log1p(2x+2x*x/(1-x))
  *
@@ -33,9 +33,18 @@
 
 #include "fdlibm.h"
 
-static const double one = 1.0, Huge = 1e300;
-
-static double zero = 0.0;
+#ifndef DBL_CONST_one
+#define DBL_CONST_one
+static const double one = 1.00000000000000000000e+00; /* 0x3FF00000, 0x00000000 */
+#endif
+#ifndef DBL_CONST_zero
+#define DBL_CONST_zero
+static const double zero = 0.0;
+#endif
+#ifndef DBL_CONST_Huge
+#define DBL_CONST_Huge
+static const double Huge = 1.000e+300;
+#endif
 
 	double __ieee754_atanh(double x)
 {
@@ -47,14 +56,14 @@ static double zero = 0.0;
 	ix = hx&0x7fffffff;
 	if ((ix|((lx|(-lx))>>31))>0x3ff00000) /* |x|>1 */
 	    return (x-x)/(x-x);
-	if(ix==0x3ff00000) 
+	if(ix==0x3ff00000)
 	    return x/zero;
 	if(ix<0x3e300000&&(Huge+x)>zero) return x;	/* x<2**-28 */
 	__HI(x) = ix;		/* x <- |x| */
 	if(ix<0x3fe00000) {		/* x < 0.5 */
 	    t = x+x;
 	    t = 0.5*log1p(t+t*x/(one-x));
-	} else 
+	} else
 	    t = 0.5*log1p((x+x)/(one-x));
 	if(hx>=0) return t; else return -t;
 }

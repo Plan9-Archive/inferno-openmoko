@@ -20,7 +20,7 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
+
 #include "ahglyph.h"
 #include "ahangles.h"
 #include "ahglobal.h"

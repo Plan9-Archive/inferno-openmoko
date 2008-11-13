@@ -1,13 +1,21 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	"audio.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <audio.h>
+
+enum
+{
+	Qaudio_dir = 0,		/* must start at 0 representing a directory */
+	Qaudio_audio,
+	Qaudio_audioctl
+};
+
 
 Dirtab audiotab[] =
 {
-	".",		{Qdir, 0, QTDIR},	0,	0555,
-	"audio",	{Qaudio},	0,	0666,
-	"audioctl",	{Qaudioctl},	0,	0666,
+	".",		{Qaudio_dir, 0, QTDIR},	0,	0555,
+	"audio",	{Qaudio_audio},		0,	0666,
+	"audioctl",	{Qaudio_audioctl},	0,	0666,
 };
 
 static void
@@ -43,10 +51,10 @@ audioopen(Chan *c, int omode)
 		nexterror();
 	}
 	switch(c->qid.path) {
-	case Qdir:
-	case Qaudioctl:
+	case Qaudio_dir:
+	case Qaudio_audioctl:
 		break;
-	case Qaudio:
+	case Qaudio_audio:
 		audio_file_open(c, c->mode);
 		break;
 	default:
@@ -63,10 +71,10 @@ audioclose(Chan *c)
 		return;
 
 	switch(c->qid.path) {
-	case Qdir:
-	case Qaudioctl:
+	case Qaudio_dir:
+	case Qaudio_audioctl:
 		break;
-	case Qaudio:
+	case Qaudio_audio:
 		audio_file_close(c);
 		break;
 	default:
@@ -85,9 +93,9 @@ audioread(Chan *c, char *va, long count, vlong offset)
 	if(c->qid.type & QTDIR)
 		return devdirread(c, va, count, audiotab, nelem(audiotab), devgen);
 	switch(c->qid.path) {
-	case Qaudio:
+	case Qaudio_audio:
 		return audio_file_read(c, va, count, offset);
-	case Qaudioctl:
+	case Qaudio_audioctl:
 		buf = (char*)smalloc(READSTR);
 		if(waserror()){
 			free(buf);
@@ -106,9 +114,9 @@ static long
 audiowrite(Chan *c, const char *va, long count, vlong offset)
 {
 	switch(c->qid.path) {
-	case Qaudio:
+	case Qaudio_audio:
 		return audio_file_write(c, va, count, offset);
-	case Qaudioctl:
+	case Qaudio_audioctl:
 		return audio_ctl_write(c, va, count, offset);
 	}
 	return 0;
@@ -394,4 +402,3 @@ Dev audiodevtab = {
         devremove,
         devwstat
 };
-

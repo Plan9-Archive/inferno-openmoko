@@ -1,11 +1,11 @@
 #include <lib9.h>
 #include <kernel.h>
-#include "isa.h"
-#include "interp.h"
-#include "runt.h"
-#include "raise.h"
-#include "freetypemod.h"
-#include "freetype.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <raise.h>
+#include <freetypemod.h>
+#include <freetype.h>
 
 
 typedef struct Face Face;

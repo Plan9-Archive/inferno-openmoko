@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "pool.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <pool.h>
 
 enum
 {

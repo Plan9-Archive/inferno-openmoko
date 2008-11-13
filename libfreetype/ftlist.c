@@ -23,10 +23,10 @@
   /*************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_LIST_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_OBJECTS_H
+
+#include <freetype/ftlist.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftobjs.h>
 
 
   /*************************************************************************/

@@ -1,14 +1,14 @@
-#include "lib9.h"
-#include "kernel.h"
+#include <lib9.h>
+#include <kernel.h>
 #include <isa.h>
-#include "interp.h"
-#include "runt.h"
-#include "keyring.h"
+#include <interp.h>
+#include <runt.h>
+#include <keyring.h>
 #include <mp.h>
 #include <libsec.h>
-#include "pool.h"
-#include "raise.h"
-#include "../libkeyring/keys.h"
+#include <pool.h>
+#include <raise.h>
+#include <keys.h>
 
 
 enum {

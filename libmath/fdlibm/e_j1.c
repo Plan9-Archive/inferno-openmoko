@@ -7,7 +7,7 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -32,16 +32,16 @@
  * 	   (To avoid cancellation, use
  *		sin(x) +- cos(x) = -cos(2x)/(sin(x) -+ cos(x))
  * 	    to compute the worse one.)
- *	   
+ *
  *	3 Special cases
  *		j1(nan)= nan
  *		j1(0) = 0
  *		j1(inf) = 0
- *		
+ *
  * Method -- y1(x):
- *	1. screen out x<=0 cases: y1(0)=-inf, y1(x<0)=NaN 
+ *	1. screen out x<=0 cases: y1(0)=-inf, y1(x<0)=NaN
  *	2. For x<2.
- *	   Since 
+ *	   Since
  *		y1(x) = 2/pi*(j1(x)*(ln(x/2)+Euler)-1/x-x/2+5/64*x^3-...)
  *	   therefore y1(x)-2/pi*j1(x)*ln(x)-1/x is an odd function.
  *	   We use the following function to approximate y1,
@@ -61,11 +61,23 @@
 
 static double pone(double), qone(double);
 
-static const double 
-Huge    = 1e300,
-one	= 1.0,
-invsqrtpi=  5.64189583547756279280e-01, /* 0x3FE20DD7, 0x50429B6D */
-tpi      =  6.36619772367581382433e-01, /* 0x3FE45F30, 0x6DC9C883 */
+#ifndef DBL_CONST_one
+#define DBL_CONST_one
+static const double one = 1.00000000000000000000e+00; /* 0x3FF00000, 0x00000000 */
+#endif
+#ifndef DBL_CONST_Huge
+#define DBL_CONST_Huge
+static const double Huge = 1.000e+300;
+#endif
+#ifndef DBL_CONST_invsqrtpi
+#define DBL_CONST_invsqrtpi
+static const double invsqrtpi = 5.64189583547756279280e-01; /* 0x3FE20DD7, 0x50429B6D */
+#endif
+#ifndef DBL_CONST_tpi
+#define DBL_CONST_tpi
+static const double tpi = 6.36619772367581382433e-01; /* 0x3FE45F30, 0x6DC9C883 */
+#endif
+static const double
 	/* R0/S0 on [0,2] */
 r00  = -6.25000000000000000000e-02, /* 0xBFB00000, 0x00000000 */
 r01  =  1.40705666955189706048e-03, /* 0x3F570D9F, 0x98472C61 */
@@ -77,9 +89,12 @@ s03  =  1.17718464042623683263e-06, /* 0x3EB3BFF8, 0x333F8498 */
 s04  =  5.04636257076217042715e-09, /* 0x3E35AC88, 0xC97DFF2C */
 s05  =  1.23542274426137913908e-11; /* 0x3DAB2ACF, 0xCFB97ED8 */
 
-static double zero    = 0.0;
+#ifndef DBL_CONST_zero
+#define DBL_CONST_zero
+static const double zero = 0.0;
+#endif
 
-	double __ieee754_j1(double x) 
+	double __ieee754_j1(double x)
 {
 	double z, s,c,ss,cc,r,u,v,y;
 	int hx,ix;
@@ -135,7 +150,7 @@ static const double V0[5] = {
   1.66559246207992079114e-11, /* 0x3DB25039, 0xDACA772A */
 };
 
-	double __ieee754_y1(double x) 
+	double __ieee754_y1(double x)
 {
 	double z, s,c,ss,cc,u,v;
 	int hx,ix,lx;
@@ -144,7 +159,7 @@ static const double V0[5] = {
         ix = 0x7fffffff&hx;
         lx = __LO(x);
     /* if Y1(NaN) is NaN, Y1(-inf) is NaN, Y1(inf) is 0 */
-	if(ix>=0x7ff00000) return  one/(x+x*x); 
+	if(ix>=0x7ff00000) return  one/(x+x*x);
         if((ix|lx)==0) return -one/zero;
         if(hx<0) return zero/zero;
         if(ix >= 0x40000000) {  /* |x| >= 2.0 */
@@ -174,10 +189,10 @@ static const double V0[5] = {
                     z = invsqrtpi*(u*ss+v*cc)/sqrt(x);
                 }
                 return z;
-        } 
+        }
         if(ix<=0x3c900000) {    /* x < 2**-54 */
             return(-tpi/x);
-        } 
+        }
         z = x*x;
         u = U0[0]+z*(U0[1]+z*(U0[2]+z*(U0[3]+z*U0[4])));
         v = one+z*(V0[0]+z*(V0[1]+z*(V0[2]+z*(V0[3]+z*V0[4]))));
@@ -273,7 +288,7 @@ static const double ps2[5] = {
         s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
         return one+ r/s;
 }
-		
+
 
 /* For x >= 8, the asymptotic expansions of qone is
  *	3/8 s - 105/1024 s^3 - ..., where s = 1/x.

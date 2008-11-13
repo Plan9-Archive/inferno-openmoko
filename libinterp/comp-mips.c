@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "raise.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <raise.h>
 
 #define T(r)	*((void**)(R.r))
 
@@ -403,7 +403,7 @@ literal(ulong imm, int roff)
 		return;
 
 	*litpool = imm;
-	litpool++;	
+	litpool++;
 }
 
 void
@@ -474,7 +474,7 @@ punt(Inst *i, int m, void (*fn)(void))
 		regdelay = 0;
 	}
 }
-				
+
 static void
 comgoto(Inst *i)
 {
@@ -513,11 +513,11 @@ comcase(Inst *i, int w)
 		J(Oj, base+macro[MacCASE]);
 		xchg();
 	}
-	
+
 	t = (WORD*)(mod->origmp+i->d.ind+4);
 	l = t[-1];
 
-	/* have to take care not to relocate the same table twice - 
+	/* have to take care not to relocate the same table twice -
 	 * the limbo compiler can duplicate a case instruction
 	 * during its folding phase
 	 */
@@ -1470,7 +1470,7 @@ macret(void)
 	IRR(Olw, O(REG,xpc),Rreg, Ro2);
 	JR(Ojr, Ro2);				// return to uncompiled code
 	IRR(Osw, O(REG,PC),Rreg, Ro1);
- 
+
 	*cp1 |= (code - cp1) - 1;
 	*cp2 |= (code - cp2) - 1;
 	*cp3 |= (code - cp3) - 1;
@@ -1618,7 +1618,7 @@ macmcal(void)
 	IRR(Osw, O(REG,FP),Rreg, Rfp);		// call to uncompiled code
 	IRR(Olw, O(REG,xpc),Rreg, Ro1);
 	JR(Ojr, Ro1);
-	IRR(Osw, O(REG,PC),Rreg, Rj); 
+	IRR(Osw, O(REG,PC),Rreg, Rj);
 }
 
 static	void

@@ -11,8 +11,8 @@
  * REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
  * OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
  */
-#include "lib9.h"
-#include "fmtdef.h"
+#include <lib9.h>
+#include <fmtdef.h>
 
 /*
  * public routine for final flush of a formatting buffer

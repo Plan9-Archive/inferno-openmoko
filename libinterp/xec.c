@@ -1537,6 +1537,7 @@ OP(self)
 	ASSIGN(rd->pmodlink, ml);
 }
 
+#undef OP
 Prog*
 isave(void)
 {

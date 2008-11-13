@@ -1,17 +1,18 @@
-#include "lib9.h"
-#include "kernel.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
+#include <kernel.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
 char*	tkimgbmcreate(TkTop*, char*, int, char**);
 char*	tkimgbmdel(TkImg*);
 void	tkimgbmfree(TkImg*);
 
-static Rectangle huger = { -1000000, -1000000, 1000000, 1000000 };
+//static Rectangle huger = { -1000000, -1000000, 1000000, 1000000 };
+extern	Rectangle	huger;
 
 typedef struct TkImgtype TkImgtype;
 struct TkImgtype

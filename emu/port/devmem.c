@@ -1,32 +1,32 @@
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
-#include "isa.h"
-#include "interp.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <isa.h>
+#include <interp.h>
 
 enum
 {
-	Qdir,
-	Qctl,
-	Qstate,
-	Qsum,
-	Qevent,
-	Qprof,
-	Qheap,
-	Qgc
+	Qmem_dir,
+	Qmem_ctl,
+	Qmem_state,
+	Qmem_sum,
+	Qmem_event,
+	Qmem_prof,
+	Qmem_heap,
+	Qmem_gc
 };
 
 static
 Dirtab memdir[] =
 {
-	".",			{Qdir, 0, QTDIR},	0,	DMDIR|0555,
-	"memctl",		{Qctl},	0,			0666,
-	"memstate",	{Qstate},	0,			0444,
-	"memsum",	{Qsum},	0,			0444,
-	"memevent",	{Qevent},	0,			0444,
-	"memprof",	{Qprof},	0,			0444,
-	"memheap",	{Qheap},	0,			0444,
-	"memgc",		{Qgc},	0,			0444,
+	".",		{Qmem_dir, 0, QTDIR},	0,	DMDIR|0555,
+	"memctl",	{Qmem_ctl},			0,	0666,
+	"memstate",	{Qmem_state},		0,	0444,
+	"memsum",	{Qmem_sum},			0,	0444,
+	"memevent",	{Qmem_event},		0,	0444,
+	"memprof",	{Qmem_prof},		0,	0444,
+	"memheap",	{Qmem_heap},		0,	0444,
+	"memgc",	{Qmem_gc},			0,	0444,
 };
 
 enum
@@ -39,7 +39,7 @@ enum
 	  Pimmutable=	3<<30,
 
 	Npool = 3,
-	Nevent = 10000,
+	Nevents = 10000,
 	Nstate = 12000
 };
 
@@ -80,7 +80,7 @@ static struct
 	Ref	inuse;
 	Rendez	r;
 	int	open;
-	Pevent	events[Nevent];
+	Pevent	events[Nevents];
 	int	rd;
 	int	wr;
 	int	full;
@@ -322,15 +322,15 @@ memclose(Chan *c)
 	if((c->flag & COPEN) == 0)
 		return;
 	switch((ulong)c->qid.path) {
-	case Qevent:
+	case Qmem_event:
 		/* BUG memmonitor = nil; */
 		poolevents.open = 0;
 		decref(&poolevents.inuse);
 		break;
-	case Qstate:
+	case Qmem_state:
 		decref(&stateopen);
 		break;
-	case Qprof:
+	case Qmem_prof:
 		decref(&memprof.inuse);
 		/* BUG memmonitor = nil; */
 		break;
@@ -356,12 +356,12 @@ memread(Chan *c, char *va, long count, vlong offset)
 	switch((ulong)c->qid.path) {
 	default:
 		error(Egreg);
-	case Qctl:
+	case Qmem_ctl:
 		return 0;
-	case Qsum:
+	case Qmem_sum:
 		summary = 1;
 		/* fall through */
-	case Qstate:
+	case Qmem_state:
 		poolwalk(mainmem, memaudit);
 		poolwalk(heapmem, memaudit);
 		poolwalk(imagmem, memaudit);
@@ -399,7 +399,7 @@ memread(Chan *c, char *va, long count, vlong offset)
 		}
 		return m-(uchar*)va;
 		*/
-	case Qevent:
+	case Qmem_event:
 		while(!ismemdata(nil)){
 			poolevents.want = 1;
 			sleep9(&poolevents.r, ismemdata, nil);
@@ -419,7 +419,7 @@ memread(Chan *c, char *va, long count, vlong offset)
 		}while(poolevents.rd != poolevents.wr);
 		poolevents.full = 0;
 		return m-va;
-	case Qprof:
+	case Qmem_prof:
 		if(offset == 0){
 			lock(&memprof.l);
 			memmove(memprof.snap, memprof.buckets, memprof.used*sizeof(memprof.buckets[0]));
@@ -436,7 +436,7 @@ memread(Chan *c, char *va, long count, vlong offset)
 			m += 4*4;
 		}
 		return m-va;
-	case Qgc:
+	case Qmem_gc:
 		s = (char*)malloc(READSTR);
 		if(s == nil)
 			error(Enomem);
@@ -466,11 +466,11 @@ memwrite(Chan *c, const char *va, long count, vlong offset)
 	switch((ulong)c->qid.path) {
 	default:
 		error(Egreg);
-	case Qctl:
+	case Qmem_ctl:
 		error(Ebadarg);
-	case Qstate:
+	case Qmem_state:
 		error(Eperm);
-	case Qprof:
+	case Qmem_prof:
 		mprofreset();
 		break;
 	}

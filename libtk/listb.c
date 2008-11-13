@@ -1,13 +1,13 @@
-#include "lib9.h"
-#include "draw.h"
-#include "keyboard.h"
+#include <lib9.h>
+#include <draw.h>
+#include <keyboard.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "listb.h"
+#include <listb.h>
 
 /* Layout constants */
 enum {
@@ -50,7 +50,7 @@ TkStab tkselmode[] =
 };
 
 static
-TkOption opts[] =
+TkOption opts_listb[] =
 {
 	{"xscrollcommand",	OPTtext,	offsetof(TkListbox, xscroll)		},
 	{"yscrollcommand",	OPTtext,	offsetof(TkListbox, yscroll)		},
@@ -60,7 +60,7 @@ TkOption opts[] =
 };
 
 static
-TkEbind b[] =
+TkEbind b_listb[] =
 {
 	{TkButton1P,		"%W tkListbButton1P %y"},
 	{TkButton1R,		"%W tkListbButton1R"},
@@ -102,7 +102,7 @@ tklistbox(TkTop *t, char *arg, char **ret)
 	tko[0].ptr = tk;
 	tko[0].optab = tkgeneric;
 	tko[1].ptr = tkl;
-	tko[1].optab = opts;
+	tko[1].optab = opts_listb;
 	tko[2].ptr = nil;
 
 	names = nil;
@@ -113,7 +113,7 @@ tklistbox(TkTop *t, char *arg, char **ret)
 	}
 	tksettransparent(tk, tkhasalpha(tk->env, TkCbackgnd));
 
-	e = tkbindings(t, tk, b, nelem(b));
+	e = tkbindings(t, tk, b_listb, nelem(b_listb));
 	if(e != nil) {
 		tkfreeobj(tk);
 		return e;
@@ -139,7 +139,7 @@ tklistbcget(Tk *tk, char *arg, char **val)
 	tko[0].ptr = tk;
 	tko[0].optab = tkgeneric;
 	tko[1].ptr = tkl;
-	tko[1].optab = opts;
+	tko[1].optab = opts_listb;
 	tko[2].ptr = nil;
 
 	return tkgencget(tko, arg, val, tk->env->top);
@@ -386,7 +386,7 @@ tklistbconf(Tk *tk, char *arg, char **val)
 	tko[0].ptr = tk;
 	tko[0].optab = tkgeneric;
 	tko[1].ptr = tkl;
-	tko[1].optab = opts;
+	tko[1].optab = opts_listb;
 	tko[2].ptr = nil;
 
 	if(*arg == '\0')
@@ -925,7 +925,7 @@ dragto(Tk *tk, int y)
 }
 
 static void
-autoselect(Tk *tk, const char *v, int cancelled)
+autoselect_listb(Tk *tk, const char *v, int cancelled)
 {
 	Point pt;
 	int y, eh, ne;
@@ -963,7 +963,7 @@ tklistbbutton1p(Tk *tk, char *arg, char **val)
 		entryactivate(tk, indx);
 		entrysee(tk, indx);
 	}
-	tkrepeat(tk, autoselect, nil, TkRptpause, TkRptinterval);
+	tkrepeat(tk, autoselect_listb, nil, TkRptpause, TkRptinterval);
 	return nil;
 }
 

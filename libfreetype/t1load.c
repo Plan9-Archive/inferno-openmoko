@@ -61,11 +61,11 @@
   /*************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_CONFIG_CONFIG_H
-#include FT_MULTIPLE_MASTERS_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+
+#include <freetype/internal/ftdebug.h>
+#include <freetype/config/ftconfig.h>
+#include <freetype/ftmm.h>
+#include <freetype/internal/t1types.h>
 
 #include "t1load.h"
 #include "t1errors.h"
@@ -1483,9 +1483,9 @@
 
     /* now add the special functions... */
     T1_FIELD_CALLBACK( "FontName", parse_font_name )
-#if 0    
+#if 0
     T1_FIELD_CALLBACK( "FontBBox", parse_font_bbox )
-#endif    
+#endif
     T1_FIELD_CALLBACK( "FontMatrix", parse_font_matrix )
     T1_FIELD_CALLBACK( "Encoding", parse_encoding )
     T1_FIELD_CALLBACK( "Subrs", parse_subrs )

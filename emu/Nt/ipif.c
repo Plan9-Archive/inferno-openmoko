@@ -1,14 +1,12 @@
-#define Unknown win_Unknown
-#include        <windows.h>
-#include        <winbase.h>
-#include        <sys/types.h>
-#include        <winsock.h>
-#undef Unknown
-#include        "dat.h"
-#include        "fns.h"
-#include        "ip.h"
-#include        "error.h"
+#include <windows.h>
+#include <winsock.h>
 
+#include <sys/types.h>
+
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <ip.h>
 
 int
 so_socket(int type)

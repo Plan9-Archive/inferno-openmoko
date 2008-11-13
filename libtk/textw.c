@@ -1,13 +1,13 @@
-#include "lib9.h"
-#include "draw.h"
-#include "keyboard.h"
+#include <lib9.h>
+#include <draw.h>
+#include <keyboard.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "textw.h"
+#include <textw.h>
 
 /*
  * useful text widget info to be found at:
@@ -24,8 +24,8 @@
 
 /* Layout constants */
 enum {
-	Textpadx	= 2,
-	Textpady	= 0,
+	Textpadx_textw	= 2,
+	Textpady_textw	= 0,
 };
 
 typedef struct Interval {
@@ -69,7 +69,7 @@ TkStab tkcompare[] =
 };
 
 static
-TkOption textopts[] =
+TkOption textopts_textw[] =
 {
 	{"wrap",		OPTstab,	offsetof(TkText, opts[TkTwrap]),	{tkwrap}},
 	{"spacing1",		OPTnndist,	offsetof(TkText, opts[TkTspacing1]),	{(TkStab*)offsetof(Tk, env)}},
@@ -140,8 +140,8 @@ static int	tktpostspace(Tk*, TkTline*);
 static int	tktprespace(Tk*, TkTline*);
 static void	tktsee(Tk*, TkTindex*, int);
 static Point	tktrelpos(Tk*);
-static void	autoselect(Tk*, const char*, int);
-static void	blinkreset(Tk*);
+static void	autoselect_textw(Tk*, const char*, int);
+static void	blinkreset_textw(Tk*);
 
 /* debugging */
 extern int tktdbg;
@@ -174,8 +174,8 @@ tktext(TkTop *t, char* arg, char **ret)
 
 	tk->relief = TKsunken;
 	tk->borderwidth = 2;
-	tk->ipad.x = Textpadx * 2;
-	tk->ipad.y = Textpady * 2;
+	tk->ipad.x = Textpadx_textw * 2;
+	tk->ipad.y = Textpady_textw * 2;
 	tk->flag |= Tktakefocus;
 	tkt->sborderwidth = 0;
 	tkt->inswidth = 2;
@@ -188,7 +188,7 @@ tktext(TkTop *t, char* arg, char **ret)
 	tko[0].ptr = tk;
 	tko[0].optab = tkgeneric;
 	tko[1].ptr = tkt;
-	tko[1].optab = textopts;
+	tko[1].optab = textopts_textw;
 	tko[2].ptr = nil;
 
 	tk->req.width = tk->env->wzero*Textwidth;
@@ -647,7 +647,7 @@ tktdrawline(Image *i, Tk *tk, TkTline *l, Point deltait)
 		r.max.y = r.min.y + lh;
 		r = rectsubpt(r, deltait);
 		if (!eqrect(tkt->cur_rec, r))
-			blinkreset(tk);
+			blinkreset_textw(tk);
 		tkt->cur_rec = r;
 		if(tkt->cur_flag)
 			tktextcursordraw(tk, TkCforegnd);
@@ -692,7 +692,7 @@ tktextcursordraw(Tk *tk, int color)
 }
 
 static void
-blinkreset(Tk *tk)
+blinkreset_textw(Tk *tk)
 {
 	TkText *tkt = TKobj(TkText, tk);
 	if (!tkhaskeyfocus(tk) || tk->flag&Tkdisabled)
@@ -702,7 +702,7 @@ blinkreset(Tk *tk)
 }
 
 static void
-showcaret(Tk *tk, int on)
+showcaret_textw(Tk *tk, int on)
 {
 	TkText *tkt = TKobj(TkText, tk);
 	TkTline *l, *lend;
@@ -736,13 +736,13 @@ tktextcursor(Tk *tk, char* arg, char **ret)
 		return nil;
 
 	if(strcmp(arg, " insert") == 0) {
-		tkblink(tk, showcaret);
+		tkblink(tk, showcaret_textw);
 		on = 1;
 	}
 	else
 		tkblink(nil, nil);
 
-	showcaret(tk, on);
+	showcaret_textw(tk, on);
 	return nil;
 }
 
@@ -2321,7 +2321,7 @@ tktextbutton1(Tk *tk, char *arg, char **val)
 	tktmarkmove(tk, mi, &ix);
 
 	tktclearsel(tk);
-	tkrepeat(tk, autoselect, nil, TkRptpause, TkRptinterval);
+	tkrepeat(tk, autoselect_textw, nil, TkRptpause, TkRptinterval);
 	return nil;
 }
 
@@ -2349,7 +2349,7 @@ tktextcget(Tk *tk, char *arg, char **val)
 	tko[0].ptr = tk;
 	tko[0].optab = tkgeneric;
 	tko[1].ptr = tkt;
-	tko[1].optab = textopts;
+	tko[1].optab = textopts_textw;
 	tko[2].ptr = nil;
 
 	return tkgencget(tko, arg, val, tk->env->top);
@@ -2414,7 +2414,7 @@ tktextconfigure(Tk *tk, char *arg, char **val)
 	tko[0].ptr = tk;
 	tko[0].optab = tkgeneric;
 	tko[1].ptr = tkt;
-	tko[1].optab = textopts;
+	tko[1].optab = textopts_textw;
 	tko[2].ptr = nil;
 
 	if(*arg == '\0')
@@ -3294,7 +3294,7 @@ doselectto(Tk *tk, Point p, int dbl)
 }
 
 static void
-autoselect(Tk *tk, const char *v, int cancelled)
+autoselect_textw(Tk *tk, const char *v, int cancelled)
 {
 	TkText *tkt = TKobj(TkText, tk);
 	Rectangle hitr;

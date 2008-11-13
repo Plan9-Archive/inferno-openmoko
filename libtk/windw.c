@@ -1,14 +1,14 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "canvs.h"
-#include "textw.h"
-#include "kernel.h"
+#include <canvs.h>
+#include <textw.h>
+#include <kernel.h>
 
 TkCtxt*
 tknewctxt(Display *d)

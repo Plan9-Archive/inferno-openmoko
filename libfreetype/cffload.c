@@ -16,12 +16,12 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_POSTSCRIPT_NAMES_H
-#include FT_TRUETYPE_TAGS_H
+
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/psnames.h>
+#include <freetype/tttags.h>
 
 #include "cffload.h"
 #include "cffparse.h"
@@ -1538,10 +1538,10 @@
         {
           if ( FT_FRAME_ENTER( ( num_glyphs - 1 ) * 2 ) )
             goto Exit;
-            
+
           for ( j = 1; j < num_glyphs; j++ )
             charset->sids[j] = FT_GET_USHORT();
-          
+
           FT_FRAME_EXIT();
         }
         break;
@@ -1751,13 +1751,13 @@
       case 0:
         {
           FT_Byte*  p;
-          
+
 
           if ( FT_FRAME_ENTER( count ) )
             goto Exit;
 
           p = (FT_Byte*)stream->cursor;
-          
+
           for ( j = 1; j <= count; j++ )
           {
             glyph_code = *p++;
@@ -1772,7 +1772,7 @@
               encoding->sids[glyph_code] = charset->sids[j];
             }
           }
-          
+
           FT_FRAME_EXIT();
         }
         break;

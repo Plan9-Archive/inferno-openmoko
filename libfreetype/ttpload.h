@@ -20,11 +20,13 @@
 #define __TTPLOAD_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_TRUETYPE_TYPES_H
+
+#include <freetype/internal/tttypes.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   FT_LOCAL( FT_Error )
@@ -40,7 +42,9 @@ FT_BEGIN_HEADER
                      FT_Stream  stream );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __TTPLOAD_H__ */
 

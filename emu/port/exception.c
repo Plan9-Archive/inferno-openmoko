@@ -1,11 +1,11 @@
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
-#include "isa.h"
-#include "interp.h"
-#include "runt.h"
-#include "kernel.h"
-#include "raise.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <kernel.h>
+#include <raise.h>
 
 static int
 ematch(char *pat, char *exp)

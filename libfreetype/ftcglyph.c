@@ -16,13 +16,13 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
-#include FT_CACHE_INTERNAL_GLYPH_H
-#include FT_ERRORS_H
-#include FT_LIST_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
+
+#include <freetype/ftcache.h>
+#include <freetype/cache/ftcglyph.h>
+#include <freetype/fterrors.h>
+#include <freetype/ftlist.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>
 
 #include "ftcerror.h"
 
@@ -97,7 +97,7 @@
       gfam->hash       = hash;
       gfam->item_total = item_total;
       gfam->item_count = item_count;
-      
+
       FTC_GLYPH_FAMILY_FOUND( gfam, gquery );
     }
 

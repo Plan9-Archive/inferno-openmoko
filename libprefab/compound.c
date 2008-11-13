@@ -2,7 +2,7 @@
 #include <draw.h>
 #include <interp.h>
 #include <isa.h>
-#include "../libinterp/runt.h"
+#include <runt.h>
 #include <drawif.h>
 #include <prefab.h>
 
@@ -98,7 +98,7 @@ redrawcompound(Image *i, Rectangle clipr, Prefab_Compound *c)
 
 	if(c==H || badenviron(c->environ, 0))
 		return;
-	
+
 	r = clipr;
 	s = c->environ->style;
 	elemcolor = lookupimage(s->elemcolor);
@@ -131,7 +131,7 @@ redrawcompound(Image *i, Rectangle clipr, Prefab_Compound *c)
 					}
 				len += 2+1;
 				break;
-			default: 
+			default:
 				len = r1.min.x+2*Dx(c->r)/3;
 			}
 			r1.max.x = r1.min.x + len;

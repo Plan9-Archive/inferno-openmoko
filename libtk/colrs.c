@@ -1,12 +1,12 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#define RGB(R,G,B) ((R<<24)|(G<<16)|(B<<8)|(0xff))
+#define TKRGB(R,G,B) ((R<<24)|(G<<16)|(B<<8)|(0xff))
 
 enum
 {
@@ -33,53 +33,53 @@ struct Coltab {
 static Coltab coltab[] =
 {
 	{TkCbackgnd,
-		RGB(tkBackR, tkBackG, tkBackB),
+		TKRGB(tkBackR, tkBackG, tkBackB),
 		TkSameshade},
 	{TkCbackgndlght,
-		RGB(tkBackR, tkBackG, tkBackB),
+		TKRGB(tkBackR, tkBackG, tkBackB),
 		TkLightshade},
 	{TkCbackgnddark,
-		RGB(tkBackR, tkBackG, tkBackB),
+		TKRGB(tkBackR, tkBackG, tkBackB),
 		TkDarkshade},
 	{TkCactivebgnd,
-		RGB(tkBackR+0x10, tkBackG+0x10, tkBackB+0x10),
+		TKRGB(tkBackR+0x10, tkBackG+0x10, tkBackB+0x10),
 		TkSameshade},
 	{TkCactivebgndlght,
-		RGB(tkBackR+0x10, tkBackG+0x10, tkBackB+0x10),
+		TKRGB(tkBackR+0x10, tkBackG+0x10, tkBackB+0x10),
 		TkLightshade},
 	{TkCactivebgnddark,
-		RGB(tkBackR+0x10, tkBackG+0x10, tkBackB+0x10),
+		TKRGB(tkBackR+0x10, tkBackG+0x10, tkBackB+0x10),
 		TkDarkshade},
 	{TkCactivefgnd,
-		RGB(0, 0, 0),
+		TKRGB(0, 0, 0),
 		TkSameshade},
 	{TkCforegnd,
-		RGB(0, 0, 0),
+		TKRGB(0, 0, 0),
 		TkSameshade},
 	{TkCselect,
-		RGB(tkSelectR, tkSelectG, tkSelectB),
+		TKRGB(tkSelectR, tkSelectG, tkSelectB),
 		TkSameshade},
 	{TkCselectbgnd,
-		RGB(tkSelectbgndR, tkSelectbgndG, tkSelectbgndB),
+		TKRGB(tkSelectbgndR, tkSelectbgndG, tkSelectbgndB),
 		TkSameshade},
 	{TkCselectbgndlght,
-		RGB(tkSelectbgndR, tkSelectbgndG, tkSelectbgndB),
+		TKRGB(tkSelectbgndR, tkSelectbgndG, tkSelectbgndB),
 		TkLightshade},
 	{TkCselectbgnddark,
-		RGB(tkSelectbgndR, tkSelectbgndG, tkSelectbgndB),
+		TKRGB(tkSelectbgndR, tkSelectbgndG, tkSelectbgndB),
 		TkDarkshade},
 	{TkCselectfgnd,
-		RGB(0xff, 0xff, 0xff),
+		TKRGB(0xff, 0xff, 0xff),
 		TkSameshade},
 	{TkCdisablefgnd,
-		RGB(0x88, 0x88, 0x88),
+		TKRGB(0x88, 0x88, 0x88),
 		TkSameshade},
 	{TkChighlightfgnd,
-		RGB(0, 0, 0),
+		TKRGB(0, 0, 0),
 		TkSameshade},
 	{-1}
 };
-
+#undef TKRGB
 void
 tksetenvcolours(TkEnv *env)
 {

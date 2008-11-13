@@ -1,6 +1,6 @@
-#include "lib9.h"
-#include "kernel.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
+#include <kernel.h>
 
 Subfont*
 readsubfonti(Display*d, char *name, int fd, Image *ai, int dolock)

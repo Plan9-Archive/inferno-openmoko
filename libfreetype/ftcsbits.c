@@ -16,13 +16,13 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
-#include FT_CACHE_SMALL_BITMAPS_H
-#include FT_CACHE_INTERNAL_GLYPH_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_ERRORS_H
+
+#include <freetype/ftcache.h>
+#include <freetype/cache/ftcsbits.h>
+#include <freetype/cache/ftcglyph.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/fterrors.h>
 
 #include "ftcerror.h"
 

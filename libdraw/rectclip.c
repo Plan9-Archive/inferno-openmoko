@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 int
 rectclip(Rectangle *rp, Rectangle b)		/* first by reference, second by value */

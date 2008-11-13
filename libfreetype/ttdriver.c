@@ -16,11 +16,11 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_TRUETYPE_IDS_H
+
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/ttnameid.h>
 
 #include "ttdriver.h"
 #include "ttgload.h"
@@ -89,7 +89,7 @@
   /*    They can be implemented by format-specific interfaces.             */
   /*                                                                       */
   static FT_Error
-  Get_Kerning( TT_Face     face,
+  TT_Get_Kerning( TT_Face     face,
                FT_UInt     left_glyph,
                FT_UInt     right_glyph,
                FT_Vector*  kerning )
@@ -411,7 +411,7 @@
     (FT_Size_ResetPixelsFunc) Set_Pixel_Sizes,
     (FT_Slot_LoadFunc)        Load_Glyph,
 
-    (FT_Face_GetKerningFunc)  Get_Kerning,
+    (FT_Face_GetKerningFunc)  TT_Get_Kerning,
     (FT_Face_AttachFunc)      0,
     (FT_Face_GetAdvancesFunc) 0
   };

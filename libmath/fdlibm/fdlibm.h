@@ -1,5 +1,5 @@
 /* derived from /netlib/fdlibm */
-#include "lib9.h"
+#include <lib9.h>
 
 /* @(#)fdlibm.h 1.5 95/01/18 */
 /*
@@ -8,7 +8,7 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -117,13 +117,13 @@ extern double lgamma_r __P((double, int *));
 #endif	/* _REENTRANT */
 
 /* ieee style elementary functions */
-extern double __ieee754_sqrt __P((double));			
-extern double __ieee754_acos __P((double));			
-extern double __ieee754_acosh __P((double));			
-extern double __ieee754_log __P((double));			
-extern double __ieee754_atanh __P((double));			
-extern double __ieee754_asin __P((double));			
-extern double __ieee754_atan2 __P((double,double));			
+extern double __ieee754_sqrt __P((double));
+extern double __ieee754_acos __P((double));
+extern double __ieee754_acosh __P((double));
+extern double __ieee754_log __P((double));
+extern double __ieee754_atanh __P((double));
+extern double __ieee754_asin __P((double));
+extern double __ieee754_atan2 __P((double,double));
 extern double __ieee754_exp __P((double));
 extern double __ieee754_cosh __P((double));
 extern double __ieee754_fmod __P((double,double));
@@ -146,7 +146,7 @@ extern int    __ieee754_rem_pio2 __P((double,double*));
 extern double __ieee754_scalb __P((double,int));
 
 /* fdlibm kernel function */
-extern double __kernel_standard __P((double,double,int));	
+extern double __kernel_standard __P((double,double,int));
 extern double __kernel_sin __P((double,double,int));
 extern double __kernel_cos __P((double,double));
 extern double __kernel_tan __P((double,double,int));

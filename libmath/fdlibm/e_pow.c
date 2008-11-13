@@ -7,7 +7,7 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -19,7 +19,7 @@
  *	1. Compute and return log2(x) in two pieces:
  *		log2(x) = w1 + w2,
  *	   where w1 has 53-24 = 29 bit trailing zeros.
- *	2. Perform y*log2(x) = n+y' by simulating muti-precision 
+ *	2. Perform y*log2(x) = n+y' by simulating muti-precision
  *	   arithmetic, where |y'|<=0.5.
  *	3. Return x**y = 2**n*exp(y'*log2)
  *
@@ -47,28 +47,68 @@
  * Accuracy:
  *	pow(x,y) returns x**y nearly rounded. In particular
  *			pow(integer,integer)
- *	always returns the correct integer provided it is 
+ *	always returns the correct integer provided it is
  *	representable.
  *
  * Constants :
- * The hexadecimal values are the intended ones for the following 
- * constants. The decimal values may be used, provided that the 
- * compiler will convert from decimal to binary accurately enough 
+ * The hexadecimal values are the intended ones for the following
+ * constants. The decimal values may be used, provided that the
+ * compiler will convert from decimal to binary accurately enough
  * to produce the hexadecimal values shown.
  */
 
 #include "fdlibm.h"
 
-static const double 
+#ifndef DBL_CONST_one
+#define DBL_CONST_one
+static const double one = 1.00000000000000000000e+00; /* 0x3FF00000, 0x00000000 */
+#endif
+#ifndef DBL_CONST_Huge
+#define DBL_CONST_Huge
+static const double Huge = 1.000e+300;
+#endif
+#ifndef DBL_CONST_zero
+#define DBL_CONST_zero
+static const double zero = 0.0;
+#endif
+#ifndef DBL_CONST_two
+#define DBL_CONST_two
+static const double two = 2.00000000000000000000e+00;  /* 0x40000000, 0x00000000 */
+#endif
+#ifndef DBL_CONST_tiny
+#define DBL_CONST_tiny
+static const double tiny = 1.0e-300;
+#endif
+#ifndef DBL_CONST_ln2
+#define DBL_CONST_ln2
+static const double ln2 = 6.93147180559945286227e-01;  /* 0x3FE62E42, 0xFEFA39EF */
+#endif
+#ifndef DBL_CONST_P1
+#define DBL_CONST_P1
+static const double P1 = 1.66666666666666019037e-01; /* 0x3FC55555, 0x5555553E */
+#endif
+#ifndef DBL_CONST_P2
+#define DBL_CONST_P2
+static const double P2 = -2.77777777770155933842e-03; /* 0xBF66C16C, 0x16BEBD93 */
+#endif
+#ifndef DBL_CONST_P3
+#define DBL_CONST_P3
+static const double P3 = 6.61375632143793436117e-05; /* 0x3F11566A, 0xAF25DE2C */
+#endif
+#ifndef DBL_CONST_P4
+#define DBL_CONST_P4
+static const double P4 = -1.65339022054652515390e-06; /* 0xBEBBBD41, 0xC5D26BF1 */
+#endif
+#ifndef DBL_CONST_P5
+#define DBL_CONST_P5
+static const double P5 = 4.13813679705723846039e-08; /* 0x3E663769, 0x72BEA4D0 */
+#endif
+
+static const double
 bp[] = {1.0, 1.5,},
 dp_h[] = { 0.0, 5.84962487220764160156e-01,}, /* 0x3FE2B803, 0x40000000 */
 dp_l[] = { 0.0, 1.35003920212974897128e-08,}, /* 0x3E4CFDEB, 0x43CFD006 */
-zero    =  0.0,
-one	=  1.0,
-two	=  2.0,
 two53	=  9007199254740992.0,	/* 0x43400000, 0x00000000 */
-Huge	=  1.0e300,
-tiny    =  1.0e-300,
 	/* poly coefs for (3/2)*(log(x)-2s-2/3*s**3 */
 L1  =  5.99999999999994648725e-01, /* 0x3FE33333, 0x33333303 */
 L2  =  4.28571428578550184252e-01, /* 0x3FDB6DB6, 0xDB6FABFF */
@@ -76,12 +116,6 @@ L3  =  3.33333329818377432918e-01, /* 0x3FD55555, 0x518F264D */
 L4  =  2.72728123808534006489e-01, /* 0x3FD17460, 0xA91D4101 */
 L5  =  2.30660745775561754067e-01, /* 0x3FCD864A, 0x93C9DB65 */
 L6  =  2.06975017800338417784e-01, /* 0x3FCA7E28, 0x4A454EEF */
-P1   =  1.66666666666666019037e-01, /* 0x3FC55555, 0x5555553E */
-P2   = -2.77777777770155933842e-03, /* 0xBF66C16C, 0x16BEBD93 */
-P3   =  6.61375632143793436117e-05, /* 0x3F11566A, 0xAF25DE2C */
-P4   = -1.65339022054652515390e-06, /* 0xBEBBBD41, 0xC5D26BF1 */
-P5   =  4.13813679705723846039e-08, /* 0x3E663769, 0x72BEA4D0 */
-lg2  =  6.93147180559945286227e-01, /* 0x3FE62E42, 0xFEFA39EF */
 lg2_h  =  6.93147182464599609375e-01, /* 0x3FE62E43, 0x00000000 */
 lg2_l  = -1.90465429995776804525e-09, /* 0xBE205C61, 0x0CA86C39 */
 ovt =  8.0085662595372944372e-0017, /* -(1024-log2(ovfl+.5ulp)) */
@@ -105,12 +139,12 @@ ivln2_l  =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
 	ix = hx&0x7fffffff;  iy = hy&0x7fffffff;
 
     /* y==zero: x**0 = 1 */
-	if((iy|ly)==0) return one; 	
+	if((iy|ly)==0) return one;
 
     /* +-NaN return x+y */
 	if(ix > 0x7ff00000 || ((ix==0x7ff00000)&&(lx!=0)) ||
-	   iy > 0x7ff00000 || ((iy==0x7ff00000)&&(ly!=0))) 
-		return x+y;	
+	   iy > 0x7ff00000 || ((iy==0x7ff00000)&&(ly!=0)))
+		return x+y;
 
     /* determine if y is an odd int when x < 0
      * yisint = 0	... y is not an integer
@@ -118,7 +152,7 @@ ivln2_l  =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
      * yisint = 2	... y is an even int
      */
 	yisint  = 0;
-	if(hx<0) {	
+	if(hx<0) {
 	    if(iy>=0x43400000) yisint = 2; /* even integer y */
 	    else if(iy>=0x3ff00000) {
 		k = (iy>>20)-0x3ff;	   /* exponent */
@@ -129,11 +163,11 @@ ivln2_l  =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
 		    j = iy>>(20-k);
 		    if((j<<(20-k))==iy) yisint = 2-(j&1);
 		}
-	    }		
-	} 
+	    }
+	}
 
     /* special value of y */
-	if(ly==0) { 	
+	if(ly==0) {
 	    if (iy==0x7ff00000) {	/* y is +-inf */
 	        if(((ix-0x3ff00000)|lx)==0)
 		    return  y - y;	/* inf**+-1 is NaN */
@@ -141,14 +175,14 @@ ivln2_l  =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
 		    return (hy>=0)? y: zero;
 	        else			/* (|x|<1)**-,+inf = inf,0 */
 		    return (hy<0)?-y: zero;
-	    } 
+	    }
 	    if(iy==0x3ff00000) {	/* y is  +-1 */
 		if(hy<0) return one/x; else return x;
 	    }
 	    if(hy==0x40000000) return x*x; /* y is  2 */
 	    if(hy==0x3fe00000) {	/* y is  0.5 */
 		if(hx>=0)	/* x >= +0 */
-		return sqrt(x);	
+		return sqrt(x);
 	    }
 	}
 
@@ -161,13 +195,13 @@ ivln2_l  =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
 		if(hx<0) {
 		    if(((ix-0x3ff00000)|yisint)==0) {
 			z = (z-z)/(z-z); /* (-1)**non-int is NaN */
-		    } else if(yisint==1) 
+		    } else if(yisint==1)
 			z = -z;		/* (x<0)**odd = -(|x|**odd) */
 		}
 		return z;
 	    }
 	}
-    
+
     /* (x<0)**(non-int) is NaN */
 	if((((hx>>31)+1)|yisint)==0) return (x-x)/(x-x);
 
@@ -180,7 +214,7 @@ ivln2_l  =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
 	/* over/underflow if x is not close to one */
 	    if(ix<0x3fefffff) return (hy<0)? Huge*Huge:tiny*tiny;
 	    if(ix>0x3ff00000) return (hy>0)? Huge*Huge:tiny*tiny;
-	/* now |1-x| is tiny <= 2**-20, suffice to compute 
+	/* now |1-x| is tiny <= 2**-20, suffice to compute
 	   log(x) by x-x^2/2+x^3/3-x^4/4 */
 	    t = x-1;		/* t has 20 trailing zeros */
 	    w = (t*t)*(0.5-t*(0.3333333333333333333333-t*0.25));
@@ -212,7 +246,7 @@ ivln2_l  =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
 	    __LO(s_h) = 0;
 	/* t_h=ax+bp[k] High */
 	    t_h = zero;
-	    __HI(t_h)=((ix>>1)|0x20000000)+0x00080000+(k<<18); 
+	    __HI(t_h)=((ix>>1)|0x20000000)+0x00080000+(k<<18);
 	    t_l = ax - (t_h-bp[k]);
 	    s_l = v*((u-s_h*t_h)-s_h*t_l);
 	/* compute log(ax) */
@@ -277,11 +311,11 @@ ivln2_l  =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
 	    n = ((n&0x000fffff)|0x00100000)>>(20-k);
 	    if(j<0) n = -n;
 	    p_h -= t;
-	} 
+	}
 	t = p_l+p_h;
 	__LO(t) = 0;
 	u = t*lg2_h;
-	v = (p_l-(t-p_h))*lg2+t*lg2_l;
+	v = (p_l-(t-p_h))*ln2+t*lg2_l;
 	z = u+v;
 	w = v-(z-u);
 	t  = z*z;

@@ -20,13 +20,15 @@
 #define __CIDOBJS_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+
+#include <freetype/internal/ftobjs.h>
+#include <freetype/config/ftconfig.h>
+#include <freetype/internal/t1types.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /* The following structures must be defined by the hinter */
@@ -150,7 +152,9 @@ FT_BEGIN_HEADER
   cid_driver_done( CID_Driver  driver );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __CIDOBJS_H__ */
 

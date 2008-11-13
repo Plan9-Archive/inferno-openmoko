@@ -1,10 +1,10 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	"version.h"
-#include	"mp.h"
-#include	"libsec.h"
-#include	"keyboard.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <version.h>
+#include <mp.h>
+#include <libsec.h>
+#include <keyboard.h>
 
 extern int cflag;
 int	exdebug;
@@ -12,54 +12,54 @@ extern int keepbroken;
 
 enum
 {
-	Qdir,
-	Qcons,
-	Qconsctl,
-	Qdrivers,
-	Qhostowner,
-	Qhoststdin,
-	Qhoststdout,
-	Qhoststderr,
-	Qjit,
-	Qkeyboard,
-	Qkprint,
-	Qmemory,
-	Qmsec,
-	Qnotquiterandom,
-	Qnull,
-	Qpin,
-	Qrandom,
-	Qscancode,
-	Qsysctl,
-	Qsysname,
-	Qtime,
-	Quser
+	Qcons_dir,
+	Qcons_cons,
+	Qcons_consctl,
+	Qcons_drivers,
+	Qcons_hostowner,
+	Qcons_hoststdin,
+	Qcons_hoststdout,
+	Qcons_hoststderr,
+	Qcons_jit,
+	Qcons_keyboard,
+	Qcons_kprint,
+	Qcons_memory,
+	Qcons_msec,
+	Qcons_notquiterandom,
+	Qcons_null,
+	Qcons_pin,
+	Qcons_random,
+	Qcons_scancode,
+	Qcons_sysctl,
+	Qcons_sysname,
+	Qcons_time,
+	Qcons_user
 };
 
 Dirtab contab[] =
 {
-	".",	{Qdir, 0, QTDIR},	0,		DMDIR|0555,
-	"cons",		{Qcons},	0,	0666,
-	"consctl",	{Qconsctl},	0,	0222,
-	"drivers",	{Qdrivers},	0,	0444,
-	"hostowner",	{Qhostowner},	0,	0644,
-	"hoststdin",	{Qhoststdin},	0,	0444,
-	"hoststdout",	{Qhoststdout},	0,	0222,
-	"hoststderr",	{Qhoststderr},	0,	0222,
-	"jit",	{Qjit},	0,	0666,
-	"keyboard",	{Qkeyboard},	0,	0666,
-	"kprint",	{Qkprint},	0,	0444,
-	"memory",	{Qmemory},	0,	0444,
-	"msec",		{Qmsec},	NUMSIZE,	0444,
-	"notquiterandom",	{Qnotquiterandom},	0,	0444,
-	"null",		{Qnull},	0,	0666,
-	"pin",		{Qpin},		0,	0666,
-	"random",	{Qrandom},	0,	0444,
-	"scancode",	{Qscancode},	0,	0444,
-	"sysctl",	{Qsysctl},	0,	0644,
-	"sysname",	{Qsysname},	0,	0644,
-	"time",		{Qtime},	0,	0644,
-	"user",		{Quser},	0,	0644,
+	".",			{Qcons_dir, 0, QTDIR},	0,	DMDIR|0555,
+	"cons",			{Qcons_cons},		0,	0666,
+	"consctl",		{Qcons_consctl},	0,	0222,
+	"drivers",		{Qcons_drivers},	0,	0444,
+	"hostowner",		{Qcons_hostowner},	0,	0644,
+	"hoststdin",		{Qcons_hoststdin},	0,	0444,
+	"hoststdout",		{Qcons_hoststdout},	0,	0222,
+	"hoststderr",		{Qcons_hoststderr},	0,	0222,
+	"jit",			{Qcons_jit},		0,	0666,
+	"keyboard",		{Qcons_keyboard},	0,	0666,
+	"kprint",		{Qcons_kprint},		0,	0444,
+	"memory",		{Qcons_memory},		0,	0444,
+	"msec",			{Qcons_msec},		NUMSIZE,0444,
+	"notquiterandom",	{Qcons_notquiterandom},	0,	0444,
+	"null",			{Qcons_null},		0,	0666,
+	"pin",			{Qcons_pin},		0,	0666,
+	"random",		{Qcons_random},		0,	0444,
+	"scancode",		{Qcons_scancode},	0,	0444,
+	"sysctl",		{Qcons_sysctl},		0,	0644,
+	"sysname",		{Qcons_sysname},	0,	0644,
+	"time",			{Qcons_time},		0,	0644,
+	"user",			{Qcons_user},		0,	0644,
 };
 
 Queue*	gkscanq;		/* Graphics keyboard raw scancodes */
@@ -210,11 +210,11 @@ consopen(Chan *c, int omode)
 {
 	c = devopen(c, omode, contab, nelem(contab), devgen);
 	switch((ulong)c->qid.path) {
-	case Qconsctl:
+	case Qcons_consctl:
 		incref(&kbd.ctl);
 		break;
 
-	case Qscancode:
+	case Qcons_scancode:
 		qlock(&kbd.gq);
 		if(gkscanq != nil || gkscanid == nil) {
 			qunlock(&kbd.q);
@@ -228,7 +228,7 @@ consopen(Chan *c, int omode)
 		qunlock(&kbd.gq);
 		break;
 
-	case Qkprint:
+	case Qcons_kprint:
 		wlock(&kprintq.l);
 		if(waserror()){
 			wunlock(&kprintq.l);
@@ -256,13 +256,13 @@ consclose(Chan *c)
 		return;
 
 	switch((ulong)c->qid.path) {
-	case Qconsctl:
+	case Qcons_consctl:
 		/* last close of control file turns off raw */
 		if(decref(&kbd.ctl) == 0)
 			kbd.raw = 0;
 		break;
 
-	case Qscancode:
+	case Qcons_scancode:
 		qlock(&kbd.gq);
 		if(gkscanq) {
 			qfree(gkscanq);
@@ -271,7 +271,7 @@ consclose(Chan *c)
 		qunlock(&kbd.gq);
 		break;
 
-	case Qkprint:
+	case Qcons_kprint:
 		wlock(&kprintq.l);
 		qfree(kprintq.q);
 		kprintq.q = nil;
@@ -294,45 +294,45 @@ consread(Chan *c, char *va, long n, vlong offset)
 	default:
 		error(Egreg);
 
-	case Qsysctl:
+	case Qcons_sysctl:
 		return readstr(offset, va, n, VERSION);
 
-	case Qsysname:
+	case Qcons_sysname:
 		if(ossysname == nil)
 			return 0;
 		return readstr(offset, va, n, ossysname);
 
-	case Qrandom:
+	case Qcons_random:
 		return randomread(va, n);
 
-	case Qnotquiterandom:
+	case Qcons_notquiterandom:
 		genrandom(va, n);
 		return n;
 
-	case Qpin:
+	case Qcons_pin:
 		p = "pin set";
 		if(up->env->pgrp->pin == Nopin)
 			p = "no pin";
 		return readstr(offset, va, n, p);
 
-	case Qhostowner:
+	case Qcons_hostowner:
 		return readstr(offset, va, n, eve);
 
-	case Qhoststdin:
+	case Qcons_hoststdin:
 		return read(0, va, n);	/* should be pread */
 
-	case Quser:
+	case Qcons_user:
 		return readstr(offset, va, n, up->env->user);
 
-	case Qjit:
+	case Qcons_jit:
 		snprint(buf, sizeof(buf), "%d", cflag);
 		return readstr(offset, va, n, buf);
 
-	case Qtime:
+	case Qcons_time:
 		snprint(buf, sizeof(buf), "%.lld", timeoffset + osusectime());
 		return readstr(offset, va, n, buf);
 
-	case Qdrivers:
+	case Qcons_drivers:
 		p = (char*)malloc(READSTR);
 		if(p == nil)
 			error(Enomem);
@@ -348,16 +348,16 @@ consread(Chan *c, char *va, long n, vlong offset)
 		free(p);
 		return n;
 
-	case Qmemory:
+	case Qcons_memory:
 		return 0; /* BUG poolread(va, n, offset); */
 
-	case Qnull:
+	case Qcons_null:
 		return 0;
 
-	case Qmsec:
+	case Qcons_msec:
 		return readnum(offset, va, n, osmillisec(), NUMSIZE);
 
-	case Qcons:
+	case Qcons_cons:
 		qlock(&kbd.q);
 		if(waserror()){
 			qunlock(&kbd.q);
@@ -407,15 +407,15 @@ consread(Chan *c, char *va, long n, vlong offset)
 		poperror();
 		return n;
 
-	case Qscancode:
+	case Qcons_scancode:
 		if(offset == 0)
 			return readstr(0, va, n, gkscanid);
 		return qread(gkscanq, va, n);
 
-	case Qkeyboard:
+	case Qcons_keyboard:
 		return qread(gkbdq, va, n);
 
-	case Qkprint:
+	case Qcons_kprint:
 		rlock(&kprintq.l);
 		if(waserror()){
 			runlock(&kprintq.l);
@@ -442,7 +442,7 @@ conswrite(Chan *c, const char *va, long n, vlong offset)
 	default:
 		error(Egreg);
 
-	case Qcons:
+	case Qcons_cons:
 		if(canrlock(&kprintq.l)){
 			if(kprintq.q != nil){
 				if(waserror()){
@@ -458,10 +458,10 @@ conswrite(Chan *c, const char *va, long n, vlong offset)
 		}
 		return write(1, va, n);
 
-	case Qsysctl:
+	case Qcons_sysctl:
 		return sysconwrite(va, n);
 
-	case Qconsctl:
+	case Qcons_consctl:
 		if(n >= sizeof(buf))
 			n = sizeof(buf)-1;
 		strncpy(buf, va, n);
@@ -480,7 +480,7 @@ conswrite(Chan *c, const char *va, long n, vlong offset)
 		}
 		break;
 
-	case Qkeyboard:
+	case Qcons_keyboard:
 		for(x=0; x<n; ) {
 			Rune r;
 			x += chartorune(&r, va+x);
@@ -488,10 +488,10 @@ conswrite(Chan *c, const char *va, long n, vlong offset)
 		}
 		break;
 
-	case Qnull:
+	case Qcons_null:
 		break;
 
-	case Qpin:
+	case Qcons_pin:
 		if(up->env->pgrp->pin != Nopin)
 			error("pin already set");
 		if(n >= sizeof(buf))
@@ -501,7 +501,7 @@ conswrite(Chan *c, const char *va, long n, vlong offset)
 		up->env->pgrp->pin = atoi(buf);
 		break;
 
-	case Qtime:
+	case Qcons_time:
 		if(n >= sizeof(buf))
 			n = sizeof(buf)-1;
 		strncpy(buf, va, n);
@@ -509,7 +509,7 @@ conswrite(Chan *c, const char *va, long n, vlong offset)
 		timeoffset = strtoll(buf, 0, 0)-osusectime();
 		break;
 
-	case Qhostowner:
+	case Qcons_hostowner:
 		if(!iseve())
 			error(Eperm);
 		if(offset != 0 || n >= sizeof(buf))
@@ -526,7 +526,7 @@ conswrite(Chan *c, const char *va, long n, vlong offset)
 		kstrdup(&up->env->user, buf);
 		break;
 
-	case Quser:
+	case Qcons_user:
 		if(!iseve())
 			error(Eperm);
 		if(offset != 0)
@@ -542,13 +542,13 @@ conswrite(Chan *c, const char *va, long n, vlong offset)
 		setid(buf, 0);
 		break;
 
-	case Qhoststdout:
+	case Qcons_hoststdout:
 		return write(1, va, n);
 
-	case Qhoststderr:
+	case Qcons_hoststderr:
 		return write(2, va, n);
 
-	case Qjit:
+	case Qcons_jit:
 		if(n >= sizeof(buf))
 			n = sizeof(buf)-1;
 		strncpy(buf, va, n);
@@ -559,7 +559,7 @@ conswrite(Chan *c, const char *va, long n, vlong offset)
 		cflag = x;
 		break;
 
-	case Qsysname:
+	case Qcons_sysname:
 		if(offset != 0)
 			error(Ebadarg);
 		if(n < 0 || n >= sizeof(buf))

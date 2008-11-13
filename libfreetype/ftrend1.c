@@ -16,9 +16,9 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_OUTLINE_H
+
+#include <freetype/internal/ftobjs.h>
+#include <freetype/ftoutln.h>
 #include "ftrend1.h"
 #include "ftraster.h"
 
@@ -193,9 +193,9 @@
 
     /* render outline into the bitmap */
     error = render->raster_render( render->raster, &params );
-    
+
     FT_Outline_Translate( outline, cbox.xMin, cbox.yMin );
-    
+
     if ( error )
       goto Exit;
 

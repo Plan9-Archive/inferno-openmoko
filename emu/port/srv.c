@@ -1,11 +1,11 @@
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
-#include "isa.h"
-#include "interp.h"
-#include "ip.h"
-#include "srv.h"
-#include "srvm.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <isa.h>
+#include <interp.h>
+#include <ip.h>
+#include <srv.h>
+#include <srvm.h>
 
 static	QLock	dbq;
 

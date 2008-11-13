@@ -28,14 +28,18 @@ THE SOFTWARE.
 #ifndef __PCFDRIVER_H__
 #define __PCFDRIVER_H__
 
-#include <ft2build.h>
-#include FT_INTERNAL_DRIVER_H
 
-FT_BEGIN_HEADER
+#include <freetype/internal/ftdriver.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
   FT_EXPORT_VAR( const FT_Driver_ClassRec )  pcf_driver_class;
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __PCFDRIVER_H__ */

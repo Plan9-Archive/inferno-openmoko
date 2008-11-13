@@ -1,9 +1,10 @@
-#include	<windows.h>
-#include	<winbase.h>
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	<lm.h>
+#include <windows.h>
+
+#include <lm.h>
+
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
 #ifndef SID_MAX_SUB_AUTHORITIES
 #define SID_MAX_SUB_AUTHORITIES 15
@@ -54,6 +55,7 @@ struct Fsinfo
  * the user information never gets thrown away,
  * but the group information gets refreshed with each setid.
  */
+//typedef struct User User;
 struct User
 {
 	QLock	lk;		/* locks the gotgroup and group fields */
@@ -147,7 +149,6 @@ static	uchar	isntfrog[256];
 
 static	void		fsremove(Chan*);
 
-	wchar_t	*widen(const char *s);
 	char		*narrowen(const wchar_t *ws);
 	int		widebytes(const wchar_t *ws);
 

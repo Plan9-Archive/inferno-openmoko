@@ -29,7 +29,7 @@ typedef struct Uqid	Uqid;
 typedef struct Uqidtab	Uqidtab;
 typedef struct Walkqid	Walkqid;
 
-#include "lib9.h"
+#include <lib9.h>
 #undef CHDIR
 #undef NAMELEN
 #undef ERRLEN
@@ -37,9 +37,9 @@ typedef struct Walkqid	Walkqid;
 #pragma incomplete Queue
 #pragma incomplete Mntrpc
 
-#include "fcall.h"
+#include <fcall.h>
 
-#include "pool.h"
+#include <pool.h>
 
 typedef int    Devgen(Chan*, const char*, Dirtab*, int, int, Dir*);
 
@@ -498,22 +498,6 @@ extern	int	globfs;
 extern	int	greyscale;
 extern	uint	qiomaxatomic;
 
-/*
- * floating point control and status register masks
- */
-enum
-{
-	INVAL		= 0x0001,
-	ZDIV		= 0x0002,
-	OVFL		= 0x0004,
-	UNFL		= 0x0008,
-	INEX		= 0x0010,
-	RND_NR		= 0x0000,
-	RND_NINF	= 0x0100,
-	RND_PINF	= 0x0200,
-	RND_Z		= 0x0300,
-	RND_MASK	= 0x0300
-};
 
 struct Cmdbuf
 {

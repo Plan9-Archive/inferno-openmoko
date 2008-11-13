@@ -11,7 +11,7 @@
  * REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
  * OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
  */
-#include "lib9.h"
+#include <lib9.h>
 
 int
 snprint(char *buf, int len, const char *fmt, ...)
@@ -24,4 +24,3 @@ snprint(char *buf, int len, const char *fmt, ...)
 	va_end(args);
 	return n;
 }
-

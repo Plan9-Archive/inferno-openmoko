@@ -1,8 +1,8 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	<a.out.h>
-#include	<dynld.h>
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <a.out.h>
+#include <dynld.h>
 
 /*
  * TO DO
@@ -18,18 +18,18 @@ extern ulong ndevs;
 
 enum
 {
-	Qdir,
-	Qdynld,
-	Qdynsyms,
+	Qdynldx_dir,
+	Qdynldx_dynld,
+	Qdynldx_dynsyms,
 
 	DEVCHAR	= 'L',
 };
 
 static Dirtab	dltab[] =
 {
-	".",			{Qdir, 0, QTDIR},	0,	DMDIR|0555,
-	"dynld",		{Qdynld},	0,	0644,
-	"dynsyms",	{Qdynsyms},	0,	0444,
+	".",		{Qdynldx_dir, 0, QTDIR},0,	DMDIR|0555,
+	"dynld",	{Qdynldx_dynld},	0,	0644,
+	"dynsyms",	{Qdynldx_dynsyms},	0,	0444,
 };
 
 typedef struct Dyndev Dyndev;

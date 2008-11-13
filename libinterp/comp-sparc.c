@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "raise.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <raise.h>
 
 enum
 {
@@ -266,7 +266,7 @@ static void
 con(ulong o, int r, int opt)
 {
 	if(opt != 0) {
-		if(bc(o)) {	
+		if(bc(o)) {
 			FM3I(2, Oadd, o & 0x1fff, RZ, r);
 			return;
 		}
@@ -417,7 +417,7 @@ literal(ulong imm, int roff)
 		return;
 
 	*litpool = imm;
-	litpool++;	
+	litpool++;
 }
 
 static void
@@ -475,7 +475,7 @@ punt(Inst *i, int m, void (*fn)(void))
 		mem(Oldw, O(REG, t), RREG, RA0);
 		FM3I(2, Ocmp, 0, RA0, RZ);
 		BRA(Obe, 5);
-		NOOP;				
+		NOOP;
 		mem(Oldw, O(REG, xpc), RREG, RLINK);
 		RETURN;
 		NOOP;
@@ -587,8 +587,8 @@ comcase(Inst *i, int w)
 
 	t = (WORD*)(mod->origmp+i->d.ind+4);
 	l = t[-1];
-	
-	/* have to take care not to relocate the same table twice - 
+
+	/* have to take care not to relocate the same table twice -
 	 * the limbo compiler can duplicate a case instruction
 	 * during its folding phase
 	 */
@@ -644,7 +644,7 @@ commframe(Inst *i)
 	mlnil = code;
 	BRA(Obe, 0);
 	NOOP;
-	
+
 	if((i->add&ARM) == AXIMM) {
 		o = OA(Modlink, links)+i->reg*sizeof(Modl)+O(Modl, frame);
 		mem(Oldw, o, RA0, RA3);
@@ -911,7 +911,7 @@ comp(Inst *i)
 				con(i->reg>>2, RA3, 1);
 				movloop(i, Oldw, Ostw);
 				break;
-			} 
+			}
 		}
 		mid(i, Oldw, RA3);
 		movloop(i, Oldbu, Ostb);
@@ -1024,7 +1024,7 @@ comp(Inst *i)
 		FM3(2, Ocmp, RA0, RA1, RZ);
 		BRADIS(r, i->d.ins-mod->prog);
 		NOOP;
-		break;		
+		break;
 	case IBNEW:
 		r = Obne;
 		goto braw;
@@ -1048,7 +1048,7 @@ comp(Inst *i)
 		FM3(2, Ocmp, RA0, RA1, RZ);
 		BRADIS(r, i->d.ins-mod->prog);
 		NOOP;
-		break;		
+		break;
 	case IBNEB:
 		r = Obne;
 		goto brab;
@@ -1073,7 +1073,7 @@ comp(Inst *i)
 		NOOP;
 		BRAFDIS(r, i->d.ins-mod->prog);
 		NOOP;
-		break;		
+		break;
 	case IBNEF:
 		r = Ofbne;
 		goto braf;
@@ -1472,7 +1472,7 @@ macfrp(void)
 	RETURN;
 	mem(Oldw, O(REG, MP), RREG, RMP);
 	PATCH(lab2);
-	mem(Ostw, O(Heap, ref)-sizeof(Heap), RA0, RA2);	
+	mem(Ostw, O(Heap, ref)-sizeof(Heap), RA0, RA2);
 	PATCH(lab1);
 	RETURN;
 	NOOP;
@@ -1546,7 +1546,7 @@ macret(void)
 	FM3I(2, Oadd, 0x8, RA2, RA2);
 	FM3I(2, Ojmpl, 0, RA2, RZ);		// return to uncompiled code
 	mem(Ostw, O(REG,PC),RREG, RA1);
-	
+
 	PATCH(cp1);
 	PATCH(cp2);
 	PATCH(cp3);
@@ -1569,10 +1569,10 @@ maccolr(void)
 	br = code;
 	BRA(Obe, 0);
 	con(propagator, RA2, 1);
-	mem(Ostw, O(Heap, color)-sizeof(Heap), RA1, RA2);	
+	mem(Ostw, O(Heap, color)-sizeof(Heap), RA1, RA2);
 	con((ulong)&nprop, RA2, 1);
 	RETURN;
-	mem(Ostw, 0, RA2, RA2);	
+	mem(Ostw, 0, RA2, RA2);
 	PATCH(br);
 	RETURN;
 	NOOP;

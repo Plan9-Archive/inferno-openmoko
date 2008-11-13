@@ -20,11 +20,13 @@
 #define __PSOBJS_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+
+#include <freetype/internal/psaux.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -196,7 +198,9 @@ FT_BEGIN_HEADER
               FT_UShort  seed );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __PSOBJS_H__ */
 

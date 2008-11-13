@@ -1,8 +1,8 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	"mp.h"
-#include	"libsec.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <mp.h>
+#include <libsec.h>
 
 /*
  * Copyright © 2003 Vita Nuova Holdings Limited.  All rights reserved.
@@ -13,31 +13,31 @@ enum {
 	Capidletime = 60	/* idle seconds before capwatch exits */
 };
 
-typedef struct Caps Caps;
-struct Caps
+typedef struct Cap Cap;
+struct Cap
 {
 	uchar	hash[SHA1dlen];
 	ulong	time;
-	Caps*	next;
+	Cap*	next;
 };
 
 struct {
 	QLock	l;
-	Caps*	caps;
+	Cap*	caps;
 	int	kpstarted;
 } allcaps;
 
 enum {
-	Qdir,
-	Qhash,
-	Quse
+	Qcap_dir,
+	Qcap_hash,
+	Qcap_use
 };
 
 static Dirtab capdir[] =
 {
-	".",			{Qdir, 0, QTDIR},	0,	DMDIR|0555,
-	"capuse",		{Quse, 0},			0,	0222,
-	"caphash",	{Qhash, 0},		0,	0200,
+	".",		{Qcap_dir, 0, QTDIR},0,	DMDIR|0555,
+	"capuse",	{Qcap_use, 0},	0,	0222,
+	"caphash",	{Qcap_hash, 0},	0,	0200,
 };
 
 static int ncapdir = nelem(capdir);
@@ -45,7 +45,7 @@ static int ncapdir = nelem(capdir);
 static void
 capwatch(void *a)
 {
-	Caps *c, **l;
+	Cap *c, **l;
 	int idletime;
 
 	USED(a);
@@ -101,7 +101,7 @@ capopen(Chan *c, int omode)
 		return c;
 	}
 
-	if(c->qid.path == Qhash && !iseve())
+	if(c->qid.path == Qcap_hash && !iseve())
 		error(Eperm);
 
 	c->mode = openmode(omode);
@@ -121,7 +121,7 @@ capread(Chan *c, char *va, long n, vlong vl)
 {
 	USED(vl);
 	switch((ulong)c->qid.path){
-	case Qdir:
+	case Qcap_dir:
 		return devdirread(c, va, n, capdir, ncapdir, devgen);
 
 	default:
@@ -134,11 +134,11 @@ capread(Chan *c, char *va, long n, vlong vl)
 static int
 capwritehash(const char *a, int l)
 {
-	Caps *c;
+	Cap *c;
 
 	if(l != SHA1dlen)
 		return -1;
-	c = (Caps *)malloc(sizeof(*c));
+	c = (Cap *)malloc(sizeof(*c));
 	if(c == nil)
 		return -1;
 	memmove(c->hash, a, l);
@@ -160,7 +160,7 @@ capwriteuse(const char *a, int len)
 	int n;
 	uchar digest[SHA1dlen];
 	char buf[128], *p, *users[3];
-	Caps *c, **l;
+	Cap *c, **l;
 
 	if(len >= sizeof(buf)-1)
 		return -1;
@@ -202,11 +202,11 @@ capwrite(Chan* c, const char* buf, long n, vlong offset)
 {
 	USED(offset);
 	switch((ulong)c->qid.path){
-	case Qhash:
+	case Qcap_hash:
 		if(capwritehash(buf, n) < 0)
 			error(Ebadarg);
 		return n;
-	case Quse:
+	case Qcap_use:
 		if(capwriteuse(buf, n) < 0)
 			error("invalid capability");
 		return n;
@@ -218,7 +218,7 @@ capwrite(Chan* c, const char* buf, long n, vlong offset)
 static void
 capremove(Chan *c)
 {
-	if(c->qid.path != Qhash || !iseve())
+	if(c->qid.path != Qcap_hash || !iseve())
 		error(Eperm);
 	ncapdir = nelem(capdir)-1;
 }

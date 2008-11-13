@@ -16,10 +16,10 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_TYPE1_TYPES_H
-#include FT_INTERNAL_TYPE42_TYPES_H
-#include FT_INTERNAL_OBJECTS_H
+
+#include <freetype/internal/t1types.h>
+#include <freetype/internal/t42types.h>
+#include <freetype/internal/ftobjs.h>
 
 
   /* documentation is in t1tables.h */

@@ -19,12 +19,12 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
+
 #include "ahhint.h"
 #include "ahglyph.h"
 #include "ahangles.h"
 #include "aherrors.h"
-#include FT_OUTLINE_H
+#include <freetype/ftoutln.h>
 
 
 #define FACE_GLOBALS( face )  ((AH_Face_Globals)(face)->autohint.data)

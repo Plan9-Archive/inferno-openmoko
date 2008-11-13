@@ -1,6 +1,6 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
 extern Rootdata rootdata[];
 extern Dirtab roottab[];

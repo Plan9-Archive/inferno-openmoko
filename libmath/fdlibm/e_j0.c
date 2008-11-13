@@ -7,7 +7,7 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -31,20 +31,20 @@
  * 	   (To avoid cancellation, use
  *		sin(x) +- cos(x) = -cos(2x)/(sin(x) -+ cos(x))
  * 	    to compute the worse one.)
- *	   
+ *
  *	3 Special cases
  *		j0(nan)= nan
  *		j0(0) = 1
  *		j0(inf) = 0
- *		
+ *
  * Method -- y0(x):
  *	1. For x<2.
- *	   Since 
+ *	   Since
  *		y0(x) = 2/pi*(j0(x)*(ln(x/2)+Euler) + x^2/4 - ...)
  *	   therefore y0(x)-2/pi*j0(x)*ln(x) is an even function.
  *	   We use the following function to approximate y0,
  *		y0(x) = U(z)/V(z) + (2/pi)*(j0(x)*ln(x)), z= x^2
- *	   where 
+ *	   where
  *		U(z) = u00 + u01*z + ... + u06*z^6
  *		V(z) = 1  + v01*z + ... + v04*z^4
  *	   with absolute approximation error bounded by 2**-72.
@@ -61,11 +61,23 @@
 
 static double pzero(double), qzero(double);
 
-static const double 
-Huge 	= 1e300,
-one	= 1.0,
-invsqrtpi=  5.64189583547756279280e-01, /* 0x3FE20DD7, 0x50429B6D */
-tpi      =  6.36619772367581382433e-01, /* 0x3FE45F30, 0x6DC9C883 */
+#ifndef DBL_CONST_one
+#define DBL_CONST_one
+static const double one = 1.00000000000000000000e+00; /* 0x3FF00000, 0x00000000 */
+#endif
+#ifndef DBL_CONST_Huge
+#define DBL_CONST_Huge
+static const double Huge = 1.000e+300;
+#endif
+#ifndef DBL_CONST_invsqrtpi
+#define DBL_CONST_invsqrtpi
+static const double invsqrtpi = 5.64189583547756279280e-01; /* 0x3FE20DD7, 0x50429B6D */
+#endif
+#ifndef DBL_CONST_tpi
+#define DBL_CONST_tpi
+static const double tpi = 6.36619772367581382433e-01; /* 0x3FE45F30, 0x6DC9C883 */
+#endif
+static const double
  		/* R0/S0 on [0, 2.00] */
 R02  =  1.56249999999999947958e-02, /* 0x3F8FFFFF, 0xFFFFFFFD */
 R03  = -1.89979294238854721751e-04, /* 0xBF28E6A5, 0xB61AC6E9 */
@@ -76,9 +88,12 @@ S02  =  1.16926784663337450260e-04, /* 0x3F1EA6D2, 0xDD57DBF4 */
 S03  =  5.13546550207318111446e-07, /* 0x3EA13B54, 0xCE84D5A9 */
 S04  =  1.16614003333790000205e-09; /* 0x3E1408BC, 0xF4745D8F */
 
-static double zero = 0.0;
+#ifndef DBL_CONST_zero
+#define DBL_CONST_zero
+static const double zero = 0.0;
+#endif
 
-	double __ieee754_j0(double x) 
+	double __ieee754_j0(double x)
 {
 	double z, s,c,ss,cc,r,u,v;
 	int hx,ix;
@@ -138,7 +153,7 @@ v02  =  7.60068627350353253702e-05, /* 0x3F13ECBB, 0xF578C6C1 */
 v03  =  2.59150851840457805467e-07, /* 0x3E91642D, 0x7FF202FD */
 v04  =  4.41110311332675467403e-10; /* 0x3DFE5018, 0x3BD6D9EF */
 
-	double __ieee754_y0(double x) 
+	double __ieee754_y0(double x)
 {
 	double z, s,c,ss,cc,u,v;
 	int hx,ix,lx;
@@ -147,7 +162,7 @@ v04  =  4.41110311332675467403e-10; /* 0x3DFE5018, 0x3BD6D9EF */
         ix = 0x7fffffff&hx;
         lx = __LO(x);
     /* Y0(NaN) is NaN, y0(-inf) is Nan, y0(inf) is 0  */
-	if(ix>=0x7ff00000) return  one/(x+x*x); 
+	if(ix>=0x7ff00000) return  one/(x+x*x);
         if((ix|lx)==0) return -one/zero;
         if(hx<0) return zero/zero;
         if(ix >= 0x40000000) {  /* |x| >= 2.0 */
@@ -208,7 +223,7 @@ static const double pR8[6] = { /* for x in [inf, 8]=1/[0,0.125] */
  -2.48521641009428822144e+03, /* 0xC0A36A6E, 0xCD4DCAFC */
  -5.25304380490729545272e+03, /* 0xC0B4850B, 0x36CC643D */
 };
-static const double pS8[5] = {
+static const double apS8[5] = {
   1.16534364619668181717e+02, /* 0x405D2233, 0x07A96751 */
   3.83374475364121826715e+03, /* 0x40ADF37D, 0x50596938 */
   4.05978572648472545552e+04, /* 0x40E3D2BB, 0x6EB6B05F */
@@ -224,7 +239,7 @@ static const double pR5[6] = { /* for x in [8,4.5454]=1/[0.125,0.22001] */
  -3.31231299649172967747e+02, /* 0xC074B3B3, 0x6742CC63 */
  -3.46433388365604912451e+02, /* 0xC075A6EF, 0x28A38BD7 */
 };
-static const double pS5[5] = {
+static const double apS5[5] = {
   6.07539382692300335975e+01, /* 0x404E6081, 0x0C98C5DE */
   1.05125230595704579173e+03, /* 0x40906D02, 0x5C7E2864 */
   5.97897094333855784498e+03, /* 0x40B75AF8, 0x8FBE1D60 */
@@ -240,7 +255,7 @@ static const double pR3[6] = {/* for x in [4.547,2.8571]=1/[0.2199,0.35001] */
  -5.80791704701737572236e+01, /* 0xC04D0A22, 0x420A1A45 */
  -3.14479470594888503854e+01, /* 0xC03F72AC, 0xA892D80F */
 };
-static const double pS3[5] = {
+static const double apS3[5] = {
   3.58560338055209726349e+01, /* 0x4041ED92, 0x84077DD3 */
   3.61513983050303863820e+02, /* 0x40769839, 0x464A7C0E */
   1.19360783792111533330e+03, /* 0x4092A66E, 0x6D1061D6 */
@@ -256,7 +271,7 @@ static const double pR2[6] = {/* for x in [2.8570,2]=1/[0.3499,0.5] */
  -1.11931668860356747786e+01, /* 0xC02662E6, 0xC5246303 */
  -3.23364579351335335033e+00, /* 0xC009DE81, 0xAF8FE70F */
 };
-static const double pS2[5] = {
+static const double apS2[5] = {
   2.22202997532088808441e+01, /* 0x40363865, 0x908B5959 */
   1.36206794218215208048e+02, /* 0x4061069E, 0x0EE8878F */
   2.70470278658083486789e+02, /* 0x4070E786, 0x42EA079B */
@@ -270,16 +285,16 @@ static const double pS2[5] = {
 	double z,r,s;
 	int ix;
 	ix = 0x7fffffff&__HI(x);
-	if(ix>=0x40200000)     {p = pR8; q= pS8;}
-	else if(ix>=0x40122E8B){p = pR5; q= pS5;}
-	else if(ix>=0x4006DB6D){p = pR3; q= pS3;}
-	else if(ix>=0x40000000){p = pR2; q= pS2;}
+	if(ix>=0x40200000)     {p = pR8; q= apS8;}
+	else if(ix>=0x40122E8B){p = pR5; q= apS5;}
+	else if(ix>=0x4006DB6D){p = pR3; q= apS3;}
+	else if(ix>=0x40000000){p = pR2; q= apS2;}
 	z = one/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
 	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
 	return one+ r/s;
 }
-		
+
 
 /* For x >= 8, the asymptotic expansions of qzero is
  *	-1/8 s + 75/1024 s^3 - ..., where s = 1/x.
@@ -298,7 +313,7 @@ static const double qR8[6] = { /* for x in [inf, 8]=1/[0,0.125] */
   8.85919720756468632317e+03, /* 0x40C14D99, 0x3E18F46D */
   3.70146267776887834771e+04, /* 0x40E212D4, 0x0E901566 */
 };
-static const double qS8[6] = {
+static const double aqS8[6] = {
   1.63776026895689824414e+02, /* 0x406478D5, 0x365B39BC */
   8.09834494656449805916e+03, /* 0x40BFA258, 0x4E6B0563 */
   1.42538291419120476348e+05, /* 0x41016652, 0x54D38C3F */
@@ -315,7 +330,7 @@ static const double qR5[6] = { /* for x in [8,4.5454]=1/[0.125,0.22001] */
   1.02724376596164097464e+03, /* 0x40900CF9, 0x9DC8C481 */
   1.98997785864605384631e+03, /* 0x409F17E9, 0x53C6E3A6 */
 };
-static const double qS5[6] = {
+static const double aqS5[6] = {
   8.27766102236537761883e+01, /* 0x4054B1B3, 0xFB5E1543 */
   2.07781416421392987104e+03, /* 0x40A03BA0, 0xDA21C0CE */
   1.88472887785718085070e+04, /* 0x40D267D2, 0x7B591E6D */
@@ -332,7 +347,7 @@ static const double qR3[6] = {/* for x in [4.547,2.8571]=1/[0.2199,0.35001] */
   1.70808091340565596283e+02, /* 0x406559DB, 0xE25EFD1F */
   1.66733948696651168575e+02, /* 0x4064D77C, 0x81FA21E0 */
 };
-static const double qS3[6] = {
+static const double aqS3[6] = {
   4.87588729724587182091e+01, /* 0x40486122, 0xBFE343A6 */
   7.09689221056606015736e+02, /* 0x40862D83, 0x86544EB3 */
   3.70414822620111362994e+03, /* 0x40ACF04B, 0xE44DFC63 */
@@ -349,7 +364,7 @@ static const double qR2[6] = {/* for x in [2.8570,2]=1/[0.3499,0.5] */
   3.16662317504781540833e+01, /* 0x403FAA8E, 0x29FBDC4A */
   1.62527075710929267416e+01, /* 0x403040B1, 0x71814BB4 */
 };
-static const double qS2[6] = {
+static const double aqS2[6] = {
   3.03655848355219184498e+01, /* 0x403E5D96, 0xF7C07AED */
   2.69348118608049844624e+02, /* 0x4070D591, 0xE4D14B40 */
   8.44783757595320139444e+02, /* 0x408A6645, 0x22B3BF22 */
@@ -364,10 +379,10 @@ static const double qS2[6] = {
 	double s,r,z;
 	int ix;
 	ix = 0x7fffffff&__HI(x);
-	if(ix>=0x40200000)     {p = qR8; q= qS8;}
-	else if(ix>=0x40122E8B){p = qR5; q= qS5;}
-	else if(ix>=0x4006DB6D){p = qR3; q= qS3;}
-	else if(ix>=0x40000000){p = qR2; q= qS2;}
+	if(ix>=0x40200000)     {p = qR8; q= aqS8;}
+	else if(ix>=0x40122E8B){p = qR5; q= aqS5;}
+	else if(ix>=0x4006DB6D){p = qR3; q= aqS3;}
+	else if(ix>=0x40000000){p = qR2; q= aqS2;}
 	z = one/(x*x);
 	r = p[0]+z*(p[1]+z*(p[2]+z*(p[3]+z*(p[4]+z*p[5]))));
 	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*(q[4]+z*q[5])))));

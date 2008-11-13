@@ -1,12 +1,12 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "label.h"
+#include <label.h>
 
 /*#define	O(t, e)		((long)(&((t*)0)->e))*/
 

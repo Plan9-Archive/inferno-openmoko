@@ -1,12 +1,12 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "canvs.h"
+#include <canvs.h>
 
 /* Window Options (+ means implemented)
 	 +tags
@@ -27,7 +27,7 @@ TkOption windopts[] =
 };
 
 static
-TkOption itemopts[] =
+TkOption itemopts_cwind[] =
 {
 	{"tags",	OPTctag,	offsetof(TkCitem, tags)		},
 	{nil}
@@ -241,7 +241,7 @@ tkcvswindcreat(Tk* tk, char *arg, char **val)
 	tko[0].ptr = w;
 	tko[0].optab = windopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_cwind;
 	tko[2].ptr = nil;
 	e = tkparse(tk->env->top, arg, tko, nil);
 	if(e != nil) {
@@ -282,7 +282,7 @@ tkcvswindcget(TkCitem *i, char *arg, char **val)
 	tko[0].ptr = w;
 	tko[0].optab = windopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_cwind;
 	tko[2].ptr = nil;
 
 	return tkgencget(tko, arg, val, i->env->top);
@@ -300,7 +300,7 @@ tkcvswindconf(Tk *tk, TkCitem *i, char *arg)
 	tko[0].ptr = w;
 	tko[0].optab = windopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_cwind;
 	tko[2].ptr = nil;
 
 	dx = w->width;

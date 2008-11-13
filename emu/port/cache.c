@@ -1,5 +1,5 @@
-#include "dat.h"
-#include "fns.h"
+#include <dat.h>
+#include <fns.h>
 
 /*
  * no cache in hosted mode
@@ -42,4 +42,3 @@ cupdate(Chan *c, char *buf,  int n, vlong off)
 	USED(n);
 	USED(off);
 }
-

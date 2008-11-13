@@ -1,11 +1,11 @@
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
-#include "kernel.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <kernel.h>
 
 typedef struct DS DS;
 
-static int	call(char*, char*, DS*);
+static int	call1(char*, char*, DS*);
 static int	csdial(DS*);
 static void	_dial_string_parse(char*, DS*);
 static int	nettrans(char*, char*, int na, char*, int);
@@ -86,7 +86,7 @@ csdial(DS *ds)
 	if(fd < 0){
 		/* no connection server, don't translate */
 		snprint(clone, sizeof(clone), "%s/%s/clone", ds->netdir, ds->proto);
-		return call(clone, ds->rem, ds);
+		return call1(clone, ds->rem, ds);
 	}
 
 	/*
@@ -114,7 +114,7 @@ csdial(DS *ds)
 		if(p == 0)
 			continue;
 		*p++ = 0;
-		rv = call(buf, p, ds);
+		rv = call1(buf, p, ds);
 		if(rv >= 0)
 			break;
 		err[0] = 0;
@@ -132,7 +132,7 @@ csdial(DS *ds)
 }
 
 static int
-call(char *clone, char *dest, DS *ds)
+call1(char *clone, char *dest, DS *ds)
 {
 	int fd, cfd, n;
 	char name[Maxpath], data[Maxpath], err[ERRMAX], *p;

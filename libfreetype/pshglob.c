@@ -17,9 +17,9 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_OBJECTS_H
+
+#include <freetype/freetype.h>
+#include <freetype/internal/ftobjs.h>
 #include "pshglob.h"
 
 #ifdef DEBUG_HINTER
@@ -650,7 +650,7 @@
 
 
         write->org = priv->standard_height[0];
-        write++;                           
+        write++;
         read = priv->snap_heights;
         for ( count = priv->num_snap_heights; count > 0; count-- )
         {

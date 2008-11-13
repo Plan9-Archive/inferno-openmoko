@@ -5,16 +5,18 @@
  *	scan the registry for serial ports?
  */
 
-#include	<windows.h>
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	<sys/types.h>
-#include	<sys/stat.h>
-#include	<fcntl.h>
-#include	<stdio.h>
-#include	<lm.h>
-#include	<direct.h>
+#include <windows.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <lm.h>
+#include <direct.h>
+
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
 // local fcts
 static void openport(int);
@@ -41,7 +43,7 @@ enum
 /*
  *  Macros to manage QIDs
  */
-#define NETTYPE(x)	((x)&0x0F)
+#define NETTYPE(x)	((x)&0x0F) /* *differs from devpipe.c */
 #define NETID(x)	((x)>>4)
 #define NETQID(i,t)	(((i)<<4)|(t))
 
@@ -107,7 +109,7 @@ static OptTable stopbits[] = {
 };
 
 // valid parity settings
-static OptTable parity[] = {
+static OptTable cparity[] = {
 	{"o",    ODDPARITY},
 	{"e",    EVENPARITY},
 	{"s",    SPACEPARITY},
@@ -372,6 +374,10 @@ eiawstat(Chan *c, char *dp, int n)
 	return n;
 }
 
+#undef NETID
+#undef NETTYPE
+#undef NETQID
+
 Dev eiadevtab = {
         Devchar,
         "eia",
@@ -610,7 +616,7 @@ wrctl(int port, char *cmd)
 			break;
 		case 'P':
 		case 'p':	// set parity -- even or odd
-			flag = stof(parity, f[0]+1);
+			flag = stof(cparity, f[0]+1);
 			if(flag==BAD)
 				error(Ebadarg);
 			dcb.Parity = (BYTE)flag;

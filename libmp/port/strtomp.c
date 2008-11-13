@@ -10,37 +10,37 @@ static struct {
 	uchar	t32[256];
 	uchar	t16[256];
 	uchar	t10[256];
-} tab;
+} tab_strtomp;
 
-enum {
-	INVAL=	255
-};
 
-static char set64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-static char set32[] = "23456789abcdefghijkmnpqrstuvwxyz";
-static char set16[] = "0123456789ABCDEF0123456789abcdef";
-static char set10[] = "0123456789";
+#define INVAL 255
+
+
+static char set64_strtomp[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static char set32_strtomp[] = "23456789abcdefghijkmnpqrstuvwxyz";
+static char set16_strtomp[] = "0123456789ABCDEF0123456789abcdef";
+static char set10_strtomp[] = "0123456789";
 
 static void
 init(void)
 {
 	char *p;
 
-	memset(tab.t64, INVAL, sizeof(tab.t64));
-	memset(tab.t32, INVAL, sizeof(tab.t32));
-	memset(tab.t16, INVAL, sizeof(tab.t16));
-	memset(tab.t10, INVAL, sizeof(tab.t10));
+	memset(tab_strtomp.t64, INVAL, sizeof(tab_strtomp.t64));
+	memset(tab_strtomp.t32, INVAL, sizeof(tab_strtomp.t32));
+	memset(tab_strtomp.t16, INVAL, sizeof(tab_strtomp.t16));
+	memset(tab_strtomp.t10, INVAL, sizeof(tab_strtomp.t10));
 
-	for(p = set64; *p; p++)
-		tab.t64[*p] = p-set64;
-	for(p = set32; *p; p++)
-		tab.t32[*p] = p-set32;
-	for(p = set16; *p; p++)
-		tab.t16[*p] = (p-set16)%16;
-	for(p = set10; *p; p++)
-		tab.t10[*p] = (p-set10);
+	for(p = set64_strtomp; *p; p++)
+		tab_strtomp.t64[*p] = p-set64_strtomp;
+	for(p = set32_strtomp; *p; p++)
+		tab_strtomp.t32[*p] = p-set32_strtomp;
+	for(p = set16_strtomp; *p; p++)
+		tab_strtomp.t16[*p] = (p-set16_strtomp)%16;
+	for(p = set10_strtomp; *p; p++)
+		tab_strtomp.t10[*p] = (p-set10_strtomp);
 
-	tab.inited = 1;
+	tab_strtomp.inited = 1;
 }
 
 static char*
@@ -52,7 +52,7 @@ from16(char *a, mpint *b)
 
 	b->top = 0;
 	for(p = a; *p; p++)
-		if(tab.t16[*(uchar*)p] == INVAL)
+		if(tab_strtomp.t16[*(uchar*)p] == INVAL)
 			break;
 	mpbits(b, (p-a)*4);
 	b->top = 0;
@@ -62,7 +62,7 @@ from16(char *a, mpint *b)
 		for(i = 0; i < Dbits; i += 4){
 			if(p <= a)
 				break;
-			x |= tab.t16[*(uchar*)--p]<<i;
+			x |= tab_strtomp.t16[*(uchar*)--p]<<i;
 		}
 		b->p[b->top++] = x;
 	}
@@ -88,7 +88,7 @@ from10(char *a, mpint *b)
 		// do a billion at a time in native arithmetic
 		x = 0;
 		for(i = 0; i < 9; i++){
-			y = tab.t10[*(uchar*)a];
+			y = tab_strtomp.t10[*(uchar*)a];
 			if(y == INVAL)
 				break;
 			a++;
@@ -118,7 +118,7 @@ from64(char *a, mpint *b)
 	uchar *p;
 	int n, m;
 
-	for(; tab.t64[*(uchar*)a] != INVAL; a++)
+	for(; tab_strtomp.t64[*(uchar*)a] != INVAL; a++)
 		;
 	n = a-buf;
 	mpbits(b, n*6);
@@ -138,7 +138,7 @@ from32(char *a, mpint *b)
 	uchar *p;
 	int n, m;
 
-	for(; tab.t64[*(uchar*)a] != INVAL; a++)
+	for(; tab_strtomp.t64[*(uchar*)a] != INVAL; a++)
 		;
 	n = a-buf;
 	mpbits(b, n*5);
@@ -160,7 +160,7 @@ strtomp(char *a, char **pp, int base, mpint *b)
 	if(b == nil)
 		b = mpnew(0);
 
-	if(tab.inited == 0)
+	if(tab_strtomp.inited == 0)
 		init();
 
 	while(*a==' ' || *a=='\t')
@@ -203,3 +203,4 @@ strtomp(char *a, char **pp, int base, mpint *b)
 
 	return b;
 }
+#undef INVAL

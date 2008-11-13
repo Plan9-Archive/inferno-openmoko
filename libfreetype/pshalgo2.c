@@ -16,9 +16,9 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
+
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>
 #include "pshalgo2.h"
 
 #undef  FT_COMPONENT

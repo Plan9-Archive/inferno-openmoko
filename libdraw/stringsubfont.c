@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
 
 Point
 stringsubfont(Image *b, Point p, Image *color, Subfont *f, char *cs)

@@ -1,11 +1,11 @@
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
-#include "isa.h"
-#include "interp.h"
-#include "kernel.h"
-#include "draw.h"
-#include "version.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <isa.h>
+#include <interp.h>
+#include <kernel.h>
+#include <draw.h>
+#include <version.h>
 
 extern	char*	hosttype;
 extern	char*	cputype;
@@ -234,7 +234,7 @@ putenvqv(char *name, const char * const *v, int n, int conf)
 }
 
 NORETURN
-main(int argc, char *argv[])
+main(int argc, char **argv)
 {
 	char *opt, *p;
 	char *enva[20];

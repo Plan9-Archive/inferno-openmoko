@@ -1,22 +1,21 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <isa.h>
 #include <interp.h>
-
-#include	"image.h"
-#include	<memimage.h>
-#include	<memlayer.h>
-#include	<cursor.h>
+#include <image.h>
+#include <memimage.h>
+#include <memlayer.h>
+#include <cursor.h>
 
 enum{
-	Qdir,
-	Qtkevents
+	Qtk_dir,
+	Qtk_tkevents
 };
 
 static
 Dirtab tkdirtab[]={
-	"tkevents",		{Qtkevents, 0},		0,	0600,
+	"tkevents",		{Qtk_tkevents, 0},		0,	0600,
 };
 
 static struct {

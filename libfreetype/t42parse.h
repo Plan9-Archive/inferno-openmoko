@@ -20,10 +20,12 @@
 
 
 #include "t42objs.h"
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/internal/psaux.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
   typedef struct  T42_ParserRec_
   {
@@ -80,7 +82,9 @@ FT_BEGIN_HEADER
 
  /* */
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __T42PARSE_H__ */

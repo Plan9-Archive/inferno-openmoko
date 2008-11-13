@@ -20,13 +20,15 @@
 #define __T1OBJS_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+
+#include <freetype/internal/ftobjs.h>
+#include <freetype/config/ftconfig.h>
+#include <freetype/internal/t1types.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /* The following structures must be defined by the hinter */
@@ -151,7 +153,7 @@ FT_BEGIN_HEADER
 
   FT_LOCAL( FT_Error )
   T1_GlyphSlot_Init( T1_GlyphSlot  slot );
-  
+
   FT_LOCAL( void )
   T1_GlyphSlot_Done( T1_GlyphSlot  slot );
 
@@ -162,7 +164,9 @@ FT_BEGIN_HEADER
   T1_Driver_Done( T1_Driver  driver );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __T1OBJS_H__ */
 

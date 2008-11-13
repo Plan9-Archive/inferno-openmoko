@@ -1,9 +1,9 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	"interp.h"
-#include	<isa.h>
-#include	"runt.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
 
 extern	Pool*	imagmem;
 /* BUG extern void	(*memmonitor)(int, ulong, ulong, ulong); */
@@ -57,29 +57,29 @@ struct Pmod
 } *pmods;
 
 #define QSHIFT	4
-#define QID(q)		((ulong)(q).path&0xf)
+#define DEVPROFQID(q)		((ulong)(q).path&0xf)
 #define QPID(pid)	((pid)<<QSHIFT)
 #define PID(q)		((q).vers)
 #define PATH(q)	((ulong)(q).path&~((1<<QSHIFT)-1))
 
 enum
 {
-	Qdir,
-	Qname,
-	Qpath,
-	Qhist,
-	Qpctl,
-	Qctl,
+	Qprof_dir,
+	Qprof_name,
+	Qprof_path,
+	Qprof_hist,
+	Qprof_pctl,
+	Qprof_ctl,
 };
 
 Dirtab profdir[] =
 {
-	".",			{Qdir, 0, QTDIR},	0,	DMDIR|0555,
-	"name",		{Qname},	0,			0444,
-	"path",		{Qpath},	0,			0444,
-	"histogram",	{Qhist},	0,			0444,
-	"pctl",		{Qpctl},	0,			0222,
-	"ctl",			{Qctl},	0,			0222,
+	".",		{Qprof_dir, 0, QTDIR},	0,	DMDIR|0555,
+	"name",		{Qprof_name},		0,	0444,
+	"path",		{Qprof_path},		0,	0444,
+	"histogram",	{Qprof_hist},		0,	0444,
+	"pctl",		{Qprof_pctl},		0,	0222,
+	"ctl",		{Qprof_ctl},		0,	0222,
 };
 
 enum{
@@ -273,7 +273,7 @@ profopen(Chan *c, int omode)
 	if(omode&OTRUNC)
 		error(Eperm);
 
-	qid = QID(c->qid);
+	qid = DEVPROFQID(c->qid);
 	if(qid == Qctl || qid == Qpctl){
 		if (omode != OWRITE)
 			error(Eperm);
@@ -294,7 +294,7 @@ profopen(Chan *c, int omode)
 	c->offset = 0;
 	c->flag |= COPEN;
 	c->mode = openmode(omode);
-	if(QID(c->qid) == Qhist)
+	if(DEVPROFQID(c->qid) == Qhist)
 		c->aux.i = 0;
 	return c;
 }
@@ -342,7 +342,7 @@ profread(Chan *c, char *va, long n, vlong offset)
 	release();
 	if(r == nil)
 		error(Ethread);
-	switch(QID(c->qid)){
+	switch(DEVPROFQID(c->qid)){
 	case Qname:
 		return readstr(offset, va, n, r->name);
 	case Qpath:
@@ -377,7 +377,7 @@ profwrite(Chan *c, const char *va, long n, vlong offset)
 
 	if(c->qid.type & QTDIR)
 		error(Eisdir);
-	switch(QID(c->qid)){
+	switch(DEVPROFQID(c->qid)){
 	case Qctl:
 		if(n > sizeof(buf)-1)
 			n = sizeof(buf)-1;

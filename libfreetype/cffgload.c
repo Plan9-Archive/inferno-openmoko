@@ -16,14 +16,14 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_OUTLINE_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
+
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/ftoutln.h>
+#include <freetype/tttags.h>
+#include <freetype/internal/pshints.h>
 
 #include "cffobjs.h"
 #include "cffload.h"
@@ -367,7 +367,7 @@
     decoder->num_globals  = cff->num_global_subrs;
     decoder->globals      = cff->global_subrs;
     decoder->globals_bias = cff_compute_bias( decoder->num_globals );
-    
+
     decoder->hint_mode    = hint_mode;
   }
 

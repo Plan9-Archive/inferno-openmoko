@@ -16,10 +16,10 @@
 #undef ushort
 #undef uint
 
-#include        "dat.h"
-#include        "fns.h"
-#include        "ip.h"
-#include        "error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <ip.h>
 
 int
 so_socket(int type)
@@ -246,7 +246,7 @@ so_bind(int fd, int su, unsigned long addr, unsigned short port)
 			hnputl(&sin->sin_addr.s_addr, addr);
 			hnputs(&sin->sin_port, i);
 
-			if(bind(fd, &sa, sizeof(sa)) >= 0)	
+			if(bind(fd, &sa, sizeof(sa)) >= 0)
 				return;
 		}
 		oserror();
@@ -336,7 +336,7 @@ so_getservbyname(char *service, char *net, char *port)
 	if(s == 0)
 		return -1;
 	p = s->s_port;
-	sprint(port, "%d", nhgets(&p));	
+	sprint(port, "%d", nhgets(&p));
 	return 0;
 }
 

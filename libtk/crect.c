@@ -1,13 +1,13 @@
-#include "lib9.h"
-#include "kernel.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
+#include <kernel.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "canvs.h"
+#include <canvs.h>
 
 
 /* Rectangle Options (+ means implemented)
@@ -34,7 +34,7 @@ TkOption rectopts[] =
 };
 
 static
-TkOption itemopts[] =
+TkOption itemopts_crect[] =
 {
 	{"tags",	OPTctag,	offsetof(TkCitem, tags)		},
 	{"fill",	OPTcolr,	offsetof(TkCitem, env),		{(TkStab*)TkCfill}},
@@ -99,7 +99,7 @@ tkcvsrectcreat(Tk* tk, char *arg, char **val)
 	tko[0].ptr = r;
 	tko[0].optab = rectopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_crect;
 	tko[2].ptr = nil;
 	e = tkparse(tk->env->top, arg, tko, nil);
 	if(e != nil) {
@@ -135,7 +135,7 @@ tkcvsrectcget(TkCitem *i, char *arg, char **val)
 	tko[0].ptr = r;
 	tko[0].optab = rectopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_crect;
 	tko[2].ptr = nil;
 
 	return tkgencget(tko, arg, val, i->env->top);
@@ -151,7 +151,7 @@ tkcvsrectconf(Tk *tk, TkCitem *i, char *arg)
 	tko[0].ptr = r;
 	tko[0].optab = rectopts;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_crect;
 	tko[2].ptr = nil;
 
 	e = tkparse(tk->env->top, arg, tko, nil);

@@ -20,12 +20,14 @@
 #define __CFFLOAD_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_CFF_TYPES_H
-#include FT_INTERNAL_POSTSCRIPT_NAMES_H
+
+#include <freetype/internal/cfftypes.h>
+#include <freetype/internal/psnames.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
   FT_LOCAL( FT_UShort )
   cff_get_standard_encoding( FT_UInt  charcode );
@@ -66,7 +68,9 @@ FT_BEGIN_HEADER
                      FT_UInt       glyph_index );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __CFFLOAD_H__ */
 

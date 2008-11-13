@@ -1,4 +1,4 @@
-#include "lib9.h"
+#include <lib9.h>
 
 int
 dirfwstat(int fd, Dir *d)

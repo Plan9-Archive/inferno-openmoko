@@ -1,15 +1,15 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "runt.h"
-#include "draw.h"
-#include "tk.h"
-#include "tkmod.h"
-#include "pool.h"
-#include "drawif.h"
-#include "keyboard.h"
-#include "raise.h"
-#include "kernel.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <draw.h>
+#include <tk.h>
+#include <tkmod.h>
+#include <pool.h>
+#include <drawif.h>
+#include <keyboard.h>
+#include <raise.h>
+#include <kernel.h>
 
 extern	void	tkfreetop(Heap*, int);
 Type*	fakeTkTop;

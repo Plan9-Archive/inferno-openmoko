@@ -161,7 +161,7 @@ s2b(const char *s, int nd0, int nd, unsigned  long y9)
 	long x, y;
 
 	x = (nd + 8) / 9;
-	for (k = 0, y = 1; x > y; y <<= 1, k++) 
+	for (k = 0, y = 1; x > y; y <<= 1, k++)
 		;
 	b = Balloc(k);
 	b->x[0] = y9;
@@ -170,7 +170,7 @@ s2b(const char *s, int nd0, int nd, unsigned  long y9)
 	i = 9;
 	if (9 < nd0) {
 		s += 9;
-		do 
+		do
 			b = multadd(b, 10, *s++ - '0');
 		while (++i < nd0);
 		s++;
@@ -181,7 +181,7 @@ s2b(const char *s, int nd0, int nd, unsigned  long y9)
 	return b;
 }
 
-static int	
+static int
 hi0bits(register unsigned  long x)
 {
 	register int	k = 0;
@@ -210,7 +210,7 @@ hi0bits(register unsigned  long x)
 	return k;
 }
 
-static int	
+static int
 lo0bits(unsigned  long *y)
 {
 	register int	k;
@@ -321,7 +321,7 @@ mult(Bigint *a, Bigint *b)
 			*xc = z2;
 		}
 	}
-	for (xc0 = c->x, xc = xc0 + wc; wc > 0 && !*--xc; --wc) 
+	for (xc0 = c->x, xc = xc0 + wc; wc > 0 && !*--xc; --wc)
 		;
 	c->wds = wc;
 	return c;
@@ -334,7 +334,7 @@ pow5mult(Bigint *b, int k)
 {
 	Bigint * b1, *p5, *p51;
 	int	i;
-	static int	p05[3] = { 
+	static int	p05[3] = {
 		5, 25, 125 	};
 
 	if (i = k & 3)
@@ -399,7 +399,7 @@ lshift(Bigint *b, int k)
 		} while (x < xe);
 		if (*x1 = z)
 			++n1;
-	} else 
+	} else
 		do
 			*x1++ = *x++;
 		while (x < xe);
@@ -408,7 +408,7 @@ lshift(Bigint *b, int k)
 	return b1;
 }
 
-static int	
+static int
 cmp(Bigint *a, Bigint *b)
 {
 	unsigned  long * xa, *xa0, *xb, *xb0;
@@ -488,7 +488,7 @@ diff(Bigint *a, Bigint *b)
 	return c;
 }
 
-static double	
+static double
 ulp(double x)
 {
 	register long L;
@@ -516,7 +516,7 @@ ulp(double x)
 	return a;
 }
 
-static double	
+static double
 b2d(Bigint *a, int *e)
 {
 	unsigned  long * xa, *xa0, w, y, z;
@@ -602,7 +602,7 @@ d2b(double d, int *e, int *bits)
 #undef d0
 #undef d1
 
-static double	
+static double
 ratio(Bigint *a, Bigint *b)
 {
 	double	da, db;
@@ -628,10 +628,10 @@ tens[] = {
 };
 
 static const double
-bigtens[] = { 
+bigtens[] = {
 	1e16, 1e32, 1e64, 1e128, 1e256 };
 
-static const double tinytens[] = { 
+static const double tinytens[] = {
 	1e-16, 1e-32, 1e-64, 1e-128,
 	9007199254740992.e-256
 };
@@ -645,7 +645,7 @@ static const double tinytens[] = {
 
 #define NAN_WORD1 0
 
-static int	
+static int
 match(const char **sp, char *t)
 {
 	int	c, d;
@@ -674,7 +674,7 @@ strtod(const char *s00, char **se)
 	Bigint * bb, *bb1, *bd, *bd0, *bs, *delta;
 	sign = nz0 = nz = 0;
 	rv = 0.;
-	for (s = s00; ; s++) 
+	for (s = s00; ; s++)
 		switch (*s) {
 		case '-':
 			sign = 1;
@@ -699,7 +699,7 @@ strtod(const char *s00, char **se)
 break2:
 	if (*s == '0') {
 		nz0 = 1;
-		while (*++s == '0') 
+		while (*++s == '0')
 			;
 		if (!*s)
 			goto ret;
@@ -1061,7 +1061,7 @@ drop_down:
 			word0(rv) -= P * Exp_msk1;
 			adj = aadj1 * ulp(rv);
 			rv += adj;
-			if ((word0(rv) & Exp_mask) >= 
+			if ((word0(rv) & Exp_mask) >=
 			    Exp_msk1 * (DBL_MAX_EXP + Bias - P)) {
 				if (word0(rv0) == Big0 && word1(rv0) == Big1)
 					goto ovfl;
@@ -1150,7 +1150,7 @@ ret:
 	return sign ? -rv : rv;
 }
 
-static int	
+static int
 quorem(Bigint *b, Bigint *S)
 {
 	int	n;
@@ -1227,8 +1227,8 @@ rv_alloc(int i)
 	int	j, k, *r;
 
 	j = sizeof(unsigned  long);
-	for (k = 0; 
-	    sizeof(Bigint) - sizeof(unsigned  long) - sizeof(int) + j <= i; 
+	for (k = 0;
+	    sizeof(Bigint) - sizeof(unsigned  long) - sizeof(int) + j <= i;
 	    j <<= 1)
 		k++;
 	r = (int * )Balloc(k);
@@ -1243,7 +1243,7 @@ nrv_alloc(char *s, char **rve, int n)
 	char	*rv, *t;
 
 	t = rv = rv_alloc(n);
-	while (*t = *s++) 
+	while (*t = *s++)
 		t++;
 	if (rve)
 		*rve = t;
@@ -1591,9 +1591,9 @@ bump_up:
 	mhi = mlo = 0;
 	if (leftright) {
 		if (mode < 2) {
-			i = 
+			i =
 #ifndef Sudden_Underflow
-			    denorm ? be + (Bias + (P - 1) - 1 + 1) : 
+			    denorm ? be + (Bias + (P - 1) - 1 + 1) :
 #endif
 			    1 + P - bbits;
 		} else {
@@ -1805,3 +1805,5 @@ ret1:
 	return s0;
 }
 
+#undef LSB
+#undef P

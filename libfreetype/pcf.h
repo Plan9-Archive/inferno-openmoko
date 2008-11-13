@@ -29,12 +29,14 @@ THE SOFTWARE.
 #define __PCF_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DRIVER_H
-#include FT_INTERNAL_STREAM_H
+
+#include <freetype/internal/ftdriver.h>
+#include <freetype/internal/ftstream.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
   typedef struct  PCF_TableRec_
   {
@@ -230,7 +232,9 @@ FT_BEGIN_HEADER
                  PCF_Face );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __PCF_H__ */
 

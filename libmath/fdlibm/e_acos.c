@@ -7,20 +7,20 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
 
 /* __ieee754_acos(x)
- * Method :                  
+ * Method :
  *	acos(x)  = pi/2 - asin(x)
  *	acos(-x) = pi/2 + asin(x)
  * For |x|<=0.5
  *	acos(x) = pi/2 - (x + x*x^2*R(x^2))	(see asin.c)
  * For x>0.5
  * 	acos(x) = pi/2 - (pi/2 - 2asin(sqrt((1-x)/2)))
- *		= 2asin(sqrt((1-x)/2))  
+ *		= 2asin(sqrt((1-x)/2))
  *		= 2s + 2s*z*R(z) 	...z=(1-x)/2, s=sqrt(z)
  *		= 2f + (2c + 2s*z*R(z))
  *     where f=hi part of s, and c = (z-f*f)/(s+f) is the correction term
@@ -38,21 +38,62 @@
 
 #include "fdlibm.h"
 
-static const double 
-one=  1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
-pi =  3.14159265358979311600e+00, /* 0x400921FB, 0x54442D18 */
-pio2_hi =  1.57079632679489655800e+00, /* 0x3FF921FB, 0x54442D18 */
-pio2_lo =  6.12323399573676603587e-17, /* 0x3C91A626, 0x33145C07 */
-pS0 =  1.66666666666666657415e-01, /* 0x3FC55555, 0x55555555 */
-pS1 = -3.25565818622400915405e-01, /* 0xBFD4D612, 0x03EB6F7D */
-pS2 =  2.01212532134862925881e-01, /* 0x3FC9C155, 0x0E884455 */
-pS3 = -4.00555345006794114027e-02, /* 0xBFA48228, 0xB5688F3B */
-pS4 =  7.91534994289814532176e-04, /* 0x3F49EFE0, 0x7501B288 */
-pS5 =  3.47933107596021167570e-05, /* 0x3F023DE1, 0x0DFDF709 */
-qS1 = -2.40339491173441421878e+00, /* 0xC0033A27, 0x1C8A2D4B */
-qS2 =  2.02094576023350569471e+00, /* 0x40002AE5, 0x9C598AC8 */
-qS3 = -6.88283971605453293030e-01, /* 0xBFE6066C, 0x1B8D0159 */
-qS4 =  7.70381505559019352791e-02; /* 0x3FB3B8C5, 0xB12E9282 */
+#ifndef DBL_CONST_one
+#define DBL_CONST_one
+static const double one = 1.00000000000000000000e+00; /* 0x3FF00000, 0x00000000 */
+#endif
+#ifndef DBL_CONST_pi
+#define DBL_CONST_pi
+static const double pi = 3.14159265358979311600e+00; /* 0x400921FB, 0x54442D18 */
+#endif
+#ifndef DBL_CONST_pio2_hi
+#define DBL_CONST_pio2_hi
+static const double pio2_hi = 1.57079632679489655800e+00; /* 0x3FF921FB, 0x54442D18 */
+#endif
+#ifndef DBL_CONST_pio2_lo
+#define DBL_CONST_pio2_lo
+static const double pio2_lo = 6.12323399573676603587e-17; /* 0x3C91A626, 0x33145C07 */
+#endif
+#ifndef DBL_CONST_pS0
+#define DBL_CONST_pS0
+static const double pS0 = 1.66666666666666657415e-01; /* 0x3FC55555, 0x55555555 */
+#endif
+#ifndef DBL_CONST_pS1
+#define DBL_CONST_pS1
+static const double pS1 = -3.25565818622400915405e-01; /* 0xBFD4D612, 0x03EB6F7D */
+#endif
+#ifndef DBL_CONST_pS2
+#define DBL_CONST_pS2
+static const double pS2 = 2.01212532134862925881e-01; /* 0x3FC9C155, 0x0E884455 */
+#endif
+#ifndef DBL_CONST_pS3
+#define DBL_CONST_pS3
+static const double pS3 = -4.00555345006794114027e-02; /* 0xBFA48228, 0xB5688F3B */
+#endif
+#ifndef DBL_CONST_pS4
+#define DBL_CONST_pS4
+static const double pS4 = 7.91534994289814532176e-04; /* 0x3F49EFE0, 0x7501B288 */
+#endif
+#ifndef DBL_CONST_pS5
+#define DBL_CONST_pS5
+static const double pS5 = 3.47933107596021167570e-05; /* 0x3F023DE1, 0x0DFDF709 */
+#endif
+#ifndef DBL_CONST_qS1
+#define DBL_CONST_qS1
+static const double qS1 = -2.40339491173441421878e+00; /* 0xC0033A27, 0x1C8A2D4B */
+#endif
+#ifndef DBL_CONST_qS2
+#define DBL_CONST_qS2
+static const double qS2 = 2.02094576023350569471e+00; /* 0x40002AE5, 0x9C598AC8 */
+#endif
+#ifndef DBL_CONST_qS3
+#define DBL_CONST_qS3
+static const double qS3 = -6.88283971605453293030e-01; /* 0xBFE6066C, 0x1B8D0159 */
+#endif
+#ifndef DBL_CONST_qS4
+#define DBL_CONST_qS4
+static const double qS4 = 7.70381505559019352791e-02; /* 0x3FB3B8C5, 0xB12E9282 */
+#endif
 
 	double __ieee754_acos(double x)
 {

@@ -1,13 +1,13 @@
 #include <windows.h>
-#include <Lmcons.h>
 #include <winsock.h>
+#include <Lmcons.h>
 
-#include "dat.h"
-#include "fns.h"
-#include "error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
 
-#include "isa.h"
-#include "interp.h" /* debug */
+#include <isa.h>
+#include <interp.h> /* debug */
 
 
 #define	MAXSLEEPERS	1500 /* WTF */

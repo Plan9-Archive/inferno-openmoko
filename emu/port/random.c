@@ -1,5 +1,5 @@
-#include	"dat.h"
-#include	"fns.h"
+#include <dat.h>
+#include <fns.h>
 
 static struct
 {
@@ -44,7 +44,7 @@ rbnotempty(void *v)
  *  spin counting up
  */
 static void
-genrandom(void *v)
+_genrandom(void *v)
 {
 	USED(v);
 	oslopri();
@@ -121,7 +121,7 @@ randomread(char *p, ulong n)
 	qlock(&rb.l);
 	if(!rb.kprocstarted){
 		rb.kprocstarted = 1;
-		kproc("genrand", genrandom, 0, 0);  /* BUG: check return value */
+		kproc("genrand", _genrandom, 0, 0);  /* BUG: check return value */
 		kproc("randomclock", randomclock, 0, 0);  /* BUG: check return value */
 	}
 

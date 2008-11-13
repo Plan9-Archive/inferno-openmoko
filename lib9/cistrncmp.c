@@ -1,4 +1,4 @@
-#include "lib9.h"
+#include <lib9.h>
 
 int
 cistrncmp(char *s1, char *s2, int n)

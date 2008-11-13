@@ -1,10 +1,10 @@
-#include "lib9.h"
-#include "isa.h"
-#include "interp.h"
-#include "runt.h"
-#include "raise.h"
-#include "mathi.h"
-#include "mathmod.h"
+#include <lib9.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <raise.h>
+#include <mathi.h>
+#include <mathmod.h>
 
 static union
 {
@@ -413,7 +413,7 @@ DISAPI(Math_yn)
 */
 
 static int
-cmp(int *u, int *v, double *x)
+_cmp(int *u, int *v, double *x)
 {
 	return ((x[*u]==x[*v])? 0 : ((x[*u]<x[*v])? -1 : 1));
 }
@@ -435,9 +435,9 @@ cmp(int *u, int *v, double *x)
 
 static int *
 med3(int *a, int *b, int *c, double *x)
-{	return cmp(a, b, x) < 0 ?
-		  (cmp(b, c, x) < 0 ? b : (cmp(a, c, x) < 0 ? c : a ) )
-		: (cmp(b, c, x) > 0 ? b : (cmp(a, c, x) < 0 ? a : c ) );
+{	return _cmp(a, b, x) < 0 ?
+		  (_cmp(b, c, x) < 0 ? b : (_cmp(a, c, x) < 0 ? c : a ) )
+		: (_cmp(b, c, x) > 0 ? b : (_cmp(a, c, x) < 0 ? a : c ) );
 }
 
 void
@@ -448,7 +448,7 @@ rqsort(int *a, int n, double *x)
 
 	if (n < 7) { /* Insertion sort on small arrays */
 		for (pm = a + 1; pm < a + n; pm++)
-			for (pl = pm; pl > a && cmp(pl-1, pl, x) > 0; pl--)
+			for (pl = pm; pl > a && _cmp(pl-1, pl, x) > 0; pl--)
 				swap(pl, pl-1);
 		return;
 	}
@@ -468,11 +468,11 @@ rqsort(int *a, int n, double *x)
 	pa = pb = a + 1;
 	pc = pd = a + (n-1);
 	for (;;) {
-		while (pb <= pc && (r = cmp(pb, a, x)) <= 0) {
+		while (pb <= pc && (r = _cmp(pb, a, x)) <= 0) {
 			if (r == 0) { swap(pa, pb); pa++; }
 			pb++;
 		}
-		while (pb <= pc && (r = cmp(pc, a, x)) >= 0) {
+		while (pb <= pc && (r = _cmp(pc, a, x)) >= 0) {
 			if (r == 0) { swap(pc, pd); pd--; }
 			pc--;
 		}

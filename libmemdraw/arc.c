@@ -10,10 +10,10 @@
  *   arguments are as for ellipse(dst,c,a,b,t,src,sp)
  */
 
-enum
-{
-	R, T, L, B	/* right, top, left, bottom */
-};
+//enum
+//{
+//	R, T, L, B	/* right, top, left, bottom */
+//};
 
 static
 Point corners[] = {

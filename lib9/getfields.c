@@ -1,4 +1,5 @@
-#include	"lib9.h"
+#include <lib9.h>
+
 int
 getfields(char *str, char **args, int max, int mflag, char *set)
 {

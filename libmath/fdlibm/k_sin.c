@@ -7,7 +7,7 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -16,24 +16,24 @@
  * kernel sin function on [-pi/4, pi/4], pi/4 ~ 0.7854
  * Input x is assumed to be bounded by ~pi/4 in magnitude.
  * Input y is the tail of x.
- * Input iy indicates whether y is 0. (if iy=0, y assume to be 0). 
+ * Input iy indicates whether y is 0. (if iy=0, y assume to be 0).
  *
  * Algorithm
- *	1. Since sin(-x) = -sin(x), we need only to consider positive x. 
+ *	1. Since sin(-x) = -sin(x), we need only to consider positive x.
  *	2. if x < 2^-27 (hx<0x3e400000 0), return x with inexact if x!=0.
  *	3. sin(x) is approximated by a polynomial of degree 13 on
  *	   [0,pi/4]
  *		  	         3            13
  *	   	sin(x) ~ x + S1*x + ... + S6*x
  *	   where
- *	
+ *
  * 	|sin(x)         2     4     6     8     10     12  |     -58
  * 	|----- - (1+S1*x +S2*x +S3*x +S4*x +S5*x  +S6*x   )| <= 2
- * 	|  x 					           | 
- * 
+ * 	|  x 					           |
+ *
  *	4. sin(x+y) = sin(x) + sin'(x')*y
  *		    ~ sin(x) + (1-x*x/2)*y
- *	   For better accuracy, let 
+ *	   For better accuracy, let
  *		     3      2      2      2      2
  *		r = x *(S2+x *(S3+x *(S4+x *(S5+x *S6))))
  *	   then                   3    2
@@ -42,8 +42,11 @@
 
 #include "fdlibm.h"
 
-static const double 
-half =  5.00000000000000000000e-01, /* 0x3FE00000, 0x00000000 */
+#ifndef DBL_CONST_half
+#define DBL_CONST_half
+static const double half = 0.5;
+#endif
+static const double
 S1  = -1.66666666666666324348e-01, /* 0xBFC55555, 0x55555549 */
 S2  =  8.33333333332248946124e-03, /* 0x3F811111, 0x1110F8A6 */
 S3  = -1.98412698298579493134e-04, /* 0xBF2A01A0, 0x19C161D5 */

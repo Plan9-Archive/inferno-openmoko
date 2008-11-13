@@ -1,14 +1,14 @@
-#include "lib9.h"
-#include "draw.h"
-#include "keyboard.h"
+#include <lib9.h>
+#include <draw.h>
+#include <keyboard.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "frame.h"
-#include "label.h"
+#include <frame.h>
+#include <label.h>
 
 /*
 arrow annotation for choicebutton: how do we make sure

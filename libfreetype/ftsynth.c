@@ -16,12 +16,12 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_CALC_H
-#include FT_OUTLINE_H
-#include FT_TRIGONOMETRY_H
-#include FT_SYNTHESIS_H
+
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/ftoutln.h>
+#include <freetype/fttrigon.h>
+#include <freetype/ftsynth.h>
 
 
 #define FT_BOLD_THRESHOLD  0x0100

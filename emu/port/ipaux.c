@@ -1,7 +1,7 @@
-#include        "dat.h"
-#include        "fns.h"
-#include        "ip.h"
-#include        "error.h"
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <ip.h>
 
 /*
  *  well known IP addresses

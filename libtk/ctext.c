@@ -1,13 +1,13 @@
-#include "lib9.h"
-#include "kernel.h"
-#include "draw.h"
+#include <lib9.h>
+#include <draw.h>
+#include <kernel.h>
 
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "tk.h"
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <tk.h>
 
-#include "canvs.h"
+#include <canvs.h>
 
 /* Text Options (+ means implemented)
 	+anchor
@@ -49,7 +49,7 @@ struct TkCtext
 };
 
 static
-TkOption textopts[] =
+TkOption textopts_ctext[] =
 {
 	{"anchor",	OPTstab,	offsetof(TkCtext, anchor),	{tkanchor}},
 	{"justify",	OPTstab,	offsetof(TkCtext, justify),	{tktabjust}},
@@ -60,7 +60,7 @@ TkOption textopts[] =
 };
 
 static
-TkOption itemopts[] =
+TkOption itemopts_ctext[] =
 {
 	{"tags",	OPTctag,	offsetof(TkCitem, tags)		},
 	{"font",	OPTfont,	offsetof(TkCitem, env)		},
@@ -178,9 +178,9 @@ tkcvstextcreat(Tk* tk, char *arg, char **val)
 	}
 
 	tko[0].ptr = t;
-	tko[0].optab = textopts;
+	tko[0].optab = textopts_ctext;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_ctext;
 	tko[2].ptr = nil;
 	e = tkparse(tk->env->top, arg, tko, nil);
 	if(e != nil) {
@@ -220,9 +220,9 @@ tkcvstextcget(TkCitem *i, char *arg, char **val)
 	TkCtext *t = TKobj(TkCtext, i);
 
 	tko[0].ptr = t;
-	tko[0].optab = textopts;
+	tko[0].optab = textopts_ctext;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_ctext;
 	tko[2].ptr = nil;
 
 	return tkgencget(tko, arg, val, i->env->top);
@@ -236,9 +236,9 @@ tkcvstextconf(Tk *tk, TkCitem *i, char *arg)
 	TkCtext *t = TKobj(TkCtext, i);
 
 	tko[0].ptr = t;
-	tko[0].optab = textopts;
+	tko[0].optab = textopts_ctext;
 	tko[1].ptr = i;
-	tko[1].optab = itemopts;
+	tko[1].optab = itemopts_ctext;
 	tko[2].ptr = nil;
 
 	e = tkparse(tk->env->top, arg, tko, nil);

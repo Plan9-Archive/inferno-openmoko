@@ -1,15 +1,15 @@
-#include "lib9.h"
-#include "kernel.h"
-#include "isa.h"
-#include "interp.h"
-#include "../libinterp/runt.h"
-#include "mp.h"
-#include "libsec.h"
-#include "keys.h"
+#include <lib9.h>
+#include <kernel.h>
+#include <isa.h>
+#include <interp.h>
+#include <runt.h>
+#include <mp.h>
+#include <libsec.h>
+#include <keys.h>
 
-static char*	pkattr[] = { "p", "alpha", "key", nil };
-static char*	skattr[] = { "p", "alpha", "key", "!secret", nil };
-static char*	sigattr[] = { "r", "s", nil };
+static char* eg_pkattr[] = { "p", "alpha", "key", nil };
+static char* eg_skattr[] = { "p", "alpha", "key", "!secret", nil };
+static char* eg_sigattr[] = { "r", "s", nil };
 
 static void*
 eg_str2sk(const char *str, const char **strp)
@@ -185,9 +185,9 @@ elgamalinit(void)
 
 	vec->name = "elgamal";
 
-	vec->pkattr = pkattr;
-	vec->skattr = skattr;
-	vec->sigattr = sigattr;
+	vec->pkattr = eg_pkattr;
+	vec->skattr = eg_skattr;
+	vec->sigattr = eg_sigattr;
 
 	vec->str2sk = eg_str2sk;
 	vec->str2pk = eg_str2pk;

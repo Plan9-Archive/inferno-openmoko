@@ -7,21 +7,21 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
 
 /* __ieee754_sinh(x)
- * Method : 
+ * Method :
  * mathematically sinh(x) if defined to be (exp(x)-exp(-x))/2
- *	1. Replace x by |x| (sinh(-x) = -sinh(x)). 
- *	2. 
+ *	1. Replace x by |x| (sinh(-x) = -sinh(x)).
+ *	2.
  *		                                    E + E/(E+1)
  *	    0        <= x <= 22     :  sinh(x) := --------------, E=expm1(x)
  *			       			        2
  *
- *	    22       <= x <= lnovft :  sinh(x) := exp(x)/2 
+ *	    22       <= x <= lnovft :  sinh(x) := exp(x)/2
  *	    lnovft   <= x <= ln2ovft:  sinh(x) := exp(x/2)/2 * exp(x/2)
  *	    ln2ovft  <  x	    :  sinh(x) := x*sHuge (overflow)
  *
@@ -32,10 +32,15 @@
 
 #include "fdlibm.h"
 
-static const double one = 1.0, sHuge = 1.0e307;
+#ifndef DBL_CONST_one
+#define DBL_CONST_one
+static const double one = 1.00000000000000000000e+00; /* 0x3FF00000, 0x00000000 */
+#endif
+
+static const double sHuge = 1.0e307;
 
 	double __ieee754_sinh(double x)
-{	
+{
 	double t,w,h;
 	int ix,jx;
 	unsigned lx;
@@ -45,7 +50,7 @@ static const double one = 1.0, sHuge = 1.0e307;
 	ix = jx&0x7fffffff;
 
     /* x is INF or NaN */
-	if(ix>=0x7ff00000) return x+x;	
+	if(ix>=0x7ff00000) return x+x;
 
 	h = 0.5;
 	if (jx<0) h = -h;

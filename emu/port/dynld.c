@@ -1,8 +1,8 @@
-#include	"dat.h"
-#include	"fns.h"
-#include	"error.h"
-#include	<a.out.h>
-#include	<dynld.h>
+#include <dat.h>
+#include <fns.h>
+#include <error.h>
+#include <a.out.h>
+#include <dynld.h>
 
 /*
  * kernel interface to dynld, for use by devdynld.c,
