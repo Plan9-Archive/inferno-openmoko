@@ -20,11 +20,13 @@
 #define __FTDRIVER_H__
 
 
-#include <ft2build.h>
-#include FT_MODULE_H
+
+#include <freetype/ftmodule.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   typedef FT_Error
@@ -193,8 +195,9 @@ FT_BEGIN_HEADER
 
   } FT_Driver_ClassRec, *FT_Driver_Class;
 
-
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTDRIVER_H__ */
 

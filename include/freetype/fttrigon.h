@@ -19,10 +19,12 @@
 #ifndef __FTTRIGON_H__
 #define __FTTRIGON_H__
 
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -317,7 +319,9 @@ FT_BEGIN_HEADER
   /* */
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTTRIGON_H__ */
 

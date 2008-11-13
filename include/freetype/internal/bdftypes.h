@@ -27,11 +27,13 @@ THE SOFTWARE.
 #ifndef __BDFTYPES_H__
 #define __BDFTYPES_H__
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+
+#include <freetype/freetype.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   typedef struct  BDF_Public_FaceRec_
@@ -44,7 +46,9 @@ FT_BEGIN_HEADER
   } BDF_Public_FaceRec, *BDF_Public_Face;
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif  /* __BDFTYPES_H__ */

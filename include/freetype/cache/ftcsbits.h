@@ -20,12 +20,14 @@
 #define __FTCSBITS_H__
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
-#include FT_CACHE_IMAGE_H
+
+#include <freetype/ftcache.h>
+#include <freetype/cache/ftcimage.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -267,7 +269,9 @@ FT_BEGIN_HEADER
                          FTC_SBit        *sbit );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTCSBITS_H__ */
 

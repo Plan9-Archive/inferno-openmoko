@@ -35,11 +35,13 @@
 #define __FTCACHE_H__
 
 
-#include <ft2build.h>
-#include FT_GLYPH_H
+
+#include <freetype/ftglyph.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -407,7 +409,9 @@ FT_BEGIN_HEADER
                            FT_Size     *asize );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTCACHE_H__ */
 

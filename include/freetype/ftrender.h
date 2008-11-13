@@ -20,12 +20,14 @@
 #define __FTRENDER_H__
 
 
-#include <ft2build.h>
-#include FT_MODULE_H
-#include FT_GLYPH_H
+
+#include <freetype/ftmodule.h>
+#include <freetype/ftglyph.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -221,7 +223,9 @@ FT_BEGIN_HEADER
   /* */
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTRENDER_H__ */
 

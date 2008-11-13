@@ -24,7 +24,9 @@
 #define  FTC_CACHE_USE_INLINE
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
   /* handle to cache object */
   typedef struct FTC_CacheRec_*  FTC_Cache;
@@ -295,7 +297,9 @@ FT_BEGIN_HEADER
 
  /* */
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __FTCCACHE_H__ */

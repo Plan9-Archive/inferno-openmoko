@@ -20,15 +20,17 @@
 #define __FTTYPES_H__
 
 
-#include <ft2build.h>
-#include FT_CONFIG_CONFIG_H
-#include FT_SYSTEM_H
-#include FT_IMAGE_H
+
+#include <freetype/config/ftconfig.h>
+#include <freetype/ftsystem.h>
+#include <freetype/ftimage.h>
 
 #include <stddef.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -550,7 +552,9 @@ FT_BEGIN_HEADER
 
 #define FT_BOOL( x )  ( (FT_Bool)( x ) )
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTTYPES_H__ */
 

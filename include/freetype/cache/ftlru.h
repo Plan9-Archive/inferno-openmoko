@@ -59,11 +59,13 @@
 #define __FTLRU_H__
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+
+#include <freetype/freetype.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /* generic list key type */
@@ -193,7 +195,9 @@ FT_BEGIN_HEADER
 
  /* */
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __FTLRU_H__ */

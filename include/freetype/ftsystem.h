@@ -20,10 +20,12 @@
 #define __FTSYSTEM_H__
 
 
-#include <ft2build.h>
 
 
-FT_BEGIN_HEADER
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -301,7 +303,9 @@ FT_BEGIN_HEADER
   /* */
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTSYSTEM_H__ */
 

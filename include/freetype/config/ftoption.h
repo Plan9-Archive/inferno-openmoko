@@ -20,10 +20,12 @@
 #define __FTOPTION_H__
 
 
-#include <ft2build.h>
 
 
-FT_BEGIN_HEADER
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
   /*************************************************************************/
   /*                                                                       */
@@ -469,7 +471,9 @@ FT_BEGIN_HEADER
 
  /* */
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __FTOPTION_H__ */

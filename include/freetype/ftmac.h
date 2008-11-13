@@ -29,10 +29,12 @@
 #define __FTMAC_H__
 
 
-#include <ft2build.h>
 
 
-FT_BEGIN_HEADER
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -112,14 +114,16 @@ FT_BEGIN_HEADER
   /*    FreeType error code.  0 means success.                             */
   /*                                                                       */
   FT_EXPORT_DEF( FT_Error )
-  FT_GetFile_From_Mac_Name( char*     fontName, 
+  FT_GetFile_From_Mac_Name( char*     fontName,
                             FSSpec*   pathSpec,
                             FT_Long*  face_index );
 
   /* */
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __FTMAC_H__ */

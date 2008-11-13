@@ -1,11 +1,14 @@
 #ifndef __FT_CORE_H__
 #define __FT_CORE_H__
 
-#include <ft2build.h>
-#include FT_TYPES_H
-#include FT_SYSTEM_MEMORY_H
 
-FT_BEGIN_HEADER
+#include <freetype/fttypes.h>
+//#include FT_SYSTEM_MEMORY_H
+#error
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
  /**************************************************************************/
  /**************************************************************************/
@@ -173,13 +176,8 @@ FT_BEGIN_HEADER
   FT_BASE( void )
   ft_xhandler_exit( FT_XHandler  xhandler );
 
-
-
-
-
-
-
-
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FT_CORE_H__ */

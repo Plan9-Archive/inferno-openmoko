@@ -39,13 +39,15 @@
 #define FREETYPE_PATCH 3
 
 
-#include <ft2build.h>
-#include FT_CONFIG_CONFIG_H
-#include FT_ERRORS_H
-#include FT_TYPES_H
+
+#include <freetype/config/ftconfig.h>
+#include <freetype/fterrors.h>
+#include <freetype/fttypes.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -2851,10 +2853,11 @@ FT_BEGIN_HEADER
   /* */
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FREETYPE_H__ */
 
 
 /* END */
-

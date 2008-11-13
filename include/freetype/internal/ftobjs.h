@@ -26,22 +26,24 @@
 #ifndef __FTOBJS_H__
 #define __FTOBJS_H__
 
-#include <ft2build.h>
-#include FT_CONFIG_STANDARD_LIBRARY_H   /* for ft_setjmp and ft_longjmp */
-#include FT_RENDER_H
-#include FT_SIZES_H
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_GLYPH_LOADER_H
-#include FT_INTERNAL_DRIVER_H
-#include FT_INTERNAL_AUTOHINT_H
-#include FT_INTERNAL_OBJECT_H
+
+#include <freetype/config/ftstdlib.h>   /* for ft_setjmp and ft_longjmp */
+#include <freetype/ftrender.h>
+#include <freetype/ftsizes.h>
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftgloadr.h>
+#include <freetype/internal/ftdriver.h>
+#include <freetype/internal/autohint.h>
+#include <freetype/internal/ftobject.h>
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
-#include FT_INCREMENTAL_H
+#include <freetype/ftincrem.h>
 #endif
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -786,7 +788,9 @@ FT_BEGIN_HEADER
 #endif
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTOBJS_H__ */
 

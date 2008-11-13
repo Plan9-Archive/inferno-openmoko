@@ -1,10 +1,12 @@
 #ifndef __FT_INTERNAL_PFR_H__
 #define __FT_INTERNAL_PFR_H__
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
-FT_BEGIN_HEADER
+#include <freetype/freetype.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
   typedef FT_Error  (*FT_PFR_GetMetricsFunc)( FT_Face    face,
                                               FT_UInt   *aoutline,
@@ -31,6 +33,8 @@ FT_BEGIN_HEADER
 
 #define  FT_PFR_SERVICE_NAME  "pfr"
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FT_INTERNAL_PFR_H__ */

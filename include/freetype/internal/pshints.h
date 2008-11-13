@@ -22,12 +22,14 @@
 #define __PSHINTS_H__
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TYPE1_TABLES_H
+
+#include <freetype/freetype.h>
+#include <freetype/t1tables.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -618,7 +620,9 @@ FT_BEGIN_HEADER
   typedef PSHinter_Interface*  PSHinter_Service;
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __PSHINTS_H__ */
 

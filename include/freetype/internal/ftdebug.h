@@ -25,11 +25,13 @@
 #define __FTDEBUG_H__
 
 
-#include <ft2build.h>
-#include FT_CONFIG_CONFIG_H
+
+#include <freetype/config/ftconfig.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /* force the definition of FT_DEBUG_LEVEL_ERROR if FT_DEBUG_LEVEL_TRACE */
@@ -55,7 +57,7 @@ FT_BEGIN_HEADER
   /* defining the enumeration */
   typedef enum
   {
-#include FT_INTERNAL_TRACE_H
+#include <freetype/internal/fttrace.h>
     trace_count
 
   } FT_Trace;
@@ -187,8 +189,9 @@ FT_BEGIN_HEADER
 
 #endif /* _MSC_VER */
 
-
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTDEBUG_H__ */
 

@@ -20,12 +20,14 @@
 #define __SFNT_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DRIVER_H
-#include FT_INTERNAL_TRUETYPE_TYPES_H
+
+#include <freetype/internal/ftdriver.h>
+#include <freetype/internal/tttypes.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -526,7 +528,9 @@ FT_BEGIN_HEADER
   typedef SFNT_Interface*   SFNT_Service;
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __SFNT_H__ */
 

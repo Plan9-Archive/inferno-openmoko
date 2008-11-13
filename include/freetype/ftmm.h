@@ -20,11 +20,13 @@
 #define __FTMM_H__
 
 
-#include <ft2build.h>
-#include FT_TYPE1_TABLES_H
+
+#include <freetype/t1tables.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -195,7 +197,9 @@ FT_BEGIN_HEADER
   /* */
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTMM_H__ */
 

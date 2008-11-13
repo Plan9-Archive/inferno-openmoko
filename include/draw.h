@@ -139,7 +139,7 @@ typedef enum
 	SoutD	= 1<<1,
 	DoutS	= 1 <<0,
 
-	S		= SinD|SoutD,
+	S	= SinD|SoutD,
 	SoverD	= SinD|SoutD|DoutS,
 	SatopD	= SinD|DoutS,
 	SxorD	= SoutD|DoutS,

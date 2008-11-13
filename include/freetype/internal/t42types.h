@@ -19,15 +19,17 @@
 #define __T42TYPES_H__
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TYPE1_TABLES_H
-#include FT_INTERNAL_TYPE1_TYPES_H
-#include FT_INTERNAL_POSTSCRIPT_NAMES_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
+
+#include <freetype/freetype.h>
+#include <freetype/t1tables.h>
+#include <freetype/internal/t1types.h>
+#include <freetype/internal/psnames.h>
+#include <freetype/internal/pshints.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   typedef struct  T42_FaceRec_
@@ -47,7 +49,9 @@ FT_BEGIN_HEADER
   } T42_FaceRec, *T42_Face;
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __T1TYPES_H__ */
 

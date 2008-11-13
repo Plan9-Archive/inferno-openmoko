@@ -20,12 +20,14 @@
 #define __FTMEMORY_H__
 
 
-#include <ft2build.h>
-#include FT_CONFIG_CONFIG_H
-#include FT_TYPES_H
+
+#include <freetype/config/ftconfig.h>
+#include <freetype/fttypes.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -288,7 +290,9 @@ FT_BEGIN_HEADER
  /* */
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTMEMORY_H__ */
 

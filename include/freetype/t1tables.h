@@ -21,11 +21,13 @@
 #define __T1TABLES_H__
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+
+#include <freetype/freetype.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -383,7 +385,9 @@ FT_BEGIN_HEADER
 
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __T1TABLES_H__ */
 

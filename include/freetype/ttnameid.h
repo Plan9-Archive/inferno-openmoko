@@ -20,10 +20,12 @@
 #define __TTNAMEID_H__
 
 
-#include <ft2build.h>
 
 
-FT_BEGIN_HEADER
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -1014,7 +1016,9 @@ FT_BEGIN_HEADER
 #endif /* !HAVE_LIMIT_ON_IDENTS */
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __TTNAMEID_H__ */
 

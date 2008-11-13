@@ -70,11 +70,13 @@
   /*************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+
+#include <freetype/freetype.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   typedef struct FT_AutoHinterRec_  *FT_AutoHinter;
@@ -197,7 +199,9 @@ FT_BEGIN_HEADER
   } FT_AutoHinter_ServiceRec, *FT_AutoHinter_Service;
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __AUTOHINT_H__ */
 

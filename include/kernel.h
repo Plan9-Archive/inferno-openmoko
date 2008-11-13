@@ -1,6 +1,6 @@
 extern	vlong	libseek(int, vlong, int);
-extern	int	libread(int, void*, int);
-extern	int	libreadn(int, void*, long);
+extern	int	libread(int, char*, int);
+extern	int	libreadn(int, char*, long);
 extern	int	libwrite(int, void*, int);
 extern	int	libopen(const char*, int);
 extern	int	libclose(int);

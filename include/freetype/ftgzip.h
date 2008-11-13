@@ -19,10 +19,12 @@
 #ifndef __FTXF86_H__
 #define __FTXF86_H__
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
-FT_BEGIN_HEADER
+#include <freetype/freetype.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
   /*************************************************************************/
   /*                                                                       */
@@ -81,6 +83,8 @@ FT_BEGIN_HEADER
 
  /* */
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTXF86_H__ */

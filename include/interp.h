@@ -586,7 +586,7 @@ extern	int		bigxprint(Prog*, const void*, const void*, String*, char**, int);
 extern	void		iyield(void);
 extern	String*		newrunes(int);
 extern	String*		newstring(int);
-extern	int		runeslen(const Rune*, int);
+extern	int		runeslen(const Rune*);
 extern	String*		c2string(const char*, int);
 extern	char*		string2c(String*);
 extern	List*		cons(ulong, List**);

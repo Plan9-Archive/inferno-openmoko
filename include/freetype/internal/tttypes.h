@@ -21,12 +21,14 @@
 #define __TTTYPES_H__
 
 
-#include <ft2build.h>
-#include FT_TRUETYPE_TABLES_H
-#include FT_INTERNAL_OBJECTS_H
+
+#include <freetype/tttables.h>
+#include <freetype/internal/ftobjs.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -1661,7 +1663,9 @@ FT_BEGIN_HEADER
   } TT_LoaderRec;
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __TTTYPES_H__ */
 

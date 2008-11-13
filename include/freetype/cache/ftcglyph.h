@@ -46,14 +46,16 @@
 #define __FTCGLYPH_H__
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
-#include FT_CACHE_MANAGER_H
+
+#include <freetype/ftcache.h>
+#include <freetype/cache/ftcmanag.h>
 
 #include <stddef.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /* each glyph set is characterized by a "glyph set type" which must be */
@@ -183,8 +185,10 @@ FT_BEGIN_HEADER
 
 
   /* */
- 
-FT_END_HEADER
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __FTCGLYPH_H__ */

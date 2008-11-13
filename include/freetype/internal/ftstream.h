@@ -20,12 +20,14 @@
 #define __FTSTREAM_H__
 
 
-#include <ft2build.h>
-#include FT_SYSTEM_H
-#include FT_INTERNAL_OBJECTS_H
+
+#include <freetype/ftsystem.h>
+#include <freetype/internal/ftobjs.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /* format of an 8-bit frame_op value:           */
@@ -490,7 +492,9 @@ FT_BEGIN_HEADER
           FT_Stream_ReleaseFrame( stream, (FT_Byte**)&(bytes) )
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTSTREAM_H__ */
 

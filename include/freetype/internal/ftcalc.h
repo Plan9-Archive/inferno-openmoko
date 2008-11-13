@@ -20,11 +20,13 @@
 #define __FTCALC_H__
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+
+#include <freetype/freetype.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   FT_EXPORT( FT_Int32 )  FT_SqrtFixed( FT_Int32  x );
@@ -69,7 +71,9 @@ FT_BEGIN_HEADER
                                         : ( -( ( 32 - (x) ) & -64 ) ) )
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FTCALC_H__ */
 

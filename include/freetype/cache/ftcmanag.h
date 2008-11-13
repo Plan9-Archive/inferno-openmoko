@@ -63,13 +63,15 @@
 #define __FTCMANAG_H__
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
-#include FT_CACHE_INTERNAL_LRU_H
-#include FT_CACHE_INTERNAL_CACHE_H
+
+#include <freetype/ftcache.h>
+#include <freetype/cache/ftlru.h>
+#include <freetype/cache/ftccache.h>
 
 
-FT_BEGIN_HEADER
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
   /*************************************************************************/
@@ -107,7 +109,7 @@ FT_BEGIN_HEADER
     FT_UInt          size;
     FTC_FamilyEntry  entries;
     FT_UInt          free;
-  
+
   } FTC_FamilyTableRec, *FTC_FamilyTable;
 
 
@@ -162,10 +164,10 @@ FT_BEGIN_HEADER
 
     FT_ULong            max_weight;
     FT_ULong            cur_weight;
-    
+
     FT_UInt             num_nodes;
     FTC_Node            nodes_list;
-    
+
     FTC_Cache           caches[FTC_MAX_CACHES];
 
     FT_Pointer          request_data;
@@ -235,7 +237,9 @@ FT_BEGIN_HEADER
 
  /* */
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __FTCMANAG_H__ */

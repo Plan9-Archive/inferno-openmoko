@@ -1,10 +1,12 @@
 #ifndef __FT_STROKER_H__
 #define __FT_STROKER_H__
 
-#include <ft2build.h>
-#include FT_OUTLINE_H
 
-FT_BEGIN_HEADER
+#include <freetype/ftoutln.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*@*************************************************************
  *
@@ -134,6 +136,8 @@ FT_BEGIN_HEADER
   FT_Stroker_Done( FT_Stroker  stroker );
 
 
-FT_END_HEADER
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FT_STROKER_H__ */
