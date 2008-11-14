@@ -1,5 +1,5 @@
-#include "os.h"
-#include "kernel.h"
+#include <os.h>
+#include <kernel.h>
 #include <mp.h>
 #include <libsec.h>
 

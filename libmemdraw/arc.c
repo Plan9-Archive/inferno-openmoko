@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "draw.h"
-#include "memdraw.h"
-#include "memlayer.h"
+#include <lib9.h>
+#include <draw.h>
+#include <memdraw.h>
+#include <memlayer.h>
 
 /*
  * elarc(dst,c,a,b,t,src,sp,alpha,phi)

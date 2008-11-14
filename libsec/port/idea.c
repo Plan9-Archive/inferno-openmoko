@@ -1,6 +1,6 @@
-#include "os.h"
-#include "mp.h"
-#include "libsec.h"
+#include <os.h>
+#include <mp.h>
+#include <libsec.h>
 
 #define KEYLEN	52
 

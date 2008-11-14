@@ -34,7 +34,7 @@
 #include <freetype/fterrors.h>
 #include <freetype/fttypes.h>
 
-#include "kernel.h"
+//#include <kernel.h> /* ??? */
 
 /*#include <stdio.h>*/
 /*#include <stdlib.h>*/

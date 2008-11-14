@@ -1,8 +1,8 @@
 #include <lib9.h>
-#include "isa.h"
-#include "interp.h"
-#include "raise.h"
-#include "pool.h"
+#include <isa.h>
+#include <interp.h>
+#include <raise.h>
+#include <pool.h>
 
 //#define DEBUGVM
 

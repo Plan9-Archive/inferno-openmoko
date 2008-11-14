@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "draw.h"
-#include "memdraw.h"
-#include "pool.h"
+#include <lib9.h>
+#include <draw.h>
+#include <memdraw.h>
+#include <pool.h>
 
 extern	Pool*	imagmem;
 
