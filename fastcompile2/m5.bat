@@ -17,5 +17,5 @@ rem cl /analyze >l
 cl /? >l
 rem -GAFy -GS- -Ox -Oi-
 
-cl.exe  -Zi -MT -WL -FC -W3 -o emu5.exe -DROOT="/inferno" -DKERNDATE=1666666666 -DEMU=1 -DUNICODE -D_WIN32_WINNT=0x0400 -DOBJTYPE=386 -Iinclude turbo.c winmm.lib user32.lib ws2_32.lib gdi32.lib advapi32.lib mpr.lib
+cl.exe -RTCsu -Od -Zi -Fm -MTd -WL -FC -W3 -o emu5.exe -DROOT="/inferno" -DKERNDATE=1666666666 -DEMU=1 -DUNICODE -D_WIN32_WINNT=0x0400 -DOBJTYPE=386 -Iinclude turbo.c winmm.lib user32.lib ws2_32.lib gdi32.lib advapi32.lib mpr.lib
 exit

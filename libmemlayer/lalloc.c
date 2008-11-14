@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "draw.h"
-#include "memdraw.h"
-#include "memlayer.h"
+#include <lib9.h>
+#include <draw.h>
+#include <memdraw.h>
+#include <memlayer.h>
 
 Memimage*
 memlalloc(Memscreen *s, Rectangle screenr, Refreshfn refreshfn, void *refreshptr, ulong val)

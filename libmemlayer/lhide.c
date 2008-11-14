@@ -1,8 +1,8 @@
-#include "lib9.h"
-#include "draw.h"
-#include "memdraw.h"
-#include "memlayer.h"
-#include "pool.h"
+#include <lib9.h>
+#include <draw.h>
+#include <memdraw.h>
+#include <memlayer.h>
+#include <pool.h>
 
 /*
  * Hide puts that portion of screenr now on the screen into the window's save area.

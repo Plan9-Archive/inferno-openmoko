@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "mathi.h"
+#include <lib9.h>
+#include <mathi.h>
 extern char	*dtoa(double, int, int, int *, int *, char **);
 extern void	freedtoa(char*);
 extern int	_fmtcpy(Fmt*, void*, int, int);

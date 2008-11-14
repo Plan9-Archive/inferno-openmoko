@@ -1,6 +1,6 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
-#include "dat.h"
+#include "mpdat.h"
 
 // convert a big-endian byte array (most significant byte first) to an mpint
 mpint*

@@ -1,7 +1,7 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
 #include <libsec.h>
-#include "dat.h"
+#include "mpdat.h"
 
 static int
 to64(mpint *b, char *buf, int len)
@@ -133,7 +133,7 @@ mpfmt(Fmt *fmt)
 	b = va_arg(fmt->args, mpint*);
 	if(b == nil)
 		return fmtstrcpy(fmt, "*");
-	
+
 	p = mptoa(b, fmt->prec, nil, 0);
 	fmt->flags &= ~FmtPrec;
 

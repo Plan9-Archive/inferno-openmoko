@@ -1,6 +1,6 @@
-#include "lib9.h"
+#include <lib9.h>
 #include <float.h>
-#include "mathi.h"
+#include <mathi.h>
 
 #ifndef _SW_INEXACT
 /* _statusfp bit flags */

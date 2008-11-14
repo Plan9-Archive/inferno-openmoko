@@ -1,6 +1,6 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
-#include "dat.h"
+#include "mpdat.h"
 
 #define LO(x) ((x) & ((1<<(Dbits/2))-1))
 #define HI(x) ((x) >> (Dbits/2))

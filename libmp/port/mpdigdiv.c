@@ -1,6 +1,6 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
-#include "dat.h"
+#include "mpdat.h"
 
 //
 //	divide two digits by one and return quotient

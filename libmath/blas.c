@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "mathi.h"
+#include <lib9.h>
+#include <mathi.h>
 
 double
 dot(int n, double *x, double *y)

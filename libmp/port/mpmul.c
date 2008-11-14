@@ -1,6 +1,6 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
-#include "dat.h"
+#include "mpdat.h"
 
 //
 //  from knuth's 1969 seminumberical algorithms, pp 233-235 and pp 258-260

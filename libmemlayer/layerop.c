@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "draw.h"
-#include "memdraw.h"
-#include "memlayer.h"
+#include <lib9.h>
+#include <draw.h>
+#include <memdraw.h>
+#include <memlayer.h>
 
 #define	RECUR(a,b,c,d)	_layerop(fn, i, Rect(a.x, b.y, c.x, d.y), clipr, etc, front->layer->rear);
 

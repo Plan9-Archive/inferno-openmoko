@@ -1,6 +1,6 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
-#include "dat.h"
+#include "mpdat.h"
 
 // prereq: a >= b, alen >= blen, diff has at least alen digits
 void

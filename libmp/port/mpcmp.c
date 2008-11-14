@@ -1,6 +1,6 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
-#include "dat.h"
+#include "mpdat.h"
 
 // return neg, 0, pos as abs(b1)-abs(b2) is neg, 0, pos
 int

@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "draw.h"
-#include "memdraw.h"
-#include "memlayer.h"
+#include <lib9.h>
+#include <draw.h>
+#include <memdraw.h>
+#include <memlayer.h>
 
 int
 memload(Memimage *dst, Rectangle r, uchar *data, int n, int iscompressed)

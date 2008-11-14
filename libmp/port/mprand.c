@@ -1,7 +1,7 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
 #include <libsec.h>
-#include "dat.h"
+#include "mpdat.h"
 
 mpint*
 mprand(int bits, void (*gen)(char*, int), mpint *b)

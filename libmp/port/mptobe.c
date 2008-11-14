@@ -1,6 +1,6 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
-#include "dat.h"
+#include "mpdat.h"
 
 // convert an mpint into a big endian byte array (most significant byte first)
 //   return number of bytes converted
@@ -29,7 +29,7 @@ mptobe(mpint *b, uchar *p, uint n, uchar **pp)
 		else
 			return 1;
 	}
-		
+
 	s = p;
 	e = s+n;
 	suppress = 1;

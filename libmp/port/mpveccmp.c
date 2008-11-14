@@ -1,6 +1,6 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
-#include "dat.h"
+#include "mpdat.h"
 
 int
 mpveccmp(mpdigit *a, int alen, mpdigit *b, int blen)

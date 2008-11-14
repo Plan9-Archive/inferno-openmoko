@@ -1,6 +1,6 @@
-#include "os.h"
+#include <os.h>
 #include <mp.h>
-#include "dat.h"
+#include "mpdat.h"
 
 // sum = abs(b1) + abs(b2), i.e., add the magnitudes
 void

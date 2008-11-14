@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "mathi.h"
+#include <lib9.h>
+#include <mathi.h>
 void
 gemm(int transa, int transb, int m, int n, int k, double alpha,
 	double *a, int lda,

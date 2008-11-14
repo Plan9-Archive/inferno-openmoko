@@ -1,5 +1,5 @@
-#include "lib9.h"
-#include "mathi.h"
+#include <lib9.h>
+#include <mathi.h>
 
 double
 fdim(double x, double y)

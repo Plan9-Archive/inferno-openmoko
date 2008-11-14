@@ -1,4 +1,6 @@
 @echo off
+echo m8
+cd O:\Inferno\fastcompile2
 
 del emu8.exe
 del l1.obj
@@ -16,5 +18,16 @@ rem link.exe l1.obj winmm.lib user32.lib ws2_32.lib gdi32.lib advapi32.lib mpr.l
 rem cl /analyze >l
 cl /? >l
 rem -GAFy -GS- -Ox -Oi-
-cl.exe -analyze -Zi -MT -WL -FC -W3 -o emu8.exe -DROOT="/inferno" -DKERNDATE=1666666666 -DEMU=1 -DUNICODE -D_WIN32_WINNT=0x0400 -DOBJTYPE=386 -Iinclude turbo.c winmm.lib user32.lib ws2_32.lib gdi32.lib advapi32.lib mpr.lib
+rem -analyze
+
+rem debug
+rem -RTCc causes wm not working
+cl.exe -RTCsu -Od -Zi -Fm -MTd -WL -FC -W3 -o emu8.exe -DROOT="/inferno" -DKERNDATE=1666666666 -DEMU=1 -DUNICODE -D_WIN32_WINNT=0x0400 -DOBJTYPE=386 -Iinclude turbo.c winmm.lib user32.lib ws2_32.lib gdi32.lib advapi32.lib mpr.lib
+exit
+
+rem release
+cl.exe -GLAFy -GS- -Ox -Oi- -MT -WL -FC -W3 -o emu8.exe -DROOT="/inferno" -DKERNDATE=1666666666 -DEMU=1 -DUNICODE -D_WIN32_WINNT=0x0400 -DOBJTYPE=386 -Iinclude turbo.c winmm.lib user32.lib ws2_32.lib gdi32.lib advapi32.lib mpr.lib
+exit
+
+
 exit
