@@ -778,7 +778,7 @@ schedmod(Module *m)
 
 	f = H2D(Frame*,heapz(m->entryt));
 	assert(f->ml == H);
-	assert(f->parent = H);
+	assert(f->parent == H);
 
 	p->R.FP = f;
 

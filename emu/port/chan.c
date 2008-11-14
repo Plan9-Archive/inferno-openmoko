@@ -58,9 +58,6 @@ incref(Ref *r)
 	return x;
 }
 
-#if defined(_MSC_VER)
-#pragma optimize("y", off) // for getcallerpc()
-#endif
 int
 decref(Ref *r)
 {
@@ -74,9 +71,6 @@ decref(Ref *r)
 
 	return x;
 }
-#if defined(_MSC_VER)
-#pragma optimize("y", on)
-#endif
 
 /*
  * Rather than strncpy, which zeros the rest of the buffer, kstrcpy
@@ -297,9 +291,6 @@ chanfree(Chan *c)
 	unlock(&chanalloc.l);
 }
 
-#if defined(_MSC_VER)
-#pragma optimize("y", off) // for getcallerpc()
-#endif
 void
 cclose(Chan *c)
 {
@@ -319,9 +310,6 @@ cclose(Chan *c)
 
 	chanfree(c);
 }
-#if defined(_MSC_VER)
-#pragma optimize("y", on)
-#endif
 
 /*
  * Make sure we have the only copy of c.  (Copy on write.)

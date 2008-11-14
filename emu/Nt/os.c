@@ -32,7 +32,7 @@ static	int sleepers = 0;
 	char*	runestoutf(char*, const Rune*, int);
 	int		runescmp(const Rune*, const Rune*);
 
-#ifdef _MSC_VER
+#ifdef _MSC_VER_TLS
 __declspec(thread)       Proc    *up;
 #define setup(p) up=(p);
 #else
@@ -461,7 +461,7 @@ FPsave(void *fptr)
 		fstenv	[eax]
 	}
 #else
- 	asm ("fstenv %0" : : "m" (fptr));
+ 	asm ("fstenv %0" : : "m" (*fptr));
 #endif
 }
 
@@ -474,7 +474,7 @@ FPrestore(void *fptr)
 		fldenv	[eax]
 	}
 #else
- 	asm ("fldenv %0" : : "m" (fptr));
+ 	asm ("fldenv %0" : : "m" (*fptr));
 #endif
 }
 

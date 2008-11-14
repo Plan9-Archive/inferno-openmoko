@@ -424,7 +424,7 @@ os.system('limbo -a          -I%s/module %s/module/srvrunt.b >%s/emu/port/srv.h'
 os.system('limbo -t Srv      -I%s/module %s/module/srvrunt.b >%s/emu/port/srvm.h' % (ROOT,ROOT,ROOT))
 
 
-cmd=r'%s -o %s %s %s %s %s' % (CC, OUT, DEFINES, INCLUDES, LIBS, FNAMES)
+cmd=r'%s -o %s %s %s %s %s' % (CC, OUT, DEFINES, INCLUDES, FNAMES, LIBS)
 #print cmd
 #sys.exit()
 #os.system(cmd)

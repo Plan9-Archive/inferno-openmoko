@@ -25,9 +25,6 @@ newproc(void)
 	return p;
 }
 
-#if defined(_MSC_VER)
-#pragma optimize("y", off) // for getcallerpc()
-#endif
 void
 sleep9(Rendez *r, int (*f)(void*), void *arg)
 {
@@ -63,9 +60,6 @@ sleep9(Rendez *r, int (*f)(void*), void *arg)
 	}
 	unlock(&up->rlock);
 }
-#if defined(_MSC_VER)
-#pragma optimize("y", on)
-#endif
 
 int
 wakeup9(Rendez *r)

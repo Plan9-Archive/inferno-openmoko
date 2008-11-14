@@ -12,7 +12,7 @@
  */
 
 #include <lib9.h>
-#include "fcall.h"
+#include <fcall.h>
 
 static uint dumpsome(char*, char*, char*, long);
 static void fdirconv(char*, char*, Dir*);

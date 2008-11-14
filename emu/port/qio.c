@@ -103,9 +103,6 @@ ulong padblockoverhead;
 /*
  *  pad a block to the front (or the back if size is negative)
  */
-#if defined(_MSC_VER)
-#pragma optimize("y", off) // for getcallerpc()
-#endif
 Block*
 padblock(Block *bp, int size)
 {
@@ -147,9 +144,6 @@ padblock(Block *bp, int size)
 	}
 	return nbp;
 }
-#if defined(_MSC_VER)
-#pragma optimize("y", on)
-#endif
 
 /*
  *  return count of bytes in a string of blocks
@@ -1293,9 +1287,6 @@ qbwrite(Queue *q, Block *b)
 /*
  *  write to a queue.  only Maxatomic bytes at a time is atomic.
  */
-#if defined(_MSC_VER)
-#pragma optimize("y", off) // for getcallerpc()
-#endif
 int
 qwrite(Queue *q, const char *p, int len)
 {
@@ -1326,9 +1317,6 @@ qwrite(Queue *q, const char *p, int len)
 
 	return len;
 }
-#if defined(_MSC_VER)
-#pragma optimize("y", on)
-#endif
 
 /*
  *  used by print() to write to a queue.  Since we may be splhi or not in
