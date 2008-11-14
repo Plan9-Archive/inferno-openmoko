@@ -24,7 +24,7 @@
 #define OUTISOPEN	0x00000004 // the speaker is open
 #define INPUTISGOING	0x00000020 // microphone is being recorded/read
 
-#include "audio.h"
+#include <audio.h>
 #include "audio-tbls.c"
 
 static int debug = 0;
