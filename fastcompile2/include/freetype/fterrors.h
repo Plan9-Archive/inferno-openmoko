@@ -1,4 +1,4 @@
 //#ifndef INC_freetype_fterrors
 //#define INC_freetype_fterrors
-#include "include/freetype/fterrors.h"
+#include "../../../include/freetype/fterrors.h"
 //#endif

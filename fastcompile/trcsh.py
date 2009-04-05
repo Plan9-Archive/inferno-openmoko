@@ -37,8 +37,14 @@ lib9\dirstat-Nt.c
 
 cmd=r'iyacc.exe -d %s/utils/rcsh/syn.y"' % ROOT
 os.system(cmd)
-os.remove('%s/utils/rcsh/y.tab.c' % ROOT); os.rename('y.tab.c', '%s/utils/rcsh/y.tab.c' % ROOT)
-os.remove('%s/utils/rcsh/y.tab.h' % ROOT); os.rename('y.tab.h', '%s/utils/rcsh/y.tab.h' % ROOT)
+
+try: os.remove('%s/utils/rcsh/y.tab.c' % ROOT)
+except: pass
+os.rename('y.tab.c', '%s/utils/rcsh/y.tab.c' % ROOT)
+
+try: os.remove('%s/utils/rcsh/y.tab.h' % ROOT)
+except: pass
+os.rename('y.tab.h', '%s/utils/rcsh/y.tab.h' % ROOT)
 
 #sys.exit()
 

@@ -316,7 +316,7 @@ so_gethostbyname(char *host, char**hostv, int n)
 
 	for(i = 0; hp->h_addr_list[i] && i < n; i++) {
 		p = hp->h_addr_list[i];
-		sprint(buf, "%ud.%ud.%ud.%ud", p[0], p[1], p[2], p[3]);
+		sprint(buf, "%d.%d.%d.%d", (unsigned char)p[0], (unsigned char)p[1], (unsigned char)p[2], (unsigned char)p[3]);
 		hostv[i] = strdup(buf);
 		if(hostv[i] == 0)
 			break;

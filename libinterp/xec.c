@@ -304,13 +304,10 @@ OP(frame) /* == newz */
 
         t = rr->ML->type[rs->disint];
 
-        /*PRINT_TYPE(t);*/
-        /* frame type fix */
-        if(t->np==0) {t->np=1; t->map[0]=0;}
-        t->map[0] |= 0x40; /* parent */
-        t->map[0] |= 0x20; /* ml */
-
+        /* frame type fix check */
+        assert(t->np>=1 && (t->map[0] & 0xF0)==0x60);
         f = H2D(Frame*, heapz(t));
+        assert(f->lr == nil);
         assert(f->ml == H);
         assert(f->parent == H);
 
@@ -333,13 +330,10 @@ OP(mframe)
         } else
                 t = ml->m->ext[-o-1].frame;   /* TODO: check index range */
 
-        /*PRINT_TYPE(t);*/
-        /* type fix */
-        if(t->np==0) {t->np=1; t->map[0]=0;}
-        t->map[0] |= 0x40; /* parent */
-        t->map[0] |= 0x20; /* ml */
-
+        /* frame type fix check */
+        assert(t->np>=1 && (t->map[0] & 0xF0)==0x60);
         f = H2D(Frame*,heapz(t));
+        assert(f->lr == nil);
         assert(f->ml == H);
         assert(f->parent == H);
         rd->pframe = f;
@@ -637,7 +631,6 @@ OP(call)
 
         assert(f->parent == H); /* virginity check, just curious */
         assert(f->ml == H);
-        //ADDREF(rr->FP); /* protect parent from being destroyed in ret */
         f->lr = rr->PC;
         f->parent = rr->FP;
         rr->FP = f;
@@ -651,10 +644,19 @@ OP(mcall)
         Modlink *ml = rd->pmodlink;
         int o;
 
-        assert(f->parent == H); /* virginity check, just curious */
-
         if(ml == H)
                 error(exModule);
+        f->lr = rr->PC;
+        assert(f->parent == H); /* virginity check, just curious */
+        f->parent = rr->FP;
+        assert(f->parent != H); 
+        f->ml = rr->ML;
+        assert(f->ml != nil);
+        assert(f->ml != H);
+
+        rr->FP = f;
+        rr->ML = ml;
+        ADDREF(ml);
 
         o = rm->disint;
         if(o >= 0) {
@@ -668,22 +670,22 @@ OP(mcall)
 
         if(ml->prog == nil) { /* build-in module */
                 l->runt(f);
+
+                DELREF(ml);
+                assert(f->parent!=nil);
+                rr->ML = f->ml;
+                rr->FP = f->parent;
+                ADDREF(f->parent);
+                ADDREF(f->ml);
+                Setmark(D2H(rr->FP));
+                Setmark(D2H(rr->ML));
+
                 ASSIGN(f, H);
                 p = currun();
                 if(p->kill != nil)
                         error(p->kill);
         }
         else {
-                //ADDREF(rr->FP); /* protect parent frame from being destroyed in ret */
-                //ADDREF(rr->ML);
-                f->lr = rr->PC;
-                f->parent = rr->FP;
-                f->ml = rr->ML;
-
-                rr->FP = f;
-                rr->ML = ml;
-                ADDREF(ml);     /* pair to ASSIGN in ret */
-
                 rr->PC = l->pc;
 
                 if(f->ml->compiled != rr->ML->compiled)
@@ -733,15 +735,13 @@ OP(ret)
                 if(rr->ML->compiled != f->ml->compiled) {
                         rr->IC = 1;
                 }
-                ASSIGN(rr->ML, f->ml); /* pair to ADDREF in mcall */
-                //rr->ML = f->ml;
-        }
-
-        if(f->ml != H)
                 ADDREF(f->ml);
+                Setmark(D2H(f->ml));
+                ASSIGN(rr->ML, f->ml);
+        }
         ADDREF(f->parent); /* protect parent frame from being destroyed */
+        Setmark(D2H(f->parent));
         ASSIGN(rr->FP, f->parent);
-
 }
 OP(iload)
 {
@@ -1971,7 +1971,7 @@ xec(Prog *p)
                 printf("%s %d\n", __FUNCTION__, __LINE__);
 
                 /* BUG */
-#if STACK
+#if JIT
                 comvec();
 #endif
         } else do {

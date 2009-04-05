@@ -771,12 +771,13 @@ schedmod(Module *m)
         DELREF(ml);
         p->R.PC = m->entry;
 
-        /*PRINT_TYPE(m->entryt);*/
-        /* type fix */
-        if(t->np==0) {t->np=1; t->map[0]=0;}
-        m->entryt->map[0] |= 0x60; /* ml, parent */
+        /* check type fix */
+        assert(m->entryt->np>=1);
+        assert((m->entryt->map[0] & 0x60)==0x60);
+
 
         f = H2D(Frame*,heapz(m->entryt));
+        assert(f->lr == nil);
         assert(f->ml == H);
         assert(f->parent == H);
 
@@ -932,8 +933,6 @@ progexit(void)
         int broken;
         char *estr, msg[ERRMAX+2*KNAMELEN];
 
-        printf("%s %d\n", __FUNCTION__, __LINE__);
-
         estr = up->env->errstr;
         if(estr[0] == '\0' ||
                 strcmp(estr, Eintr) == 0 ||
@@ -985,7 +984,7 @@ progexit(void)
                 dbgexit(r, broken, estr);
                 broken = 1;
                 /* must force it to break if in debug */
-        }else if(broken && (!keepbroken || strncmp(estr, "out of memory", 13)==0 /* BUG|| memusehigh()*/))
+        }else if(broken && (!keepbroken || strncmp(estr, "out of memory", 13)==0 || memusehigh() /*BUG*/ ))
                 broken = 0;     /* don't want them or short of memory */
 
         if(broken){
@@ -1166,7 +1165,7 @@ vmachine(void *a)
                         up->env = &up->defenv;
                 }
                 if(isched.runhd != nil)
-                        if((++gccounter&0xFF) == 0 /* BUG || memlow()*/) {
+                        if((++gccounter&0xFF) == 0 || memlow() /* BUG */ ) { 
                                 gcbusy++;
                                 up->type = BusyGC;
                                 pushrun(up->prog);

@@ -1,7 +1,7 @@
 CC=r'C:\bin\tcc\tcc.exe -bench'
-#CC=r'C:\MinGW\bin\gcc.exe'
+CC=r'C:\bin\MinGW\bin\gcc.exe'
 #CC=r'C:\Program Files\Microsoft Visual Studio 8\VC\BIN\cl.exe'
-ROOT=r'/inferno'
+ROOT=r'..'
 #
 DEFINES=r'-DUNICODE= -DOBJTYPE=386 -DROOT="""%s"""' % ROOT
 INCLUDES=r"""

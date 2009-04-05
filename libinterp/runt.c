@@ -365,6 +365,8 @@ DISAPI(Sys_char2byte)
 	*f->ret = 0;
 }
 
+extern void frame_type_fix(Type* t);
+
 Module *
 builtinmod(const char *name, const Runtab *vr, int rlen)
 {
@@ -388,7 +390,10 @@ builtinmod(const char *name, const Runtab *vr, int rlen)
 	}
 	while(r->name) {
 		t = dtype(freeheap, r->size, r->map, r->np, r->name); /* Frame of function r->name */
-		/* BUG: t may be nil */
+
+		/* BUG: t may be nil? */
+                frame_type_fix(t);
+
 		runtime(m, l, r->name, r->sig, r->fn, t);
 		r++;
 		l++;

@@ -119,8 +119,8 @@ struct Frame
     Inst*       lr;     /* REGLINK isa.h */
     Frame*      parent;     /* REGFP */ /* parent frame */
     Modlink*    ml;     /* REGMOD */
-    Type*       _t_;        /* REGTYPE */
-    DISINT      _regret_;   /* REGRET */
+    Type*       _t_;        /* REGTYPE FEXME: remove it */
+    DISINT      _regret_;   /* REGRET  */
     DISINT      stmp;       /* for fixed-point */
     DISINT      dtmp;       /* for fixed-point */
 };
@@ -240,10 +240,10 @@ struct Type
     char        map[STRUCTALIGN]; /* TODO: int map[] */
 };
 #define PRINT_TYPE(fd,t) {int i; \
-	fprint(fd,"<%s %d %02X:", t->comment, t->size, t->np); \
-	for(i=0; i<t->np; i++) fprint(fd,"%02X", (uchar)t->map[i]); \
-	fprint(fd,">"); \
-	}
+    fprint(fd,"<%s %d %02X:", t->comment, t->size, t->np); \
+    for(i=0; i<t->np; i++) fprint(fd,"%02X", (uchar)t->map[i]); \
+    fprint(fd,">"); \
+    }
 
 
 struct REG
@@ -309,18 +309,18 @@ struct Prog
 
 struct Module
 {
-    int     ref;        /* Use count */
-    int     compiled;   /* Compiled into native assembler */
+    int         ref;        /* Use count */
+    int         compiled;   /* Compiled into native assembler */
     ulong       _ss_deprecated_;/* Stack size */
     enum ModRtFlags rt;     /* Runtime flags */
     ulong       mtime;      /* Modtime of dis file */
-    Qid     qid;        /* Qid of dis file */
+    Qid         qid;        /* Qid of dis file */
     ushort      dtype;      /* type of dis file's server*/
     uint        dev;        /* subtype of dis file's server */
-    int     nprog;      /* number of instructions */
+    int         nprog;      /* number of instructions */
     Inst*       prog;       /* text segment */
     char*       origmp;     /* unpolluted Module data */
-    int     ntype;      /* Number of type descriptors */
+    int         ntype;      /* Number of type descriptors */
     Type**      type;       /* Type descriptors */
     Inst*       entry;      /* Entry PC */
     Type*       entryt;     /* Entry frame */
@@ -329,7 +329,7 @@ struct Module
     Module*     link;       /* Links */
     Link*       ext;        /* External dynamic links */
     Import**    ldt;        /* Internal linkage descriptor tables */
-                    /* все сигнатуры модулей (возможно неполные), которые могут понадобиться этому модулю */
+                            /* все сигнатуры модулей (возможно неполные), которые могут понадобиться этому модулю */
     Handler*    htab;       /* Exception handler table */
     ulong*      pctab;      /* dis pc to code pc when compiled */
     void*       dlm;        /* dynamic C module */

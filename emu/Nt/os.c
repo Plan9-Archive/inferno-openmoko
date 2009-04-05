@@ -32,7 +32,7 @@ static  int sleepers = 0;
     char*   runestoutf(char*, const Rune*, int);
     int     runescmp(const Rune*, const Rune*);
 
-#ifdef _MSC_VER_TLS
+#ifdef _MSC_VER
 __declspec(thread)       Proc    *up;
 #define setup(p) up=(p);
 #else
@@ -224,7 +224,10 @@ readkbd(void)
     if(ReadFile(kbdh, buf, sizeof(buf), &r, 0) == FALSE)
         panic("keyboard fail");
     if (r == 0)
+    {
+        do{ Sleep(1000000); } while(1); /* TODO */
         panic("keyboard EOF");
+    }
 
     if (buf[0] == 0x03) {
         // INTR (CTRL+C)
@@ -248,9 +251,9 @@ unsigned lg10(unsigned n)
     if(n<1000000000) return 9;
     return 10;
 }
-
+#if 0
 int fdheap = 2;
-void heapview_callback( void* v, size_t size, int tag,
+int heapview_callback( void* v, size_t size, int tag,
     const char* file, int line, const char* function, const char* comment)
 {
     if(file==nil) file = "";
@@ -263,7 +266,7 @@ void heapview_callback( void* v, size_t size, int tag,
     /*fprint(fdheap, "%08p %8d %8x %s:%d %s %s\n", v, size, tag, file, line, function, comment);*/
 }
 
-void mainview_callback( void* v, size_t size, int tag,
+int mainview_callback( void* v, size_t size, int tag,
     const char* file, int line, const char* function, const char* comment)
 {
     if(file==nil) file = "";
@@ -273,7 +276,7 @@ void mainview_callback( void* v, size_t size, int tag,
     fprint(fdheap, "\n");
     /*fprint(fdheap, "%08p %8d %8x %s:%d %s %s\n", v, size, tag, file, line, function, comment);*/
 }
-
+#endif
 
 NORETURN
 cleanexit(int x)

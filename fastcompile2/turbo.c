@@ -80,7 +80,7 @@ extern int printf ( const char * , ... );
 #include "emu/port/random.c"
 #include "emu/port/parse.c"
 #include "emu/port/errstr.c"
-#include "emu/port/alloc-nt.c"
+#include "emu/port/alloc.c"
 #include "emu/port/latin1.c"
 #include "emu/port/dial.c"
 #include "emu/port/exportfs.c"

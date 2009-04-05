@@ -1,4 +1,4 @@
 #ifndef INC_keyboard
 #define INC_keyboard
-#include "include/keyboard.h"
+#include "../../include/keyboard.h"
 #endif

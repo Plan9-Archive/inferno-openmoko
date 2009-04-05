@@ -86,7 +86,7 @@ geom(char *val)
     if (*p != '\0') return 0;
     return 1;
 }
-/* BUG
+
 static void
 poolopt(char *str)
 {
@@ -114,7 +114,7 @@ poolopt(char *str)
     }
     if(poolsetsize(var, x) == 0)
         usage();
-}*/
+}
 
 static void
 option(int argc, char *argv[], void (*badusage)(void))
@@ -160,7 +160,7 @@ option(int argc, char *argv[], void (*badusage)(void))
             usage();
         break;
     case 'p':       /* pool option */
-         /* BUG poolopt(EARGF(badusage())); */
+        poolopt(EARGF(badusage()));
         break;
     case 'f':       /* Set font path */
         tkfont = EARGF(badusage());

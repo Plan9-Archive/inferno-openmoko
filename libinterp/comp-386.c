@@ -2,7 +2,7 @@
 #include <isa.h>
 #include <interp.h>
 #include <raise.h>
-#if STACK
+#if JIT
 
 #define O offsetof
 #define DOT			((ulong)code)
@@ -144,14 +144,14 @@ struct
 	void	(*gen)(void);
 } mactab[] =
 {
-	MacFRP,		macfrp,		/* decrement and free pointer */
-	MacRET,		macret,		/* return instruction */
-	MacCASE,	maccase,	/* case instruction */
-	MacCOLR,	maccolr,	/* increment and color pointer */
-	MacMCAL,	macmcal,	/* mcall bottom half */
-	MacFRAM,	macfram,	/* frame instruction */
-	MacMFRA,	macmfra,	/* punt mframe because t->initialize==0 */
-	MacRELQ,		macrelq,	/* reschedule */
+        {MacFRP,        macfrp},        /* decrement and free pointer */
+        {MacRET,        macret},        /* return instruction */
+        {MacCASE,       maccase},       /* case instruction */
+        {MacCOLR,       maccolr},       /* increment and color pointer */
+        {MacMCAL,       macmcal},       /* mcall bottom half */
+        {MacFRAM,       macfram},       /* frame instruction */
+        {MacMFRA,       macmfra},       /* punt mframe because t->initialize==0 */
+        {MacRELQ,       macrelq},       /* reschedule */
 };
 
 static void
@@ -1894,11 +1894,10 @@ patchex(Module *m, ulong *p)
 			e->pc = p[e->pc];
 	}
 }
-#endif
+
 int
 compile(Module *m, int size, Modlink *ml)
 {
-#if STACK
 	ulong v;
 	Modl *e;
 	Link *l;
@@ -1992,6 +1991,6 @@ bad:
 	free(tinit);
 	free(tmp);
 	free(base);
-#endif
 	return 0;
 }
+#endif

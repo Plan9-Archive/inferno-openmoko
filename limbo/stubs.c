@@ -176,9 +176,11 @@ modtab(Decl *globals)
 				print("%s\",0x%08lux,(void(*)(void*))%s_%s,", id->sym->name, sign(id),
 					id->dot->sym->name, id->sym->name);
 				if(id->ty->varargs)
-					print("0,0,{0}");
+                                        print("0,0,{0x60},"); /* parent, ml */
 				else{
 					md = mkdesc(idoffsets(id->ty->ids, MaxTemp, MaxAlign), id->ty->ids);
+                                        if(md->nmap==0)md->nmap=1;
+                                        md->map[0] |= 0x60;
 					print("%ld,%ld,%M", md->size, md->nmap, md);
 				}
 				print("},\n");

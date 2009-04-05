@@ -337,6 +337,8 @@ initmem(const Type *t, void *vw)
         }
 }
 
+//#define v_poolalloc(a,b,c,d,e)  poolalloc(a,b)
+//#define setmemcomment(a,b)
 /**
  * Alloc n bytes on heap (with Heap header)
  */
@@ -349,18 +351,18 @@ v_nheap(int n, const char*file, int line, const char*function)
         if(h == nil)
                 error(exHeap);
 
-        {
-        Prog *p=currun();
-        if(p==nil) {
-                setmemcomment(h, "nil");
-        }
-        else{
-                //char* sz = HeapAlloc(GetProcessHeap(),0,32);
-                char* sz = malloc(32);
-                sprint(sz, "pid=%d", p->pid);
-                setmemcomment(h, sz);
-        }
-        }
+//        {
+//        Prog *p=currun();
+//        if(p==nil) {
+//                setmemcomment(h, "nil");
+//        }
+//        else{
+//                //char* sz = HeapAlloc(GetProcessHeap(),0,32);
+//                char* sz = malloc(32);
+//                sprint(sz, "pid=%d", p->pid);
+//                setmemcomment(h, sz);
+//        }
+//        }
 
         h->t = nil;
         h->ref = 1;
@@ -380,18 +382,18 @@ v_heapz(Type *t, const char*file, int line, const char*function)
         if(h == nil)
                 error(exHeap);
 
-        {
-        Prog *p=currun();
-        if(p==nil) {
-                setmemcomment(h, "nil");
-        }
-        else{
-                //char* sz = HeapAlloc(GetProcessHeap(),0,32);
-                char* sz = malloc(32);
-                sprint(sz, "pid=%d", p->pid);
-                setmemcomment(h, sz);
-        }
-        }
+//        {
+//        Prog *p=currun();
+//        if(p==nil) {
+//                setmemcomment(h, "nil");
+//        }
+//        else{
+//                //char* sz = HeapAlloc(GetProcessHeap(),0,32);
+//                char* sz = malloc(32);
+//                sprint(sz, "pid=%d", p->pid);
+//                setmemcomment(h, sz);
+//        }
+//        }
 
         h->t = t;
         t->ref++;
@@ -413,18 +415,18 @@ v_heap(Type *t, const char*file, int line, const char*function)
         if(h == nil)
                 error(exHeap);
 
-        {
-        Prog *p=currun();
-        if(p==nil) {
-                setmemcomment(h, "nil");
-        }
-        else{
-                //char* sz = HeapAlloc(GetProcessHeap(),0,32);
-                char* sz = malloc(32);
-                sprint(sz, "pid=%d", p->pid);
-                setmemcomment(h, sz);
-        }
-        }
+//        {
+//        Prog *p=currun();
+//        if(p==nil) {
+//                setmemcomment(h, "nil");
+//        }
+//        else{
+//                //char* sz = HeapAlloc(GetProcessHeap(),0,32);
+//                char* sz = malloc(32);
+//                sprint(sz, "pid=%d", p->pid);
+//                setmemcomment(h, sz);
+//        }
+//        }
 
         h->t = t;
         t->ref++;

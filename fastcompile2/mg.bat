@@ -7,5 +7,10 @@ rem rem O:\inferno\fastcompile2\ctool\splint-3.0.1.6\bin\splint.exe l1.c >l1.lin
 rem exit
 rem C:\MinGW\bin\gcc.exe -o emug.exe l1.c -lgdi32 -lws2_32 -lwinmm -lmpr
 
-C:\MinGW\bin\gcc.exe turbo.c -o emug.exe -w -I.. -Iinclude -lgdi32 -lws2_32 -lwinmm -lmpr 2>&1 | perl -pe "s#^/#o:/#"
+C:\bin\MinGW\bin\gcc.exe turbo.c -o emug.exe -w -I.. -Iinclude -lgdi32 -lws2_32 -lwinmm -lmpr 2>&1 
+rem | perl -pe "s#^/#o:/#"
+
+if not exist emug.exe goto final
+emug.exe -r .. wm/wm wm/coffee
+:final
 exit

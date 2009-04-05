@@ -32,13 +32,11 @@
 
 #define getwd   infgetwd
 
-#define STACK 0
-
 typedef struct Proc Proc;
 typedef struct Prog Prog;
 typedef struct Chan Chan;
-typedef struct Osenv	Osenv;
-typedef struct SrvFile	SrvFile;
+typedef struct Osenv    Osenv;
+typedef struct SrvFile  SrvFile;
 
 /*
  * math module dtoa
@@ -176,15 +174,16 @@ extern  void*   v_calloc(size_t num, size_t size, const char*, int, const char*)
 extern  size_t  v_msize(void *v, const char*, int, const char*);
 extern  char*   v_strdup(const char*, const char*, int, const char*);
 
-#define kmalloc(size)		v_kmalloc(size, __FILE__, __LINE__, __FUNCTION__)
-#define smalloc(size)		v_smalloc(size, __FILE__, __LINE__, __FUNCTION__)
-#define malloc(size)		v_malloc(size, __FILE__, __LINE__, __FUNCTION__)
-#define mallocz(size, clr)	v_mallocz(size, clr, __FILE__, __LINE__, __FUNCTION__)
-#define free(v)			{v_free((void*)(v), __FILE__, __LINE__, __FUNCTION__); *(void**)&(v)=(void*)0xDEAFBEEFL; }
-#define realloc(v, size)	v_realloc(v, size, __FILE__, __LINE__, __FUNCTION__)
-#define calloc(num, size)	v_calloc(num, size, __FILE__, __LINE__, __FUNCTION__)
-#define msize(v)		v_msize(v, __FILE__, __LINE__, __FUNCTION__)
-#define strdup(v)		v_strdup(v, __FILE__, __LINE__, __FUNCTION__)
+
+#define kmalloc(size)       v_kmalloc(size, __FILE__, __LINE__, __FUNCTION__)
+#define smalloc(size)       v_smalloc(size, __FILE__, __LINE__, __FUNCTION__)
+#define malloc(size)        v_malloc(size, __FILE__, __LINE__, __FUNCTION__)
+#define mallocz(size, clr)  v_mallocz(size, clr, __FILE__, __LINE__, __FUNCTION__)
+#define free(v)             {v_free((void*)(v), __FILE__, __LINE__, __FUNCTION__); *(void**)&(v)=(void*)0xDEAFBEEFL; }
+#define realloc(v, size)    v_realloc(v, size, __FILE__, __LINE__, __FUNCTION__)
+#define calloc(num, size)   v_calloc(num, size, __FILE__, __LINE__, __FUNCTION__)
+#define msize(v)            v_msize(v, __FILE__, __LINE__, __FUNCTION__)
+#define strdup(v)           v_strdup(v, __FILE__, __LINE__, __FUNCTION__)
 
 #endif
 
@@ -381,7 +380,7 @@ extern  ulong   ntruerand(ulong);
 /*
  * math
  */
-extern	double	pow(double, double);
+extern  double  pow(double, double);
 extern  int isNaN(double);
 extern  int isInf(double, int);
 
@@ -421,7 +420,7 @@ extern  char*       getuser(void);
 extern  char*       getwd(char*, int);
 extern  char*       getwd(char*, int);
 extern  double      ipow10(int);
-#define	pow10	infpow10
+#define pow10   infpow10
 extern  double      pow10(int);
 extern  NORETURN    sysfatal(const char*, ...);
 extern  int     dec64(uchar*, int, const char*, int);
@@ -634,7 +633,7 @@ struct FPU
 /* Set up private thread space */
 extern  __declspec(thread) Proc*    up;
 #else
-Proc*	getup();
+Proc*   getup();
 #define up (getup())
 #endif
 

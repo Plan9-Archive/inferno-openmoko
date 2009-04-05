@@ -390,8 +390,8 @@ DISAPI(Loader_dnew)
 
 DISAPI(Loader_compile)
 {
+#if JIT
 	Module *m;
-
 	*f->ret = -1;
 	if(f->mp == H) {
 		kwerrstr("nil mp");
@@ -411,4 +411,7 @@ DISAPI(Loader_compile)
 	} else
 		*f->ret = -1;
 	m->origmp = (char*)H;
+#else
+        panic("Loader.compile()");
+#endif
 }

@@ -53,10 +53,10 @@ memimageinit(void)
 		return;
 
 	didinit = 1;
-	 /* BUG
+
 	n = poolname(imagmem);
 	if(strcmp(n, "Image") == 0 || strcmp(n, "image") == 0)
-		poolsetcompact(imagmem, memimagemove); */
+		poolsetcompact(imagmem, memimagemove);
 	mktables();
 	_memmkcmap();
 
