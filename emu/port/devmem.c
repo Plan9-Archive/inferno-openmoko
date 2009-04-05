@@ -20,23 +20,23 @@ static
 Dirtab memdir[] =
 {
 	".",		{Qmem_dir, 0, QTDIR},	0,	DMDIR|0555,
-	"memctl",	{Qmem_ctl},			0,	0666,
+	"memctl",	{Qmem_ctl},		0,	0666,
 	"memstate",	{Qmem_state},		0,	0444,
-	"memsum",	{Qmem_sum},			0,	0444,
+	"memsum",	{Qmem_sum},		0,	0444,
 	"memevent",	{Qmem_event},		0,	0444,
 	"memprof",	{Qmem_prof},		0,	0444,
 	"memheap",	{Qmem_heap},		0,	0444,
-	"memgc",	{Qmem_gc},			0,	0444,
+	"memgc",	{Qmem_gc},		0,	0444,
 };
 
 enum
 {
 	/* these are the top two bits of size */
 	Pflags=	3<<30,
-	  Pfree=	0<<30,
-	  Palloc=	1<<30,
-	  Paend=	2<<30,
-	  Pimmutable=	3<<30,
+	Pfree=	0<<30,
+	Palloc=	1<<30,
+	Paend=	2<<30,
+	Pimmutable=	3<<30,
 
 	Npool = 3,
 	Nevents = 10000,
@@ -209,6 +209,7 @@ static void
 memaudit( void* v, size_t size, int tag,
 	const char* file, int line, const char* function, const char* comment)
 {
+	printf("%s\n", __FUNCTION__);
 	/* BUG
 	Pstate *p;
 
@@ -277,6 +278,7 @@ memstat(Chan *c, char *db, int n)
 static Chan*
 memopen(Chan *c, int omode)
 {
+	printf("%s %d\n", __FUNCTION__, __LINE__);
 	return nil;
 	/* BUG
 	if(memmonitor != nil && c->qid.path != Qgc)
@@ -349,6 +351,7 @@ memread(Chan *c, char *va, long count, vlong offset)
 	Pevent pe;
 	Pbucket *b;
 
+	printf("%s\n", __FUNCTION__);
 	if(c->qid.type & QTDIR)
 		return devdirread(c, va, count, memdir, nelem(memdir), devgen);
 

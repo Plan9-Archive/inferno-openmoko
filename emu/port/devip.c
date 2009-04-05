@@ -333,7 +333,7 @@ newproto(char *name, int type, int maxconv)
 void
 ipinit(void)
 {
-	ipfs[0] = (Fs*)mallocz(sizeof(Fs), 1);
+	ipfs[0] = (Fs*)malloc(sizeof(Fs));
 	if(ipfs[0] == nil)
 		panic("no memory for IP stack");
 

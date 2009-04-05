@@ -1,4 +1,4 @@
 #ifndef INC_isa
 #define INC_isa
-#include "/inferno/include/isa.h"
+#include "include/isa.h"
 #endif

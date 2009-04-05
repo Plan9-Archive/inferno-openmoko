@@ -1,4 +1,4 @@
 #ifndef INC_fmtdef
 #define INC_fmtdef
-#include "/inferno/lib9/fmtdef.h"
+#include "lib9/fmtdef.h"
 #endif

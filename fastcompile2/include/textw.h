@@ -1,4 +1,4 @@
 #ifndef INC_textw
 #define INC_textw
-#include "/inferno/libtk/textw.h"
+#include "libtk/textw.h"
 #endif

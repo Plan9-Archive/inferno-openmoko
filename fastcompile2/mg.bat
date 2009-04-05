@@ -1,6 +1,11 @@
-@echo off
+rem @echo off
 
 del emug.exe
-C:\MinGW\bin\gcc.exe -E -w -DROOT="\inferno" -DKERNDATE=1666666666 -DEMU=1 -DUNICODE -D_WIN32_WINNT=0x0400 -DOBJTYPE=386 -I. -Iinclude turbo.c 2>l2  >l1.c
-C:\MinGW\bin\gcc.exe -o emug.exe l1.c -lgdi32 -lws2_32 -lwinmm -lmpr
+rem C:\MinGW\bin\gcc.exe -E  -DROOT="\inferno" -DKERNDATE=1666666666 -DEMU=1 -DUNICODE -D_WIN32_WINNT=0x0400 -DOBJTYPE=386 -I. -Iinclude turbo.c 2>l2  >l1.c
+rem rem set LARCH_PATH=O:\inferno\fastcompile2\ctool\splint-3.0.1.6\lib
+rem rem O:\inferno\fastcompile2\ctool\splint-3.0.1.6\bin\splint.exe l1.c >l1.lint
+rem exit
+rem C:\MinGW\bin\gcc.exe -o emug.exe l1.c -lgdi32 -lws2_32 -lwinmm -lmpr
+
+C:\MinGW\bin\gcc.exe turbo.c -o emug.exe -w -I.. -Iinclude -lgdi32 -lws2_32 -lwinmm -lmpr 2>&1 | perl -pe "s#^/#o:/#"
 exit

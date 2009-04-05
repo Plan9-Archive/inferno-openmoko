@@ -5,16 +5,16 @@
 
 struct Lline
 {
-	Point			p0;
-	Point			p1;
-	Point			delta;
-	int			end0;
-	int			end1;
-	int			radius;
-	Point			sp;
-	Memlayer		*dstlayer;
+	Point		p0;
+	Point		p1;
+	Point		delta;
+	int		end0;
+	int		end1;
+	int		radius;
+	Point		sp;
+	Memlayer	*dstlayer;
 	Memimage	*src;
-	int	op;
+	int		op;
 };
 
 static void llineop(Memimage*, Rectangle, Rectangle, void*, int);

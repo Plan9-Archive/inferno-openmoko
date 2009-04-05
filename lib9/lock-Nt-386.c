@@ -12,7 +12,7 @@ _tas(int *la)
 		mov	v, ebx
 	}
 #else
-	asm("xchgl %0,%1" : "=r" (v), "=m" (*la) : "0"(1));
+	__asm__ ("xchgl %0,%1" : "=r" (v), "=m" (*la) : "0"(1));
 #endif
 	return v;
 }

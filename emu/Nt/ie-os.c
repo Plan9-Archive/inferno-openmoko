@@ -477,7 +477,7 @@ erendezvous(void *tag, ulong value)
 }
 
 void
-FPsave(void *fptr)
+FPsave(FPU *fptr)
 {
 	_asm {
 		mov	eax, fptr
@@ -486,7 +486,7 @@ FPsave(void *fptr)
 }
 
 void
-FPrestore(void *fptr)
+FPrestore(FPU *fptr)
 {
 	_asm {
 		mov	eax, fptr

@@ -505,7 +505,7 @@ libinit(char *imod)
 }
 
 void
-FPsave(void *fptr)
+FPsave(FPU *fptr)
 {
 /*
 	_asm {
@@ -516,7 +516,7 @@ FPsave(void *fptr)
 }
 
 void
-FPrestore(void *fptr)
+FPrestore(FPU *fptr)
 {
 /*
 	_asm {

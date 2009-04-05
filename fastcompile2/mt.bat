@@ -1,6 +1,9 @@
-@echo off
 
-del emut.exe
-C:\bin\tcc\tcc.exe  -o emut.exe -bench -DROOT="/inferno" -DKERNDATE=1666666666 -DEMU=1 -DUNICODE -D_WIN32_WINNT=0x0400 -DOBJTYPE=386 -Iinclude -Io: turbo.c -lgdi32 -luser32 -lws2_32 -lwinmm -ladvapi32 -lmpr
-emut.exe
+@del emut.exe
+@C:\bin\tcc\tcc.exe  -o emut.exe -bench -Iinclude -I.. turbo.c -lgdi32 -luser32 -lws2_32 -lwinmm -ladvapi32 -lmpr 2>&1 | perl -pe "s#^/#o:/#"
+
+if not exist emut.exe goto final
+emut.exe -r .. wm/wm wm/coffee
+rem emut.exe wm/wm charon
+:final
 exit

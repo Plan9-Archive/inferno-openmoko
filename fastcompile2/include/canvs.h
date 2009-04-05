@@ -1,4 +1,4 @@
 #ifndef INC_canvs
 #define INC_canvs
-#include "/inferno/libtk/canvs.h"
+#include "libtk/canvs.h"
 #endif

@@ -1,4 +1,4 @@
 #ifndef INC_runt
 #define INC_runt
-#include "/inferno/libinterp/runt.h"
+#include "libinterp/runt.h"
 #endif

@@ -10,7 +10,7 @@
 OP(indc)
 {
 	int l;
-	ulong v = rm->disint;
+	DISINT v = rm->disint;
 	String *ss = rs->pstring;
 
 	if(ss == H)

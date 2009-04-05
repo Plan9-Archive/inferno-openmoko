@@ -3,7 +3,7 @@ CC=r'C:\bin\tcc\tcc.exe -bench'
 #CC=r'C:\Program Files\Microsoft Visual Studio 8\VC\BIN\cl.exe'
 ROOT=r'/inferno'
 #
-DEFINES=r'-DUNICODE -DROOT="""%s"""' % ROOT
+DEFINES=r'-DUNICODE= -DOBJTYPE=386 -DROOT="""%s"""' % ROOT
 INCLUDES=r"""
 Nt\386\include
 include

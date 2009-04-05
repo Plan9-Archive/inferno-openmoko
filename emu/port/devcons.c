@@ -349,7 +349,7 @@ consread(Chan *c, char *va, long n, vlong offset)
 		return n;
 
 	case Qcons_memory:
-		return 0; /* BUG poolread(va, n, offset); */
+		return poolread(va, n, offset);
 
 	case Qcons_null:
 		return 0;

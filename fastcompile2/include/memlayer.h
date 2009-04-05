@@ -1,4 +1,4 @@
 #ifndef INC_memlayer
 #define INC_memlayer
-#include "/inferno/include/memlayer.h"
+#include "include/memlayer.h"
 #endif

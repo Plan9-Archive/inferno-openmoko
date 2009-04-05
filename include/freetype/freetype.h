@@ -18,7 +18,7 @@
 
 #ifndef __FREETYPE_H__
 #define __FREETYPE_H__
-#pragma incomplete _off_	/* it's too hard */
+#pragma incomplete _off_    /* it's too hard */
 
 
   /*************************************************************************/
@@ -1511,11 +1511,6 @@ extern "C" {
 
   } FT_Open_Flags;
 
-#define  FT_OPEN_MEMORY    FT_OPEN_MEMORY
-#define  FT_OPEN_STREAM    FT_OPEN_STREAM
-#define  FT_OPEN_PATHNAME  FT_OPEN_PATHNAME
-#define  FT_OPEN_DRIVER    FT_OPEN_DRIVER
-#define  FT_OPEN_PARAMS    FT_OPEN_PARAMS
 
 
   /*************************************************************************/

@@ -1,4 +1,4 @@
 #ifndef INC_drawmod
 #define INC_drawmod
-#include "/inferno/libinterp/drawmod.h"
+#include "libinterp/drawmod.h"
 #endif

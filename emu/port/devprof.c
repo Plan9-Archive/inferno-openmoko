@@ -370,6 +370,9 @@ profwrite(Chan *c, const char *va, long n, vlong offset)
 	char buf[128], *fields[128];
 	/* BUG void	(*f)(int, ulong, ulong, ulong); */
 	const char* a;
+	
+	printf("%s %d\n", __FUNCTION__, __LINE__);
+	
 
 	USED(va);
 	USED(n);
@@ -622,6 +625,7 @@ cpxec(Prog *p)
 	}
 
 	if(R.ML->compiled) {
+		printf("%s %d\n", __FUNCTION__, __LINE__);
 		/* BUG */
 #if STACK
 		comvec();
@@ -679,6 +683,8 @@ memprof(int c, void *v, ulong n)
 	USED(v);
 	USED(n);
 	if(profiler != Pmem){
+		printf("%s %d\n", __FUNCTION__, __LINE__);
+	
 		/* BUG memmonitor = nil; */
 		heapmonitor = nil;
 		return;
@@ -704,6 +710,7 @@ memprof(int c, void *v, ulong n)
 			j = poolmsize(heapmem, v)-sizeof(Heap);
 		}
 		else if(c == Mmalloc){
+			printf("%s %d\n", __FUNCTION__, __LINE__);
 			/* BUG setmalloctag(v, k); */
 			j = poolmsize(mainmem, v);
 		}
@@ -713,9 +720,11 @@ memprof(int c, void *v, ulong n)
 		}
 	}
 	else{
-		if(c == Mmfree)
+		if(c == Mmfree) {
+			printf("%s %d\n", __FUNCTION__, __LINE__);
+			
 			; /* BUG k = getmalloctag(v); */
-		else if(c == Mifree)
+		} else if(c == Mifree)
 			k = ((ulong*)v)[1];
 		else
 			k = ((Heap*)v)->hprof;

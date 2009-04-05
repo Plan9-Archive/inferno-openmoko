@@ -1,4 +1,4 @@
 #ifndef INC_frame
 #define INC_frame
-#include "/inferno/libtk/frame.h"
+#include "libtk/frame.h"
 #endif

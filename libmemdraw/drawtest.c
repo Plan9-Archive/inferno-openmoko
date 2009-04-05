@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "bio.h"
-#include "draw.h"
-#include "memdraw.h"
+#include <lib9.h>
+#include <bio.h>
+#include <draw.h>
+#include <memdraw.h>
 
 #define DBG if(0)
 #define RGB2K(r,g,b)	((299*((ulong)(r))+587*((ulong)(g))+114*((ulong)(b)))/1000)

@@ -7,9 +7,6 @@
 #define HEAP_CREATE_ENABLE_EXECUTE 0x00040000
 #endif
 
-#ifndef __FUNCTION__
-#define __FUNCTION__ ""
-#endif
 
 typedef struct Bhdr Bhdr;
 typedef struct Btail Btail;
@@ -43,30 +40,28 @@ struct Btail
 #define VALIDATE_PTR(p) { \
 	Bhdr* z=(Bhdr*)(p); \
 	if(IsBadReadPtr(z, sizeof(Bhdr))) \
-		panic(__FUNCTION__ "(invalid ptr %p)", z); \
+		panic("%s (invalid ptr %p)", __FUNCTION__, z); \
 	if(IsBadStringPtrA(z->file, 256)) \
-		panic(__FUNCTION__ "(invalid file name b=%p b->file=%p)", z, z->file); \
+		panic("%s (invalid file name b=%p b->file=%p)", __FUNCTION__, z, z->file); \
 	if(IsBadStringPtrA(z->function, 256)) \
-		panic(__FUNCTION__ "(invalid function name b=%p b->file=%p)", z, z->function); \
+		panic("%s (invalid function name b=%p b->file=%p)", __FUNCTION__, z, z->function); \
 	if(z->comment!=0 && IsBadStringPtrA(z->comment, 256)) \
-		panic(__FUNCTION__ "(invalid comment b=%p b->file=%p)", z, z->comment); \
+		panic("%s (invalid comment b=%p b->file=%p)", __FUNCTION__, z, z->comment); \
 	if(z->guard != GUARD(z)) \
-		panic(__FUNCTION__ "(invalid head guard %lux!=%lux b=%lux size=%d) %s:%d %s", \
-			z->guard, GUARD(z), z, z->size, z->file, z->line, z->function); \
+		panic("%s (invalid head guard %lux!=%lux b=%lux size=%d) %s:%d %s", \
+			__FUNCTION__, z->guard, GUARD(z), z, z->size, z->file, z->line, z->function); \
 	if(BTAIL(z)->guard != GUARD(z)) \
-		panic(__FUNCTION__ "(invalid tail guard %lux!=%lux b=%lux size=%d) %s:%d %s", \
-			BTAIL(z)->guard, GUARD(z), z, z->size, z->file, z->line, z->function); \
+		panic("%s (invalid tail guard %lux!=%lux b=%lux size=%d) %s:%d %s", \
+			__FUNCTION__, BTAIL(z)->guard, GUARD(z), z, z->size, z->file, z->line, z->function); \
 	}
 
 /* pool aware */
 #define VALIDATE_PTR2(pool, p) { \
 	VALIDATE_PTR(p) \
-{Bhdr* z=(Bhdr*)(p); \
+	{Bhdr* z=(Bhdr*)(p); \
 	if(!HeapValidate(pool->handle, 0, b)) \
-		panic(__FUNCTION__ "(invalid block b=%p size=%d) %s:%d %s", \
-			z, z->size, z->file, z->line, z->function); \
-}}
-
+		panic("%s (invalid block b=%p size=%d) %s:%d %s", __FUNCTION__, z, z->size, z->file, z->line, z->function); \
+	}}
 
 
 
@@ -242,6 +237,45 @@ void	setmemcomment(void *v, const char* comment)
 	b->comment = comment;
 }
 
+int
+poolread(char *va, int count, ulong offset)
+{
+	Pool *pool;
+	int n, i, signed_off;
+
+	n = 0;
+	signed_off = offset;
+	for(i = 0; i < table.n; i++) {
+		pool = &table.pool[i];
+		n += snprint(va+n, count-n, "%11lld %11ud %11lld %11lld %11lld %11lld %11lld %s\n",
+			(pool->allocbytes-pool->freebytes) + (pool->reallocbytes-pool->refreebytes),
+			pool->maxsize,
+			0ull, //p->hw,
+
+			pool->nalloc,
+			pool->nfree,
+			0ull,//p->nbrk,
+
+			0ull,//poolmax(p),
+			pool->name);
+			
+			
+		// TODO: verify the logic
+		if(signed_off > 0) {
+			signed_off -= n;
+			if(signed_off < 0) {
+				memmove(va, va+n+signed_off, -signed_off);
+				n = -signed_off;
+			}
+			else
+				n = 0;
+		}
+
+	}
+	return n;
+}
+
+
 void	poolwalk(Pool* pool, poolwalk_callback callback)
 {
 	PROCESS_HEAP_ENTRY phe;
@@ -288,7 +322,7 @@ void	poolwalk(Pool* pool, poolwalk_callback callback)
 #endif
 				VALIDATE_PTR2(pool, phe.lpData);
 				if(phe.cbData != b->size + sizeof(Bhdr) + sizeof(Btail)) \
-					panic(__FUNCTION__ "(invalid size %p)", b);
+					panic("%s (invalid size %p)", __FUNCTION__, b);
 				//assert(phe.cbData == b->size + sizeof(Bhdr) + sizeof(Btail));
 				callback(B2D(b), b->size, b->tag, b->file, b->line, b->function, b->comment);
 #ifdef _MSC_VER

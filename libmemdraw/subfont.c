@@ -1,6 +1,6 @@
-#include "lib9.h"
-#include "draw.h"
-#include "memdraw.h"
+#include <lib9.h>
+#include <draw.h>
+#include <memdraw.h>
 
 Memsubfont*
 allocmemsubfont(char *name, int n, int height, int ascent, Fontchar *info, Memimage *i)

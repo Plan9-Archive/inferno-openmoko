@@ -1,4 +1,4 @@
-#include "os.h"
+#include <os.h>
 
 ulong smallprimes[1000] = {
 	2,

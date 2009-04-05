@@ -11,7 +11,7 @@ enum
 static void
 winerror(int e, char *buf, uint nerr)
 {
-	int r;
+	DWORD r;
 	char buf2[ERRMAX], *p, *q;
 
 	r = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM,

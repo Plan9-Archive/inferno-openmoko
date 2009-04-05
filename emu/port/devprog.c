@@ -740,6 +740,7 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 
 		}
 		addr += s;
+		// TODO: verify the logic
 		if(signed_off > 0) {
 			signed_off -= n;
 			if(signed_off < 0) {
@@ -1368,6 +1369,7 @@ dbgblock(Prog *p)
 void
 dbgxec(Prog *p)
 {
+	printf("%s\n", __FUNCTION__);
 #if 0
 	extern REG R;
 	Bpt *b;

@@ -1,7 +1,7 @@
-#include "lib9.h"
-#include "draw.h"
-#include "memdraw.h"
-#include "memlayer.h"
+#include <lib9.h>
+#include <draw.h>
+#include <memdraw.h>
+#include <memlayer.h>
 
 Point
 memimagestring(Memimage *b, Point p, Memimage *color, Point cp, Memsubfont *f, char *cs)

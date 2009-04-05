@@ -29,7 +29,7 @@ main(void)
 		decgen(i);
 	print("};\n");
 
-	print("};\n");
+	print("}\n");
 
 	return 0;
 }
