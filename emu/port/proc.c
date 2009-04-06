@@ -180,7 +180,7 @@ rptactive(void *a)
 }
 
 static void
-rproc(void *a)
+rproc(const void *a)
 {
 	long now, then;
 	ulong t;
@@ -235,6 +235,6 @@ rptproc(char *s, int t, void *o, int (*active)(void*), int (*ck)(void*, int), vo
 	r->ck = ck;
 	r->f = f;
 	r->o = o;
-	kproc(s, rproc, r, KPDUPPG);  /* BUG: check return value */
+	kproc(s, rproc, r, KPDUPPG);
 	return r;
 }

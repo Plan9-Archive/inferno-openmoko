@@ -43,7 +43,7 @@ static Dirtab capdir[] =
 static int ncapdir = nelem(capdir);
 
 static void
-capwatch(void *a)
+capwatch(const void *a)
 {
 	Cap *c, **l;
 	int idletime;
@@ -148,7 +148,7 @@ capwritehash(const char *a, int l)
 	allcaps.caps = c;
 	if(!allcaps.kpstarted){
 		allcaps.kpstarted = 1;
-		kproc("capwatch", capwatch, 0, 0); /* BUG: check return value */
+		kproc("capwatch", capwatch, 0, 0);
 	}
 	qunlock(&allcaps.l);
 	return 0;

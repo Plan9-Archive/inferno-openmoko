@@ -40,7 +40,7 @@ int         cmount(Chan*, Chan*, int, char*);
 Chan*       createdir(Chan*, Mhead*);
 void        cunmount(Chan*, Chan*);
 int         decref(Ref*);
-long        devbwrite(Chan*, const Block*, vlong);
+long        devbwrite(Chan*, Block*, vlong);
 void        devcreate(Chan*, const char*, int, ulong);
 void        devdir(Chan*, Qid, const char*, long, char*, long, Dir*);
 long        devdirread(Chan*, char*, long, Dirtab*, int, Devgen*);
@@ -92,8 +92,8 @@ int         isdotdot(__in_z const char*);
 int         iseve(void);
 int         kannounce(char*, char*);
 int         kdial(char*, char*, char*, int*);
-typedef void (*ProcFunc)(void*);
-int         kproc(  /*__in_ecount_z(KNAMELEN-1)*/ __in_z const char *name,
+typedef void (*ProcFunc)(const void*);
+__checkReturn int kproc(  /*__in_ecount_z(KNAMELEN-1)*/ __in_z const char *name,
                     __in ProcFunc func,
                     __in_opt const void *arg,
                     KProcFlags flags);
@@ -206,7 +206,7 @@ void        freeuqid(Uqidtab*, Uqid*);
 void        validname(const char*, int);
 void        validstat(const char*, int);
 void        validwstatname(const char*);
-NORETURN    vmachine(void*);
+NORETURN    vmachine(const void*);
 int         walk(Chan**, const char**, int, int, int*);
 NORETURN    cleanexit(int);
 void        oshostintr(Proc*);

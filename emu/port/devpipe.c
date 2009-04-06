@@ -368,7 +368,7 @@ pipewrite(Chan *c, __in_ecount(n) const char *va, size_t n, vlong junk)
 }
 
 static long
-pipebwrite(Chan *c, const Block *bp, vlong junk)
+pipebwrite(Chan *c, Block *bp, vlong junk)
 {
 	long n;
 	Pipe *p;

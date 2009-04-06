@@ -100,7 +100,7 @@ static struct
 } kbd;
 
 void
-kbdslave(void *a)
+kbdslave(const void *a)
 {
 	char b;
 
@@ -188,7 +188,7 @@ consattach(const char *spec)
 
 	if(kp == 0 && !dflag) {
 		kp = 1;
-		kproc("kbd", kbdslave, 0, 0);   /* BUG: check return value */
+		kproc("kbd", kbdslave, 0, 0);
 	}
 	return devattach('c', spec);
 }

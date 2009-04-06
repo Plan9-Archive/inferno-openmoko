@@ -44,7 +44,7 @@ rbnotempty(void *v)
  *  spin counting up
  */
 static void
-_genrandom(void *v)
+_genrandom(const void *v)
 {
 	USED(v);
 	oslopri();
@@ -61,7 +61,7 @@ _genrandom(void *v)
  *  produce random bits in a circular buffer
  */
 static NORETURN
-randomclock(void *v)
+randomclock(const void *v)
 {
 	uchar *p;
 
@@ -121,8 +121,8 @@ randomread(char *p, ulong n)
 	qlock(&rb.l);
 	if(!rb.kprocstarted){
 		rb.kprocstarted = 1;
-		kproc("genrand", _genrandom, 0, 0);  /* BUG: check return value */
-		kproc("randomclock", randomclock, 0, 0);  /* BUG: check return value */
+		kproc("genrand", _genrandom, 0, 0);
+		kproc("randomclock", randomclock, 0, 0);
 	}
 
 	for(e = p + n; p < e; ){

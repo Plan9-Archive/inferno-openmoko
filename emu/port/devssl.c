@@ -626,7 +626,7 @@ randfill(char *buf, int len)
  *  use SSL record format, add in count and digest or encrypt
  */
 static long
-sslbwrite(Chan *c, const Block *b, vlong offset)
+sslbwrite(Chan *c, Block *b, vlong offset)
 {
 	volatile struct { Dstate *s; } s;
 	volatile struct { Block *b; } bb;

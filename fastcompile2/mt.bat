@@ -4,7 +4,7 @@ rem c:\perl64\bin\perl -pe "s#^/#o:/#"
 
 if not exist emut.exe goto final
 
-emut.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless man disdump
+rem emut.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless man disdump
 rem emut.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless wm/wm 
 rem emut.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless wm/wm charon http://www.yandex.ru/
 rem emut.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless wm/wm

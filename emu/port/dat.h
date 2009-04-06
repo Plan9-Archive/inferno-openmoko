@@ -165,7 +165,7 @@ struct Dev
 	size_t      (*read)(Chan*, __out_ecount(n) char*, size_t n, vlong);
 	Block*	    (*bread)(Chan*, long, ulong);
 	size_t	    (*write)(Chan*, __in_ecount(n) const char*, size_t n, vlong);
-	long	    (*bwrite)(Chan*, const Block*, vlong);
+	long	    (*bwrite)(Chan*, Block*, vlong);
 	void	    (*remove)(Chan*);
 	int	        (*wstat)(Chan*, char*, int);
 };
@@ -439,7 +439,7 @@ struct Proc
 	int		        nerr;		/* error stack SP */
 	osjmpbuf	    estack[NERR];	/* vector of error jump labels */
 	char*		    kstack;
-	void		    (*func)(void*);	/* saved trampoline pointer for kproc */
+	void		    (*func)(const void*);	/* saved trampoline pointer for kproc */
 	const void*	    arg;		/* arg for invoked kproc function */
 	Prog*		    iprog;		/* work for Prog after release */
 	Prog*		    prog;		/* fake prog for slaves eg. exportfs */

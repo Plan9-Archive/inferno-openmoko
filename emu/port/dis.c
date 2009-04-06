@@ -862,7 +862,7 @@ release(void)
                 isched.creating = 1;
                 unlock(&isched.l);
                 if(f == 0)
-                        kproc("dis", vmachine, nil, 0);  /* BUG: check return value */
+                        kproc("dis", vmachine, nil, 0);
                 return;
         }
         p = *pq;
@@ -1110,7 +1110,7 @@ disfault(void *reg, __in_z const char *msg)
 }
 
 NORETURN
-vmachine(void *a)
+vmachine(const void *a)
 {
         Prog *r;
         Osenv *o;

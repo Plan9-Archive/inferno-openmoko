@@ -580,8 +580,8 @@ static TH(tkscaleconf)
 	return e;
 }
 
-char*
-tkscaleposn(TkEnv *env, Tk *tk, char *arg, int *z)
+const char*
+tkscaleposn(TkEnv *env, Tk *tk, const char *arg, int *z)
 {
 	int x, y;
 	TkScale *tks = TKobj(TkScale, tk);

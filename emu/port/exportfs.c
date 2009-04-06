@@ -76,10 +76,10 @@ struct
 
 static void	exshutdown(Export*);
 static int	exflushed(Export*, Exq*);
-static void	exslave(void*);
+static void	exslave(const void*);
 static void	exfree(Export*);
 static void	exfreeq(Exq*);
-static void	exportproc(void*);
+static void	exportproc(const void*);
 static void	exreply(Exq*, char*);
 static int	exisroot(Export*, Chan*);
 
@@ -155,7 +155,7 @@ export(int fd, char *dir, int async)
 	if(async){
 		if(waserror())
 			return -1;
-		kproc("exportfs", exportproc, fs, 0);  /* BUG: check return value */
+		kproc("exportfs", exportproc, fs, 0);
 		poperror();
 	}else
 		exportproc(fs);
@@ -236,7 +236,7 @@ exreadmsg(Chan *c, char *buf, uint n)
 }
 
 static void
-exportproc(void *a)
+exportproc(const void *a)
 {
 	Exq *q;
 	int async, msize;
@@ -331,7 +331,7 @@ exportproc(void *a)
 		exq.tail = q;
 		unlock(&exq.l);
 		if(exq.qwait.head == nil)
-			kproc("exslave", exslave, nil, 0);  /* BUG: check return value */
+			kproc("exslave", exslave, nil, 0);
 		wakeup9(&exq.rwait);
 	}
 
@@ -490,7 +490,7 @@ exwork(void *a)
 }
 
 static void
-exslave(void *a)
+exslave(const void *a)
 {
 	Export *fs;
 	Exq *q, *t, *fq, **last;

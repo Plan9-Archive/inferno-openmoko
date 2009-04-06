@@ -52,7 +52,7 @@ static struct
 } cmd;
 
 static	CmdConv*	cmdclone(char*);
-static	void	cmdproc(void*);
+static	void	cmdproc(const void*);
 
 static int
 cmd3gen(Chan *c, int i, Dir *dp)
@@ -470,7 +470,7 @@ cmdwrite(Chan *ch, __in_ecount(n) const char *a, size_t n, vlong offset)
 					error(Einuse);
 			if(cb->nf < 1)
 				error(Etoosmall);
-			kproc("cmdproc", cmdproc, c, 0);  /* BUG: check return value */	/* cmdproc held back until unlock below */
+			kproc("cmdproc", cmdproc, c, 0);	/* cmdproc held back until unlock below */
 			free(c->cmd);
 			c->cmd = cb;	/* don't free cb */
 			c->state = "Execute";
@@ -607,7 +607,7 @@ cmdclone(char *user)
 }
 
 static void
-cmdproc(void *a)
+cmdproc(const void *a)
 {
 	CmdConv *c = (CmdConv *)a;
 	int n;

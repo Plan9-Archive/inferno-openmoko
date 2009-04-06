@@ -122,7 +122,7 @@ tramp(LPVOID p)
     return 0;
 }
 
-int
+__checkReturn int
 kproc(/*__in_ecount_z(KNAMELEN-1)*/ __in_z const char *name, 
       __in ProcFunc func,
       __in_opt const void *arg,

@@ -326,7 +326,7 @@ emuinit(const char *imod)
     putenvq("emuroot", rootdir, 1);
     ksetenv("emuhost", hosttype, 1);
 
-    kproc("main", (ProcFunc)disinit, (void*)imod, KPDUP);  /* BUG: check return value */
+    kproc("main", (ProcFunc)disinit, (void*)imod, KPDUP);
 
     for(;;)
         ospause();
