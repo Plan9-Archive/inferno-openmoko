@@ -130,8 +130,8 @@ modetomask[] =
 	RMODE|WMODE|XMODE,
 };
 
-extern Rune	*widen(const char *s);
-extern char* narrowen(const Rune *ws);
+extern Rune* widen(__in_z const char *s);
+extern char* narrowen(__in_z const Rune *ws);
 
 
 extern	DWORD	PlatformId;
@@ -149,8 +149,8 @@ static	uchar	isntfrog[256];
 
 static	void		fsremove(Chan*);
 
-	char		*narrowen(const wchar_t *ws);
-	int		widebytes(const wchar_t *ws);
+__checkReturn char*     narrowen(__in_z const Rune *ws);
+__checkReturn size_t    widebytes(__in_z const Rune *ws);
 
 static char Etoolong[] = "file name too long";
 
@@ -187,35 +187,35 @@ static struct {
 	TApiBufferFree		ApiBufferFree;
 } net;
 
-extern	int		nth2fd(HANDLE);
+extern	int		    nth2fd(HANDLE);
 extern	HANDLE		ntfd2h(int);
-static	int		cnisroot(Cname*);
-static	int		fsisroot(Chan*);
-static	int		okelem(const char*, int);
-static	int		fsexist(char*, Qid*);
+static	int		    cnisroot(Cname*);
+static	int		    fsisroot(Chan*);
+static	int		    okelem(const char*, int);
+static	int		    fsexist(char*, Qid*);
 static	char*		fspath(Cname*, const char*, char*, const char*);
 static	Cname*		fswalkpath(Cname*, const char*, int);
-static	char*	fslastelem(Cname*);
+static	char*	    fslastelem(Cname*);
 static	long		fsdirread(Chan*, char*, int, vlong);
 static	ulong		fsqidpath(const char*);
-static	int		fsomode(int);
-static	int		fsdirset(char*, int, WIN32_FIND_DATAW*, char*, Chan*, int isdir);
-static 	int		fsdirsize(WIN32_FIND_DATAW*, char*, Chan*);
+static	int		    fsomode(int);
+static	int		    fsdirset(char*, int, WIN32_FIND_DATAW*, char*, Chan*, int isdir);
+static 	int		    fsdirsize(WIN32_FIND_DATAW*, char*, Chan*);
 static	void		fssettime(char*, long, long);
 static	long		unixtime(FILETIME);
 static	FILETIME	wintime(ulong);
 static	void		secinit(void);
-static	int		secstat(Dir*, char*, Rune*);
-static	int		secsize(char*, Rune*);
+static	int		    secstat(Dir*, char*, Rune*);
+static	int		    secsize(char*, Rune*);
 static	void		seccheck(char*, ulong, Rune*);
-static	int		sechasperm(char*, ulong, Rune*);
+static	int		    sechasperm(char*, ulong, Rune*);
 static	SECURITY_DESCRIPTOR* secsd(char*, char[SD_ROCK]);
-static	int		secsdhasperm(SECURITY_DESCRIPTOR*, ulong, Rune*);
-static	int		secsdstat(SECURITY_DESCRIPTOR*, Stat*, Rune*);
+static	int		    secsdhasperm(SECURITY_DESCRIPTOR*, ulong, Rune*);
+static	int		    secsdstat(SECURITY_DESCRIPTOR*, Stat*, Rune*);
 static	SECURITY_DESCRIPTOR* secmksd(char[SD_ROCK], Stat*, ACL*, int);
 static	PSID		dupsid(PSID);
-static	int		ismembersid(Rune*, User*, PSID);
-static	int		ismember(User*, User*);
+static	int		    ismembersid(Rune*, User*, PSID);
+static	int		    ismember(User*, User*);
 static	User		*sidtouser(Rune*, PSID);
 static	User		*domnametouser(Rune*, Rune*, Rune*);
 static	User		*nametouser(Rune*, Rune*);
@@ -224,14 +224,14 @@ static	void		addgroups(User*, int);
 static	User		*mkuser(PSID, int, Rune*, Rune*);
 static	Rune		*domsrv(Rune *, Rune[MAX_PATH]);
 static	Rune		*filesrv(const char*);
-static	int		fsacls(const char*);
+static	int		    fsacls(const char*);
 static	User		*secuser(void);
 
-	int		runeslen(const Rune*);
-	Rune*		runesdup(const Rune*);
-	Rune*		utftorunes(Rune*, const char*, int);
-	char*		runestoutf(char*, const Rune*, int);
-	int		runescmp(const Rune*, const Rune*);
+__checkReturn   size_t  runeslen(__in_z const Rune*);
+__checkReturn   Rune*   runesdup(__in_z const Rune*);
+                Rune*   utftorunes(__out_ecount_z(n) Rune*, __in_z const char*, int n);
+                char*   runestoutf(__out_ecount_z(n) char*, __in_z const Rune*, int n);
+__checkReturn   int     runescmp(__in_z const Rune*, __in_z const Rune*);
 
 
 int
@@ -1196,7 +1196,7 @@ fsisroot(Chan *c)
 }
 
 static char*
-fspath(Cname *c, const char *ext, char *path, const char *spec)
+fspath(Cname *c, const char *ext, __out_ecount(MAX_PATH) char *path, const char *spec)
 {
 	char *p, *last;
 	const char *rootd;
@@ -1215,7 +1215,7 @@ fspath(Cname *c, const char *ext, char *path, const char *spec)
 		}
 	}else{
 		if(*c->s != '/') {
-			if(strlen(path) + 1 >= MAX_PATH)
+			if(strlen(path) + 1 >= MAX_PATH) /* BUG */
 				error(Etoolong);
 			strcat(path, "\\");
 		}
@@ -1691,7 +1691,8 @@ secuser(void)
 static int
 secstat(Dir *dir, char *file, Rune *srv)
 {
-	int ok, n;
+	int ok;
+    size_t n;
 	Stat st;
 	char sdrock[SD_ROCK];
 	SECURITY_DESCRIPTOR *sd;
@@ -2429,10 +2430,10 @@ runesdup(const Rune *r)
 	return s;
 }
 
-int
-runeslen(const Rune *r)
+size_t
+runeslen(__in_z const Rune *r)
 {
-	int n;
+	size_t n;
 
 	n = 0;
 	while(*r++ != 0)

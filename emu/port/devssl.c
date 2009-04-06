@@ -105,18 +105,18 @@ static char*	hashalgs = 0;
 
 void producerand(void);
 
-static void alglistinit(void);
-static void	ensure(Dstate*, Block**, int);
-static void	consume(Block**, uchar*, int);
-static void	setsecret(OneWay*, const uchar*, int);
+static void     alglistinit(void);
+static void	    ensure(Dstate*, Block**, int);
+static void	    consume(Block**, uchar*, int);
+static void	    setsecret(OneWay*, const uchar*, int);
 static Block*	encryptb(Dstate*, Block*, int);
 static Block*	decryptb(Dstate*, Block*);
 static Block*	digestb(Dstate*, Block*, int);
-static void	checkdigestb(Dstate*, Block*);
+static void	    checkdigestb(Dstate*, __in const Block*);
 static Chan*	buftochan(const char*);
-static void	sslhangup(Dstate*);
-static void dsclone(Chan *c);
-static void	dsnew(Chan *c, Dstate **);
+static void	    sslhangup(Dstate*);
+static void     dsclone(Chan *c);
+static void	    dsnew(Chan *c, Dstate **);
 
 static int
 sslgen(Chan *c, const char *dname, Dirtab *d, int nd, int s, Dir *dp)
@@ -626,7 +626,7 @@ randfill(char *buf, int len)
  *  use SSL record format, add in count and digest or encrypt
  */
 static long
-sslbwrite(Chan *c, Block *b, ulong offset)
+sslbwrite(Chan *c, const Block *b, vlong offset)
 {
 	volatile struct { Dstate *s; } s;
 	volatile struct { Block *b; } bb;
@@ -1076,11 +1076,11 @@ sslwrite(Chan *c, __in_ecount(n) const char *a, size_t n, vlong offset)
 		s.s->blocklen = 1;
 
 		for(;;){
-			np = strchr((char*)p, ' ');
+			np = strchr(CONST_CAST(char*,p), ' ');
 			if(np)
 				*np++ = 0;
 			else{
-				np = strchr((char*)p, '/');
+				np = strchr(CONST_CAST(char*,p), '/');
 				if(np)
 					*np++ = 0;
 			}
@@ -1295,7 +1295,7 @@ digestb(Dstate *s, Block *b, int offset)
 }
 
 static void
-checkdigestb(Dstate *s, Block *inb)
+checkdigestb(Dstate *s, __in const Block *inb)
 {
 	uchar *p;
 	DigestState ss;
@@ -1303,7 +1303,7 @@ checkdigestb(Dstate *s, Block *inb)
 	int n, h;
 	OneWay *w;
 	uchar digest[128];
-	Block *b;
+	const Block *b;
 
 	w = &s->in;
 

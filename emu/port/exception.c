@@ -81,14 +81,14 @@ handler(char *estr)
     Except *e;
 
     p = currun();
-/*
+/**/
     print("handler:");
     print(" |%s|%p %d\n", estr, p, p?p->pid:0);
-*/
+/**/
     if(*estr == 0 || p == nil)
         return 0;
 
-/*  print("handler go on\n"); */
+/**/print("handler go on\n"); /**/
     str = p->exval == H || D2H(p->exval)->t == &Tstring;
     m = R.ML;
     if(m->compiled)
@@ -140,7 +140,7 @@ handler(char *estr)
     ASSIGN(p->exval, H);
     return 0;
 found:
-/*  print("exc:found\n"); */
+/**/print("exc:found\n"); /**/
     {
         int n;
         char name[3*KNAMELEN];

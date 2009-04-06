@@ -464,7 +464,7 @@ string2c(String *s)
 }
 
 String*
-c2string(const char *cs, int len)
+c2string(__in_ecount(len) const char *cs, int len)
 {
     const char *p;
     const char *ecs;

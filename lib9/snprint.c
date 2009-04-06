@@ -14,7 +14,7 @@
 #include <lib9.h>
 
 int
-snprint(char *buf, int len, const char *fmt, ...)
+snprint(char *buf, int len, __in_z __format_string const char *fmt, ...)
 {
 	int n;
 	va_list args;

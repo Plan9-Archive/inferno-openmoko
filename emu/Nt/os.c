@@ -23,14 +23,14 @@ static  HANDLE  errh = INVALID_HANDLE_VALUE;
 static  int donetermset = 0;
 static  int sleepers = 0;
 
-    Rune    *widen(const char *s);
-    char        *narrowen(const Rune *ws);
-    int     widebytes(const Rune *ws);
-//  int     runeslen(const Rune*);
-    Rune*   runesdup(const Rune*);
-    Rune*   utftorunes(Rune*, const char*, int);
-    char*   runestoutf(char*, const Rune*, int);
-    int     runescmp(const Rune*, const Rune*);
+__checkReturn   Rune*   widen(__in_z const char *s);
+__checkReturn   char*   narrowen(__in_z const Rune *ws);
+__checkReturn   size_t  widebytes(__in_z const Rune *ws);
+__checkReturn   size_t  runeslen(__in_z const Rune*);
+__checkReturn   Rune*   runesdup(__in_z const Rune*);
+                Rune*   utftorunes(__out_ecount_z(n) Rune*, __in_z const char*, int n);
+                char*   runestoutf(__out_ecount_z(n) char*, __in_z const Rune*, int n);
+__checkReturn   int     runescmp(__in_z const Rune*, __in_z const Rune*);
 
 #ifdef _MSC_VER
 __declspec(thread)       Proc    *up;
@@ -76,7 +76,7 @@ pfree(Proc *p)
         closepgrp(e->pgrp);
         closeegrp(e->egrp);
         closesigs(e->sigs);
-	    free(e->user);
+        free(e->user);
     }
     free(p->prog);
     CloseHandle((HANDLE)p->os);
@@ -123,13 +123,18 @@ tramp(LPVOID p)
 }
 
 int
-kproc(const char *name, void (*func)(void*), void *arg, KProcFlags flags)
+kproc(/*__in_ecount_z(KNAMELEN-1)*/ __in_z const char *name, 
+      __in ProcFunc func,
+      __in_opt const void *arg,
+      KProcFlags flags)
 {
     DWORD h;
     Proc *p;
     Pgrp *pg;
     Fgrp *fg;
     Egrp *eg;
+
+    assert(strlen(name)<KNAMELEN);
 
     p = newproc();
     if(p == nil){
@@ -161,7 +166,6 @@ kproc(const char *name, void (*func)(void*), void *arg, KProcFlags flags)
 
     p->env->ui = up->env->ui;
     kstrdup(&p->env->user, up->env->user);
-	assert(strlen(name)<KNAMELEN);
     strcpy(p->text, name);
 
     p->func = func;
@@ -226,7 +230,7 @@ readkbd(void)
         panic("keyboard fail");
     if (r == 0)
     {
-        do{ Sleep(1000000); } while(1); /* TODO */
+        print("keyboard EOF\n"); do{ Sleep(1000000); } while(1); /* TODO: no stdin, or Ctrl-Break */
         panic("keyboard EOF");
     }
 
@@ -742,7 +746,7 @@ segflush(void *a, ulong n)
 }
 
 Rune *
-widen(const char *s)
+widen(__in_z const char *s)
 {
     int n;
     Rune *ws;
@@ -755,7 +759,7 @@ widen(const char *s)
 
 
 char *
-narrowen(const Rune *ws)
+narrowen(__in_z const Rune *ws)
 {
     char *s;
     int n;
@@ -767,10 +771,10 @@ narrowen(const Rune *ws)
 }
 
 
-int
-widebytes(const wchar_t *ws)
+__checkReturn size_t
+widebytes(__in_z const Rune *ws)
 {
-    int n = 0;
+    size_t n = 0;
 
     while (*ws)
         n += runelen(*ws++);

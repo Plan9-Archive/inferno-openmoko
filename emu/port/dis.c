@@ -1154,9 +1154,9 @@ vmachine(void *a)
                         r->xec(r);
                         FPsave(&o->fpu);
 
-                        if(isched.runhd != nil)
-                        if(r == isched.runhd)
-                        if(isched.runhd != isched.runtl) {
+                        if( isched.runhd != nil
+                         && isched.runhd == r
+                         && isched.runhd != isched.runtl) {
                                 isched.runhd = r->link;
                                 r->link = nil;
                                 isched.runtl->link = r;

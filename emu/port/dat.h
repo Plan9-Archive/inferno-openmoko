@@ -105,42 +105,41 @@ typedef struct Progctl Progctl;
 typedef struct Value Value;
 struct Chan
 {
-	Lock	l;
-	Ref	r;
-	Chan*	next;			/* allocation */
-	Chan*	link;
-	vlong	offset;			/* in file */
-	ushort	type;
-	ulong	dev;
-	ushort	mode;			/* read/write */
-	ushort	flag;
-	Qid	qid;
-	int	fid;			/* for devmnt */
-	ulong	iounit;	/* chunk size for i/o; 0==default */
-	Mhead*	umh;			/* mount point that derived Chan; used in unionread */
-	Chan*	umc;			/* channel in union; held for union read */
-	QLock	umqlock;		/* serialize unionreads */
-	int	uri;			/* union read index */
-	int	dri;			/* devdirread index */
-	ulong	mountid;
-	Mntcache *mcp;			/* Mount cache pointer */
-	Mnt		*mux;		/* Mnt for clients using me for messages */
-	/*void*	aux;*/
-	union {				/* device specific data */
-		Pipe*	pipe;		/* devpipe */
-		Fsinfo*	fsinfo;		/* devfs */
-		char*	pchar;		/* devsnarf */
-		int	i;		/* devprof */
-		SrvFile*srv;		/* devsrv */
-		Queue*	queue;		/* devprog */
-		Heapqry*heapqry;	/* devprog */
-		Mntwalk*mntwalk;	/* devprog */
-		Progctl*progctl;	/* devprog */
-		Value*	value;		/* devarch */
+	Lock	    l;
+	Ref	        r;
+	Chan*	    next;			/* allocation */
+	Chan*	    link;
+	vlong	    offset;			/* in file */
+	ushort	    type;
+	ulong	    dev;
+	ushort	    mode;			/* read/write */
+	ushort	    flag;
+	Qid	        qid;
+	int	        fid;			/* for devmnt */
+	ulong	    iounit;	        /* chunk size for i/o; 0==default */
+	Mhead*	    umh;			/* mount point that derived Chan; used in unionread */
+	Chan*	    umc;			/* channel in union; held for union read */
+	QLock	    umqlock;		/* serialize unionreads */
+	int	        uri;			/* union read index */
+	int	        dri;			/* devdirread index */
+	ulong	    mountid;
+	Mntcache    *mcp;			/* Mount cache pointer */
+	Mnt		    *mux;		    /* Mnt for clients using me for messages */
+	union {				        /* device specific data */
+		Pipe*	    pipe;		/* devpipe */
+		Fsinfo*	    fsinfo;		/* devfs */
+		char*	    pchar;		/* devsnarf */
+		int	        i;		    /* devprof */
+		SrvFile*    srv;		/* devsrv */
+		Queue*	    queue;		/* devprog */
+		Heapqry*    heapqry;	/* devprog */
+		Mntwalk*    mntwalk;	/* devprog */
+		Progctl*    progctl;	/* devprog */
+		Value*	    value;		/* devarch */
 	} aux;
-	Chan*	mchan;			/* channel to mounted server */
-	Qid	mqid;			/* qid of root of mount point */
-	Cname	*name;
+	Chan*	    mchan;			/* channel to mounted server */
+	Qid	        mqid;			/* qid of root of mount point */
+	Cname*      name;
 };
 
 struct Cname
@@ -161,12 +160,12 @@ struct Dev
 	Walkqid*	(*walk)(Chan*, Chan*, const char**, int);
 	int	        (*stat)(Chan*, char*, int);
 	Chan*	    (*open)(Chan*, int);
-	void	    (*create)(Chan*, const char*, int, ulong);
+	void	    (*create)(Chan*, __in_z const char*, int, ulong);
 	void	    (*close)(Chan*);
 	size_t      (*read)(Chan*, __out_ecount(n) char*, size_t n, vlong);
 	Block*	    (*bread)(Chan*, long, ulong);
 	size_t	    (*write)(Chan*, __in_ecount(n) const char*, size_t n, vlong);
-	long	    (*bwrite)(Chan*, Block*, ulong);
+	long	    (*bwrite)(Chan*, const Block*, vlong);
 	void	    (*remove)(Chan*);
 	int	        (*wstat)(Chan*, char*, int);
 };
@@ -182,8 +181,8 @@ struct Block
 {
 	Block*	next;
 	Block*	list;
-	char*	rp;			/* first unconsumed byte */
-	char*	wp;			/* first empty byte */
+	char*	rp;			    /* first unconsumed byte */
+	char*	wp;			    /* first empty byte */
 	char*	lim;			/* 1 past the end of the buffer */
 	char*	base;			/* start of the buffer */
 	void	(*fnfree)(Block*);
@@ -422,35 +421,35 @@ enum Syscalls
 struct Proc
 {
 	enum ProcType	type;		/* interpreter or not */
-	char		text[KNAMELEN];
-	Proc*		qnext;		/* list of processes waiting on a Qlock */
-	long		pid;
-	Proc*		next;		/* list of created processes */
-	Proc*		prev;
-	Lock		rlock;		/* sync between sleep/swiproc for r */
-	Rendez*		r;		/* rendezvous point slept on */
-	Rendez		sleep;		/* place to sleep */
-	int		killed;		/* by swiproc */
-	int		swipend;	/* software interrupt pending for Prog */
+	char		    text[KNAMELEN];
+	Proc*		    qnext;		/* list of processes waiting on a Qlock */
+	long		    pid;
+	Proc*		    next;		/* list of created processes */
+	Proc*		    prev;
+	Lock		    rlock;		/* sync between sleep/swiproc for r */
+	Rendez*		    r;		/* rendezvous point slept on */
+	Rendez		    sleep;		/* place to sleep */
+	int		        killed;		/* by swiproc */
+	int		        swipend;	/* software interrupt pending for Prog */
 	enum Syscalls	syscall;	/* set true under sysio for interruptable syscalls */
-	int		intwait;	/* spin wait for note to turn up */
-	int		sigid;		/* handle used for signal/note/exception */
-	Lock		sysio;		/* note handler lock */
-	char		genbuf[128];	/* buffer used e.g. for last name element from namec */
-	int		nerr;		/* error stack SP */
-	osjmpbuf	estack[NERR];	/* vector of error jump labels */
-	char*		kstack;
-	void		(*func)(void*);	/* saved trampoline pointer for kproc */
-	void*		arg;		/* arg for invoked kproc function */
-	Prog*		iprog;		/* work for Prog after release */
-	Prog*		prog;		/* fake prog for slaves eg. exportfs */
-	Osenv*		env;		/* effective operating system environment */
-	Osenv		defenv;		/* default env for slaves with no prog */
-	osjmpbuf	privstack;	/* private stack for making new kids */
-	osjmpbuf	sharestack;
-	Proc*		kid;
-	void*		kidsp;
-	void*		os;		/* host os specific data */
+	int		        intwait;	/* spin wait for note to turn up */
+	int		        sigid;		/* handle used for signal/note/exception */
+	Lock		    sysio;		/* note handler lock */
+	char		    genbuf[128];	/* buffer used e.g. for last name element from namec */
+	int		        nerr;		/* error stack SP */
+	osjmpbuf	    estack[NERR];	/* vector of error jump labels */
+	char*		    kstack;
+	void		    (*func)(void*);	/* saved trampoline pointer for kproc */
+	const void*	    arg;		/* arg for invoked kproc function */
+	Prog*		    iprog;		/* work for Prog after release */
+	Prog*		    prog;		/* fake prog for slaves eg. exportfs */
+	Osenv*		    env;		/* effective operating system environment */
+	Osenv		    defenv;		/* default env for slaves with no prog */
+	osjmpbuf	    privstack;	/* private stack for making new kids */
+	osjmpbuf	    sharestack;
+	Proc*		    kid;
+	void*		    kidsp;
+	void*		    os;		/* host os specific data */
 };
 
 #define poperror()	up->nerr--

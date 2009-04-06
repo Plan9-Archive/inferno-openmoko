@@ -80,6 +80,7 @@ md5(uchar *p, ulong len, uchar *digest, MD5state *s)
 		len -= i;
 		p += i;
 	}
+    __analysis_assume(len <= 0x3F);
 
 	/* save the left overs if not last call */
 	if(digest == 0){

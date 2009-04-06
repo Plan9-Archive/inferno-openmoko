@@ -6,7 +6,7 @@
 #include <error.h>
 
 extern int	nth2fd(HANDLE);
-extern wchar_t	*widen(const char*);
+extern __checkReturn Rune* widen(__in_z const char*);
 
 /*
  * thanks to rcsh for these.

@@ -292,9 +292,10 @@ parsemod(const char *path, const char *code, ulong length, const Dir *dir)
         goto bad;
     }
     for(i = 0; i < hsize; i++) {
-        char *comment = (char *)HeapAlloc(GetProcessHeap(),0,256); /* TODO: debug, remove later */
+//        char *comment = (char *)HeapAlloc(GetProcessHeap(),0,256); /* TODO: debug, remove later */
 //        char* comment = malloc(256);
-        sprint(comment, "%s.%d", path, i);
+        char* comment = "?";
+//        sprint(comment, "%s.%d", path, i);
         id = operand(isp);
         assert(i==id); //?
 

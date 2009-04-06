@@ -352,7 +352,7 @@ typedef struct TLSconn{
 	uchar *cert;   /* certificate (local on input, remote on output) */
 	uchar *sessionID;
 	int certlen, sessionIDlen;
-	int (*trace)(char*fmt, ...);
+	int (*trace)(__in_z __format_string const char*fmt, ...);
 	PEMChain *chain; /* optional extra certificate evidence for servers to present */
 } TLSconn;
 

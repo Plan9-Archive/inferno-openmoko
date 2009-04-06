@@ -579,9 +579,9 @@ poolrealloc(Pool *p, void *v, ulong size)
 }
 
 size_t
-poolmsize(Pool *p, void *v)
+poolmsize(Pool *p, const void *v)
 {
-    Bhdr *b;
+    const Bhdr *b;
     ulong size;
 
     if(v == nil)
@@ -860,7 +860,7 @@ getmagictag(void *v)
     return ((ulong*)v)[-Npadlong+MagicOffset];
 }
 
-size_t  v_msize(void *v, const char*file, int line, const char*function)
+size_t  v_msize(const void *v, const char*file, int line, const char*function)
 {
     if(v == nil)
         return 0;
@@ -1146,3 +1146,4 @@ poolaudit(char*(*audit)(int, Bhdr *))
 #undef prev 
 #undef parent   
 #undef RESERVED
+#undef DBG

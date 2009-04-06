@@ -351,7 +351,7 @@ devbread(Chan *c, long n, ulong offset)
 }
 
 long
-devbwrite(Chan *c, Block *bp, ulong offset)
+devbwrite(Chan *c, const Block *bp, vlong offset)
 {
 	long n;
 

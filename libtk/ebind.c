@@ -998,7 +998,6 @@ const char *
 tkbindings(TkTop *t, Tk *tk, TkEbind *b, int blen)
 {
 	TkAction *a, **ap;
-	char *cmd;
     const char *e;
 	int i;
 
@@ -1022,7 +1021,7 @@ tkbindings(TkTop *t, Tk *tk, TkEbind *b, int blen)
 
 	ap = &tk->binds;
 	for(a = t->binds[tk->type]; a; a = a->link) {	/* user "defaults" */
-		cmd = strdup(a->arg);
+		char *cmd = strdup(a->arg);
 		if(cmd == nil)
 			return TkNomem;
 

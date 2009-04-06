@@ -82,6 +82,7 @@
 				RandomizedBaseAddress="0"
 				FixedBaseAddress="0"
 				TargetMachine="1"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -252,7 +253,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\emu\port\alloc-nt.c"
+				RelativePath="..\emu\port\alloc.c"
 				>
 			</File>
 			<File
@@ -280,11 +281,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\emu\port\audio-tbls.c"
+				RelativePath=".\include\audio-tbls.c"
 				>
 			</File>
 			<File
-				RelativePath=".\include\audio-tbls.c"
+				RelativePath="..\emu\port\audio-tbls.c"
 				>
 			</File>
 			<File
@@ -300,11 +301,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\internal\autohint.h"
+				RelativePath=".\include\freetype\internal\autohint.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\autohint.h"
+				RelativePath="..\include\freetype\internal\autohint.h"
 				>
 			</File>
 			<File
@@ -348,11 +349,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libtk\canvs.h"
+				RelativePath=".\include\canvs.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\canvs.h"
+				RelativePath="..\libtk\canvs.h"
 				>
 			</File>
 			<File
@@ -424,11 +425,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\cfftypes.h"
+				RelativePath="..\include\freetype\internal\cfftypes.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\internal\cfftypes.h"
+				RelativePath=".\include\freetype\internal\cfftypes.h"
 				>
 			</File>
 			<File
@@ -528,11 +529,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\emu\port\dat.h"
+				RelativePath=".\include\dat.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\dat.h"
+				RelativePath="..\emu\port\dat.h"
 				>
 			</File>
 			<File
@@ -660,10 +661,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libmemdraw\draw.c"
-				>
-			</File>
-			<File
 				RelativePath="..\libdraw\draw.c"
 				>
 			</File>
@@ -676,6 +673,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\libmemdraw\draw.c"
+				>
+			</File>
+			<File
 				RelativePath=".\include\draw.h"
 				>
 			</File>
@@ -684,19 +685,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\drawif.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\drawif.h"
 				>
 			</File>
 			<File
-				RelativePath="..\libinterp\drawmod.h"
+				RelativePath=".\include\drawif.h"
 				>
 			</File>
 			<File
 				RelativePath=".\include\drawmod.h"
+				>
+			</File>
+			<File
+				RelativePath="..\libinterp\drawmod.h"
 				>
 			</File>
 			<File
@@ -852,11 +853,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libmemdraw\ellipse.c"
+				RelativePath="..\libdraw\ellipse.c"
 				>
 			</File>
 			<File
-				RelativePath="..\libdraw\ellipse.c"
+				RelativePath="..\libmemdraw\ellipse.c"
 				>
 			</File>
 			<File
@@ -888,11 +889,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\emu\port\error.h"
+				RelativePath=".\include\error.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\error.h"
+				RelativePath="..\emu\port\error.h"
 				>
 			</File>
 			<File
@@ -924,11 +925,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\fcall.h"
+				RelativePath="..\include\fcall.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\fcall.h"
+				RelativePath=".\include\fcall.h"
 				>
 			</File>
 			<File
@@ -952,11 +953,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\lib9\fmtdef.h"
+				RelativePath=".\include\fmtdef.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\fmtdef.h"
+				RelativePath="..\lib9\fmtdef.h"
 				>
 			</File>
 			<File
@@ -984,11 +985,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\fns.h"
+				RelativePath="..\emu\port\fns.h"
 				>
 			</File>
 			<File
-				RelativePath="..\emu\port\fns.h"
+				RelativePath=".\include\fns.h"
 				>
 			</File>
 			<File
@@ -1008,11 +1009,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libtk\frame.h"
+				RelativePath=".\include\frame.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\frame.h"
+				RelativePath="..\libtk\frame.h"
 				>
 			</File>
 			<File
@@ -1021,10 +1022,6 @@
 			</File>
 			<File
 				RelativePath="..\libfreetype\freetype.c"
-				>
-			</File>
-			<File
-				RelativePath="..\include\freetype\freetype.h"
 				>
 			</File>
 			<File
@@ -1040,6 +1037,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\freetype\freetype.h"
+				>
+			</File>
+			<File
 				RelativePath="..\libinterp\freetypemod.h"
 				>
 			</File>
@@ -1052,15 +1053,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\ftcalc.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\freetype\internal\ftcalc.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\config\ftconfig.h"
+				RelativePath=".\include\freetype\internal\ftcalc.h"
 				>
 			</File>
 			<File
@@ -1068,11 +1065,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\ftdebug.h"
+				RelativePath=".\include\freetype\config\ftconfig.h"
 				>
 			</File>
 			<File
 				RelativePath="..\include\freetype\internal\ftdebug.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\freetype\internal\ftdebug.h"
 				>
 			</File>
 			<File
@@ -1084,15 +1085,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\fterrdef.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\freetype\fterrdef.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\fterrors.h"
+				RelativePath="..\include\freetype\fterrdef.h"
 				>
 			</File>
 			<File
@@ -1100,15 +1097,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\freetype\fterrors.h"
+				>
+			</File>
+			<File
 				RelativePath="..\libfreetype\ftgloadr.c"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\ftgloadr.h"
+				RelativePath="..\include\freetype\internal\ftgloadr.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\internal\ftgloadr.h"
+				RelativePath=".\include\freetype\internal\ftgloadr.h"
 				>
 			</File>
 			<File
@@ -1132,11 +1133,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\fthash.h"
+				RelativePath="..\include\freetype\internal\fthash.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\internal\fthash.h"
+				RelativePath=".\include\freetype\internal\fthash.h"
 				>
 			</File>
 			<File
@@ -1152,11 +1153,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\ftlist.h"
+				RelativePath=".\include\freetype\ftlist.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\ftlist.h"
+				RelativePath="..\include\freetype\ftlist.h"
 				>
 			</File>
 			<File
@@ -1168,15 +1169,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\ftmm.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\freetype\ftmm.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\ftmoderr.h"
+				RelativePath=".\include\freetype\ftmm.h"
 				>
 			</File>
 			<File
@@ -1184,7 +1181,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\ftmodule.h"
+				RelativePath=".\include\freetype\ftmoderr.h"
 				>
 			</File>
 			<File
@@ -1200,6 +1197,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\freetype\ftmodule.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\freetype\internal\ftobject.h"
 				>
 			</File>
@@ -1212,11 +1213,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\ftobjs.h"
+				RelativePath="..\include\freetype\internal\ftobjs.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\internal\ftobjs.h"
+				RelativePath=".\include\freetype\internal\ftobjs.h"
 				>
 			</File>
 			<File
@@ -1232,11 +1233,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\ftoutln.h"
+				RelativePath="..\include\freetype\ftoutln.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\ftoutln.h"
+				RelativePath=".\include\freetype\ftoutln.h"
 				>
 			</File>
 			<File
@@ -1256,11 +1257,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\ftrender.h"
+				RelativePath="..\include\freetype\ftrender.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\ftrender.h"
+				RelativePath=".\include\freetype\ftrender.h"
 				>
 			</File>
 			<File
@@ -1296,19 +1297,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\ftstream.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\freetype\internal\ftstream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\ftsystem.h"
+				RelativePath=".\include\freetype\internal\ftstream.h"
 				>
 			</File>
 			<File
 				RelativePath=".\include\freetype\ftsystem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\freetype\ftsystem.h"
 				>
 			</File>
 			<File
@@ -1328,11 +1329,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\fttypes.h"
+				RelativePath=".\include\freetype\fttypes.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\fttypes.h"
+				RelativePath="..\include\freetype\fttypes.h"
 				>
 			</File>
 			<File
@@ -1432,11 +1433,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\emu\port\ip.h"
+				RelativePath=".\include\ip.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\ip.h"
+				RelativePath="..\emu\port\ip.h"
 				>
 			</File>
 			<File
@@ -1452,11 +1453,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\isa.h"
+				RelativePath=".\include\isa.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\isa.h"
+				RelativePath="..\include\isa.h"
 				>
 			</File>
 			<File
@@ -1476,11 +1477,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\kernel.h"
+				RelativePath=".\include\kernel.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\kernel.h"
+				RelativePath="..\include\kernel.h"
 				>
 			</File>
 			<File
@@ -1496,11 +1497,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libinterp\keyring.h"
+				RelativePath=".\include\keyring.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\keyring.h"
+				RelativePath="..\libinterp\keyring.h"
 				>
 			</File>
 			<File
@@ -1516,11 +1517,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\label.h"
+				RelativePath="..\libtk\label.h"
 				>
 			</File>
 			<File
-				RelativePath="..\libtk\label.h"
+				RelativePath=".\include\label.h"
 				>
 			</File>
 			<File
@@ -1532,11 +1533,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\latin1.h"
+				RelativePath="..\emu\port\latin1.h"
 				>
 			</File>
 			<File
-				RelativePath="..\emu\port\latin1.h"
+				RelativePath=".\include\latin1.h"
 				>
 			</File>
 			<File
@@ -1556,11 +1557,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\lib9.h"
+				RelativePath="..\nt\386\include\lib9.h"
 				>
 			</File>
 			<File
-				RelativePath="..\nt\386\include\lib9.h"
+				RelativePath=".\include\lib9.h"
 				>
 			</File>
 			<File
@@ -1572,15 +1573,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libmemdraw\line.c"
-				>
-			</File>
-			<File
 				RelativePath="..\libdraw\line.c"
 				>
 			</File>
 			<File
 				RelativePath="..\libmemlayer\line.c"
+				>
+			</File>
+			<File
+				RelativePath="..\libmemdraw\line.c"
 				>
 			</File>
 			<File
@@ -1592,11 +1593,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\listb.h"
+				RelativePath="..\libtk\listb.h"
 				>
 			</File>
 			<File
-				RelativePath="..\libtk\listb.h"
+				RelativePath=".\include\listb.h"
 				>
 			</File>
 			<File
@@ -1616,11 +1617,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libinterp\loadermod.h"
+				RelativePath=".\include\loadermod.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\loadermod.h"
+				RelativePath="..\libinterp\loadermod.h"
 				>
 			</File>
 			<File
@@ -1660,11 +1661,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\mathi.h"
+				RelativePath="..\include\mathi.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\mathi.h"
+				RelativePath=".\include\mathi.h"
 				>
 			</File>
 			<File
@@ -1696,11 +1697,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\memlayer.h"
+				RelativePath="..\include\memlayer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\memlayer.h"
+				RelativePath=".\include\memlayer.h"
 				>
 			</File>
 			<File
@@ -1708,11 +1709,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\mp.h"
+				RelativePath="..\include\mp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\mp.h"
+				RelativePath=".\include\mp.h"
 				>
 			</File>
 			<File
@@ -1820,11 +1821,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libmp\port\os.h"
+				RelativePath=".\include\os.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\os.h"
+				RelativePath="..\libmp\port\os.h"
 				>
 			</File>
 			<File
@@ -1836,11 +1837,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libtk\parse.c"
+				RelativePath="..\emu\port\parse.c"
 				>
 			</File>
 			<File
-				RelativePath="..\emu\port\parse.c"
+				RelativePath="..\libtk\parse.c"
 				>
 			</File>
 			<File
@@ -1916,11 +1917,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libmemdraw\poly.c"
+				RelativePath="..\libdraw\poly.c"
 				>
 			</File>
 			<File
-				RelativePath="..\libdraw\poly.c"
+				RelativePath="..\libmemdraw\poly.c"
 				>
 			</File>
 			<File
@@ -1952,11 +1953,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\internal\psaux.h"
+				RelativePath=".\include\freetype\internal\psaux.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\psaux.h"
+				RelativePath="..\include\freetype\internal\psaux.h"
 				>
 			</File>
 			<File
@@ -1992,11 +1993,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\internal\pshints.h"
+				RelativePath=".\include\freetype\internal\pshints.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\pshints.h"
+				RelativePath="..\include\freetype\internal\pshints.h"
 				>
 			</File>
 			<File
@@ -2052,11 +2053,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\raise.h"
+				RelativePath=".\include\raise.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\raise.h"
+				RelativePath="..\include\raise.h"
 				>
 			</File>
 			<File
@@ -2140,11 +2141,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\runt.h"
+				RelativePath="..\libinterp\runt.h"
 				>
 			</File>
 			<File
-				RelativePath="..\libinterp\runt.h"
+				RelativePath=".\include\runt.h"
 				>
 			</File>
 			<File
@@ -2256,11 +2257,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\sfnt.h"
+				RelativePath="..\include\freetype\internal\sfnt.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\internal\sfnt.h"
+				RelativePath=".\include\freetype\internal\sfnt.h"
 				>
 			</File>
 			<File
@@ -2304,19 +2305,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\emu\port\srv.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\srv.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\srvm.h"
+				RelativePath="..\emu\port\srv.h"
 				>
 			</File>
 			<File
 				RelativePath="..\emu\port\srvm.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\srvm.h"
 				>
 			</File>
 			<File
@@ -2356,11 +2357,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\sysmod.h"
+				RelativePath="..\libinterp\sysmod.h"
 				>
 			</File>
 			<File
-				RelativePath="..\libinterp\sysmod.h"
+				RelativePath=".\include\sysmod.h"
 				>
 			</File>
 			<File
@@ -2432,11 +2433,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\t1tables.h"
+				RelativePath=".\include\freetype\t1tables.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\t1tables.h"
+				RelativePath="..\include\freetype\t1tables.h"
 				>
 			</File>
 			<File
@@ -2480,11 +2481,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\internal\t42types.h"
+				RelativePath=".\include\freetype\internal\t42types.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\internal\t42types.h"
+				RelativePath="..\include\freetype\internal\t42types.h"
 				>
 			</File>
 			<File
@@ -2504,11 +2505,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libtk\textw.h"
+				RelativePath=".\include\textw.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\textw.h"
+				RelativePath="..\libtk\textw.h"
 				>
 			</File>
 			<File
@@ -2520,11 +2521,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\tk.h"
+				RelativePath="..\include\tk.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\tk.h"
+				RelativePath=".\include\tk.h"
 				>
 			</File>
 			<File
@@ -2592,11 +2593,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\freetype\ttnameid.h"
+				RelativePath=".\include\freetype\ttnameid.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\ttnameid.h"
+				RelativePath="..\include\freetype\ttnameid.h"
 				>
 			</File>
 			<File
@@ -2632,19 +2633,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\tttables.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\freetype\tttables.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\freetype\tttags.h"
+				RelativePath=".\include\freetype\tttables.h"
 				>
 			</File>
 			<File
 				RelativePath="..\include\freetype\tttags.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\freetype\tttags.h"
 				>
 			</File>
 			<File
@@ -2680,11 +2681,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libmemlayer\unload.c"
+				RelativePath="..\libmemdraw\unload.c"
 				>
 			</File>
 			<File
-				RelativePath="..\libmemdraw\unload.c"
+				RelativePath="..\libmemlayer\unload.c"
 				>
 			</File>
 			<File
@@ -2720,11 +2721,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\version.h"
+				RelativePath=".\include\version.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\version.h"
+				RelativePath="..\include\version.h"
 				>
 			</File>
 			<File

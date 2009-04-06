@@ -11,6 +11,7 @@ extern int printf ( const char * , ... );
 #define EMU             1
 #define UNICODE
 #define __i386__
+#undef _WIN32
 #define _WIN32
 #define _WIN32_WINNT    0x0400
 #define OBJTYPE         386

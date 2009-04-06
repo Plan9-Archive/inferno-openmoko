@@ -60,16 +60,16 @@ extern  void    poolinit(void);
 extern  void*   v_poolalloc(Pool*, size_t, const char*, int, const char*);
 #define poolalloc(pool, size)   v_poolalloc(pool, size, __FILE__, __LINE__, __FUNCTION__)
 
-extern  void    poolfree(Pool*, void*);
+extern  void    poolfree(Pool*, __in_opt void*);
 extern  Bhdr*   poolchain(Pool*);
-extern  int poolcompact(Pool*);
-extern  void    poolimmutable(void*);
-extern  size_t   poolmsize(Pool*, void*);
-extern  void    poolmutable(void*);
+extern  int     poolcompact(Pool*);
+extern  void    poolimmutable(__in void*);
+extern  size_t  poolmsize(Pool*, __in const void*);
+extern  void    poolmutable(__in void*);
 extern  char*   poolname(Pool*);
-extern  int poolread(char*, int, ulong);
+extern  int     poolread(char*, int, ulong);
 extern  void*   poolrealloc(Pool*, void*, ulong);
-extern  int poolsetsize(char*, int);
+extern  int     poolsetsize(char*, int);
 extern  void    poolsetcompact(Pool*, void (*)(void*, void*));
 extern  char*   poolaudit(char*(*)(int, Bhdr *));
 

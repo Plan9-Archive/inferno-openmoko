@@ -68,7 +68,7 @@ extern "C" {
 
   typedef FT_Error
   (*FT_Slot_LoadFunc)( FT_GlyphSlot  slot,
-                       FT_Size       size,
+                       __in FT_Size       size,
                        FT_UInt       glyph_index,
                        FT_Int32      load_flags );
 

@@ -16,12 +16,12 @@ _setdrawop(Display *d, Drawop op)
 }
 
 static void
-draw1(__in_ecount(1) const Image *dst,
-      __in_ecount(1) const Rectangle *r,
-      __in_ecount(1) const Image *src,
-      __in_ecount(1) const Point *p0,
-      __in_ecount(1) const Image *mask,
-      __in_ecount(1) const Point *p1,
+draw1(__in const Image *dst,
+      __in const Rectangle *r,
+      __in const Image *src,
+      __in const Point *p0,
+      __in const Image *mask,
+      __in const Point *p1,
       Drawop op)
 {
 	uchar *a;
@@ -50,25 +50,25 @@ draw1(__in_ecount(1) const Image *dst,
 }
 
 void
-draw(__in_ecount(1) const Image *dst, Rectangle r, __in_ecount(1) const Image *src, __in_ecount(1) const Image *mask, Point p1)
+draw(__in const Image *dst, Rectangle r, __in const Image *src, __in const Image *mask, Point p1)
 {
 	draw1(dst, &r, src, &p1, mask, &p1, SoverD);
 }
 
 void
-drawop(__in_ecount(1) const Image *dst, Rectangle r, __in_ecount(1) const Image *src, __in_ecount(1) const Image *mask, Point p1, Drawop op)
+drawop(__in const Image *dst, Rectangle r, __in const Image *src, __in const Image *mask, Point p1, Drawop op)
 {
 	draw1(dst, &r, src, &p1, mask, &p1, op);
 }
 
 void
-gendraw(__in_ecount(1) const Image *dst, Rectangle r, __in_ecount(1) const Image *src, Point p0, __in_ecount(1) const Image *mask, Point p1)
+gendraw(__in const Image *dst, Rectangle r, __in const Image *src, Point p0, __in const Image *mask, Point p1)
 {
 	draw1(dst, &r, src, &p0, mask, &p1, SoverD);
 }
 
 void
-gendrawop(__in_ecount(1) const Image *dst, Rectangle r, __in_ecount(1) const Image *src, Point p0, __in_ecount(1) const Image *mask, Point p1, Drawop op)
+gendrawop(__in const Image *dst, Rectangle r, __in const Image *src, Point p0, __in const Image *mask, Point p1, Drawop op)
 {
 	draw1(dst, &r, src, &p0, mask, &p1, op);
 }

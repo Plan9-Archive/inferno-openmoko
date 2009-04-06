@@ -14,7 +14,7 @@
 #include <lib9.h>
 
 int
-print(const char *fmt, ...)
+print(__in_z __format_string const char *fmt, ...)
 {
 	int n;
 	va_list args;

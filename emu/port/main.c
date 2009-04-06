@@ -342,7 +342,7 @@ errorv(const char *fmt, va_list arg)
 }
 
 NORETURN
-errorf(const char *fmt, ...)
+errorf(__in_z __format_string const char *fmt, ...)
 {
     va_list arg;
 
@@ -355,7 +355,7 @@ errorf(const char *fmt, ...)
  * mainly for libmp
  */
 NORETURN
-sysfatal(const char *fmt, ...)
+sysfatal(__in_z __format_string const char *fmt, ...)
 {
     va_list arg;
 
@@ -381,14 +381,14 @@ v_error(const char*err, const char*file, int line, const char* function)
 }
 
 NORETURN
-exhausted(const char *resource)
+exhausted(__in_z/*__in_ecount_z(54)*/ const char *resource)
 {
     char buf[64];
     int n;
 
     n = snprint(buf, sizeof(buf), "no free %s\n", resource);
-    iprint(buf);
     buf[n-1] = 0;
+    iprint(buf);
     error(buf);
 }
 
@@ -424,14 +424,14 @@ enverror(void)
 }
 
 NORETURN
-panicv(const char *fmt, va_list arg)
+panicv(__in_z const char *fmt, va_list arg)
 {
     fprint(2, "panic: ");
     vfprint(2, fmt, arg);
     if(sflag)
     {
 #ifdef _MSC_VER
-        __asm int 3;
+        DebugBreak();
 #else
         asm("int3");
 #endif
@@ -440,7 +440,7 @@ panicv(const char *fmt, va_list arg)
 }
 
 NORETURN
-panic(const char *fmt, ...)
+panic(__in_z __format_string const char *fmt, ...)
 {
     va_list arg;
 
@@ -450,7 +450,7 @@ panic(const char *fmt, ...)
 }
 
 int
-iprint(const char *fmt, ...)
+iprint(__in_z __format_string const char *fmt, ...)
 {
     int n;
     va_list va;

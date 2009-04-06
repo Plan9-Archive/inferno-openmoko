@@ -116,8 +116,8 @@ runetochar(__out_ecount_part(3, return) char *str, __in_ecount(1) const Rune *ru
 	return 3;
 }
 
-int
-runelen(long c)
+size_t
+runelen(Rune c)
 {
 	if(c <= Rune1)
 		return 1;
@@ -126,10 +126,10 @@ runelen(long c)
 	return 3;
 }
 
-int
-runenlen(const Rune *r, int l)
+size_t
+runenlen(__in_ecount(l) const Rune *r, size_t l)
 {
-	int n;
+	size_t n;
 	long c;
 
 	n = 0;
@@ -137,8 +137,7 @@ runenlen(const Rune *r, int l)
 		c = *r++;
 		if(c <= Rune1)
 			n += 1;
-		else
-		if(c <= Rune2)
+		else if(c <= Rune2)
 			n += 2;
 		else
 			n += 3;

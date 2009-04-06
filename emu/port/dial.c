@@ -13,7 +13,7 @@ enum
 
 static int	call1(char*, char*, DS*);
 static int	csdial(DS*);
-static void	_dial_string_parse(__in_ecount_z(Maxstring) const char*, DS*);
+static void	_dial_string_parse(__in_z /*Maxstring*/ const char*, DS*);
 static int	nettrans(   __in_z const char *addr, 
                         __out_ecount_z(na) char *naddr, int na, 
                         __out_ecount_z(nf) char *file, int nf);
@@ -27,7 +27,7 @@ struct DS
 	char	*rem;
 	char	*local;				/* other args */
 	char	*dir;
-	int	*cfdp;
+	int	    *cfdp;
 };
 
 /*
@@ -199,13 +199,12 @@ call1(char *clone, char *dest, DS *ds)
  *  parse a dial string
  */
 static void
-_dial_string_parse(__in_ecount_z(Maxstring) const char *str, DS *ds)
+_dial_string_parse(__in_z /*Maxstring*/const char *str, DS *ds)
 {
 	char *p, *p2;
 
-	strncpy(ds->buf, str, Maxstring);
-	ds->buf[Maxstring-1] = 0;
-
+    assert(strlen(str)<Maxstring);
+    strcpy(ds->buf, str);
 	p = strchr(ds->buf, '!');
 	if(p == 0) {
 		ds->netdir = 0;

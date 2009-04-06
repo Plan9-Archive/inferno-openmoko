@@ -5,7 +5,7 @@
  * General OS interface to errors
  */
 void
-kwerrstr(char *fmt, ...)
+kwerrstr(__in_z __format_string const char *fmt, ...)
 {
 	va_list arg;
 	char buf[ERRMAX];

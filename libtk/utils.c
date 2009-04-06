@@ -638,7 +638,7 @@ tklook(TkTop *t, __in_z const char *wp, int parent)
         }
         *q = '\0';
     } else
-        p = wp; /* const_cast */
+        p = CONST_CAST(char*,wp);
 
     for(f = t->root; f; f = f->siblings)
         if ((f->name != nil) && (strcmp(f->name->name, p) == 0))
@@ -832,9 +832,9 @@ tkul(__in_ecount(1) const Image *i,
     char *v;
     Rectangle r;
 
-    v = text+ul+1; /* const_cast TODO */
+    v = CONST_CAST(char*,text+ul+1);
     c = *v;
-    *v = '\0'; /* change const string */
+    *v = '\0'; /* change const string BUG */
     r.max = stringsize(f, text);
     r.max = addpt(r.max, o);
     r.min = stringsize(f, v-1);
@@ -942,7 +942,7 @@ tkdeliver(Tk *tk, int event, void *data)
 }
 
 static int
-nullop(char *fmt, ...)
+nullop(__in_z __format_string const char *fmt, ...)
 {
     USED(fmt);
     return 0;
@@ -1373,7 +1373,7 @@ tkfprint(char *v, int frac)
 }
 
 const char*
-tkvalue(__inout_ecount_opt(1) char **val, __in_z const char *fmt, ...)
+tkvalue(__inout_ecount_opt(1) char **val, __in_z __format_string const char *fmt, ...)
 {
     va_list arg;
     Fmt fmtx;

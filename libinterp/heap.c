@@ -219,8 +219,9 @@ destroy(void *v)
 //      void* v = *pp; /*XCHG*/
 //      *pp = new;
 
-        if(v == H)
-                return;
+        assert(v != H);
+        //if(v == H)
+        //        return;
 
         if(v == nil)
                 panic("destroy nil");
@@ -456,8 +457,8 @@ v_heaparray(Type *t, int sz, const char*file, int line, const char*function)
         return h;
 }
 
-int
-hmsize(void *v)
+size_t
+hmsize(__in const void *v)
 {
         return poolmsize(heapmem, v);
 }

@@ -46,6 +46,6 @@ extern	int	    kannounce(char*, char*);
 extern	int	    kdial(char*, char*, char*, int*);
 extern	void	kerrstr(char*, uint);
 extern	int	    kiounit(int);
-extern	void	kwerrstr(char *, ...);
+extern	void	kwerrstr(__in_z __format_string const char*, ...);
 extern	void	kgerrstr(char*, uint);
 extern	long	kchanio(Chan*, char*, int, int);

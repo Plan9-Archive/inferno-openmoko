@@ -15,7 +15,7 @@ void        tkimgbmfree(TkImg*);
 extern  Rectangle   huger;
 
 typedef struct TkImgtype TkImgtype;
-struct TkImgtype
+const struct TkImgtype
 {
     char*       type;
     const char* (*create)(TkTop*, __in_z const char*, int, char**);

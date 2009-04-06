@@ -14,7 +14,7 @@ extern ulong displaychan;
 extern	char*	runestoutf(char*, const Rune*, int);
 extern	int	bytesperline(Rectangle, int);
 extern	NORETURN main(int argc, char **argv);
-static	void	dprint(char*, ...);
+static	void	dprint(__in_z __format_string const char*, ...);
 static	DWORD WINAPI	winproc(LPVOID);
 
 static	HINSTANCE	inst = 0;
@@ -25,12 +25,13 @@ static	HDC		screen = 0;
 static	HPALETTE	palette = 0;
 static	int		maxxsize = 0;
 static	int		maxysize = 0;
-static	int		attached = 0;
 static	int		isunicode = 1;
 static	HCURSOR		hcursor = 0;
 
 char	*argv0 = "inferno";
-static	VOID *	data = 0;
+
+static	int		winscreen_attached = 0;
+
 
 extern	DWORD	PlatformId;
 char*	gkscanid = "emu_win32vk";
@@ -50,7 +51,7 @@ WinMain(HINSTANCE winst, HINSTANCE wprevinst, LPSTR cmdline, int wcmdshow)
 }
 #endif
 static void
-dprint(char *fmt, ...)
+dprint(__in_z __format_string const char *fmt, ...)
 {
 	va_list arg;
 	char buf[128];
@@ -128,10 +129,14 @@ autochan(void)
 	return XRGB32;
 }
 
-uchar*
-attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
+char*
+attachscreen(__out Rectangle *r, 
+             __out ulong *chan,
+             __out int *d,
+             __out int *width,
+             __out int *softscreen)
 {
-	int i, k;
+	int i;
 	ulong c;
 	DWORD h;
 	RECT bs;
@@ -142,8 +147,14 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 	PALETTEENTRY *pal;
 	int bsh, bsw, sx, sy;
 
-	if(attached)
+    static  int     winscreen_k = 0;
+    static	char*   winscreen_data = 0;
+
+	if(winscreen_attached)
+    {
+        c = displaychan;
 		goto Return;
+    }
 
 	/* Compute bodersizes */
 	memset(&bs, 0, sizeof(bs));
@@ -168,17 +179,17 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 	c = displaychan;
 	if(c == 0)
 		c = autochan();
-	k = 8;
+	winscreen_k = 8;
 	if(TYPE(c) == CGrey){
 		graphicsgmap(pal, NBITS(c));
 		c = GREY8;
 	}else{
 		if(c == RGB15)
-			k = 16;
+			winscreen_k = 16;
 		else if(c == RGB24)
-			k = 24;
+			winscreen_k = 24;
 		else if(c == XRGB32)
-			k = 32;
+			winscreen_k = 32;
 		else
 			c = CMAP8;
 		graphicscmap(pal);
@@ -186,7 +197,7 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 
 	palette = CreatePalette(logpal);
 
-	if(k == 8)
+	if(winscreen_k == 8)
 		bmi = (BITMAPINFO*)malloc(sizeof(BITMAPINFOHEADER) + 256*sizeof(RGBQUAD));
 	else
 		bmi = (BITMAPINFO*)malloc(sizeof(BITMAPINFOHEADER));
@@ -196,7 +207,7 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 	bmi->bmiHeader.biWidth = Xsize;
 	bmi->bmiHeader.biHeight = -Ysize;	/* - => origin upper left */
 	bmi->bmiHeader.biPlanes = 1;	/* always 1 */
-	bmi->bmiHeader.biBitCount = k;
+	bmi->bmiHeader.biBitCount = winscreen_k;
 	bmi->bmiHeader.biCompression = BI_RGB;
 	bmi->bmiHeader.biSizeImage = 0;	/* Xsize*Ysize*(k/8) */
 	bmi->bmiHeader.biXPelsPerMeter = 0;
@@ -204,7 +215,7 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 	bmi->bmiHeader.biClrUsed = 0;
 	bmi->bmiHeader.biClrImportant = 0;	/* number of important colors: 0 means all */
 
-	if(k == 8){
+	if(winscreen_k == 8){
 		rgb = bmi->bmiColors;
 		for(i = 0; i < 256; i++){
 			rgb[i].rgbRed = pal[i].peRed;
@@ -224,7 +235,7 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 	}
 	i = RealizePalette(screen);
 	GdiFlush();
-	bits = CreateDIBSection(screen, bmi, DIB_RGB_COLORS, &data, nil, 0);
+	bits = CreateDIBSection(screen, bmi, DIB_RGB_COLORS, &winscreen_data, nil, 0);
 	if(bits == nil){
 		fprint(2, "CreateDIBSection failed\n");
 		return nil;
@@ -233,19 +244,19 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 	SelectObject(screen, bits);
 	GdiFlush();
 	CreateThread(0, 16384, winproc, nil, 0, &h);
-	attached = 1;
+	winscreen_attached = 1;
 
-    Return:
+Return:
 	r->min.x = 0;
 	r->min.y = 0;
 	r->max.x = Xsize;
 	r->max.y = Ysize;
 	displaychan = c;
 	*chan = c;
-	*d = k;
-	*width = (Xsize/4)*(k/8);
+	*d = winscreen_k;
+	*width = (Xsize/4)*(winscreen_k/8);
 	*softscreen = 1;
-	return (uchar*)data;
+	return winscreen_data;
 }
 
 void
@@ -588,7 +599,7 @@ winproc(LPVOID x)
 			DispatchMessageA(&msg);
 		}
 	}
-	attached = 0;
+	winscreen_attached = 0;
 	ExitThread(msg.wParam);
 	return 0;
 }
@@ -679,18 +690,20 @@ static char*
 clipreadunicode(HANDLE h)
 {
 	Rune *p;
-	int n;
+	size_t n;
 	char *q;
 
 	p = (Rune*)GlobalLock(h);
+	if(p == nil)
+		error(Enovmem);
 	n = runenlen(p, runestrlen(p)+1);
 	q = (char*)malloc(n);
-	if(q != nil)
-		runestoutf(q, p, n);
+    if(q == nil) {
+        GlobalUnlock(h);
+        error(Enovmem);
+    }
+	runestoutf(q, p, n);
 	GlobalUnlock(h);
-
-	if(q == nil)
-		error(Enovmem);
 	return q;
 }
 
@@ -700,9 +713,10 @@ clipreadutf(HANDLE h)
 	char *p;
 
 	p = (char*)GlobalLock(h);
+	if(p == nil)
+		error(Enovmem);
 	p = strdup(p);
 	GlobalUnlock(h);
-
 	if(p == nil)
 		error(Enovmem);
 	return p;

@@ -96,7 +96,7 @@ mkfd(int fd)
 #define fdchk(x)	((x) == (Sys_FD*)H ? -1 : (x)->fd)
 
 void
-seterror(char *err, ...)
+seterror(__in_z __format_string const char *err, ...)
 {
 	char *estr;
 	va_list arg;

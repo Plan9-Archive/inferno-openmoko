@@ -348,7 +348,7 @@ extern char*	bufimage(Display*, int);
 extern int	bytesperline(Rectangle, int);
 extern void	closedisplay(Display*);
 extern void	drawerror(Display*, char*);
-extern int	_drawprint(int, char*, ...);
+extern int	_drawprint(int, __in_z __format_string const char*, ...);
 extern int	flushimage(Display*, int);
 extern int	freeimage(Image*);
 extern int	_freeimage1(Image*);

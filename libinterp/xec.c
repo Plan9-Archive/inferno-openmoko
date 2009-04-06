@@ -10,7 +10,7 @@ REG     R = {0};                        /* Virtual Machine registers */ /* BUG: 
 String  snil = {0};                     /* String known to be zero length */
 
 
-#define OP(fn)  static void fn(__inout_ecount(1) Disdata*rs, __inout_ecount(1) Disdata*rm, __inout_ecount(1) Disdata*rd, REG*rr)
+#define OP(fn)  void fn(__inout_ecount(1) Disdata*rs, __inout_ecount(1) Disdata*rm, __inout_ecount(1) Disdata*rd, REG*rr)
 
 
 OP(runt) { }
@@ -1008,8 +1008,7 @@ cons(ulong size, List **lp)
 
         lv = *lp;
         if(lv != H) {
-                h = D2H(lv);
-                Setmark(h);
+                Setmark(D2H(lv));
         }
         l->tail = lv;
         *lp = l;
@@ -1583,6 +1582,7 @@ opinit(void)
 }
 
 #ifdef DEBUGVM
+extern Runtab Sysmodtab[];
 // print op operand state before executing
 void statebefore(char o[200], char q[200], uchar op, Inst* modprog, Disdata*rs, Disdata*rm, Disdata*rd, REG*rr)
 {
@@ -1763,7 +1763,11 @@ void statebefore(char o[200], char q[200], uchar op, Inst* modprog, Disdata*rs, 
         case ISLICEC:   snprint(o,n,"\"%s\" [%d:%d]", string2c(rd->pstring), rs->disint, rm->disint); break;
         case ISLICELA:  snprint(o,n,"Array[%d]@%p [%d:] = Array[%d]@%p", Alen(rd), rd->parray, rm->disint, Alen(rs), rs->parray); break;
         case IMSPAWN:
-        case IMCALL:    snprint(o,n,"%s.%d Frame@%p FP=Frame@%p", rd->pmodlink->m->name, rm->disint, rs->pframe, rr->FP); break;
+        case IMCALL:    //if(0==strcmp(rd->pmodlink->m->name, "$Sys"))
+                        //    snprint(o,n,"%s.%s Frame@%p FP=Frame@%p", rd->pmodlink->m->name, Sysmodtab[rm->disint].name, rs->pframe, rr->FP);
+                        //else
+                            snprint(o,n,"%s.%d Frame@%p FP=Frame@%p", rd->pmodlink->m->name, rm->disint, rs->pframe, rr->FP);
+                        break;
         case IMFRAME:   snprint(o,n,"%s.%d", rs->pmodlink->m->name, rm->disint); break;
         case ISPAWN:
         case ICALL:     snprint(o,n,"Frame@%p FP=Frame@%p", rs->pframe, rr->FP); break;
@@ -1949,9 +1953,37 @@ void stateafter(char* o, int n, uchar op, Disdata*rs, Disdata*rm, Disdata*rd, RE
 }
 #endif
 
+struct timerdata {
+    vlong start, num, tmin, tmax, ttotal;
+};
+
+void timer_begin(struct timerdata* t)
+{
+    assert(t->start==0);
+    t->start = rdtsc();
+}
+vlong timer_end(struct timerdata* t)
+{
+    vlong stop, delta;
+    assert(t->start!=0);
+    stop = rdtsc();
+    delta = stop - t->start;
+    if(t->tmin==0 || delta<t->tmin) t->tmin = delta;
+    if(delta>t->tmax) t->tmax = delta;
+    t->ttotal += delta;
+    t->num ++;
+    t->start = 0;
+    return delta;
+}
+void timer_print(struct timerdata* t)
+{
+    print("num=%lld total=%lld ave=%lld min=%lld max=%lld\n", t->num, t->ttotal, t->num?t->ttotal/t->num:0, t->tmin, t->tmax);
+}
+
 void
 xec(Prog *p)
 {
+    struct timerdata tcmd = {0};
         int op;
 
         R = p->R;
@@ -1986,35 +2018,75 @@ xec(Prog *p)
                 char sz[100];
                 char szinst[100];
                 char sz2[200], szdest[200];
-                snprint(sz, sizeof(sz), "%s_%uX:", R.ML->m->name, R.PC - R.ML->m->prog );
-
-                statebefore(sz2, szdest, op, R.ML->m->prog, d.s, d.m, d.d, &R);
-                sprint(szinst, "%D", R.PC);
-                if(szdest[0])
+                if(op==IMCALL)
                 {
-                        char *p = strrchr(szinst, '$');
-                        assert(p);
-                        strcpy(p, szdest);
-                }
+                    snprint(sz, sizeof(sz), "%s_%uX:", R.ML->m->name, R.PC - R.ML->m->prog );
 
-                print("%-16s %02ux %02ux %04ux %08ux",
-                        sz,
-                        R.PC->op, R.PC->add, R.PC->reg, R.PC->s.imm);
-                if(szdest[0])
-                        print(" ________");
-                else
-                        print(" %08ux", R.PC->d.imm);
-                print(" %-40s\t%s",
-                        szinst, sz2);
+                    statebefore(sz2, szdest, op, R.ML->m->prog, d.s, d.m, d.d, &R);
+                    sprint(szinst, "%D", R.PC);
+                    if(szdest[0])
+                    {
+                            char *p = strrchr(szinst, '$');
+                            assert(p);
+                            strcpy(p, szdest);
+                    }
+/*
+                    print("%-16s %02ux %02ux %04ux %08ux",
+                            sz,
+                            R.PC->op, R.PC->add, R.PC->reg, R.PC->s.imm);
+                    if(szdest[0])
+                            print(" ________");
+                    else
+                            print(" %08ux", R.PC->d.imm);
+                    print(" %-40s\t%s",
+                            szinst, sz2);
+*/
+                }
 #endif
                 R.PC++;
+#ifdef DEBUGVM
+                if(op==IMCALL){
+                    timer_begin(&tcmd);
+                    if(0==strcmp(d.d->pmodlink->m->name, "$Sys") && d.m->disint==4)
+                    {
+                        DebugBreak();
+                    }
+                }
+#endif
                 optab[op](d.s, d.m, d.d, &R); /* TODO: inline here? */
 #ifdef DEBUGVM
+                if(op==IMCALL){
+
+                    print("%-16s %02ux %02ux %04ux %08ux",
+                            sz,
+                            R.PC[-1].op, R.PC[-1].add, R.PC[-1].reg, R.PC[-1].s.imm);
+                    if(szdest[0])
+                            print(" ________");
+                    else
+                            print(" %08ux", R.PC[-1].d.imm);
+                    print(" %-40s\t%s",
+                            szinst, sz2);
+
+                    {
+                    vlong delta;
+                    delta = timer_end(&tcmd);
+                    if(delta>100000000)
+                        print(" **[%lld] ", delta);
+                    else
+                        print(" [%lld] ", delta);
+                    }
+                }
+#endif
+#ifdef DEBUGVM
+                if(op==IMCALL)
+                {
                 stateafter(sz2, sizeof(sz2), op, d.s, d.m, d.d, &R);
                 print("%s\n", sz2);
+                }
                 }
 #endif
         } while(--R.IC != 0);
 
         p->R = R;
+        //timer_print(&tcmd);
 }

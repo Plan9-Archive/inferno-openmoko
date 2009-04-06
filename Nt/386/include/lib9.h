@@ -27,6 +27,7 @@
 #define __in
 #define __in_z
 #define __in_z_opt
+#define __out
 #define __out_z
 #define __format_string
 #define __out_bcount_z(x)
@@ -46,6 +47,10 @@
 #define __inout_ecount(a)
 #define __inout
 #define __checkReturn 
+#define __in_opt
+#define __range(l,h)
+#define __in_range(l,h)
+#define __analysis_assume(a)
 #endif
 
 #define getwd   infgetwd
@@ -104,7 +109,11 @@ typedef unsigned long uintptr;
 #define offsetof(s,m)   (size_t)&(((s *)0)->m)
 extern NORETURN panic(__in_z __format_string const char *fmt, ...);
 
+#ifndef NDEBUG
 #define assert(x)   ((x)||(panic("assert failed: %s:%d %s %s", __FILE__, __LINE__, __FUNCTION__, #x),0))
+#else
+#define assert(x)
+#endif
 
 /*
  * most mem and string routines are declared by ANSI/POSIX files above
@@ -128,39 +137,18 @@ enum
 /*
  * rune routines
  */
-extern  int         runetochar(__out_ecount_part(3, return) char*, __in_ecount(1) const Rune*);
+extern  int         runetochar(__out_ecount_part(3, return) char*, __in const Rune*);
 extern  int         chartorune(__out_ecount_full(1) Rune*, __in_ecount(3) const char*);
-extern  int         runelen(long);
-extern  int         runenlen(const Rune*, int);
+extern  size_t      runelen(Rune);
+extern  size_t      runenlen(__in_ecount(l) const Rune*, size_t l);
 extern  int         fullrune(const char*, int);
 extern  int         utflen(const char*);
 extern  int         utfnlen(const char*, long);
 extern  /*const*/ char* utfrune(/*const*/ char*, long);
 extern  /*const*/ char* utfrrune(/*const*/ char*, long);
-extern  const char* utfutf(const char*, const char*);
 extern  char*       utfecpy(char*, char*, const char*);
 
-extern  Rune*       runestrcat(Rune*, const Rune*);
-extern  const Rune* runestrchr(const Rune*, Rune);
-extern  int         runestrcmp(const Rune*, const Rune*);
-extern  Rune*       runestrcpy(Rune*, const Rune*);
-extern  Rune*       runestrncpy(Rune*, const Rune*, long);
-extern  Rune*       runestrecpy(Rune*, const Rune*, const Rune*);
-extern  Rune*       runestrdup(const Rune*);
-extern  Rune*       runestrncat(Rune*, const Rune*, long);
-extern  int         runestrncmp(Rune*, Rune*, long);
-extern  const Rune* runestrrchr(const Rune*, Rune);
 extern  long        runestrlen(const Rune*);
-extern  const Rune* runestrstr(const Rune*, const Rune*);
-
-extern  Rune        tolowerrune(Rune);
-extern  Rune        totitlerune(Rune);
-extern  Rune        toupperrune(Rune);
-extern  int         isalpharune(Rune);
-extern  int         islowerrune(Rune);
-extern  int         isspacerune(Rune);
-extern  int         istitlerune(Rune);
-extern  int         isupperrune(Rune);
 
 /*
  * malloc
@@ -182,15 +170,15 @@ extern  char*   strdup(const char*);
 //extern    ulong   getrealloctag(void*);
 //extern    void*   malloctopoolblock(void*);
 #else
-extern  void*   v_kmalloc(size_t size, const char*, int, const char*);
-extern  void*   v_smalloc(size_t size, const char*, int, const char*);
-extern  void*   v_malloc(size_t size, const char*, int, const char*);
-extern  void*   v_mallocz(size_t size, int clr, const char*, int, const char*);
-extern  void    v_free(void *v, const char*, int, const char*);
-extern  void*   v_realloc(void *v, size_t size, const char*, int, const char*);
-extern  void*   v_calloc(size_t num, size_t size, const char*, int, const char*);
-extern  size_t  v_msize(void *v, const char*, int, const char*);
-extern  char*   v_strdup(const char*, const char*, int, const char*);
+__checkReturn extern  void*   v_kmalloc(size_t size, const char*, int, const char*);
+__checkReturn extern  void*   v_smalloc(size_t size, const char*, int, const char*);
+__checkReturn extern  void*   v_malloc(size_t size, const char*, int, const char*);
+__checkReturn extern  void*   v_mallocz(size_t size, int clr, const char*, int, const char*);
+__checkReturn extern  void    v_free(__in_opt void *v, const char*, int, const char*);
+__checkReturn extern  void*   v_realloc(__in_opt void *v, size_t size, const char*, int, const char*);
+__checkReturn extern  void*   v_calloc(size_t num, size_t size, const char*, int, const char*);
+__checkReturn extern  size_t  v_msize(__in const void *v, const char*, int, const char*);
+__checkReturn extern  char*   v_strdup(__in_z const char*, const char*, int, const char*);
 
 
 #define kmalloc(size)       v_kmalloc(size, __FILE__, __LINE__, __FUNCTION__)
@@ -297,6 +285,8 @@ extern  char*   v_strdup(const char*, const char*, int, const char*);
 #define PBIT64(p,v) (*((u64int*)(p)) = (v))
 #endif
 
+//#define CONST_CAST(p) ((__typeof(*(p))*)(p))
+#define CONST_CAST(t,p) ((t)(p))
 
 /*#define BITS(v,o,l)   ( ((v)>>(o)) & ((1<<l)-1) )*/
 /*
@@ -336,37 +326,30 @@ enum{
     FmtFlag     = FmtByte << 1
 };
 
-extern  int print(const char*, ...);
-extern  char*   seprint(char*, char*, const char*, ...);
-extern  char*   vseprint(char*, char*, const char*, va_list);
-extern  int snprint(char*, int, const char* fmt, ...);
-extern  int vsnprint(char*, int, const char*, va_list);
-extern  char*   smprint(const char*, ...);
-extern  char*   vsmprint(const char*, va_list);
-extern  int sprint(char*, const char*, ...);
-extern  int fprint(int, const char*, ...);
-extern  int vfprint(int, const char*, va_list);
+extern  int     print(__in_z __format_string const char*, ...);
+extern  char*   seprint(char*, char*, __in_z __format_string const char*, ...);
+extern  char*   vseprint(char*, char*, __in_z __format_string const char*, va_list);
+extern  int     snprint(char*, int, __in_z __format_string const char* fmt, ...);
+extern  int     vsnprint(char*, int, __in_z __format_string const char*, va_list);
+extern  char*   smprint(__in_z __format_string const char*, ...);
+extern  char*   vsmprint(__in_z __format_string const char*, va_list);
+extern  int     sprint(char*, __in_z __format_string const char*, ...);
+extern  int     fprint(int, __in_z __format_string const char*, ...);
+extern  int     vfprint(int, __in_z __format_string const char*, va_list);
 
-extern  int runesprint(Rune*, const char*, ...);
-extern  int runesnprint(Rune*, int, const char*, ...);
-extern  int runevsnprint(Rune*, int, const char*, va_list);
-extern  Rune*   runeseprint(Rune*, Rune*, const char*, ...);
-extern  Rune*   runevseprint(Rune*, Rune*, const char*, va_list);
-extern  Rune*   runesmprint(const char*, ...);
-extern  Rune*   runevsmprint(const char*, va_list);
 
-extern  int fmtfdinit(Fmt*, int, char*, int);
-extern  int fmtfdflush(Fmt*);
-extern  int fmtstrinit(Fmt*);
+extern  int     fmtfdinit(Fmt*, int, char*, int);
+extern  int     fmtfdflush(Fmt*);
+extern  int     fmtstrinit(Fmt*);
 extern  char*   fmtstrflush(Fmt*);
-extern  int runefmtstrinit(Fmt*);
+extern  int     runefmtstrinit(Fmt*);
 extern  Rune*   runefmtstrflush(Fmt*);
 
 extern  int fmtinstall(int, int (*)(Fmt*));
 extern  int dofmt(Fmt*, const char*);
 extern  int dorfmt(Fmt*, const Rune*);
-extern  int fmtprint(Fmt*, const char*, ...);
-extern  int fmtvprint(Fmt*, const char*, va_list);
+extern  int fmtprint(Fmt*, __in_z __format_string const char*, ...);
+extern  int fmtvprint(Fmt*, __in_z __format_string const char*, va_list);
 extern  int fmtrune(Fmt*, int);
 extern  int fmtstrcpy(Fmt*, char*);
 extern  int fmtrunestrcpy(Fmt*, Rune*);
@@ -380,9 +363,7 @@ extern  int errfmt(Fmt *f);
  * quoted strings
  */
 extern  char    *unquotestrdup(char*);
-extern  Rune    *unquoterunestrdup(Rune*);
 extern  char    *quotestrdup(char*);
-extern  Rune    *quoterunestrdup(Rune*);
 extern  int quotestrfmt(Fmt*);
 extern  int quoterunestrfmt(Fmt*);
 extern  void    quotefmtinstall(void);
@@ -411,28 +392,40 @@ extern  int isInf(double, int);
 
 typedef struct Tm Tm;
 struct Tm {
-    int sec;
-    int min;
-    int hour;
-    int mday;
-    int mon;
-    int year;
-    int wday;
-    int yday;
+    int     sec;
+    int     min;
+    int     hour;
+    int     mday;
+    int     mon;
+    int     year;
+    int     wday;
+    int     yday;
     char    zone[4];
-    int tzoff;
+    int     tzoff;
 };
 extern  vlong   osnsec(void);
 #define nsec    osnsec
 
+static __inline vlong rdtsc(void)
+{
+#ifdef _MSC_VER
+    __asm rdtsc;
+#else
+    vlong rv;
+    __asm __volatile("rdtsc" : "=A" (rv));
+    return rv;
+#endif
+}
+
+
 /*
  * one-of-a-kind
  */
-extern  NORETURN    _assert(const char*, ...);
+extern  NORETURN    _assert(__in_z __format_string const char*, ...);
 extern  double      charstod(int(*)(void*), void*);
 extern  char*       cleanname(char*);
 extern  ulong       getcallerpc(void*);
-extern  int     getfields(char*, char**, int, int, char*);
+extern  int         getfields(char*, char**, int, int, char*);
 extern  char*       getuser(void);
 extern  char*       getuser(void);
 extern  char*       getwd(char*, int);
@@ -440,14 +433,14 @@ extern  char*       getwd(char*, int);
 extern  double      ipow10(int);
 #define pow10   infpow10
 extern  double      pow10(int);
-extern  NORETURN    sysfatal(const char*, ...);
-extern  int     dec64(uchar*, int, const char*, int);
-extern  int     enc64(char*, int, const uchar*, int);
-extern  int     dec32(uchar*, int, const char*, int);
-extern  int     enc32(char*, int, const uchar*, int);
-extern  int     dec16(uchar*, int, const char*, int);
-extern  int     enc16(char*, int, const uchar*, int);
-extern  int     encodefmt(Fmt*);
+extern  NORETURN    sysfatal(__in_z __format_string const char*, ...);
+extern  int         dec64(uchar*, int, const char*, int);
+extern  int         enc64(char*, int, const uchar*, int);
+extern  int         dec32(uchar*, int, const char*, int);
+extern  int         enc32(char*, int, const uchar*, int);
+extern  int         dec16(uchar*, int, const char*, int);
+extern  int         enc16(char*, int, const uchar*, int);
+extern  int         encodefmt(Fmt*);
 
 /*
  *  synchronization
@@ -487,8 +480,8 @@ struct RWLock
     int readers;        /* Count of readers in lock */
 } RWLock;
 
-extern  int canrlock(RWLock*);
-extern  int canwlock(RWLock*);
+extern  int     canrlock(RWLock*);
+extern  int     canwlock(RWLock*);
 extern  void    rlock(RWLock*);
 extern  void    runlock(RWLock*);
 extern  void    wlock(RWLock*);
@@ -562,18 +555,18 @@ struct Qid
 typedef
 struct Dir {
     /* system-modified data */
-    ushort  type;   /* server type */
-    uint    dev;    /* server subtype */
+    ushort          type;   /* server type */
+    uint            dev;    /* server subtype */
     /* file data */
-    Qid qid;    /* unique id from server */
-    ulong   mode;   /* permissions */
-    ulong   atime;  /* last read time */
-    ulong   mtime;  /* last write time */
-    vlong   length; /* file length */
-    const char  *name;  /* last element of path */
-    /*const*/ char    *uid;   /* owner name */
-    /*const*/ char    *gid;   /* group name */
-    const char  *muid;  /* last modifier name */
+    Qid             qid;    /* unique id from server */
+    ulong           mode;   /* permissions */
+    ulong           atime;  /* last read time */
+    ulong           mtime;  /* last write time */
+    vlong           length; /* file length */
+    const char*     name;  /* last element of path */
+    /*const*/char*  uid;   /* owner name */
+    /*const*/char*  gid;   /* group name */
+    const char*     muid;  /* last modifier name */
 } Dir;
 
 extern  Dir*    dirstat(char*);
@@ -601,7 +594,7 @@ extern  int errstr(char*, uint);
 extern  long    readn(int, void*, long);
 extern  void    rerrstr(char*, uint);
 extern  vlong   seek(int, vlong, int);
-extern  void    werrstr(const char*, ...);
+extern  void    werrstr(__in_z __format_string const char*, ...);
 
 extern char *argv0;
 #define ARGBEGIN    for((argv0||(argv0=*argv)),argv++,argc--;\

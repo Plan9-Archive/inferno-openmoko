@@ -262,7 +262,7 @@ unlockdisplay(Display *disp)
 
 /* use static buffer to avoid stack bloat */
 int
-_drawprint(int fd, char *fmt, ...)
+_drawprint(int fd, __in_z __format_string const char *fmt, ...)
 {
 	int n;
 	va_list arg;

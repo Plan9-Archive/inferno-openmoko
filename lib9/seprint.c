@@ -14,7 +14,7 @@
 #include <lib9.h>
 
 char*
-seprint(char *buf, char *e, const char *fmt, ...)
+seprint(char *buf, char *e, __in_z __format_string const char *fmt, ...)
 {
 	char *p;
 	va_list args;

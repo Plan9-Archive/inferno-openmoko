@@ -168,11 +168,11 @@ extern "C" {
 
   /* print a message */
   FT_EXPORT( void )
-  FT_Message( const char*  fmt, ... );
+  FT_Message( __in_z __format_string const char*  fmt, ... );
 
   /* print a message and exit */
   FT_EXPORT( void )
-  FT_Panic( const char*  fmt, ... );
+  FT_Panic( __in_z __format_string const char*  fmt, ... );
 
 #endif /* FT_DEBUG_LEVEL_ERROR */
 

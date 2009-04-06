@@ -85,7 +85,7 @@ extern "C" {
 
   FT_LOCAL( FT_Error )
   pfr_slot_load( PFR_Slot  slot,
-                 PFR_Size  size,
+                 __in PFR_Size  size,
                  FT_UInt   gindex,
                  FT_Int32  load_flags );
 

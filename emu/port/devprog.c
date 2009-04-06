@@ -433,8 +433,8 @@ progsize(Prog *p)
         size += msize(m->prog);
     assert(p->R.FP != nil);
     for(f = p->R.FP; f != H; f = f->parent) {
-        assert(f->parent != nil);
-        assert(f->ml != nil);
+        assert(H==nil || f->parent != nil);
+        assert(H==nil || f->ml != nil);
         if(f->ml != H) {
             if(f->ml->MP != H)
                 size += hmsize(D2H(f->ml->MP));

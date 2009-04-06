@@ -90,7 +90,7 @@
   /* compute the snapped width of a given stem */
   static FT_Pos
   ah_compute_stem_width( AH_Hinter  hinter,
-                         int        vertical,
+                         __in_range(0,1) int        vertical,
                          FT_Pos     width )
   {
     AH_Globals  globals = &hinter->globals->scaled;
@@ -204,7 +204,7 @@
   ah_align_linked_edge( AH_Hinter  hinter,
                         AH_Edge    base_edge,
                         AH_Edge    stem_edge,
-                        int        vertical )
+                        __in_range(0,1) int        vertical )
   {
     FT_Pos  dist = stem_edge->opos - base_edge->opos;
 
@@ -269,7 +269,7 @@
     AH_Edge     edges;
     AH_Edge     edge_limit;
     AH_Outline  outline = hinter->glyph;
-    FT_Int      dimension;
+    __range(0,1) FT_Int      dimension;
 
 
     edges      = outline->horz_edges;

@@ -19,10 +19,10 @@ typedef struct	Memdrawparam	Memdrawparam;
 struct Memdata
 {
 	ulong		*base;	/* allocated data pointer */
-	uchar		*bdata;	/* pointer to first byte of actual data; word-aligned */
-	int		ref;	/* number of Memimages using this data */
+	char		*bdata;	/* pointer to first byte of actual data; word-aligned */
+	int		    ref;	/* number of Memimages using this data */
 	void*		imref;
-	int		allocd;	/* is this malloc'd? */
+	int		    allocd;	/* is this malloc'd? */
 };
 
 enum {
@@ -118,43 +118,43 @@ extern Memimage*	allocmemimage(Rectangle, ulong);
 extern Memimage*	allocmemimaged(Rectangle, ulong, Memdata*);
 extern Memimage*	readmemimage(int);
 extern Memimage*	creadmemimage(int);
-extern int		writememimage(int, Memimage*);
-extern void		freememimage(Memimage*);
-extern int		loadmemimage(Memimage*, Rectangle, uchar*, int);
-extern int		cloadmemimage(Memimage*, Rectangle, uchar*, int);
-extern int		unloadmemimage(Memimage*, Rectangle, uchar*, int);
+extern int		    writememimage(int, Memimage*);
+extern void		    freememimage(Memimage*);
+extern int		    loadmemimage(Memimage*, Rectangle, uchar*, int);
+extern int		    cloadmemimage(Memimage*, Rectangle, uchar*, int);
+extern int		    unloadmemimage(Memimage*, Rectangle, uchar*, int);
 extern ulong*		wordaddr(Memimage*, Point);
 extern uchar*		byteaddr(Memimage*, Point);
-extern int		drawclip(Memimage*, Rectangle*, Memimage*, Point*, Memimage*, Point*, Rectangle*, Rectangle*);
-extern void		memfillcolor(Memimage*, ulong);
-extern int		memsetchan(Memimage*, ulong);
+extern int		    drawclip(Memimage*, Rectangle*, Memimage*, Point*, Memimage*, Point*, Rectangle*, Rectangle*);
+extern void		    memfillcolor(Memimage*, ulong);
+extern int		    memsetchan(Memimage*, ulong);
 
 /*
  * Graphics
  */
-extern void		memdraw(Memimage*, Rectangle, Memimage*, Point, Memimage*, Point, int);
-extern void		memline(Memimage*, Point, Point, int, int, int, Memimage*, Point, int);
-extern void		mempoly(Memimage*, Point*, int, int, int, int, Memimage*, Point, int);
-extern void		memfillpoly(Memimage*, Point*, int, int, Memimage*, Point, int);
-extern void		_memfillpolysc(Memimage*, Point*, int, int, Memimage*, Point, int, int, int, int);
-extern void		memimagedraw(Memimage*, Rectangle, Memimage*, Point, Memimage*, Point, int);
-extern int		hwdraw(Memdrawparam*);
-extern void		memimageline(Memimage*, Point, Point, int, int, int, Memimage*, Point, int);
-extern void		_memimageline(Memimage*, Point, Point, int, int, int, Memimage*, Point, Rectangle, int);
+extern void		    memdraw(Memimage*, Rectangle, Memimage*, Point, Memimage*, Point, int);
+extern void		    memline(Memimage*, Point, Point, int, int, int, Memimage*, Point, int);
+extern void		    mempoly(Memimage*, Point*, int, int, int, int, Memimage*, Point, int);
+extern void		    memfillpoly(Memimage*, Point*, int, int, Memimage*, Point, int);
+extern void		    _memfillpolysc(Memimage*, Point*, int, int, Memimage*, Point, int, int, int, int);
+extern void		    memimagedraw(Memimage*, Rectangle, Memimage*, Point, Memimage*, Point, int);
+extern int		    hwdraw(Memdrawparam*);
+extern void		    memimageline(Memimage*, Point, Point, int, int, int, Memimage*, Point, int);
+extern void		    _memimageline(Memimage*, Point, Point, int, int, int, Memimage*, Point, Rectangle, int);
 extern Point		memimagestring(Memimage*, Point, Memimage*, Point, Memsubfont*, char*);
-extern void		memellipse(Memimage*, Point, int, int, int, Memimage*, Point, int);
-extern void		memarc(Memimage*, Point, int, int, int, Memimage*, Point, int, int, int);
+extern void		    memellipse(Memimage*, Point, int, int, int, Memimage*, Point, int);
+extern void		    memarc(Memimage*, Point, int, int, int, Memimage*, Point, int, int, int);
 extern Rectangle	memlinebbox(Point, Point, int, int, int);
-extern int		memlineendsize(int);
-extern void		_memmkcmap(void);
-extern void		memimageinit(void);
+extern int		    memlineendsize(int);
+extern void		    _memmkcmap(void);
+extern void		    memimageinit(void);
 
 /*
  * Subfont management
  */
 extern Memsubfont*	allocmemsubfont(char*, int, int, int, Fontchar*, Memimage*);
 extern Memsubfont*	openmemsubfont(char*);
-extern void		freememsubfont(Memsubfont*);
+extern void		    freememsubfont(Memsubfont*);
 extern Point		memsubfontwidth(Memsubfont*, char*);
 extern Memsubfont*	getmemdefont(void);
 
@@ -170,14 +170,18 @@ extern	Memcmap	*	memdefcmap;
 /*
  * Kernel interface
  */
-extern uchar*		attachscreen(Rectangle*, ulong*, int*, int*, int*);
+extern char*    attachscreen(__out Rectangle*,
+                             __out ulong*,
+                             __out int*,
+                             __out int*,
+                             __out int*);
 extern void		memimagemove(void*, void*);
 
 /*
  * Kernel cruft
  */
 extern void		rdb(void);
-extern int		iprint(const char*, ...);
+extern int		iprint(__in_z __format_string const char*, ...);
 #pragma varargck argpos iprint 1
 extern int		drawdebug;
 

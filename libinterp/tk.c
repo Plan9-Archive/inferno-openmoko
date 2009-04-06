@@ -1132,7 +1132,7 @@ tkputwinimage(Tk *tk, Draw_Image *di, int reqid)
 }
 
 void
-tkwreq(TkTop *top, const char *fmt, ...)
+tkwreq(TkTop *top, __in_z __format_string const char *fmt, ...)
 {
     char *buf;
     va_list arg;

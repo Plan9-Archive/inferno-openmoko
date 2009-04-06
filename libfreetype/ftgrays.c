@@ -2128,7 +2128,7 @@
 
 
   static void
-  gray_raster_reset( FT_Raster    raster,
+  gray_raster_reset( __in FT_Raster    raster,
                      const char*  pool_base,
                      long         pool_size )
   {

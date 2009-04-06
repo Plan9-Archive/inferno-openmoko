@@ -14,7 +14,7 @@
 #include <lib9.h>
 
 char*
-smprint(const char *fmt, ...)
+smprint(__in_z __format_string const char *fmt, ...)
 {
 	va_list args;
 	char *p;

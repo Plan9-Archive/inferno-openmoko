@@ -771,7 +771,7 @@ extern  Point       tkanchorpoint(Rectangle, Point, int);
 extern  const char* tkfrac(__inout const char**, int*, TkEnv*);
 extern  const char* tkfracword(TkTop*, __inout const char**, int*, TkEnv*);
 extern  char*       tkfprint(__out_ecount_part(Tkmaxitem, return-v) char*v, int);
-extern  const char* tkvalue(__inout_ecount_opt(1) char**, __in_z const char*, ...);
+extern  const char* tkvalue(__inout_ecount_opt(1) char**, __in_z __format_string const char*, ...);
 extern  void        tkdirty(Tk *);
 extern  void        tksorttable(void);
 extern  const char* tkexec(TkTop*, __in_z const char*, char**);
@@ -838,7 +838,7 @@ extern  void        tkdestroywinimage(Tk*);
 extern  void        tkfreevar(TkTop*, __in_z const char*, int);
 extern  TkVar*      tkmkvar(TkTop*, __in_z const char*, int);
 extern  int         tktolimbo(Channel *, __in_z const char*);
-extern  void        tkwreq(TkTop*, __in_z const char*, ...);
+extern  void        tkwreq(TkTop*, __in_z __format_string const char*, ...);
 extern  void        tkdelpanelimage(TkTop*, Image*);
 
 extern  TkMethod    framemethod;

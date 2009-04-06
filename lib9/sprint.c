@@ -14,7 +14,7 @@
 #include <lib9.h>
 
 int
-sprint(char *buf, const char *fmt, ...)
+sprint(char *buf, __in_z __format_string const char *fmt, ...)
 {
 	int n;
 	uint len;

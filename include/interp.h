@@ -11,7 +11,7 @@ typedef float           DISREAL32;  /* 32 float IEEE754 */
 #define DISAPI(name) void name(F_##name *f)
 
 //#define ASSIGN(place, value) {destroyxx((void**)&(place), (value));}
-#define ASSIGN(place, value) {void* old=(place); (place)=(value); destroy(old);}
+#define ASSIGN(place, value) {void* old=(place); (place)=(value); if(old!=H)destroy(old);}
 /* memory saver: destroy old value before calc new one */
 //#define ASSIGN(place, value) {void* old=(place); (place)=H; destroy(old); (place)=(value); }
 
@@ -111,7 +111,7 @@ union Disdata
     Disdata*    pdisdata;
     Modlink*    pmodlink;
     void*       pvoid;
-    Alt     alt;        /* not a pointer */
+    Alt         alt;        /* not a pointer */
 };
 
 struct Frame
@@ -198,7 +198,7 @@ union Linkpc
 
 struct Link
 {
-    int     sig;
+    int         sig;
     Type*       frame;
     Linkpc      u;
     char*       name;
@@ -229,15 +229,15 @@ typedef void (*TypeDestructor)(Heap*, int);
 typedef void (*TypeMark)(Type*, void*);
 struct Type
 {
-    int     ref;
-    const char* comment;    /* debugging */
+    int             ref;
+    const char*     comment;    /* debugging */
     TypeDestructor  destructor; /* usually freeheap with exception for files and some special types */
-    TypeMark    fnmark;     /* markheap, markarray, marklist, tkmarktop */
-    int     size;
-    int     np;     /* map size in bytes, 0 if there is no pointers */
-    void*       destroy;    /* JITted code */
-    void*       initialize; /* JITted code */
-    char        map[STRUCTALIGN]; /* TODO: int map[] */
+    TypeMark        fnmark;     /* markheap, markarray, marklist, tkmarktop */
+    int             size;
+    int             np;         /* map size in bytes, 0 if there is no pointers */
+    void*           destroy;    /* JITted code */
+    void*           initialize; /* JITted code */
+    char            map[STRUCTALIGN]; /* TODO: int map[] */
 };
 #define PRINT_TYPE(fd,t) {int i; \
     fprint(fd,"<%s %d %02X:", t->comment, t->size, t->np); \
@@ -264,8 +264,8 @@ struct REG
  */
 struct Progs
 {
-    int     id;
-    int     flags;
+    int         id;
+    int         flags;
     Progs*      parent;
     Progs*      child;
     Progs*      sib;
@@ -278,7 +278,7 @@ struct Progs
  */
 struct Prog
 {
-    REG     R;      /* Register set */
+    REG         R;          /* Register set */
     DISINT*     iii;        /* Alt */
     Alt*        aaa;        /* Alt */
     Prog*       link;       /* Run queue */
@@ -348,11 +348,11 @@ struct Modlink
 {
     char*       MP;     /* Module data for this instance */
     Module*     m;      /* The real module */
-    int     compiled;   /* Compiled into native assembler (overwrites m->compiled) */
+    int         compiled;   /* Compiled into native assembler (overwrites m->compiled) */
     Inst*       prog;       /* text segment (overwrites m->prog) */
     Type**      type;       /* Type descriptors (overwrites m->type)*/
     uchar*      data;       /* for dynamic C modules */
-    int     nlinks;     /* ?apparently required by Java */
+    int         nlinks;     /* ?apparently required by Java */
     Modl        links[1];
 };
 
@@ -364,22 +364,22 @@ struct Modlink
  */
 struct Heap
 {
-    int     color /*: 2*/;      /* Allocation color */
-    int     ref;
+    __range(0,2) int         color /*: 2*/;      /* Allocation color */
+    int         ref;
     Type*       t;
     ulong       hprof;      /* heap profiling */
 };
 
 struct  Atidle
 {
-    int     (*fn)(void*);
+    int         (*fn)(void*);
     void*       arg;
     Atidle*     link;
 };
 
 struct Import
 {
-    int     sig;
+    int         sig;
     char*       name;
 };
 
@@ -403,8 +403,11 @@ struct Handler
 #define D2H(x)      ((Heap*)(x)-1)
 #define ADDREF(x)   (++((Heap*)(x)-1)->ref)
 #define DELREF(x)   (--((Heap*)(x)-1)->ref)
-//#define H       ((void*)(-1))
+#ifdef _PREFAST_
 #define H NULL
+#else
+#define H       ((void*)(-1))
+#endif
 #define Setmark(h)  if((h)->color!=mutator) { (h)->color = propagator; nprop=1; }
 #define gclock()    (gchalt++)
 #define gcunlock()  (gchalt--)
@@ -447,7 +450,7 @@ extern  int minvalid;
 
 typedef struct{const char *name; long sig; void (*fn)(void*); int size; int np; char map[16];} Runtab;
 
-extern  int     Dconv(Fmt*);
+extern  int         Dconv(Fmt*);
 extern  void        acquire(void);
 extern  void        addrun(Prog*);
 extern  void        altdone(Alt*, Prog*, Channel*, int);
@@ -457,13 +460,13 @@ extern  Module*     builtinmod(const char*, const Runtab*, int);
 extern  void        cblock(Prog*);
 extern  void        cmovw(void*, void*);
 extern  Channel*    cnewc(Type*, void (*mover)(void*d, void*s, Channel*c), int);
-extern  int     compile(Module*, int, Modlink*);
+extern  int         compile(Module*, int, Modlink*);
 extern  void        cqadd(Progq**, Prog*);
 extern  void        cqdel(Progq**);
 extern  void        cqdelp(Progq**, Prog*);
 extern  void        crecv(Channel*, void*);
 extern  void        csend(Channel*, void*);
-extern  int     csendalt(Channel*, void*, Type *, int);
+extern  int         csendalt(Channel*, void*, Type *, int);
 extern  Prog*       currun(void);
 extern  void        dbgexit(Prog*, int, char*);
 extern  void        dbgxec(Prog*);
@@ -477,7 +480,7 @@ extern  void        destroyimage(ulong);
 extern  void        destroylinks(Module*);
 extern  void        destroystack(REG*);
 extern  void        drawmodinit(void);
-extern  int     dynldable(int);
+extern  int         dynldable(int);
 extern  void        loadermodinit(void);
 extern  Type*       dtype(void (*destructor)(Heap*, int), int, const char*map, int mapsize, const char*comment);
 extern  Module*     dupmod(Module*);
@@ -485,7 +488,7 @@ extern  Module*     dupmod(Module*);
 NORETURN    v_error(__in_z const char*msg, const char*, int, const char*);
 #define error(msg)  v_error(msg, __FILE__, __LINE__, __FUNCTION__)
 
-extern  NORETURN    errorf(const char*, ...);
+extern  NORETURN    errorf(__in_z __format_string const char*, ...);
 extern  void        extend(void);
 extern  void        freedyncode(Module*);
 extern  void        freedyndata(Modlink*);
@@ -496,22 +499,22 @@ extern  void        freestring(Heap*, int);
 extern  void        freetype(Type*);
 extern  void        freetypemodinit(void);
 extern  long        getdbreg();
-extern  int     gfltconv(Fmt*);
+extern  int         gfltconv(Fmt*);
 extern  void        go(Module*);
-extern  int     handler(char*);
+extern  int         handler(char*);
 extern  void        (*heapmonitor)(int, void*, ulong);
-extern  int     heapref(void*);
+extern  int         heapref(void*);
 
 extern  Heap*       v_heap(Type*, const char*, int, const char*);
 extern  Heap*       v_heaparray(Type*, int, const char*, int, const char*);
 extern  Heap*       v_heapz(Type*, const char*, int, const char*);
 extern  Heap*       v_nheap(int, const char*, int, const char*);
-#define heap(t)         v_heap(t, __FILE__, __LINE__, __FUNCTION__)
+#define heap(t)             v_heap(t, __FILE__, __LINE__, __FUNCTION__)
 #define heaparray(t, sz)    v_heaparray(t, sz, __FILE__, __LINE__, __FUNCTION__)
-#define heapz(t)        v_heapz(t, __FILE__, __LINE__, __FUNCTION__)
-#define nheap(n)        v_nheap(n, __FILE__, __LINE__, __FUNCTION__)
+#define heapz(t)            v_heapz(t, __FILE__, __LINE__, __FUNCTION__)
+#define nheap(n)            v_nheap(n, __FILE__, __LINE__, __FUNCTION__)
 
-extern  int     hmsize(void*);
+extern  size_t      hmsize(__in const void*);
 extern  void        incmem(const void*, Type*);
 extern  void        initarray(Type*, Array*);
 extern  void        initmem(const Type*, void*);
@@ -519,18 +522,18 @@ extern  void        irestore(Prog*);
 extern  Prog*       isave(void);
 extern  void        keyringmodinit(void);
 extern  void        killcomm(Progq **p);
-extern  int     killprog(Prog*, char*);
-extern  int     killgrp(Prog*, char*);
+extern  int         killprog(Prog*, char*);
+extern  int         killgrp(Prog*, char*);
 extern  Modlink*    linkmod(Module*, Import*, int);
 extern  Modlink*    mklinkmod(Module*, int);
 extern  Module*     load(char*);
 extern  Module*     lookmod(char*);
 extern  long        magic(void);
 extern  void        markarray(Type*, Array*);
-extern  void        markchan(Type*, void*);
+//extern  void        markchan(Type*, void*);
 extern  void        markheap(Type*, void*);
 extern  void        marklist(Type*, List*);
-extern  void        markmodl(Type*, void*);
+//extern  void        markmodl(Type*, void*);
 extern  void        mathmodinit(void);
 extern  Array*      mem2array(const void*, int);
 extern  void        mlink(Module*, Link*, const char*, int, int, Type*);
@@ -540,7 +543,7 @@ extern  DISINT      modstatus(REG*, char*, int);
 extern  void        moverp(void*d, void*s, Channel*c);
 extern  void        movertmp(void*d, void*s, Channel*c);
 extern  void        movtmpsafe(void);
-extern  int     mustbesigned(const char *, const char*, ulong, const Dir*);
+extern  int         mustbesigned(const char *, const char*, ulong, const Dir*);
 extern  Module*     newmod(const char*);
 extern  Module*     newdyncode(int, const char*, Dir*);
 extern  void        newdyndata(Modlink*);
@@ -549,7 +552,7 @@ extern  void        newmp(void*, void*, Type*);
 extern  Prog*       newprog(Prog*, Modlink*);
 extern  void        newstack(Prog*);
 extern  void        noptrs(Type*, void*);
-extern  int     nprog(void);
+extern  int         nprog(void);
 extern  void        opinit(void);
 extern  Module*     parsemod(const char*, const char*, ulong, const Dir*);
 extern  Module*     parsedmod(char*, int, ulong, Qid);
@@ -568,16 +571,16 @@ extern  void        retstr(const char*, String**);
 extern  void        rungc(Prog*);
 extern  void        runtime(Module*, Link*, const char*, int, void(*)(void*), Type*);
 extern  void        safemem(void*, Type*, void (*)(void*));
-extern  int     segflush(void *, ulong);
-extern  int     _isend(Channel *c, void *v);
+extern  int         segflush(void *, ulong);
+extern  int         _isend(Channel *c, void *v);
 extern  void        setdbreg(uchar*);
 extern  uchar*      setdbloc(uchar*);
-extern  void        seterror(char*, ...);
+extern  void        seterror(__in_z __format_string const char*, ...);
 extern  void        sethints(String*, int);
 extern  String*     splitc(String**, int);
 extern  uchar*      stack(Frame*);
-extern  int     stringblen(String*);
-extern  int     stringcmp(const String*, const String*);
+extern  int         stringblen(String*);
+extern  int         stringcmp(const String*, const String*);
 extern  String*     stringdup(const String*);
 extern  String*     stringheap(int, int, int, int);
 extern  char*       syserr(char*, char*, Prog*);
@@ -586,21 +589,21 @@ extern  void        sysmodinit(void);
 extern  void        tellsomeone(Prog*, char*);
 extern  void        tkmodinit(void);
 extern  void        unload(Module*);
-extern  int     verifysigner(const char*, int, const char*, ulong);
+extern  int         verifysigner(const char*, int, const char*, ulong);
 extern  void        xec(Prog*);
-extern  int     xecalt(int, Alt *a, DISINT*ret);
-extern  int     xprint(Prog*, const void*, const void*, String*, char*, int);
-extern  int     bigxprint(Prog*, const void*, const void*, String*, char**, int);
+extern  int         xecalt(int, Alt *a, DISINT*ret);
+extern  int         xprint(Prog*, const void*, const void*, String*, char*, int);
+extern  int         bigxprint(Prog*, const void*, const void*, String*, char**, int);
 extern  void        iyield(void);
 extern  String*     newrunes(int);
 extern  String*     newstring(int);
-extern  int     runeslen(const Rune*);
-extern  String*     c2string(const char*, int);
+extern  size_t      runeslen(__in_z const Rune*);
+extern  String*     c2string(__in_ecount(len) const char*, int len);
 extern  char*       string2c(String*);
 extern  List*       cons(ulong, List**);
 extern  String*     slicer(ulong, ulong, const String*);
 extern  String*     addstring(String*, String*, int);
-extern  int     brpatch(Inst*, Module*);
+extern  int         brpatch(Inst*, Module*);
 extern  void        readimagemodinit(void);
 
 

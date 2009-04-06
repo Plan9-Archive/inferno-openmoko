@@ -61,7 +61,7 @@ static struct {
 
 static	QLock	reglock;
 
-extern Rune	*widen(const char*);
+extern __checkReturn Rune* widen(__in_z const char*);
 static	Value*	getregistry(HKEY, Rune*, Rune*);
 static int nprocs(void);
 
