@@ -3,7 +3,7 @@
 #include <kernel.h>
 
 Subfont*
-readsubfonti(Display*d, char *name, int fd, Image *ai, int dolock)
+readsubfonti(Display*d, const char *name, int fd, Image *ai, int dolock)
 {
 	char hdr[3*12+4+1];
 	int n;
@@ -52,7 +52,7 @@ readsubfonti(Display*d, char *name, int fd, Image *ai, int dolock)
 }
 
 Subfont*
-readsubfont(Display*d, char *name, int fd, int dolock)
+readsubfont(Display*d, const char *name, int fd, int dolock)
 {
 	return readsubfonti(d, name, fd, nil, dolock);
 }

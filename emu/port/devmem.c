@@ -323,8 +323,8 @@ memclose(Chan *c)
 
 }
 
-static long
-memread(Chan *c, char *va, long count, vlong offset)
+static size_t
+memread(Chan *c, __out_ecount(count) char *va, size_t count, vlong offset)
 {
     char *m;
     char *e, *s;
@@ -433,8 +433,8 @@ memread(Chan *c, char *va, long count, vlong offset)
     }
 }
 
-static long
-memwrite(Chan *c, const char *va, long count, vlong offset)
+static size_t
+memwrite(Chan *c, __in_ecount(n) const char *va, size_t count, vlong offset)
 {
     USED(offset);
     USED(count);

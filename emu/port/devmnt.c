@@ -632,8 +632,8 @@ mntwstat(Chan *c, char *dp, int n)
 	return n;
 }
 
-static long
-mntread(Chan *c, char *buf, long n, vlong off)
+static size_t
+mntread(Chan *c, __out_ecount(n) char *buf, size_t n, vlong off)
 {
 	char *p = buf;
 	char *e;
@@ -675,8 +675,8 @@ mntread(Chan *c, char *buf, long n, vlong off)
 	return n;
 }
 
-static long
-mntwrite(Chan *c, const char *buf, long n, vlong off)
+static size_t
+mntwrite(Chan *c, __in_ecount(n) const char *buf, size_t n, vlong off)
 {
 	return mntrdwr(Twrite, c, (char*)buf, n, off); /* BUG BUG? */
 }
@@ -1146,7 +1146,7 @@ mntchk(Chan *c)
 	m = c->mchan->mux;
 
 	if(m == nil)
-		print("mntchk 2: nil mux c %s c->mchan %s \n", c2name(c), c2name(c->mchan));
+		panic("mntchk 2: nil mux c %s c->mchan %s \n", c2name(c), c2name(c->mchan));
 
 	/*
 	 * Was it closed and reused (was error(Eshutdown); now, it can't happen)

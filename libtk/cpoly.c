@@ -71,10 +71,9 @@ tkcvspolysize(TkCitem *i)
 	i->p.bb = insetrect(i->p.bb, -w);
 }
 
-char*
-tkcvspolycreat(Tk* tk, char *arg, char **val)
+TH(tkcvspolycreat)
 {
-	char *e;
+	const char* e;
 	TkCpoly *p;
 	TkCitem *i;
 	TkCanvas *c;
@@ -131,8 +130,8 @@ tkcvspolycreat(Tk* tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tkcvspolycget(TkCitem *i, char *arg, char **val)
+const char*
+tkcvspolycget(TkCitem *i, __in_z const char *arg, char **val)
 {
 	TkOptab tko[3];
 	TkCpoly *p = TKobj(TkCpoly, i);
@@ -146,10 +145,10 @@ tkcvspolycget(TkCitem *i, char *arg, char **val)
 	return tkgencget(tko, arg, val, i->env->top);
 }
 
-char*
-tkcvspolyconf(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvspolyconf(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
-	char *e;
+	const char *e;
 	TkOptab tko[3];
 	TkCpoly *p = TKobj(TkCpoly, i);
 
@@ -180,7 +179,7 @@ tkcvspolyfree(TkCitem *i)
 }
 
 void
-tkcvspolydraw(Image *img, TkCitem *i, TkEnv *pe)
+tkcvspolydraw(__in_ecount(1) const Image *img, TkCitem *i, TkEnv *pe)
 {
 	int w;
 	TkEnv *e;
@@ -216,10 +215,10 @@ tkcvspolydraw(Image *img, TkCitem *i, TkEnv *pe)
 	}
 }
 
-char*
-tkcvspolycoord(TkCitem *i, char *arg, int x, int y)
+const char*
+tkcvspolycoord(TkCitem *i, __in_z const char *arg, int x, int y)
 {
-	char *e;
+	const char* e;
 	TkCpoints p;
 
 	if(arg == nil) {

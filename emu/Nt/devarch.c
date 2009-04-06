@@ -151,8 +151,8 @@ archclose(Chan* c)
 		free(c->aux.value);
 }
 
-static long
-archread(Chan* c, char* a, long n, vlong offset)
+static size_t
+archread(Chan* c, __out_ecount(n) char* a, size_t n, vlong offset)
 {
 	char *p;
 	Value *v;
@@ -262,8 +262,8 @@ archread(Chan* c, char* a, long n, vlong offset)
 	return n;
 }
 
-static long
-archwrite(Chan* c, const char* a, long n, vlong offset)
+static size_t
+archwrite(Chan* c, __out_ecount(n) const char* a, size_t n, vlong offset)
 {
 	Value *v;
 	int i;

@@ -128,7 +128,7 @@ handler(char *estr)
             str = 1;
             continue;
         }
-        assert(f->ml != nil);
+        assert(nil==H || f->ml != nil);
         if(f->ml != H)
             m = f->ml;
         if(m->compiled)
@@ -164,7 +164,7 @@ found:
         R.FP = fp0->parent;
 
         ml = fp0->ml;
-        assert(ml != nil);
+        assert(nil==H || ml != nil);
         if(fp0->ml!=H)
             ADDREF(fp0->ml);
         ADDREF(fp0->parent);

@@ -125,7 +125,7 @@ initbeam(TkGridbeam *beam, int n)
 		beam[i].maxsize = 0x7fffffff;
 }
 
-static char*
+static const char*
 ensuregridsize(TkGrid *grid, Point dim)
 {
 	TkGridcell **cells, *cellrow;
@@ -233,11 +233,11 @@ insbeams(TkGridbeam *beam, int nb, int x, int n)
 	initbeam(beam+x, n);
 }
 
-static char*
+static const char*
 insrows(TkGrid *grid, int y0, int n)
 {
 	Point olddim;
-	char *e;
+	const char *e;
 	TkGridcell **cells, *tmp;
 	int y;
 
@@ -265,13 +265,13 @@ insrows(TkGrid *grid, int y0, int n)
 	return nil;
 }
 
-static char*
+static const char*
 inscols(TkGrid *grid, int x0, int n)
 {
 	TkGridcell **cells;
 	Point olddim;
 	int y;
-	char *e;
+	const char *e;
 
 	olddim = grid->dim;
 	if(x0 > olddim.x){
@@ -468,7 +468,7 @@ parsegridindex(TkGridbeam *beam, int blen, char *s)
 	return -1;
 }
 
-static char*
+static const char*
 tkgridconfigure(TkTop *t, TkGridparam *p, TkName *names)
 {
 	TkGrid *grid;
@@ -477,7 +477,7 @@ tkgridconfigure(TkTop *t, TkGridparam *p, TkName *names)
 	Tk *tkf, *tkp;
 	Point dim, pos, q, span, startpos;
 	int maxcol, c, i, j, x;
-	char *e;
+	const char *e;
 
 	if(names == nil)
 		return nil;
@@ -690,8 +690,8 @@ tkgriddelslave(Tk *tk)
 	}
 }
 
-char*
-tkgetgridmaster(TkTop *t, char **arg, char *buf, char *ebuf, Tk **master)
+const char*
+tkgetgridmaster(TkTop *t, const char **arg, char *buf, char *ebuf, Tk **master)
 {
 	TkGrid *grid;
 
@@ -749,12 +749,12 @@ findslave(TkGrid *grid, Tk *tk, Point *pt)
 			}
 	return 0;
 }
-static char*
-tkgridcellinfo(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
+static const char*
+tkgridcellinfo(TkTop *t, __in_z const char *arg, char **val, char *buf, char *ebuf)
 {
 	/* grid cellinfo master x y */
 	Tk *master;
-	char *e;
+	const char *e;
 	Point p;
 	TkGrid *grid;
 	TkGridcell **cells;
@@ -786,12 +786,12 @@ tkgridcellinfo(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
 		cells[p.y][p.x].span.x, cells[p.y][p.x].span.y);
 }
 
-static char*
-tkgridlocation(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
+static const char*
+tkgridlocation(TkTop *t, __in_z const char *arg, char **val, char *buf, char *ebuf)
 {
 	/* grid location master x y */
 	Tk *master;
-	char *e;
+	const char *e;
 	Point p;
 	int col, row;
 	TkGrid *grid;
@@ -819,8 +819,8 @@ tkgridlocation(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
 	return tkvalue(val, "%d %d", col, row);
 }
 
-static char*
-tkgridinfo(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
+static const char*
+tkgridinfo(TkTop *t, __in_z const char *arg, char **val, char *buf, char *ebuf)
 {
 	Tk *tk;
 	TkGrid *grid;
@@ -848,8 +848,8 @@ Found:
 		tk->master->name->name, x, y, grid->cells[y][x].span.x, grid->cells[y][x].span.y);
 }
 
-static char*
-tkgridforget(TkTop *t, char *arg, char *buf, char *ebuf)
+static const char*
+tkgridforget(TkTop *t, __in_z const char *arg, char *buf, char *ebuf)
 {
 	Tk *tk;
 	for(;;){
@@ -869,15 +869,15 @@ tkgridforget(TkTop *t, char *arg, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-tkgridslaves(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
+static const char*
+tkgridslaves(TkTop *t, __in_z const char *arg, char **val, char *buf, char *ebuf)
 {
 	Tk *master, *tk;
 	char *fmt;
 	int i, isrow, index;
 	TkGrid *grid;
 	TkGridcell *cell;
-	char *e;
+	const char *e;
 	e = tkgetgridmaster(t, &arg, buf, ebuf, &master);
 	if(e != nil || master->grid == nil)
 		return e;
@@ -937,8 +937,8 @@ tkgridslaves(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-tkgriddelete(TkTop *t, char *arg, char *buf, char *ebuf, int delrow)
+static const char*
+tkgriddelete(TkTop *t, __in_z const char *arg, char *buf, char *ebuf, int delrow)
 {
 	Tk *master, **l, *f;
 	TkGrid *grid;
@@ -946,7 +946,7 @@ tkgriddelete(TkTop *t, char *arg, char *buf, char *ebuf, int delrow)
 	int blen, i0, i1, x, y;
 	Point dim;
 	TkGridcell **cells;
-	char *e;
+	const char *e;
 
 	/*
 	 * grid (columndelete|rowdelete) master index0 ?index1?
@@ -1017,15 +1017,15 @@ tkgriddelete(TkTop *t, char *arg, char *buf, char *ebuf, int delrow)
 }
 
 
-static char*
-tkgridinsert(TkTop *t, char *arg, char *buf, char *ebuf, int insertrow)
+static const char*
+tkgridinsert(TkTop *t, __in_z const char *arg, char *buf, char *ebuf, int insertrow)
 {
 	int index, count;
 	Point dim;
 	Tk *master;
 	TkGrid *grid;
 	int gotarg;
-	char *e;
+	const char *e;
 
 	/*
 	 * grid (rowinsert|columninsert) master index ?count?
@@ -1073,8 +1073,8 @@ tkgridinsert(TkTop *t, char *arg, char *buf, char *ebuf, int insertrow)
 /*
  * (rowconfigure|columnconfigure) master index ?-option value ...?
  */
-static char*
-tkbeamconfigure(TkTop *t, char *arg, int isrow)
+static const char*
+tkbeamconfigure(TkTop *t, __in_z const char *arg, int isrow)
 {
 	TkBeamparam p;
 	TkOptab tko[2];
@@ -1084,7 +1084,7 @@ tkbeamconfigure(TkTop *t, char *arg, int isrow)
 	TkGrid *grid;
 	TkGridbeam *beam;
 	Point dim;
-	char *e;
+	const char *e;
 
 	p.equalise = BoolX;
 	p.name = nil;
@@ -1164,12 +1164,12 @@ Error:
 	return e;
 }
 
-char*
-tkgridsize(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
+const char*
+tkgridsize(TkTop *t, __in_z const char *arg, char **val, char *buf, char *ebuf)
 {
 	Tk *master;
 	TkGrid *grid;
-	char *e;
+	const char *e;
 
 	e = tkgetgridmaster(t, &arg, buf, ebuf, &master);
 	if(e != nil)
@@ -1181,13 +1181,13 @@ tkgridsize(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
 		return tkvalue(val, "%d %d", grid->dim.x, grid->dim.y);
 }
 
-char*
-tkgridbbox(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
+const char*
+tkgridbbox(TkTop *t, __in_z const char *arg, char **val, char *buf, char *ebuf)
 {
 	Point p0, p1;
 	Tk *master;
 	TkGrid *grid;
-	char *e;
+	const char *e;
 	int gotarg;
 	Point dim;
 	Rectangle r;
@@ -1228,8 +1228,8 @@ tkgridbbox(TkTop *t, char *arg, char **val, char *buf, char *ebuf)
 	return tkvalue(val, "%d %d %d %d", r.min.x, r.min.y, r.max.x, r.max.y);
 }
 
-char*
-tkgridindex(TkTop *t, char *arg, char **val, char *buf, char *ebuf, int isrow)
+const char*
+tkgridindex(TkTop *t, __in_z const char *arg, char **val, char *buf, char *ebuf, int isrow)
 {
 	Tk *master;
 	TkGrid *grid;
@@ -1276,13 +1276,14 @@ tkfreegrid(TkGrid *grid)
 	free(grid);
 }
 
-char*
-tkgrid(TkTop *t, char *arg, char **val)
+const char*
+tkgrid(TkTop *t, __in_z const char *arg, char **val)
 {
 	TkGridparam *p;
 	TkOptab tko[2];
 	TkName *names;
-	char *e, *w, *buf;
+	const char *e, *w;
+    char *buf;
 
 	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)

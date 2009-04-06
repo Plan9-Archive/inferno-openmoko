@@ -77,11 +77,11 @@ lineheight(Tk *tk)
 	return tk->env->font->height+2*(l->sborderwidth+tk->highlightwidth);
 }
 
-char*
-tklistbox(TkTop *t, char *arg, char **ret)
+const char*
+tklistbox(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
-	char *e;
+	const char *e;
 	TkName *names;
 	TkListbox *tkl;
 	TkOptab tko[3];
@@ -130,8 +130,7 @@ tklistbox(TkTop *t, char *arg, char **ret)
 	return tkvalue(ret, "%s", tk->name->name);
 }
 
-char*
-tklistbcget(Tk *tk, char *arg, char **val)
+TH(tklistbcget)
 {
 	TkOptab tko[3];
 	TkListbox *tkl = TKobj(TkListbox, tk);
@@ -161,7 +160,7 @@ tkfreelistb(Tk *tk)
 		free(l->yscroll);
 }
 
-char*
+const char*
 tkdrawlistb(Tk *tk, Point orig)
 {
 	Point p;
@@ -276,7 +275,8 @@ tklistsv(Tk *tk)
 {
 	TkListbox *l;
 	int nl, lh, top, bot;
-	char val[Tkminitem], cmd[Tkmaxitem], *v, *e;
+	char val[Tkminitem], cmd[Tkmaxitem], *v;
+    const char *e;
 
 	l = TKobj(TkListbox, tk);
 	if(l->yscroll == nil)
@@ -305,7 +305,8 @@ void
 tklistsh(Tk *tk)
 {
 	int nl, top, bot;
-	char val[Tkminitem], cmd[Tkmaxitem], *v, *e;
+	char val[Tkminitem], cmd[Tkmaxitem], *v;
+    const char *e;
 	TkListbox *l = TKobj(TkListbox, tk);
 
 	if(l->xscroll == nil)
@@ -370,10 +371,9 @@ listbresize(Tk *tk)
 	+yview
 */
 
-char*
-tklistbconf(Tk *tk, char *arg, char **val)
+TH(tklistbconf)
 {
-	char *e;
+	const char *e;
 	TkGeom g;
 	int bd, sbw, hlw;
 	TkOptab tko[3];
@@ -423,8 +423,7 @@ entryactivate(Tk *tk, int index)
 	tk->dirty = tkrect(tk, 1);
 }
 
-char*
-tklistbactivate(Tk *tk, char *arg, char **val)
+TH(tklistbactivate)
 {
 	int index;
 	char buf[Tkmaxitem];
@@ -439,8 +438,7 @@ tklistbactivate(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tklistbnearest(Tk *tk, char *arg, char **val)
+TH(tklistbnearest)
 {
 	int lh, y, index;
 	TkListbox *l = TKobj(TkListbox, tk);
@@ -453,8 +451,7 @@ tklistbnearest(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", index);
 }
 
-char*
-tklistbindex(Tk *tk, char *arg, char **val)
+TH(tklistbindex)
 {
 	int index;
 	char buf[Tkmaxitem];
@@ -465,8 +462,7 @@ tklistbindex(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", index);
 }
 
-char*
-tklistbsize(Tk *tk, char *arg, char **val)
+TH(tklistbsize)
 {
 	TkListbox *l = TKobj(TkListbox, tk);
 
@@ -474,8 +470,7 @@ tklistbsize(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", l->nitem);
 }
 
-char*
-tklistbinsert(Tk *tk, char *arg, char **val)
+TH(tklistbinsert)
 {
 	int n, index;
 	TkListbox *l;
@@ -541,7 +536,7 @@ tklistbinsert(Tk *tk, char *arg, char **val)
 }
 
 int
-tklistbrange(Tk *tk, char *arg, int *s, int *e)
+tklistbrange(Tk *tk, __in_z const char *arg, int *s, int *e)
 {
 	char buf[Tkmaxitem];
 
@@ -560,8 +555,7 @@ tklistbrange(Tk *tk, char *arg, int *s, int *e)
 	return 0;
 }
 
-char*
-tklistbselection(Tk *tk, char *arg, char **val)
+TH(tklistbselection)
 {
 	TkTop *t;
 	TkLentry *f;
@@ -621,8 +615,7 @@ tklistbselection(Tk *tk, char *arg, char **val)
 	return TkBadcm;
 }
 
-char*
-tklistbdelete(Tk *tk, char *arg, char **val)
+TH(tklistbdelete)
 {
 	TkLentry *e, **el;
 	int start, end, indx, bh;
@@ -667,11 +660,10 @@ tklistbdelete(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tklistbget(Tk *tk, char *arg, char **val)
+TH(tklistbget)
 {
 	TkLentry *e;
-	char *r, *fmt;
+	const char *r, *fmt;
 	int start, end, indx;
 	TkListbox *l = TKobj(TkListbox, tk);
 
@@ -693,12 +685,11 @@ tklistbget(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tklistbcursel(Tk *tk, char *arg, char **val)
+TH(tklistbcursel)
 {
 	int indx;
 	TkLentry *e;
-	char *r, *fmt;
+    const char *r, *fmt;
 	TkListbox *l = TKobj(TkListbox, tk);
 
 	USED(arg);
@@ -716,12 +707,13 @@ tklistbcursel(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tklistbview(Tk *tk, char *arg, char **val, int nl, int *posn, int max)
+static const char*
+tklistbview(Tk *tk, __in_z const char *arg, char **val, int nl, int *posn, int max)
 {
 	int top, bot, amount;
 	char buf[Tkmaxitem];
-	char *v, *e;
+	char *v;
+    const char *e;
 
 	top = 0;
 	if(*arg == '\0') {
@@ -804,8 +796,7 @@ entrysee(Tk *tk, int index)
 	return index;
 }
 
-char*
-tklistbsee(Tk *tk, char *arg, char **val)
+TH(tklistbsee)
 {
 	int index;
 	char buf[Tkmaxitem];
@@ -820,11 +811,10 @@ tklistbsee(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tklistbyview(Tk *tk, char *arg, char **val)
+TH(tklistbyview)
 {
 	int bh;
-	char *e;
+	const char *e;
 	TkListbox *l = TKobj(TkListbox, tk);
 
 	bh = tk->act.height/lineheight(tk);	/* Box height */
@@ -833,10 +823,9 @@ tklistbyview(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-char*
-tklistbxview(Tk *tk, char *arg, char **val)
+TH(tklistbxview)
 {
-	char *e;
+	const char *e;
 	TkListbox *l = TKobj(TkListbox, tk);
 
 	e = tklistbview(tk, arg, val, tk->act.width, &l->xdelta, l->nwidth);
@@ -947,8 +936,7 @@ autoselect_listb(Tk *tk, const char *v, int cancelled)
 	tkupdate(tk->env->top);
 }
 
-static char*
-tklistbbutton1p(Tk *tk, char *arg, char **val)
+static TH(tklistbbutton1p)
 {
 	TkListbox *l = TKobj(TkListbox, tk);
 	int y, indx;
@@ -967,8 +955,7 @@ tklistbbutton1p(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-char *
-tklistbbutton1r(Tk *tk, char *arg, char **val)
+TH(tklistbbutton1r)
 {
 	USED(arg);
 	USED(val);
@@ -976,8 +963,7 @@ tklistbbutton1r(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tklistbbutton1m(Tk *tk, char *arg, char **val)
+TH(tklistbbutton1m)
 {
 	int y, eh, ne;
 	USED(val);
@@ -991,8 +977,7 @@ tklistbbutton1m(Tk *tk, char *arg, char **val)
 	return dragto(tk, y);
 }
 
-char*
-tklistbkey(Tk *tk, char *arg, char **val)
+TH(tklistbkey)
 {
 	TkListbox *l = TKobj(TkListbox, tk);
 	TkLentry *e;
@@ -1039,22 +1024,22 @@ static
 TkCmdtab tklistcmd[] =
 {
 	{"activate",		tklistbactivate},
-	{"cget",		tklistbcget},
+	{"cget",		    tklistbcget},
 	{"configure",		tklistbconf},
 	{"curselection",	tklistbcursel},
-	{"delete",		tklistbdelete},
-	{"get",			tklistbget},
-	{"index",		tklistbindex},
-	{"insert",		tklistbinsert},
-	{"nearest",		tklistbnearest},
+	{"delete",		    tklistbdelete},
+	{"get",			    tklistbget},
+	{"index",		    tklistbindex},
+	{"insert",		    tklistbinsert},
+	{"nearest",		    tklistbnearest},
 	{"selection",		tklistbselection},
-	{"see",			tklistbsee},
-	{"size",		tklistbsize},
-	{"xview",		tklistbxview},
-	{"yview",		tklistbyview},
+	{"see",			    tklistbsee},
+	{"size",		    tklistbsize},
+	{"xview",		    tklistbxview},
+	{"yview",		    tklistbyview},
 	{"tkListbButton1P",	tklistbbutton1p},
 	{"tkListbButton1R",	tklistbbutton1r},
-	{"tkListbButton1MP",	tklistbbutton1m},
+	{"tkListbButton1MP",tklistbbutton1m},
 	{"tkListbKey",		tklistbkey},
 	{nil}
 };

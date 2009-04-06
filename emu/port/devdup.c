@@ -97,8 +97,8 @@ dupclose(Chan *c)
 	USED(c);
 }
 
-static long
-dupread(Chan *c, char *va, long n, vlong offset)
+static size_t
+dupread(Chan *c, __out_ecount(n) char *va, size_t n, vlong offset)
 {
 	char buf[256];
 	int fd, twicefd;
@@ -122,8 +122,8 @@ dupread(Chan *c, char *va, long n, vlong offset)
 	return 0;
 }
 
-static long
-dupwrite(Chan *c, const char *a, long n, vlong o)
+static size_t
+dupwrite(Chan *c, __in_ecount(n) const char *a, size_t n, vlong o)
 {
 	USED(c); USED(a); USED(n); USED(o);
 	panic("dupwrite");

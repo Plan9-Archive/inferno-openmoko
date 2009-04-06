@@ -103,8 +103,8 @@ rootclose(Chan *c)
 	USED(c);
 }
 
-static long
-rootread(Chan *c, char *buf, long n, vlong offset)
+static size_t
+rootread(Chan *c, __out_ecount(n) char *buf, size_t n, vlong offset)
 {
 	ulong p, len;
 	char *data;
@@ -122,8 +122,8 @@ rootread(Chan *c, char *buf, long n, vlong offset)
 	return n;
 }
 
-static long
-rootwrite(Chan *c, const char *a, long n, vlong off)
+static size_t
+rootwrite(Chan *c, __in_ecount(n) const char *a, size_t n, vlong off)
 {
 	USED(c); USED(a); USED(n); USED(off);
 	error(Eperm);

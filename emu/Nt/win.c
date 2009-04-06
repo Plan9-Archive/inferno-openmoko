@@ -751,6 +751,8 @@ clipwrite(char *buf)
 	if(h == NULL)
 		error(Enovmem);
 	rp = (Rune *)GlobalLock(h);
+    if(rp == NULL)
+		error(Enovmem);
 	p = buf;
 	e = p+n;
 	while(p<e)
@@ -764,11 +766,12 @@ clipwrite(char *buf)
 	if(h == NULL)
 		error(Enovmem);
 	p = (char*)GlobalLock(h);
-	memmove(p, buf, n);
-	p[n] = 0;
-	GlobalUnlock(h);
-
-	SetClipboardData(CF_TEXT, h);
+    if(p == NULL)
+        error(Enovmem);
+    memmove(p, buf, n);
+    p[n] = 0;
+    GlobalUnlock(h);
+    SetClipboardData(CF_TEXT, h);
 
 	CloseClipboard();
 	return n;

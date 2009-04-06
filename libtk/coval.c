@@ -58,10 +58,9 @@ tkcvsovalsize(TkCitem *i)
 	i->p.bb = insetrect(i->p.bb, -w);
 }
 
-char*
-tkcvsovalcreat(Tk* tk, char *arg, char **val)
+TH(tkcvsovalcreat)
 {
-	char *e;
+	const char* e;
 	TkCoval *o;
 	TkCitem *i;
 	TkCanvas *c;
@@ -117,8 +116,8 @@ tkcvsovalcreat(Tk* tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tkcvsovalcget(TkCitem *i, char *arg, char **val)
+const char*
+tkcvsovalcget(TkCitem *i, __in_z const char *arg, char **val)
 {
 	TkOptab tko[3];
 	TkCoval *o = TKobj(TkCoval, i);
@@ -132,10 +131,10 @@ tkcvsovalcget(TkCitem *i, char *arg, char **val)
 	return tkgencget(tko, arg, val, i->env->top);
 }
 
-char*
-tkcvsovalconf(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvsovalconf(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
-	char *e;
+	const char *e;
 	TkOptab tko[3];
 	TkCoval *o = TKobj(TkCoval, i);
 
@@ -165,7 +164,7 @@ tkcvsovalfree(TkCitem *i)
 }
 
 void
-tkcvsovaldraw(Image *img, TkCitem *i, TkEnv *pe)
+tkcvsovaldraw(__in_ecount(1) const Image *img, TkCitem *i, TkEnv *pe)
 {
 	Point c;
 	TkEnv *e;
@@ -200,10 +199,10 @@ tkcvsovaldraw(Image *img, TkCitem *i, TkEnv *pe)
 	ellipse(img, c, dx, dy, w, tkgc(e, TkCforegnd), c);
 }
 
-char*
-tkcvsovalcoord(TkCitem *i, char *arg, int x, int y)
+const char*
+tkcvsovalcoord(TkCitem *i, __in_z const char *arg, int x, int y)
 {
-	char *e;
+	const char* e;
 	TkCpoints p;
 
 	if(arg == nil) {

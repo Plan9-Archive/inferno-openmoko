@@ -23,11 +23,29 @@
 #endif
 
 #ifndef _MSC_VER
+#define __notnull
 #define __in
 #define __in_z
+#define __in_z_opt
 #define __out_z
 #define __format_string
 #define __out_bcount_z(x)
+
+#define __in_ecount(a)
+#define __in_ecount_z(a)
+#define __in_ecount_opt(a)
+
+#define __out_ecount_part(a,b)
+#define __out_ecount_full(a)
+#define __out_ecount_full_z(a)
+#define __out_ecount_z(a)
+#define __out_ecount(a)
+
+#define __inout_ecount_opt(a)
+#define __inout_ecount_full(a)
+#define __inout_ecount(a)
+#define __inout
+#define __checkReturn 
 #endif
 
 #define getwd   infgetwd
@@ -56,7 +74,7 @@ typedef struct SrvFile  SrvFile;
  * 4146 unary - on unsigned type
  * 4996 `deprecated' functions: they often suggest non-portable replacements
  */
-#pragma warning( disable : 4305 4244 4102 4761 4018 4245 4244 4068 4090 4554 4146 4996 4237)
+#pragma warning( disable : 4305 4244 4102 4761 4018 4245 4244 4068 4090 4554 4146 4996 4237 6244)
 
 #define NORETURN __declspec(noreturn) void
 
@@ -110,39 +128,39 @@ enum
 /*
  * rune routines
  */
-extern  int runetochar(char*, const Rune*);
-extern  int chartorune(Rune*, const char*);
-extern  int runelen(long);
-extern  int runenlen(const Rune*, int);
-extern  int fullrune(const char*, int);
-extern  int utflen(const char*);
-extern  int utfnlen(const char*, long);
+extern  int         runetochar(__out_ecount_part(3, return) char*, __in_ecount(1) const Rune*);
+extern  int         chartorune(__out_ecount_full(1) Rune*, __in_ecount(3) const char*);
+extern  int         runelen(long);
+extern  int         runenlen(const Rune*, int);
+extern  int         fullrune(const char*, int);
+extern  int         utflen(const char*);
+extern  int         utfnlen(const char*, long);
 extern  /*const*/ char* utfrune(/*const*/ char*, long);
 extern  /*const*/ char* utfrrune(/*const*/ char*, long);
 extern  const char* utfutf(const char*, const char*);
-extern  char*   utfecpy(char*, char*, const char*);
+extern  char*       utfecpy(char*, char*, const char*);
 
 extern  Rune*       runestrcat(Rune*, const Rune*);
 extern  const Rune* runestrchr(const Rune*, Rune);
-extern  int     runestrcmp(const Rune*, const Rune*);
+extern  int         runestrcmp(const Rune*, const Rune*);
 extern  Rune*       runestrcpy(Rune*, const Rune*);
 extern  Rune*       runestrncpy(Rune*, const Rune*, long);
 extern  Rune*       runestrecpy(Rune*, const Rune*, const Rune*);
 extern  Rune*       runestrdup(const Rune*);
 extern  Rune*       runestrncat(Rune*, const Rune*, long);
-extern  int     runestrncmp(Rune*, Rune*, long);
+extern  int         runestrncmp(Rune*, Rune*, long);
 extern  const Rune* runestrrchr(const Rune*, Rune);
 extern  long        runestrlen(const Rune*);
 extern  const Rune* runestrstr(const Rune*, const Rune*);
 
-extern  Rune    tolowerrune(Rune);
-extern  Rune    totitlerune(Rune);
-extern  Rune    toupperrune(Rune);
-extern  int isalpharune(Rune);
-extern  int islowerrune(Rune);
-extern  int isspacerune(Rune);
-extern  int istitlerune(Rune);
-extern  int isupperrune(Rune);
+extern  Rune        tolowerrune(Rune);
+extern  Rune        totitlerune(Rune);
+extern  Rune        toupperrune(Rune);
+extern  int         isalpharune(Rune);
+extern  int         islowerrune(Rune);
+extern  int         isspacerune(Rune);
+extern  int         istitlerune(Rune);
+extern  int         isupperrune(Rune);
 
 /*
  * malloc
@@ -205,7 +223,7 @@ extern  char*   v_strdup(const char*, const char*, int, const char*);
              (GBIT8I(p,(i)+1)<<16) |\
              (GBIT8I(p,(i)+2)<<8) |\
              (GBIT8I(p,(i)+3)<<0))
-#define GBIT64IBE(p,i)  (((u64int)GBIT32I(p,(i)+0)<<32) |\
+#define GBIT64IBE(p,i)  ((((u64int)GBIT32I(p,(i)+0))<<32) |\
              (GBIT32I(p,(i)+4)<<0))
 
 #define GBIT16(p)   GBIT16I(p,0)

@@ -143,10 +143,9 @@ tkcvstextsize(TkCitem *i)
 	t->anchorp = subpt(o, i->p.drawpt[0]);
 }
 
-char*
-tkcvstextcreat(Tk* tk, char *arg, char **val)
+TH(tkcvstextcreat)
 {
-	char *e;
+	const char* e;
 	TkCtext *t;
 	TkCitem *i;
 	TkCanvas *c;
@@ -213,8 +212,8 @@ tkcvstextcreat(Tk* tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tkcvstextcget(TkCitem *i, char *arg, char **val)
+const char*
+tkcvstextcget(TkCitem *i, __in_z const char *arg, char **val)
 {
 	TkOptab tko[3];
 	TkCtext *t = TKobj(TkCtext, i);
@@ -228,10 +227,10 @@ tkcvstextcget(TkCitem *i, char *arg, char **val)
 	return tkgencget(tko, arg, val, i->env->top);
 }
 
-char*
-tkcvstextconf(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvstextconf(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
-	char *e;
+	const char *e;
 	TkOptab tko[3];
 	TkCtext *t = TKobj(TkCtext, i);
 
@@ -268,7 +267,7 @@ tkcvstextfree(TkCitem *i)
 }
 
 void
-tkcvstextdraw(Image *img, TkCitem *i, TkEnv *pe)
+tkcvstextdraw(__in_ecount(1) const Image *img, TkCitem *i, TkEnv *pe)
 {
 	TkEnv *e;
 	TkCtext *t;
@@ -352,10 +351,10 @@ tkcvstextdraw(Image *img, TkCitem *i, TkEnv *pe)
 	}
 }
 
-char*
-tkcvstextcoord(TkCitem *i, char *arg, int x, int y)
+const char*
+tkcvstextcoord(TkCitem *i, __in_z const char *arg, int x, int y)
 {
-	char *e;
+	const char* e;
 	TkCpoints p;
 
 	if(arg == nil) {
@@ -411,7 +410,7 @@ tkcvstextsrch(TkCitem *i, int x, int y)
 	return p - t->text + n;
 }
 
-static char*
+static const char*
 tkcvsparseindex(TkCitem *i, char *buf, int *index)
 {
 	Point o;
@@ -463,13 +462,14 @@ tkcvsparseindex(TkCitem *i, char *buf, int *index)
 	return nil;
 }
 
-char*
-tkcvstextdchar(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvstextdchar(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
 	TkTop *top;
 	TkCtext *t;
 	int first, last;
-	char *e, buf[Tkmaxitem];
+	const char *e;
+    char buf[Tkmaxitem];
 
 	t = TKobj(TkCtext, i);
 
@@ -501,13 +501,14 @@ tkcvstextdchar(Tk *tk, TkCitem *i, char *arg)
 	return nil;
 }
 
-char*
-tkcvstextinsert(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvstextinsert(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
 	TkTop *top;
 	TkCtext *t;
 	int first, n;
-	char *e, *text, buf[Tkmaxitem];
+	const char *e;
+    char *text, buf[Tkmaxitem];
 
 	t = TKobj(TkCtext, i);
 
@@ -548,11 +549,12 @@ tkcvstextinsert(Tk *tk, TkCitem *i, char *arg)
 	return nil;
 }
 
-char*
-tkcvstextindex(Tk *tk, TkCitem *i, char *arg, char **val)
+const char*
+tkcvstextindex(Tk *tk, TkCitem *i, __in_z const char *arg, char **val)
 {
 	int first;
-	char *e, buf[Tkmaxitem];
+	const char *e;
+    char buf[Tkmaxitem];
 
 	tkword(tk->env->top, arg, buf, buf+sizeof(buf), nil);
 	e = tkcvsparseindex(i, buf, &first);
@@ -562,12 +564,13 @@ tkcvstextindex(Tk *tk, TkCitem *i, char *arg, char **val)
 	return tkvalue(val, "%d", first);
 }
 
-char*
-tkcvstexticursor(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvstexticursor(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
 	int first;
 	TkCanvas *c;
-	char *e, buf[Tkmaxitem];
+	const char *e;
+    char buf[Tkmaxitem];
 
 	tkword(tk->env->top, arg, buf, buf+sizeof(buf), nil);
 	e = tkcvsparseindex(i, buf, &first);
@@ -623,13 +626,14 @@ tkcvstextclr(Tk *tk)
 	tkcvssetdirty(tk);
 }
 
-char*
-tkcvstextselect(Tk *tk, TkCitem *i, char *arg, int op)
+const char*
+tkcvstextselect(Tk *tk, TkCitem *i, __in_z const char *arg, int op)
 {
 	int indx;
 	TkCtext *t;
 	TkCanvas *c;
-	char *e, buf[Tkmaxitem];
+	const char *e;
+    char buf[Tkmaxitem];
 
 	tkword(tk->env->top, arg, buf, buf+sizeof(buf), nil);
 	e = tkcvsparseindex(i, buf, &indx);

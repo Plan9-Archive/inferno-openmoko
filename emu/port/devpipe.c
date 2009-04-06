@@ -289,8 +289,8 @@ pipeclose(Chan *c)
 		qunlock(&p->l);
 }
 
-static long
-piperead(Chan *c, char *va, long n, vlong junk)
+static size_t
+piperead(Chan *c, __out_ecount(n) char *va, size_t n, vlong junk)
 {
 	Pipe *p;
 
@@ -331,8 +331,8 @@ pipebread(Chan *c, long n, ulong offset)
  *  a write to a closed pipe causes an exception to be sent to
  *  the prog.
  */
-static long
-pipewrite(Chan *c, const char *va, long n, vlong junk)
+static size_t
+pipewrite(Chan *c, __in_ecount(n) const char *va, size_t n, vlong junk)
 {
 	Pipe *p;
 	Prog *r;

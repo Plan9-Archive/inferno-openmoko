@@ -2,7 +2,7 @@
 #include <draw.h>
 
 void
-borderop(Image *im, Rectangle r, int i, Image *color, Point sp, Drawop op)
+borderop(__in_ecount(1) const Image *im, Rectangle r, int i, __in_ecount(1) const Image *color, Point sp, Drawop op)
 {
 	if(i < 0){
 		r = insetrect(r, i);
@@ -20,7 +20,7 @@ borderop(Image *im, Rectangle r, int i, Image *color, Point sp, Drawop op)
 }
 
 void
-border(Image *im, Rectangle r, int i, Image *color, Point sp)
+border(__in_ecount(1) const Image *im, Rectangle r, int i, __in_ecount(1) const Image *color, Point sp)
 {
 	borderop(im, r, i, color, sp, SoverD);
 }

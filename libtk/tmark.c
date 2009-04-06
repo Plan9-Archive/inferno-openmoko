@@ -13,12 +13,12 @@
 #define imark u.mark
 #define iline u.line
 
-static char* tktmarkgravity(Tk*, char*, char**);
-static char* tktmarknames(Tk*, char*, char**);
-static char* tktmarknext(Tk*, char*, char**);
-static char* tktmarkprevious(Tk*, char*, char**);
-static char* tktmarkset(Tk*, char*, char**);
-static char* tktmarkunset(Tk*, char*, char**);
+static const char* tktmarkgravity(Tk*, __in_z const char*, char**);
+static const char* tktmarknames(Tk*, __in_z const char*, char**);
+static const char* tktmarknext(Tk*, __in_z const char*, char**);
+static const char* tktmarkprevious(Tk*, __in_z const char*, char**);
+static const char* tktmarkset(Tk*, __in_z const char*, char**);
+static const char* tktmarkunset(Tk*, __in_z const char*, char**);
 
 TkCmdtab
 tktmarkcmd[] =
@@ -26,14 +26,14 @@ tktmarkcmd[] =
 	{"gravity",	tktmarkgravity},
 	{"names",	tktmarknames},
 	{"next",	tktmarknext},
-	{"previous",	tktmarkprevious},
+	{"previous",tktmarkprevious},
 	{"set",		tktmarkset},
 	{"unset",	tktmarkunset},
 	{nil}
 };
 
-char*
-tktaddmarkinfo(TkText *tkt, char *name, TkTmarkinfo **ret)
+const char*
+tktaddmarkinfo(TkText *tkt, __in_z const char *name, TkTmarkinfo **ret)
 {
 	TkTmarkinfo *mi;
 
@@ -68,7 +68,7 @@ tktfreemarks(TkTmarkinfo *m)
 }
 
 TkTmarkinfo *
-tktfindmark(TkTmarkinfo *m, char *name)
+tktfindmark(TkTmarkinfo *m, __in_z const char *name)
 {
 	while(m != nil) {
 		if(strcmp(m->name, name) == 0)
@@ -79,7 +79,7 @@ tktfindmark(TkTmarkinfo *m, char *name)
 }
 
 int
-tktmarkind(Tk *tk, char *name, TkTindex *ans)
+tktmarkind(Tk *tk, __in_z const char *name, TkTindex *ans)
 {
 	TkTmarkinfo *mk;
 	TkText *tkt = TKobj(TkText, tk);
@@ -99,10 +99,11 @@ tktmarkind(Tk *tk, char *name, TkTindex *ans)
 	return 1;
 }
 
-char*
-tktmarkparse(Tk *tk, char **parg, TkTmarkinfo **ret)
+const char*
+tktmarkparse(Tk *tk, __inout_ecount_full(1) const char **parg, TkTmarkinfo **ret)
 {
-	char *e, *buf;
+	char *buf;
+    const char *e;
 	TkText *tkt = TKobj(TkText, tk);
 
 	buf = (char*)mallocz(Tkmaxitem, 0);
@@ -132,10 +133,10 @@ tktmarkparse(Tk *tk, char **parg, TkTmarkinfo **ret)
  * Insert mark before ixnew, first removing it from old place, if any.
  * Make sure ixnew continues to point after mark.
  */
-char*
+const char*
 tktmarkmove(Tk *tk, TkTmarkinfo *m, TkTindex *ixnew)
 {
-	char *e;
+	const char *e;
 	int deleted, split;
 	TkTitem *i;
 	TkTindex ix, pix;
@@ -217,10 +218,9 @@ tktmarkmove(Tk *tk, TkTmarkinfo *m, TkTindex *ixnew)
 	+unset
 */
 
-static char*
-tktmarkgravity(Tk *tk, char *arg, char **val)
+static TH(tktmarkgravity)
 {
-	char *e;
+	const char *e;
 	TkTmarkinfo *m;
 	char *buf;
 
@@ -249,10 +249,9 @@ tktmarkgravity(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktmarknames(Tk *tk, char *arg, char **val)
+static TH(tktmarknames)
 {
-	char *r, *fmt;
+	const char *r, *fmt;
 	TkTmarkinfo *m;
 	TkText *tkt = TKobj(TkText, tk);
 
@@ -268,10 +267,9 @@ tktmarknames(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktmarknext(Tk *tk, char *arg, char **val)
+static TH(tktmarknext)
 {
-	char *e;
+	const char *e;
 	TkTmarkinfo *mix;
 	TkTindex ix, ixend;
 	TkText *tkt = TKobj(TkText, tk);
@@ -303,10 +301,9 @@ tktmarknext(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktmarkprevious(Tk *tk, char *arg, char **val)
+static TH(tktmarkprevious)
 {
-	char *e;
+	const char *e;
 	TkTindex ix;
 	TkText *tkt = TKobj(TkText, tk);
 
@@ -323,10 +320,9 @@ tktmarkprevious(Tk *tk, char *arg, char **val)
 }
 
 /* XXX - Tad: possible memory leak here */
-static char*
-tktmarkset(Tk *tk, char *arg, char **val)
+static TH(tktmarkset)
 {
-	char *e;
+	const char *e;
 	TkTmarkinfo *m;
 	TkTindex ixnew;
 
@@ -342,13 +338,12 @@ tktmarkset(Tk *tk, char *arg, char **val)
 	return tktmarkmove(tk, m, &ixnew);
 }
 
-static char*
-tktmarkunset(Tk *tk, char *arg, char **val)
+static TH(tktmarkunset)
 {
 	TkText *tkt;
 	TkTmarkinfo *m, **p;
 	TkTindex ix;
-	char *e;
+	const char *e;
 	int resize;
 
 	USED(val);

@@ -195,8 +195,8 @@ pointerclose(Chan* c)
 	}
 }
 
-static long
-pointerread(Chan* c, char* a, long n, vlong off)
+static size_t
+pointerread(Chan* c, __out_ecount(n) char* a, size_t n, vlong off)
 {
 	Pointer mt;
 	char buf[1+4*12+1];
@@ -215,7 +215,8 @@ pointerread(Chan* c, char* a, long n, vlong off)
 		mt = mouseconsume();
 		poperror();
 		qunlock(&mouse.q);
-		l = snprint(buf, sizeof(buf), "m%11d %11d %11d %11lud ", mt.x, mt.y, mt.b, mt.msec);
+		l = snprint(buf, sizeof(buf), "m%11d %11d %11d %11d", mt.x, mt.y, mt.b, mt.msec);
+        assert(l==48);
 		if(l < n)
 			n = l;
 		memmove(a, buf, n);
@@ -227,8 +228,8 @@ pointerread(Chan* c, char* a, long n, vlong off)
 	return n;
 }
 
-static long
-pointerwrite(Chan* c, const char* va, long n, vlong off)
+static size_t
+pointerwrite(Chan* c, __in_ecount(n) const char* va, size_t n, vlong off)
 {
 	char *a;
 	char buf[128];

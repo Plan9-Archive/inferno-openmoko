@@ -20,6 +20,7 @@ chantostr(char *buf, ulong cc)
 
 	p = buf;
 	for(c=rc; c; c>>=8) {
+        assert(TYPE(c) < NChan);
 		*p++ = channames[TYPE(c)];
 		*p++ = '0'+NBITS(c);
 	}

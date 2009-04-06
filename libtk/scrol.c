@@ -65,7 +65,7 @@ TkEbind b_scrol[] =
 	{TkButton2P,		"%W tkScrolBut2P [%W fraction %x %y]"},
 };
 
-static char*
+static const char*
 tkinitscroll(Tk *tk)
 {
 	int gap;
@@ -86,16 +86,14 @@ tkinitscroll(Tk *tk)
 		if(tk->req.height == 0)
 			tk->req.height = Triangle + gap;
 	}
-
-
 	return tkbindings(tk->env->top, tk, b_scrol, nelem(b_scrol));
 }
 
-char*
-tkscrollbar(TkTop *t, char *arg, char **ret)
+const char*
+tkscrollbar(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
-	char *e;
+	const char *e;
 	TkName *names;
 	TkScroll *tks;
 	TkOptab tko[3];
@@ -142,8 +140,7 @@ tkscrollbar(TkTop *t, char *arg, char **ret)
 	return tkvalue(ret, "%s", tk->name->name);
 }
 
-static char*
-tkscrollcget(Tk *tk, char *arg, char **val)
+static TH(tkscrollcget)
 {
 	TkOptab tko[3];
 	TkScroll *tks = TKobj(TkScroll, tk);
@@ -351,7 +348,7 @@ tkhscroll(Tk *tk, TkScroll *tks, Image *i, Point size)
 		tkbevel(i, o, w, h, 2, l, d);
 }
 
-char*
+const char*
 tkdrawscrlb(Tk *tk, Point orig)
 {
 	Point p;
@@ -400,10 +397,9 @@ tkdrawscrlb(Tk *tk, Point orig)
 	+set
 */
 
-static char*
-tkscrollconf(Tk *tk, char *arg, char **val)
+static TH(tkscrollconf)
 {
-	char *e;
+	const char *e;
 	TkGeom g;
 	int bd;
 	TkOptab tko[3];
@@ -428,8 +424,7 @@ tkscrollconf(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tkscrollactivate(Tk *tk, char *arg, char **val)
+static TH(tkscrollactivate)
 {
 	int s, gotarg;
 	char buf[Tkmaxitem];
@@ -465,11 +460,10 @@ tkscrollactivate(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkscrollset(Tk *tk, char *arg, char **val)
+static TH(tkscrollset)
 {
 	TkTop *t;
-	char *e;
+	const char *e;
 	TkScroll *tks = TKobj(TkScroll, tk);
 
 	USED(val);
@@ -493,8 +487,7 @@ tkscrollset(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkscrolldelta(Tk *tk, char *arg, char **val)
+static TH(tkscrolldelta)
 {
 	int l, delta;
 	char buf[Tkmaxitem];
@@ -515,8 +508,7 @@ tkscrolldelta(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%s", buf);
 }
 
-static char*
-tkscrollget(Tk *tk, char *arg, char **val)
+static TH(tkscrollget)
 {
 	char *v, buf[Tkmaxitem];
 	TkScroll *tks = TKobj(TkScroll, tk);
@@ -529,8 +521,7 @@ tkscrollget(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%s", buf);
 }
 
-static char*
-tkscrollidentify(Tk *tk, char *arg, char **val)
+static TH(tkscrollidentify)
 {
 	int gotarg;
 	TkTop *t;
@@ -567,8 +558,7 @@ tkscrollidentify(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%s", v);
 }
 
-static char*
-tkscrollfraction(Tk *tk, char *arg, char **val)
+static TH(tkscrollfraction)
 {
 	int len, frac, pos;
 	char buf[Tkmaxitem];
@@ -593,8 +583,7 @@ tkscrollfraction(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%s", buf);
 }
 
-static char*
-tkScrolBut1R(Tk *tk, char *arg, char **val)
+static TH(tkScrolBut1R)
 {
 	TkScroll *tks = TKobj(TkScroll, tk);
 
@@ -607,11 +596,11 @@ tkScrolBut1R(Tk *tk, char *arg, char **val)
 }
 
 /* tkScrolBut2P fraction */
-static char*
-tkScrolBut2P(Tk *tk, char *arg, char **val)
+static TH(tkScrolBut2P)
 {
 	TkTop *t;
-	char *e, buf[Tkmaxitem], fracbuf[Tkmaxitem];
+	const char *e;
+    char buf[Tkmaxitem], fracbuf[Tkmaxitem];
 	TkScroll *tks = TKobj(TkScroll, tk);
 
 
@@ -634,7 +623,8 @@ tkScrolBut2P(Tk *tk, char *arg, char **val)
 static void
 sbrepeat(Tk *tk, const char *fmt, int cancelled)
 {
-	char *e, buf[Tkmaxitem];
+	char buf[Tkmaxitem];
+    const char *e;
 	TkScroll *tks = TKobj(TkScroll, tk);
 
 	if (cancelled) {
@@ -654,12 +644,12 @@ sbrepeat(Tk *tk, const char *fmt, int cancelled)
 }
 
 /* tkScrolBut1P %x %y */
-static char*
-tkScrolBut1P(Tk *tk, char *arg, char **val)
+static TH(tkScrolBut1P)
 {
 	int pix;
 	TkTop *t;
-	char *e, *fmt, buf[Tkmaxitem];
+	const char *e, *fmt;
+    char  buf[Tkmaxitem];
 	TkScroll *tks = TKobj(TkScroll, tk);
 
 	USED(val);
@@ -708,8 +698,7 @@ tkScrolBut1P(Tk *tk, char *arg, char **val)
 }
 
 /* tkScrolDrag %x %y */
-static char*
-tkScrollDrag(Tk *tk, char *arg, char **val)
+static TH(tkScrollDrag)
 {
 	TkTop *t;
 	int pix, delta;
@@ -760,13 +749,13 @@ tkScrollDrag(Tk *tk, char *arg, char **val)
 TkCmdtab tkscrlbcmd[] =
 {
 	{"activate",		tkscrollactivate},
-	{"cget",		tkscrollcget},
+	{"cget",		    tkscrollcget},
 	{"configure",		tkscrollconf},
-	{"delta",		tkscrolldelta},
+	{"delta",		    tkscrolldelta},
 	{"fraction",		tkscrollfraction},
-	{"get",			tkscrollget},
+	{"get",			    tkscrollget},
 	{"identify",		tkscrollidentify},
-	{"set",			tkscrollset},
+	{"set",			    tkscrollset},
 	{"tkScrollDrag",	tkScrollDrag},
 	{"tkScrolBut1P",	tkScrolBut1P},
 	{"tkScrolBut1R",	tkScrolBut1R},

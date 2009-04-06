@@ -573,8 +573,8 @@ sslbread(Chan *c, long n, ulong offset)
 	return b;
 }
 
-static long
-sslread(Chan *c, char *a, long n, vlong offset)
+static size_t
+sslread(Chan *c, __out_ecount(n) char *a, size_t n, vlong offset)
 {
 	volatile struct { Block *b; } b;
 	Block *nb;
@@ -969,8 +969,8 @@ alglistinit(void)
 	hashalgs[n] = 0;
 }
 
-static long
-sslwrite(Chan *c, const char *a, long n, vlong offset)
+static size_t
+sslwrite(Chan *c, __in_ecount(n) const char *a, size_t n, vlong offset)
 {
 	volatile struct { Dstate *s; } s;
 	volatile struct { Block *b; } b;

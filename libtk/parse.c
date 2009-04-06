@@ -7,27 +7,27 @@
 #include <runt.h>
 #include <tk.h>
 
-static char* pdist(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pstab(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* ptext(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pwinp(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pbmap(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pbool(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pfont(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pfrac(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pnnfrac(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pctag(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* ptabs(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pcolr(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pimag(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* psize(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pnndist(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pact(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* pignore(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* psticky(TkTop*, TkOption*, void*, char**, char*, char*);
-static char* plist(TkTop*, TkOption*, void*, char**, char*, char*);
+static const char* pdist    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pstab    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* ptext    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pwinp    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pbmap    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pbool    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pfont    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pfrac    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pnnfrac  (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pctag    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* ptabs    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pcolr    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pimag    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* psize    (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pnndist  (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pact     (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* pignore  (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* psticky  (TkTop*, TkOption*, void*, const char**, char*, char*);
+static const char* plist    (TkTop*, TkOption*, void*, const char**, char*, char*);
 
-static char* (*oparse[])(TkTop*, TkOption*, void*, char**, char*, char*) =
+static const char* (*oparse[])(TkTop*, TkOption*, void*, const char**, char*, char*) =
 {
 	/* OPTdist */	pdist,
 	/* OPTstab */	pstab,
@@ -51,10 +51,10 @@ static char* (*oparse[])(TkTop*, TkOption*, void*, char**, char*, char*) =
 	/* OPTlist */ plist,
 };
 
-char*
-tkskip(char *s, char *bl)
+const char*
+tkskip(__in_z const char *s, __in_z const char *bl)
 {
-	char *p;
+	const char *p;
 
 	while(*s) {
 		for(p = bl; *p; p++)
@@ -68,11 +68,12 @@ tkskip(char *s, char *bl)
 }
 
 /* XXX - Tad: error propagation? */
-char*
-tkword(TkTop *t, char *str, char *buf, char *ebuf, int *gotarg)
+const char*
+tkword(TkTop *t, __in_z const char *str, char *buf, char *ebuf, int *gotarg)
 {
 	int c, lev, tmp;
-	char *val, *e, *p, *cmd;
+	char *val, *p, *cmd;
+    const char *e;
 	if (gotarg == nil)
 		gotarg = &tmp;
 
@@ -178,7 +179,7 @@ tkword(TkTop *t, char *str, char *buf, char *ebuf, int *gotarg)
 }
 
 static TkOption*
-Getopt(TkOption *o, char *buf)
+Getopt(TkOption *o, const char *buf)
 {
 	while(o->o != nil) {
 		if(strcmp(buf, o->o) == 0)
@@ -189,7 +190,7 @@ Getopt(TkOption *o, char *buf)
 }
 
 TkName*
-tkmkname(char *name)
+tkmkname(__in_z const char *name)
 {
 	TkName *n;
 
@@ -202,14 +203,15 @@ tkmkname(char *name)
 	return n;
 }
 
-char*
-tkparse(TkTop *t, char *str, TkOptab *ot, TkName **nl)
+const char*
+tkparse(TkTop *t, __in_z const char *str, TkOptab *ot, TkName **nl)
 {
 	int l;
 	TkOptab *ft;
 	TkOption *o;
 	TkName *f, *n;
-	char *e, *buf, *ebuf;
+    const char *e;
+	char *buf, *ebuf;
 
 	l = strlen(str);
 	if (l < Tkmaxitem)
@@ -269,11 +271,11 @@ done:
 	return e;
 }
 
-char*
+const char*
 tkconflist(TkOptab *ot, char **val)
 {
 	TkOption *o;
-	char *f, *e;
+	const char *f, *e;
 
 	f = "-%s";
 	while(ot->ptr != nil) {
@@ -290,8 +292,8 @@ tkconflist(TkOptab *ot, char **val)
 	return nil;
 }
 
-char*
-tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
+const char*
+tkgencget(TkOptab *ft, __in_z const char *arg, char **val, TkTop *t)
 {
 	Tk *w;
 	char *c;
@@ -300,7 +302,8 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 	TkStab *s;
 	TkOption *o;
 	int wh, con, i, n, flag, *v;
-	char *r, *buf, *fmt;
+	const char *r;
+    char *buf, *fmt;
 
 	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
@@ -427,8 +430,8 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 	}
 }
 
-static char*
-pact(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pact(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	USED(buf);
 	USED(ebuf);
@@ -438,10 +441,10 @@ pact(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return TkBadop;
 }
 
-static char*
-pignore(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pignore(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
-	char *p;
+	const char *p;
 	USED(t);
 	USED(o);
 	USED(place);
@@ -453,11 +456,11 @@ pignore(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-pdist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pdist(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	int d;
-	char *e;
+	const char *e;
 	TkEnv *env;
 
 	USED(buf);
@@ -482,10 +485,10 @@ pdist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-pnndist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pnndist(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
-	char* e;
+	const char* e;
 	int oldv;
 
 	oldv = OPTION(place, int, o->offset);
@@ -497,11 +500,11 @@ pnndist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return e;
 }
 
-static char*
-psize(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+psize(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	Tk *tk;
-	char *e;
+	const char *e;
 	int d, off;
 
 	USED(ebuf);
@@ -528,10 +531,10 @@ psize(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-pstab(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pstab(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
-	char *p;
+	const char *p;
 	int mask;
 	TkStab *s, *c;
 
@@ -594,10 +597,10 @@ static int stickymap[16] =
 	Tkfillx|Tkfilly,
 };
 
-static char*
-psticky(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+psticky(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
-	char *p, *s;
+	const char *p, *s;
 	int flag, sflag;
 
 	p = tkword(t, *str, buf, ebuf, nil);
@@ -630,8 +633,8 @@ psticky(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-ptext(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+ptext(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	char **p;
 
@@ -650,8 +653,8 @@ ptext(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-pimag(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pimag(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	int locked;
 	Display *d;
@@ -678,8 +681,8 @@ pimag(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-pbmap(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pbmap(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	Display *d;
 	Image *i, **p;
@@ -736,8 +739,8 @@ pbmap(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-pfont(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pfont(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	TkEnv *e;
 	Display *d;
@@ -797,10 +800,11 @@ changecol(TkEnv *e, int setcol, int col, ulong rgba)
 	return rgba;
 }
 
-char*
-tkparsecolor(char *buf, ulong *rgba)
+const char*
+tkparsecolor(__in_z const char *buf, ulong *rgba)
 {
-	char *p, *q, *e;
+	char *p;
+    const char *e, *q;
 	int R, G, B, A;
 	int i, alpha, len, alen;
 	/*
@@ -866,11 +870,11 @@ tkparsecolor(char *buf, ulong *rgba)
 	return nil;
 }
 
-static char*
-pcolr(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pcolr(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	TkEnv *env;
-	char *e;
+	const char *e;
 	ulong rgba, dark, light;
 	int color, setcol;
 
@@ -903,8 +907,8 @@ pcolr(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-pbool(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pbool(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	USED(buf);
 	USED(ebuf);
@@ -914,11 +918,11 @@ pbool(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-pwinp(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pwinp(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	Tk *f;
-	char *p;
+	const char *p;
 
 	p = tkword(t, *str, buf, ebuf, nil);
 	if(*buf == '\0')
@@ -935,8 +939,8 @@ pwinp(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-pctag(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pctag(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	char *p;
 	TkName *n, *l;
@@ -946,7 +950,7 @@ pctag(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	l = nil;
 	p = buf;
 	while(*p) {
-		p = tkskip(p, " \t");
+		p = (char*)tkskip(p, " \t"); /* non-const input -> non-const output */
 		buf = p;
 		while(*p && *p != ' ' && *p != '\t')
 			p++;
@@ -970,10 +974,10 @@ pctag(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-static char*
-pfrac(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pfrac(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
-	char *p, *e;
+	const char *p, *e;
 	int i, n, d, *v;
 
 	*str = tkword(t, *str, buf, ebuf, nil);
@@ -998,11 +1002,11 @@ pfrac(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 /*
  * N.B. nnfrac only accepts aux==nil (can't deal with several items)
  */
-static char*
-pnnfrac(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+pnnfrac(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
 	int oldv;
-	char *e;
+	const char *e;
 
 	oldv = OPTION(place, int, o->offset);
 
@@ -1021,14 +1025,14 @@ typedef struct Tabspec {
 	TkEnv	*env;
 } Tabspec;
 
-static char*
-ptabs(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+ptabs(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
-	char *e, *p, *eibuf;
+	const char *e, *p;
 	TkOption opd, opj;
 	Tabspec tspec;
 	TkTtabstop *tabfirst, *tab, *tabprev;
-	char *ibuf;
+	char *ibuf, *eibuf;
 
 	ibuf = (char*)mallocz(Tkmaxitem, 0);
 	if(ibuf == nil)
@@ -1085,8 +1089,8 @@ ptabs(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
-char*
-tkxyparse(Tk* tk, char **parg, Point *p)
+const char*
+tkxyparse(Tk* tk, const char **parg, Point *p)
 {
 	char *buf;
 
@@ -1112,10 +1116,11 @@ tkxyparse(Tk* tk, char **parg, Point *p)
 	return nil;
 }
 
-static char*
-plist(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
+static const char*
+plist(TkTop *t, TkOption *o, void *place, const char **str, /*const*/ char *buf, char *ebuf)
 {
-	char *w, ***p, *wbuf, *ewbuf, **v, **nv;
+	const char *w;
+    char ***p, *wbuf, *ewbuf, **v, **nv;
 	int n, m, i, found;
 
 	*str = tkword(t, *str, buf, ebuf, nil);

@@ -38,14 +38,14 @@ tkdrawnrect(Image *image, Image *matte, Rectangle *r)
 	return 1;
 }
 
-char*
-tkpanel(TkTop *t, char *arg, char **ret)
+const char*
+tkpanel(TkTop *t, __in_z const char *arg, char **ret)
 {
 	TkOptab tko[3];
 	Tk *tk;
 	TkPanel *tkp;
 	TkName *names;
-	char *e;
+	const char *e;
 
 	tk = tknewobj(t, TKpanel, sizeof(Tk)+sizeof(TkPanel));
 	if(tk == nil)
@@ -174,7 +174,7 @@ tkpanelview(Tk *tk)
 	return view;
 }
 
-static char*
+static const char*
 tkdrawpanel(Tk *tk, Point orig)
 {
 	Rectangle r, pr;
@@ -214,8 +214,7 @@ tkdrawpanel(Tk *tk, Point orig)
 	return nil;
 }
 
-static char*
-tkpanelcget(Tk *tk, char *arg, char **val)
+static TH(tkpanelcget)
 {
 	TkOptab tko[3];
 	TkPanel *tkp = TKobj(TkPanel, tk);
@@ -229,8 +228,8 @@ tkpanelcget(Tk *tk, char *arg, char **val)
 	return tkgencget(tko, arg, val, tk->env->top);
 }
 
-static char*
-tkpanelcvt(Tk *tk, char *arg, int rel, int *p)
+static const char*
+tkpanelcvt(Tk *tk, __in_z const char *arg, int rel, int *p)
 {
 	char buf[Tkmaxitem];
 
@@ -244,11 +243,10 @@ tkpanelcvt(Tk *tk, char *arg, int rel, int *p)
 /*
  * screen to image
  */
-static char*
-tkpanelpanelx(Tk *tk, char *arg, char **val)
+static TH(tkpanelpanelx)
 {
 	Point p;
-	char *e;
+	const char *e;
 
 	USED(val);
 	p = subpt(tkposn(tk), tkpanelview(tk));
@@ -258,11 +256,10 @@ tkpanelpanelx(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", p.x);
 }
 
-static char*
-tkpanelpanely(Tk *tk, char *arg, char **val)
+static TH(tkpanelpanely)
 {
 	Point p;
-	char *e;
+	const char *e;
 
 	USED(val);
 	p = subpt(tkposn(tk), tkpanelview(tk));
@@ -275,11 +272,10 @@ tkpanelpanely(Tk *tk, char *arg, char **val)
 /*
  * image to screen
  */
-static char*
-tkpanelscreenx(Tk *tk, char *arg, char **val)
+static TH(tkpanelscreenx)
 {
 	Point p;
-	char *e;
+	const char *e;
 
 	USED(val);
 	p = subpt(tkposn(tk), tkpanelview(tk));
@@ -289,11 +285,10 @@ tkpanelscreenx(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", p.x);
 }
 
-static char*
-tkpanelscreeny(Tk *tk, char *arg, char **val)
+static TH(tkpanelscreeny)
 {
 	Point p;
-	char *e;
+	const char *e;
 
 	USED(val);
 	p = subpt(tkposn(tk), tkpanelview(tk));
@@ -303,10 +298,9 @@ tkpanelscreeny(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", p.y);
 }
 
-static char*
-tkpanelconf(Tk *tk, char *arg, char **val)
+static TH(tkpanelconf)
 {
-	char *e;
+	const char *e;
 	TkGeom g;
 	int bd;
 	TkOptab tko[3];
@@ -332,13 +326,12 @@ tkpanelconf(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tkpaneldirty(Tk *tk, char *arg, char **val)
+static TH(tkpaneldirty)
 {
 	char buf[Tkmaxitem];
 	int n, coords[4];
 	Rectangle r;
-	char *e, *p;
+	const char *e, *p;
 	TkPanel *tkp = TKobj(TkPanel, tk);
 
 	USED(val);
@@ -370,10 +363,9 @@ tkpaneldirty(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkpanelorigin(Tk *tk, char *arg, char **val)
+static TH(tkpanelorigin)
 {
-	char *e;
+	const char *e;
 	Point view;
 	TkPanel *tkp = TKobj(TkPanel, tk);
 
@@ -391,14 +383,14 @@ tkpanelorigin(Tk *tk, char *arg, char **val)
 static
 TkCmdtab tkpanelcmd[] =
 {
-	{"cget",	tkpanelcget},
+	{"cget",	    tkpanelcget},
 	{"configure",	tkpanelconf},
-	{"dirty",	tkpaneldirty},
-	{"origin",	tkpanelorigin},
-	{"panelx",	tkpanelpanelx},
-	{"panely",	tkpanelpanely},
-	{"screenx",	tkpanelscreenx},
-	{"screeny",	tkpanelscreeny},
+	{"dirty",	    tkpaneldirty},
+	{"origin",	    tkpanelorigin},
+	{"panelx",	    tkpanelpanelx},
+	{"panely",	    tkpanelpanely},
+	{"screenx",	    tkpanelscreenx},
+	{"screeny",	    tkpanelscreeny},
 	{nil}
 };
 

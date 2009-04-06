@@ -16,21 +16,21 @@ enum {
 
 TkOption tklabelopts[] =
 {
-	{"text",	OPTtext,	offsetof(TkLabel, text)		},
-	{"label",	OPTtext,	offsetof(TkLabel, text)		},
+	{"text",	    OPTtext,	offsetof(TkLabel, text)		},
+	{"label",	    OPTtext,	offsetof(TkLabel, text)		},
 	{"underline",	OPTdist,	offsetof(TkLabel, ul)		},
-	{"justify",	OPTflag,	offsetof(TkLabel, justify),	{tkjustify}},
-	{"anchor",	OPTflag,	offsetof(TkLabel, anchor),	{tkanchor}},
-	{"bitmap",	OPTbmap,	offsetof(TkLabel, bitmap)	},
-	{"image",	OPTimag,	offsetof(TkLabel, img)		},
+	{"justify",	    OPTflag,	offsetof(TkLabel, justify),	{tkjustify}},
+	{"anchor",	    OPTflag,	offsetof(TkLabel, anchor),	{tkanchor}},
+	{"bitmap",	    OPTbmap,	offsetof(TkLabel, bitmap)	},
+	{"image",	    OPTimag,	offsetof(TkLabel, img)		},
 	{nil}
 };
 
-char*
-tklabel(TkTop *t, char *arg, char **ret)
+const char*
+tklabel(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
-	char *e;
+	const char *e;
 	TkLabel *tkl;
 	TkName *names;
 	TkOptab tko[3];
@@ -70,8 +70,7 @@ tklabel(TkTop *t, char *arg, char **ret)
 	return tkvalue(ret, "%s", tk->name->name);
 }
 
-static char*
-tklabelcget(Tk *tk, char *arg, char **val)
+static TH(tklabelcget)
 {
 	TkOptab tko[3];
 	TkLabel *tkl = TKobj(TkLabel, tk);
@@ -85,10 +84,9 @@ tklabelcget(Tk *tk, char *arg, char **val)
 	return tkgencget(tko, arg, val, tk->env->top);
 }
 
-static char*
-tklabelconf(Tk *tk, char *arg, char **val)
+static TH(tklabelconf)
 {
-	char *e;
+	const char *e;
 	TkGeom g;
 	int bd;
 	TkOptab tko[3];
@@ -245,7 +243,7 @@ tktriangle(Point u, Image *i, TkEnv *e)
 /*
  * draw TKlabel, TKcheckbutton, TKradiobutton
  */
-char*
+const char*
 tkdrawlabel(Tk *tk, Point orig)
 {
  	TkEnv *e;
@@ -254,7 +252,7 @@ tkdrawlabel(Tk *tk, Point orig)
 	int dx, dy, h;
 	Point p, u, v, *pp;
 	Image *i, *dst, *cd, *cl, *ct, *img;
-	char *o;
+	const char *o;
 	int relief, bgnd, fgnd;
 
 	e = tk->env;
@@ -425,8 +423,8 @@ tkdrawlabel(Tk *tk, Point orig)
 	return nil;
 }
 
-char*
-tksetvar(TkTop *top, char *c, char *newval)
+const char*
+tksetvar(TkTop *top, __in_z const char *c, char *newval)
 {
 	TkVar *v;
 	TkWin *tkw;
@@ -469,11 +467,12 @@ tksetvar(TkTop *top, char *c, char *newval)
 	return nil;
 }
 
-char*
-tkvariable(TkTop *t, char *arg, char **ret)
+const char*
+tkvariable(TkTop *t, __in_z const char *arg, char **ret)
 {
 	TkVar *v;
-	char *fmt, *e, *buf, *ebuf, *val;
+	char *fmt, *buf, *ebuf, *val;
+    const char *e;
 	int l;
 
 	l = strlen(arg) + 2;
@@ -528,7 +527,7 @@ static
 TkCmdtab tklabelcmd[] =
 {
 	{"cget",		tklabelcget},
-	{"configure",		tklabelconf},
+	{"configure",	tklabelconf},
 	{nil}
 };
 

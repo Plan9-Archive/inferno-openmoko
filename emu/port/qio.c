@@ -275,6 +275,7 @@ pullupqueue(Queue *q, int n)
 /*
  *  trim to len bytes starting at offset
  */
+/*
 Block *
 trimblock(Block *bp, int offset, int len)
 {
@@ -310,7 +311,7 @@ trimblock(Block *bp, int offset, int len)
 	}
 
 	return startb;
-}
+}*/
 
 /*
  *  copy 'count' bytes into a new block

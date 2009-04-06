@@ -812,8 +812,8 @@ getmalloctag(void *v)
 {
     USED(v);
     if(Npadlong <= MallocOffset || v == nil)
-        return ((ulong*)v)[-Npadlong+MallocOffset];
-    return ~0;
+        return ~0;
+    return ((ulong*)v)[-Npadlong+MallocOffset];
 }
 
 void
@@ -958,8 +958,7 @@ poolcompact(Pool *pool)
             nb = (uchar*)limit - (uchar*)end;
             if(nb > 0){
                 if(nb < pool->quanta+1){
-                    print("poolcompact: leftover too small\n");
-                    abort();
+                    panic("poolcompact: leftover too small");
                 }
                 end->size = nb;
                 B2T(end)->hdr = end;

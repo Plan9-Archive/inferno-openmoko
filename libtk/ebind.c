@@ -60,8 +60,8 @@ TkOption focusopts[] = {
 	{nil}
 };
 
-static char*
-tkseqitem(char *buf, char *arg)
+static const char*
+tkseqitem(char *buf, __in_z const char *arg)
 {
 	while(*arg && (*arg == ' ' || *arg == '-'))
 		arg++;
@@ -71,10 +71,10 @@ tkseqitem(char *buf, char *arg)
 	return arg;
 }
 
-static char*
-tkseqkey(Rune *r, char *arg)
+static const char*
+tkseqkey(Rune *r, __in_z const char *arg)
 {
-	char *narg;
+	const char *narg;
 
 	while(*arg && (*arg == ' ' || *arg == '-'))
 		arg++;
@@ -92,7 +92,7 @@ tkseqkey(Rune *r, char *arg)
 }
 
 int
-tkseqparse(char *seq)
+tkseqparse(__in_z const char *seq)
 {
 	Rune r;
 	int i, event;
@@ -206,13 +206,14 @@ tkseqparse(char *seq)
 }
 
 void
-tkcmdbind(Tk *tk, int event, char *s, void *data)
+tkcmdbind(Tk *tk, int event, const char *s, void *data)
 {
 	Point p;
 	TkMouse *m;
 	TkGeom *g;
 	int v, len;
-	char *e, *c, *ec, *cmd;
+	const char *e;
+    char *c, *ec, *cmd;
 	TkTop *t;
 
 	if(s == nil)
@@ -335,28 +336,25 @@ tkcmdbind(Tk *tk, int event, char *s, void *data)
 	}
 
 	if(tk->name != nil){
-		char *s;
-
-		if(t->errx[0] != '\0')
-			s = tkerrstr(t, e);
-		else
-			s = e;
-		print("tk: bind command \"%s\": %s: %s\n", tk->name->name, cmd, s);
-		if(s != e)
-			free(s);
+        if(t->errx[0] != '\0') {
+			char *s = tkerrstr(t, e);
+            print("tk: bind command \"%s\": %s: %s\n", tk->name->name, cmd, s);
+            free(s);
+        } else
+            print("tk: bind command \"%s\": %s: %s\n", tk->name->name, cmd, e);
 	}
 	free(cmd);
 }
 
-char*
-tkbind(TkTop *t, char *arg, char **ret)
+const char*
+tkbind(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Rune r;
 	Tk *tk;
 	TkAction **ap;
 	int i, mode, event;
-	char *cmd, *tag, *seq;
-	char *e;
+	char *tag, *seq;
+	const char *e, *cmd;
 
 	USED(ret);
 
@@ -489,10 +487,9 @@ err:
 	return e;
 }
 
-char*
-tksend(TkTop *t, char *arg, char **ret)
+const char*
+tksend(TkTop *t, __in_z const char *arg, char **ret)
 {
-
 	TkVar *v;
 	char *var;
 
@@ -605,11 +602,12 @@ tksetglobalfocus(TkTop *top, int in)
 	}
 }
 
-char*
-tkfocus(TkTop *top, char *arg, char **ret)
+const char*
+tkfocus(TkTop *top, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
-	char *wp, *e;
+	char *wp;
+    const char *e;
 	int dir, global;
 	TkOptab tko[2];
 	TkName *names;
@@ -668,8 +666,8 @@ tkfocus(TkTop *top, char *arg, char **ret)
 	return nil;
 }
 
-char*
-tkraise(TkTop *t, char *arg, char **ret)
+const char*
+tkraise(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
 	char *wp;
@@ -695,8 +693,8 @@ tkraise(TkTop *t, char *arg, char **ret)
 	return nil;
 }
 
-char*
-tklower(TkTop *t, char *arg, char **ret)
+const char*
+tklower(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
 	char *wp;
@@ -721,14 +719,12 @@ tklower(TkTop *t, char *arg, char **ret)
 	return nil;
 }
 
-char*
-tkgrab(TkTop *t, char *arg, char **ret)
+const char*
+tkgrab(TkTop *t, __in_z const char *arg, __inout_ecount_opt(1) char **ret)
 {
 	Tk *tk;
 	TkCtxt *c;
 	char *r, *buf, *wp;
-
-	USED(ret);
 
 	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
@@ -779,8 +775,8 @@ tkgrab(TkTop *t, char *arg, char **ret)
 	return TkBadcm;
 }
 
-char*
-tkputs(TkTop *t, char *arg, char **ret)
+const char*
+tkputs(TkTop *t, __in_z const char *arg, char **ret)
 {
 	char *buf;
 
@@ -795,12 +791,13 @@ tkputs(TkTop *t, char *arg, char **ret)
 	return nil;
 }
 
-char*
-tkdestroy(TkTop *t, char *arg, char **ret)
+const char*
+tkdestroy(TkTop *t, __in_z const char *arg, char **ret)
 {
 	int found, len, isroot;
 	Tk *tk, **l, *next, *slave;
-	char *n, *e, *buf;
+	char *n, *buf;
+    const char* e;
 
 	USED(ret);
 	buf = (char*)mallocz(Tkmaxitem, 0);
@@ -887,8 +884,8 @@ tkdestroy(TkTop *t, char *arg, char **ret)
 	return e;
 }
 
-char*
-tkupdatecmd(TkTop *t, char *arg, char **ret)
+const char*
+tkupdatecmd(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
 	int x, y;
@@ -920,8 +917,8 @@ tkupdatecmd(TkTop *t, char *arg, char **ret)
 	return tkupdate(t);
 }
 
-char*
-tkwinfo(TkTop *t, char *arg, char **ret)
+const char*
+tkwinfo(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
 	char *cmd, *arg1;
@@ -953,10 +950,10 @@ tkwinfo(TkTop *t, char *arg, char **ret)
 	return TkBadvl;
 }
 
-char*
-tkcursorcmd(TkTop *t, char *arg, char **ret)
+const char*
+tkcursorcmd(TkTop *t, __in_z const char *arg, char **ret)
 {
-	char *e;
+	const char *e;
 	int locked;
 	Display *d;
 	TkCursor c;
@@ -997,11 +994,12 @@ tkcursorcmd(TkTop *t, char *arg, char **ret)
 	return e;
 }
 
-char *
+const char *
 tkbindings(TkTop *t, Tk *tk, TkEbind *b, int blen)
 {
 	TkAction *a, **ap;
-	char *cmd, *e;
+	char *cmd;
+    const char *e;
 	int i;
 
 	e = nil;

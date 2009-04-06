@@ -25,7 +25,8 @@ enum
 };
 
 int
-chartorune(Rune *rune, const char *str)
+chartorune(__out_ecount_full(1) Rune *rune, 
+           __in_ecount(3) const char *str)
 {
 	int c, c1, c2;
 	long l;
@@ -81,7 +82,7 @@ bad:
 }
 
 int
-runetochar(char *str, const Rune *rune)
+runetochar(__out_ecount_part(3, return) char *str, __in_ecount(1) const Rune *rune)
 {
 	long c;
 

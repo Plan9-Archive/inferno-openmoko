@@ -469,8 +469,8 @@ srvremove(Chan *c)
 	srvclunk(c, 1);
 }
 
-static long
-srvread(Chan *c, char *va, long count, vlong offset)
+static size_t
+srvread(Chan *c, __out_ecount(count) char *va, size_t count, vlong offset)
 {
 	int l;
 	Heap * volatile h;
@@ -555,8 +555,8 @@ srvread(Chan *c, char *va, long count, vlong offset)
 	return l;
 }
 
-static long
-srvwrite(Chan *c, const char *va, long count, vlong offset)
+static size_t
+srvwrite(Chan *c, __in_ecount(count) const char *va, size_t count, vlong offset)
 {
 	long l;
 	Heap * volatile h;

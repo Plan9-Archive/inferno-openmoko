@@ -178,8 +178,8 @@ so_connect(int fd, unsigned long raddr, unsigned short rport)
 	memset(&sa, 0, sizeof(sa));
 	sin = (struct sockaddr_in*)&sa;
 	sin->sin_family = AF_INET;
-	hnputs(&sin->sin_port, rport);
-	hnputl(&sin->sin_addr.s_addr, raddr);
+	PBIT16BE(&sin->sin_port, rport);
+	PBIT32BE(&sin->sin_addr.s_addr, raddr);
 
 	osenter();
 	r = connect(fd, &sa, sizeof(sa));
@@ -204,8 +204,8 @@ so_getsockname(int fd, unsigned long *laddr, unsigned short *lport)
 	if(sin->sin_family != AF_INET || len != sizeof(*sin))
 		error("not AF_INET");
 
-	*laddr = nhgetl(&sin->sin_addr.s_addr);
-	*lport = nhgets(&sin->sin_port);
+	*laddr = GBIT32BE(&sin->sin_addr.s_addr);
+	*lport = GBIT16BE(&sin->sin_port);
 }
 
 void
@@ -243,8 +243,8 @@ so_accept(int fd, unsigned long *raddr, unsigned short *rport)
 	if(sin->sin_family != AF_INET || len != sizeof(*sin))
 		error("not AF_INET");
 
-	*raddr = nhgetl(&sin->sin_addr.s_addr);
-	*rport = nhgets(&sin->sin_port);
+	*raddr = GBIT32BE(&sin->sin_addr.s_addr);
+	*rport = GBIT16BE(&sin->sin_port);
 	return nfd;
 }
 
@@ -267,8 +267,8 @@ so_bind(int fd, int su, unsigned long addr, unsigned short port)
 		for(i = 600; i < 1024; i++) {
 			memset(&sa, 0, sizeof(sa));
 			sin->sin_family = AF_INET;
-			hnputl(&sin->sin_addr.s_addr, addr);
-			hnputs(&sin->sin_port, i);
+			PBIT32BE(&sin->sin_addr.s_addr, addr);
+			PBIT16BE(&sin->sin_port, i);
 
 			if(bind(fd, &sa, sizeof(sa)) >= 0)
 				return;
@@ -278,8 +278,8 @@ so_bind(int fd, int su, unsigned long addr, unsigned short port)
 
 	memset(&sa, 0, sizeof(sa));
 	sin->sin_family = AF_INET;
-	hnputl(&sin->sin_addr.s_addr, addr);
-	hnputs(&sin->sin_port, port);
+	PBIT32BE(&sin->sin_addr.s_addr, addr);
+	PBIT16BE(&sin->sin_port, port);
 
 	if(bind(fd, &sa, sizeof(sa)) < 0)
 		oserror();
@@ -360,7 +360,7 @@ so_getservbyname(char *service, char *net, char *port)
 	if(s == 0)
 		return -1;
 	p = s->s_port;
-	sprint(port, "%d", nhgets(&p));
+	sprint(port, "%d", GBIT16BE(&p));
 	return 0;
 }
 

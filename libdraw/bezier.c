@@ -155,13 +155,13 @@ getbezsplinepts(Point *pt, int npt, Point **pp)
 }
 
 int
-bezier(Image *dst, Point p0, Point p1, Point p2, Point p3, int end0, int end1, int radius, Image *src, Point sp)
+bezier(__in_ecount(1) const Image *dst, Point p0, Point p1, Point p2, Point p3, int end0, int end1, int radius, __in_ecount(1) const Image *src, Point sp)
 {
 	return bezierop(dst, p0, p1, p2, p3, end0, end1, radius, src, sp, SoverD);
 }
 
 int
-bezierop(Image *dst, Point p0, Point p1, Point p2, Point p3, int end0, int end1, int radius, Image *src, Point sp, Drawop op)
+bezierop(__in_ecount(1) const Image *dst, Point p0, Point p1, Point p2, Point p3, int end0, int end1, int radius, __in_ecount(1) const Image *src, Point sp, Drawop op)
 {
 	Plist l;
 
@@ -177,13 +177,13 @@ bezierop(Image *dst, Point p0, Point p1, Point p2, Point p3, int end0, int end1,
 }
 
 int
-bezspline(Image *dst, Point *pt, int npt, int end0, int end1, int radius, Image *src, Point sp)
+bezspline(__in_ecount(1) const Image *dst, Point *pt, int npt, int end0, int end1, int radius, __in_ecount(1) const Image *src, Point sp)
 {
 	return bezsplineop(dst, pt, npt, end0, end1, radius, src, sp, SoverD);
 }
 
 int
-bezsplineop(Image *dst, Point *pt, int npt, int end0, int end1, int radius, Image *src, Point sp, Drawop op)
+bezsplineop(__in_ecount(1) const Image *dst, Point *pt, int npt, int end0, int end1, int radius, __in_ecount(1) const Image *src, Point sp, Drawop op)
 {
 	Plist l;
 
@@ -199,13 +199,13 @@ bezsplineop(Image *dst, Point *pt, int npt, int end0, int end1, int radius, Imag
 }
 
 int
-fillbezier(Image *dst, Point p0, Point p1, Point p2, Point p3, int w, Image *src, Point sp)
+fillbezier(__in_ecount(1) const Image *dst, Point p0, Point p1, Point p2, Point p3, int w, __in_ecount(1) const Image *src, Point sp)
 {
 	return fillbezierop(dst, p0, p1, p2, p3, w, src, sp, SoverD);
 }
 
 int
-fillbezierop(Image *dst, Point p0, Point p1, Point p2, Point p3, int w, Image *src, Point sp, Drawop op)
+fillbezierop(__in_ecount(1) const Image *dst, Point p0, Point p1, Point p2, Point p3, int w, __in_ecount(1) const Image *src, Point sp, Drawop op)
 {
 	Plist l;
 
@@ -221,13 +221,13 @@ fillbezierop(Image *dst, Point p0, Point p1, Point p2, Point p3, int w, Image *s
 }
 
 int
-fillbezspline(Image *dst, Point *pt, int npt, int w, Image *src, Point sp)
+fillbezspline(__in_ecount(1) const Image *dst, Point *pt, int npt, int w, __in_ecount(1) const Image *src, Point sp)
 {
 	return fillbezsplineop(dst, pt, npt, w, src, sp, SoverD);
 }
 
 int
-fillbezsplineop(Image *dst, Point *pt, int npt, int w, Image *src, Point sp, Drawop op)
+fillbezsplineop(__in_ecount(1) const Image *dst, Point *pt, int npt, int w, __in_ecount(1) const Image *src, Point sp, Drawop op)
 {
 	Plist l;
 

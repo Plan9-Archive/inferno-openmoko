@@ -292,9 +292,9 @@ parsemod(const char *path, const char *code, ulong length, const Dir *dir)
         goto bad;
     }
     for(i = 0; i < hsize; i++) {
-        //char *comment = (char *)HeapAlloc(GetProcessHeap(),0,256); /* TODO: debug, remove later */
+        char *comment = (char *)HeapAlloc(GetProcessHeap(),0,256); /* TODO: debug, remove later */
 //        char* comment = malloc(256);
-//        sprint(comment, "%s.%d", path, i);
+        sprint(comment, "%s.%d", path, i);
         id = operand(isp);
         assert(i==id); //?
 
@@ -308,7 +308,7 @@ parsemod(const char *path, const char *code, ulong length, const Dir *dir)
             kwerrstr("implausible Dis file");
             goto bad;
         }
-        pt = dtype(freeheap, tsz, istream, tnp, "comment");
+        pt = dtype(freeheap, tsz, istream, tnp, comment);
         if(pt == nil) {
             kwerrstr(exNomem);
             goto bad;
@@ -665,7 +665,7 @@ unload(Module *m)
     if(m->ref > 0)
         return;
     if(m->ref == -1)
-        abort();
+        panic("unload ref==-1");
 
     last = &modules;
     for(mm = modules; mm != nil; mm = mm->link) {

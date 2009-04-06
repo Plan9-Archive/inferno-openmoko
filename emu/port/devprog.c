@@ -135,6 +135,7 @@ static char *progstate[] =          /* must correspond to include/interp.h */
     "release",          /* interpreter released */
     "exiting",          /* exit because of kill or error */
     "broken",           /* thread crashed */
+    "deadbeef",         /* = 0xdeadbeef */
 };
 
 static  void    dbgstep(Progctl*, Prog*, int);
@@ -192,7 +193,7 @@ proggen(Chan *c, const char *name, Dirtab *tab, int ntab, int s, Dir *dp)
             release();
             return -1;
         }
-        mkqid(&qid, pid<<QSHIFT, pid, QTDIR);
+        mkqid(&qid, (vlong)pid<<QSHIFT, pid, QTDIR);
         devdir(c, qid, up->genbuf, 0, o->user, DMDIR|0555, dp);
         release();
         return 1;
@@ -721,8 +722,10 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
             if(addr & 3)
                 return -1;
             ml = *(Modlink**)addr;
-            fmt = ml == H ? "nil\n" : "%lux\n";
-            n += snprint(va+n, count-n, fmt, ml->MP);
+            if(ml == H )
+                n += snprint(va+n, count-n, "nil\n");
+            else
+                n += snprint(va+n, count-n, "%lux\n", ml->MP);
             s = sizeof(DISINT);
             break;
         case 'c':
@@ -811,8 +814,8 @@ progtime(ulong msec, char *buf, char *ebuf)
     return buf;
 }
 
-static long
-progread(Chan *c, char *va, long n, vlong offset)
+static size_t
+progread(Chan *c, __out_ecount(n) char *va, size_t n, vlong offset)
 {
     int i;
     Prog *p;
@@ -1009,8 +1012,8 @@ mntscan(Mntwalk *mw, Pgrp *pg)
     runlock(&pg->ns);
 }
 
-static long
-progwrite(Chan *c, const char *va, long n, vlong offset)
+static size_t
+progwrite(Chan *c, __in_ecount(n) const char *va, size_t n, vlong offset)
 {
     Prog *p, *f;
     Heapqry *hq;

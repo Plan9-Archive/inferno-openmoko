@@ -20,8 +20,8 @@ extern void tktprintindex(TkTindex*);
 extern void tktprintitem(TkTitem*);
 extern void tktprintline(TkTline*);
 
-char*
-tktindparse(Tk *tk, char **pspec, TkTindex *ans)
+const char*
+tktindparse(Tk *tk, const char **pspec, TkTindex *ans)
 {
 	int m, n, done, neg, modstart;
 	char *s, *mod;

@@ -96,10 +96,9 @@ tkcvslinesize(TkCitem *i)
 	i->p.bb = insetrect(i->p.bb, -w);
 }
 
-char*
-tkcvslinecreat(Tk* tk, char *arg, char **val)
+TH(tkcvslinecreat)
 {
-	char *e;
+	const char* e;
 	TkCline *l;
 	TkCitem *i;
 	TkCanvas *c;
@@ -151,8 +150,8 @@ tkcvslinecreat(Tk* tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tkcvslinecget(TkCitem *i, char *arg, char **val)
+const char*
+tkcvslinecget(TkCitem *i, __in_z const char *arg, char **val)
 {
 	TkOptab tko[3];
 	TkCline *l = TKobj(TkCline, i);
@@ -166,10 +165,10 @@ tkcvslinecget(TkCitem *i, char *arg, char **val)
 	return tkgencget(tko, arg, val, i->env->top);
 }
 
-char*
-tkcvslineconf(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvslineconf(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
-	char *e;
+	const char *e;
 	TkOptab tko[3];
 	TkCline *l = TKobj(TkCline, i);
 
@@ -200,7 +199,7 @@ tkcvslinefree(TkCitem *i)
 }
 
 void
-tkcvslinedraw(Image *img, TkCitem *i, TkEnv *pe)
+tkcvslinedraw(__in_ecount(1) const Image *img, TkCitem *i, TkEnv *pe)
 {
 	int w;
 	Point *p;
@@ -226,10 +225,10 @@ tkcvslinedraw(Image *img, TkCitem *i, TkEnv *pe)
 		poly(img, p, i->p.npoint, l->arrowf, l->arrowl, w, pen, p[0]);
 }
 
-char*
-tkcvslinecoord(TkCitem *i, char *arg, int x, int y)
+const char*
+tkcvslinecoord(TkCitem *i, __in_z const char *arg, int x, int y)
 {
-	char *e;
+	const char* e;
 	TkCpoints p;
 
 	if(arg == nil) {

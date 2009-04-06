@@ -116,8 +116,8 @@ capclose(Chan *c)
 	USED(c);
 }
 
-static long
-capread(Chan *c, char *va, long n, vlong vl)
+static size_t
+capread(Chan *c, __out_ecount(n) char *va, size_t n, vlong vl)
 {
 	USED(vl);
 	switch((ulong)c->qid.path){
@@ -197,8 +197,8 @@ capwriteuse(const char *a, int len)
 	return -1;
 }
 
-static long
-capwrite(Chan* c, const char* buf, long n, vlong offset)
+static size_t
+capwrite(Chan* c, __in_ecount(n) const char* buf, size_t n, vlong offset)
 {
 	USED(offset);
 	switch((ulong)c->qid.path){

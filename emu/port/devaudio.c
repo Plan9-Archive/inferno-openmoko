@@ -84,8 +84,8 @@ audioclose(Chan *c)
 
 static int ctlsummary(char*, int, Audio_t*);
 
-static long
-audioread(Chan *c, char *va, long count, vlong offset)
+static size_t
+audioread(Chan *c, __out_ecount(count) char *va, size_t count, vlong offset)
 {
 	char *buf;
 	int n;
@@ -110,8 +110,8 @@ audioread(Chan *c, char *va, long count, vlong offset)
 	return 0;
 }
 
-static long
-audiowrite(Chan *c, const char *va, long count, vlong offset)
+static size_t
+audiowrite(Chan *c, __in_ecount(count) const char *va, size_t count, vlong offset)
 {
 	switch(c->qid.path) {
 	case Qaudio_audio:

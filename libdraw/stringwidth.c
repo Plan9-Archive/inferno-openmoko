@@ -2,14 +2,16 @@
 #include <draw.h>
 
 int
-_stringnwidth(Font *f, char *s, Rune *r, int len)
+_stringnwidth(Font *f, const char *s, const Rune *r, int len)
 {
 	int wid, twid, n, max, l;
 	char *name;
 	enum { Max = 64 };
 	ushort cbuf[Max];
-	Rune rune, **rptr;
-	char *subfontname, **sptr;
+	Rune rune;
+    const Rune **rptr;
+	const char *subfontname;
+    const char **sptr;
 	Font *def;
 	static Rune rnull;
 
@@ -60,19 +62,19 @@ _stringnwidth(Font *f, char *s, Rune *r, int len)
 }
 
 int
-stringnwidth(Font *f, char *s, int len)
+stringnwidth(Font *f, __in_z const char *s, int len)
 {
 	return _stringnwidth(f, s, nil, len);
 }
 
 int
-stringwidth(Font *f, char *s)
+stringwidth(Font *f, __in_z const char *s)
 {
 	return _stringnwidth(f, s, nil, 1<<24);
 }
 
 Point
-stringsize(Font *f, char *s)
+stringsize(Font *f, __in_z const char *s)
 {
 	return Pt(_stringnwidth(f, s, nil, 1<<24), f->height);
 }

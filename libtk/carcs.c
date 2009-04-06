@@ -83,10 +83,9 @@ tkcvsarcsize(TkCitem *i)
 	i->p.bb = insetrect(i->p.bb, -w);
 }
 
-char*
-tkcvsarccreat(Tk* tk, char *arg, char **val)
+TH(tkcvsarccreat)
 {
-	char *e;
+	const char* e;
 	TkCarc *a;
 	TkCitem *i;
 	TkCanvas *c;
@@ -138,8 +137,8 @@ tkcvsarccreat(Tk* tk, char *arg, char **val)
 	return tkvalue(val, "%d", i->id);
 }
 
-char*
-tkcvsarccget(TkCitem *i, char *arg, char **val)
+const char*
+tkcvsarccget(TkCitem *i, __in_z const char *arg, char **val)
 {
 	TkOptab tko[3];
 	TkCarc *a = TKobj(TkCarc, i);
@@ -153,10 +152,10 @@ tkcvsarccget(TkCitem *i, char *arg, char **val)
 	return tkgencget(tko, arg, val, i->env->top);
 }
 
-char*
-tkcvsarcconf(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvsarcconf(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
-	char *e;
+	const char *e;
 	TkOptab tko[3];
 	TkCarc *a = TKobj(TkCarc, i);
 
@@ -187,7 +186,7 @@ tkcvsarcfree(TkCitem *i)
 }
 
 void
-tkcvsarcdraw(Image *img, TkCitem *i, TkEnv *pe)
+tkcvsarcdraw(__in_ecount(1) const Image *img, TkCitem *i, TkEnv *pe)
 {
 	TkEnv *e;
 	TkCarc *a;
@@ -257,10 +256,10 @@ tkcvsarcdraw(Image *img, TkCitem *i, TkEnv *pe)
 	}
 }
 
-char*
-tkcvsarccoord(TkCitem *i, char *arg, int x, int y)
+const char*
+tkcvsarccoord(TkCitem *i, __in_z const char *arg, int x, int y)
 {
-	char *e;
+	const char* e;
 	TkCpoints p;
 
 	if(arg == nil) {

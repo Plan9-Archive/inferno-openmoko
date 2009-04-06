@@ -153,22 +153,22 @@ struct Cname
 
 struct Dev
 {
-	int	dc;
-	char*	name;
+	int	        dc;
+	char*	    name;
 
-	void	(*init)(void);
-	Chan*	(*attach)(const char*);
+	void	    (*init)(void);
+	Chan*	    (*attach)(const char*);
 	Walkqid*	(*walk)(Chan*, Chan*, const char**, int);
-	int	(*stat)(Chan*, char*, int);
-	Chan*	(*open)(Chan*, int);
-	void	(*create)(Chan*, const char*, int, ulong);
-	void	(*close)(Chan*);
-	long	(*read)(Chan*, char*, long, vlong);
-	Block*	(*bread)(Chan*, long, ulong);
-	long	(*write)(Chan*, const char*, long, vlong);
-	long	(*bwrite)(Chan*, Block*, ulong);
-	void	(*remove)(Chan*);
-	int	(*wstat)(Chan*, char*, int);
+	int	        (*stat)(Chan*, char*, int);
+	Chan*	    (*open)(Chan*, int);
+	void	    (*create)(Chan*, const char*, int, ulong);
+	void	    (*close)(Chan*);
+	size_t      (*read)(Chan*, __out_ecount(n) char*, size_t n, vlong);
+	Block*	    (*bread)(Chan*, long, ulong);
+	size_t	    (*write)(Chan*, __in_ecount(n) const char*, size_t n, vlong);
+	long	    (*bwrite)(Chan*, Block*, ulong);
+	void	    (*remove)(Chan*);
+	int	        (*wstat)(Chan*, char*, int);
 };
 
 enum

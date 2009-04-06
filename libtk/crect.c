@@ -68,10 +68,9 @@ tkmkstipple(Image *stipple)
 	}
 }
 
-char*
-tkcvsrectcreat(Tk* tk, char *arg, char **val)
+TH(tkcvsrectcreat)
 {
-	char *e;
+	const char* e;
 	TkCrect *r;
 	TkCitem *i;
 	TkCanvas *c;
@@ -126,8 +125,8 @@ tkcvsrectcreat(Tk* tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tkcvsrectcget(TkCitem *i, char *arg, char **val)
+const char*
+tkcvsrectcget(TkCitem *i, __in_z const char *arg, char **val)
 {
 	TkOptab tko[3];
 	TkCrect *r = TKobj(TkCrect, i);
@@ -141,10 +140,10 @@ tkcvsrectcget(TkCitem *i, char *arg, char **val)
 	return tkgencget(tko, arg, val, i->env->top);
 }
 
-char*
-tkcvsrectconf(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvsrectconf(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
-	char *e;
+	const char *e;
 	TkOptab tko[3];
 	TkCrect *r = TKobj(TkCrect, i);
 
@@ -171,7 +170,7 @@ tkcvsrectfree(TkCitem *i)
 }
 
 void
-tkcvsrectdraw(Image *img, TkCitem *i, TkEnv *pe)
+tkcvsrectdraw(__in_ecount(1) const Image *img, TkCitem *i, TkEnv *pe)
 {
 	int lw, rw;
 	TkEnv *e;
@@ -229,10 +228,10 @@ tkcvsrectdraw(Image *img, TkCitem *i, TkEnv *pe)
 	}
 }
 
-char*
-tkcvsrectcoord(TkCitem *i, char *arg, int x, int y)
+const char*
+tkcvsrectcoord(TkCitem *i, __in_z const char *arg, int x, int y)
 {
-	char *e;
+	const char* e;
 	TkCpoints p;
 
 	if(arg == nil) {

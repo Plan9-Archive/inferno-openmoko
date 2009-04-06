@@ -10,7 +10,7 @@ REG     R = {0};                        /* Virtual Machine registers */ /* BUG: 
 String  snil = {0};                     /* String known to be zero length */
 
 
-#define OP(fn)  static void fn(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr)
+#define OP(fn)  static void fn(__inout_ecount(1) Disdata*rs, __inout_ecount(1) Disdata*rm, __inout_ecount(1) Disdata*rd, REG*rr)
 
 
 OP(runt) { }

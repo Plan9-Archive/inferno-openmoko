@@ -141,8 +141,8 @@ envclose(Chan * c)
 		envremove(c);
 }
 
-static long
-envread(Chan *c, char *a, long n, vlong offset)
+static size_t
+envread(Chan *c, __out_ecount(n) char *a, size_t n, vlong offset)
 {
 	Egrp *eg;
 	Evalue *e;
@@ -170,8 +170,8 @@ envread(Chan *c, char *a, long n, vlong offset)
 	return n;
 }
 
-static long
-envwrite(Chan *c, const char *a, long n, vlong offset)
+static size_t
+envwrite(Chan *c, __in_ecount(n) const char *a, size_t n, vlong offset)
 {
 	char *s;
 	ulong ve;

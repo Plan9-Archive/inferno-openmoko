@@ -17,8 +17,8 @@ static  char    TktypeMap[] = Tk_Toplevel_map;
 int tkstylus;
 void    (*tkwiretap)(void*, char*, char*, void*, Rectangle*);
 
-static void tktopimagedptr(TkTop*, Draw_Image*);
-static char*tkputwinimage(Tk*, Draw_Image*, int);
+static void         tktopimagedptr(TkTop*, Draw_Image*);
+static const char*  tkputwinimage(Tk*, Draw_Image*, int);
 
 static void
 lockctxt(TkCtxt *ctxt)
@@ -144,7 +144,8 @@ DISAPI(Tk_toplevel)
 DISAPI(Tk_cmd)
 {
     TkTop *t;
-    char *val, *e;
+    char *val;
+    const char *e;
 
     t = (TkTop*)f->t; /* ??? FIXME */
     if(t == H || D2H(t)->t != fakeTkTop) {
@@ -472,7 +473,7 @@ DISAPI(Tk_keyboard)
 }
 
 TkVar*
-tkmkvar(TkTop *t, char *name, int type)
+tkmkvar(TkTop *t, __in_z const char *name, int type)
 {
     TkVar *v;
 
@@ -497,7 +498,7 @@ tkmkvar(TkTop *t, char *name, int type)
 }
 
 void
-tkfreevar(TkTop *t, char *name, int swept)
+tkfreevar(TkTop *t, __in_z const char *name, int swept)
 {
     TkVar **l, *p;
 
@@ -662,7 +663,7 @@ tkreplimg(TkTop *t, Draw_Image *f, Draw_Image *m, Image **ximg)
     *ximg = new;
 }
 
-static char*
+static const char*
 tkaddpanelimage(TkTop *t, Draw_Image *di, Image **i)
 {
     TkPanelimage *pi;
@@ -733,7 +734,8 @@ DISAPI(Tk_putimage)
     int locked, found, reqid, n;
     char *words[2];
     Display *d;
-    char *name, *e;
+    char *name;
+    const char *e;
     Tk *tk;
 
     ASSIGN(*f->ret, H);
@@ -950,7 +952,7 @@ tkfreetop(Heap *h, int swept)
 
     for(i = t->imgs; i; i = nexti) {
         if(i->ref != 1)
-            abort();
+            panic("tkfreetop ref!=1");
         nexti = i->link;
         tkimgput(i);
     }
@@ -1058,7 +1060,7 @@ tkdestroywinimage(Tk *tk)
     tkwreq(top, "delete %s", name);
 }
 
-static char*
+static const char*
 tkputwinimage(Tk *tk, Draw_Image *di, int reqid)
 {
     TkWin *tkw;
@@ -1172,7 +1174,7 @@ hexify(char *buf, int n)
     }
 }
 
-char*
+const char*
 tkcursorswitch(TkTop *top, Image *i, TkImg *img)
 {
     Image *ci, *scratch;

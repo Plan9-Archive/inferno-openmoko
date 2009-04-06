@@ -127,7 +127,7 @@ gkbdputc(Queue *q, int ch)
 {
 	int n;
 	Rune r;
-	static uchar kc[5*UTFmax];
+	static char kc[5*UTFmax];
 	static int nk, collecting = 0;
 	char buf[UTFmax];
 
@@ -139,7 +139,7 @@ gkbdputc(Queue *q, int ch)
 	}
 	if(collecting) {
 		int c;
-		nk += runetochar((char*)&kc[nk], &r);
+		nk += runetochar(&kc[nk], &r);
 		c = latin1(kc, nk);
 		if(c < -1)	/* need more keystrokes */
 			return;
@@ -280,8 +280,8 @@ consclose(Chan *c)
 	}
 }
 
-static long
-consread(Chan *c, char *va, long n, vlong offset)
+static size_t
+consread(Chan *c, __out_ecount(n) char *va, size_t n, vlong offset)
 {
 	ulong l;
 	int i, send;
@@ -428,8 +428,8 @@ consread(Chan *c, char *va, long n, vlong offset)
 	}
 }
 
-static long
-conswrite(Chan *c, const char *va, long n, vlong offset)
+static size_t
+conswrite(Chan *c, __in_ecount(n) const char *va, size_t n, vlong offset)
 {
 	char buf[128], ch;
 	const char *a;
@@ -566,7 +566,7 @@ conswrite(Chan *c, const char *va, long n, vlong offset)
 			error(Ebadarg);
 		strncpy(buf, va, n);
 		buf[n] = '\0';
-		if(buf[n-1] == '\n')
+		if(n>0 && buf[n-1] == '\n')
 			buf[n-1] = 0;
 		kstrdup(&ossysname, buf);
 		break;

@@ -13,18 +13,18 @@
 #define imark u.mark
 #define iline u.line
 
-static char* tkttagadd(Tk*, char*, char**);
-static char* tkttagbind(Tk*, char*, char**);
-static char* tkttagcget(Tk*, char*, char**);
-static char* tkttagconfigure(Tk*, char*, char**);
-static char* tkttagdelete(Tk*, char*, char**);
-static char* tkttaglower(Tk*, char*, char**);
-static char* tkttagnames(Tk*, char*, char**);
-static char* tkttagnextrange(Tk*, char*, char**);
-static char* tkttagprevrange(Tk*, char*, char**);
-static char* tkttagraise(Tk*, char*, char**);
-static char* tkttagranges(Tk*, char*, char**);
-static char* tkttagremove(Tk*, char*, char**);
+static const char* tkttagadd(Tk*, __in_z const char*, char**);
+static const char* tkttagbind(Tk*, __in_z const char*, char**);
+static const char* tkttagcget(Tk*, __in_z const char*, char**);
+static const char* tkttagconfigure(Tk*, __in_z const char*, char**);
+static const char* tkttagdelete(Tk*, __in_z const char*, char**);
+static const char* tkttaglower(Tk*, __in_z const char*, char**);
+static const char* tkttagnames(Tk*, __in_z const char*, char**);
+static const char* tkttagnextrange(Tk*, __in_z const char*, char**);
+static const char* tkttagprevrange(Tk*, __in_z const char*, char**);
+static const char* tkttagraise(Tk*, __in_z const char*, char**);
+static const char* tkttagranges(Tk*, __in_z const char*, char**);
+static const char* tkttagremove(Tk*, __in_z const char*, char**);
 
 #define TKTEO		(offsetof(TkTtaginfo, env))
 static
@@ -54,27 +54,27 @@ TkOption tagenvopts[] =
 {
 	{"foreground",	OPTcolr,	offsetof(TkTtaginfo, env),	{(TkStab*)TkCforegnd}},
 	{"background",	OPTcolr,	offsetof(TkTtaginfo, env),	{(TkStab*)TkCbackgnd}},
-	{"fg",		OPTcolr,	offsetof(TkTtaginfo, env),	{(TkStab*)TkCforegnd}},
-	{"bg",		OPTcolr,	offsetof(TkTtaginfo, env),	{(TkStab*)TkCbackgnd}},
-	{"font",	OPTfont,	offsetof(TkTtaginfo, env)	},
+	{"fg",		    OPTcolr,	offsetof(TkTtaginfo, env),	{(TkStab*)TkCforegnd}},
+	{"bg",		    OPTcolr,	offsetof(TkTtaginfo, env),	{(TkStab*)TkCbackgnd}},
+	{"font",	    OPTfont,	offsetof(TkTtaginfo, env)	},
 	{nil}
 };
 
 TkCmdtab
 tkttagcmd[] =
 {
-	{"add",		tkttagadd},
-	{"bind",	tkttagbind},
-	{"cget",	tkttagcget},
+	{"add",		    tkttagadd},
+	{"bind",	    tkttagbind},
+	{"cget",	    tkttagcget},
 	{"configure",	tkttagconfigure},
-	{"delete",	tkttagdelete},
-	{"lower",	tkttaglower},
-	{"names",	tkttagnames},
+	{"delete",	    tkttagdelete},
+	{"lower",	    tkttaglower},
+	{"names",	    tkttagnames},
 	{"nextrange",	tkttagnextrange},
 	{"prevrange",	tkttagprevrange},
-	{"raise",	tkttagraise},
-	{"ranges",	tkttagranges},
-	{"remove",	tkttagremove},
+	{"raise",	    tkttagraise},
+	{"ranges",	    tkttagranges},
+	{"remove",	    tkttagremove},
 	{nil}
 };
 
@@ -183,8 +183,8 @@ tkttagcomb(TkTitem *i1, TkTitem *i2, int add)
 	}
 }
 
-char*
-tktaddtaginfo(Tk *tk, char *name, TkTtaginfo **ret)
+const char*
+tktaddtaginfo(Tk *tk, __in_z const char *name, TkTtaginfo **ret)
 {
 	int i, *ntagp;
 	TkTtaginfo *ti;
@@ -228,7 +228,7 @@ tktaddtaginfo(Tk *tk, char *name, TkTtaginfo **ret)
 }
 
 TkTtaginfo *
-tktfindtag(TkTtaginfo *t, char *name)
+tktfindtag(TkTtaginfo *t, __in_z const char *name)
 {
 	while(t != nil) {
 		if(strcmp(t->name, name) == 0)
@@ -255,7 +255,7 @@ tktfreetags(TkTtaginfo *t)
 }
 
 int
-tkttagind(Tk *tk, char *name, int first, TkTindex *ans)
+tkttagind(Tk *tk, __in_z const char *name, int first, TkTindex *ans)
 {
 	int id;
 	TkTtaginfo *t;
@@ -365,10 +365,11 @@ tkttagopts(Tk *tk, TkTitem *it, int *opts, TkEnv *e, TkTtabstop **tb, int dflt)
 	}
 }
 
-char*
-tkttagparse(Tk *tk, char **parg, TkTtaginfo **ret)
+const char*
+tkttagparse(Tk *tk, const char **parg, TkTtaginfo **ret)
 {
-	char *e, *buf;
+	const char *e;
+    char *buf;
 	TkText *tkt = TKobj(TkText, tk);
 
 	buf = (char*)mallocz(Tkmaxitem, 0);
@@ -459,10 +460,10 @@ tkttagprange(TkText *tkt, int tid, TkTindex *i1, TkTindex *i2,
 }
 
 /* XXX - Tad: potential memory leak on memory allocation failure */
-char *
+const char *
 tkttagchange(Tk *tk, int tid, TkTindex *i1, TkTindex *i2, int add)
 {
-	char *e;
+	const char *e;
 	int samei, nextra, j, changed;
 	TkTline *lmin, *lmax;
 	TkTindex ixprev;
@@ -556,10 +557,10 @@ tkttagchange(Tk *tk, int tid, TkTindex *i1, TkTindex *i2, int add)
 	return nil;
 }
 
-static char*
-tkttagaddrem(Tk *tk, char *arg, int add)
+static __checkReturn const char*
+tkttagaddrem(Tk *tk, __in_z const char *arg, int add)
 {
-	char *e;
+	const char *e;
 	TkText *tkt;
 	TkTtaginfo *ti;
 	TkTindex ix1, ix2;
@@ -610,24 +611,21 @@ tkttagaddrem(Tk *tk, char *arg, int add)
 	+remove
 */
 
-static char*
-tkttagadd(Tk *tk, char *arg, char **val)
+static TH(tkttagadd)
 {
 	USED(val);
 
 	return tkttagaddrem(tk, arg, 1);
 }
 
-static char*
-tkttagbind(Tk *tk, char *arg, char **val)
+static TH(tkttagbind)
 {
-	char *e;
+	const char *e;
 	Rune r;
 	TkTtaginfo *ti;
 	TkAction *a;
 	int event, mode;
 	char *cmd, buf[Tkmaxitem];
-
 
 	e = tkttagparse(tk, &arg, &ti);
 	if(e != nil)
@@ -674,10 +672,9 @@ tkttagbind(Tk *tk, char *arg, char **val)
 	return tkaction(&ti->binds, event, TkDynamic, cmd, mode);
 }
 
-static char*
-tkttagcget(Tk *tk, char *arg, char **val)
+static TH(tkttagcget)
 {
-	char *e;
+	const char *e;
 	TkTtaginfo *ti;
 	TkOptab tko[3];
 
@@ -694,10 +691,9 @@ tkttagcget(Tk *tk, char *arg, char **val)
 	return tkgencget(tko, arg, val, tk->env->top);
 }
 
-static char*
-tkttagconfigure(Tk *tk, char *arg, char **val)
+static TH(tkttagconfigure)
 {
-	char *e;
+	const char *e;
 	TkOptab tko[3];
 	TkTtaginfo *ti;
 	TkTindex ix;
@@ -742,13 +738,12 @@ tktunlinktag(TkText *tkt, TkTtaginfo *t)
 	}
 }
 
-static char*
-tkttagdelete(Tk *tk, char *arg, char **val)
+static TH(tkttagdelete)
 {
 	TkText *tkt;
 	TkTtaginfo *t;
 	TkTindex ix;
-	char *e;
+	const char *e;
 	int found;
 
 	USED(val);
@@ -789,13 +784,12 @@ tkttagdelete(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkttaglower(Tk *tk, char *arg, char **val)
+static TH(tkttaglower)
 {
 	TkText *tkt;
 	TkTindex ix;
 	TkTtaginfo *t, *tbelow, *f, **l;
-	char *e;
+	const char *e;
 
 	USED(val);
 
@@ -835,10 +829,9 @@ tkttaglower(Tk *tk, char *arg, char **val)
 }
 
 
-static char*
-tkttagnames(Tk *tk, char *arg, char **val)
+static TH(tkttagnames)
 {
-	char *e, *r, *fmt;
+	const char *e, *r, *fmt;
 	TkTtaginfo *t;
 	TkTindex i;
 	TkText *tkt = TKobj(TkText, tk);
@@ -868,10 +861,9 @@ tkttagnames(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkttagnextrange(Tk *tk, char *arg, char **val)
+static TH(tkttagnextrange)
 {
-	char *e;
+	const char *e;
 	TkTtaginfo *t;
 	TkTindex i1, i2, istart, iend;
 	TkText *tkt = TKobj(TkText, tk);
@@ -898,10 +890,9 @@ tkttagnextrange(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkttagprevrange(Tk *tk, char *arg, char **val)
+static TH(tkttagprevrange)
 {
-	char *e;
+	const char *e;
 	TkTtaginfo *t;
 	TkTindex i1, i2, istart, iend;
 	TkText *tkt = TKobj(TkText, tk);
@@ -928,13 +919,12 @@ tkttagprevrange(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkttagraise(Tk *tk, char *arg, char **val)
+static TH(tkttagraise)
 {
 	TkText *tkt;
 	TkTindex ix;
 	TkTtaginfo *t, *tabove, *f, **l;
-	char *e;
+	const char *e;
 
 	USED(val);
 
@@ -977,10 +967,9 @@ tkttagraise(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkttagranges(Tk *tk, char *arg, char **val)
+static TH(tkttagranges)
 {
-	char *e, *fmt;
+	const char *e, *fmt;
 	TkTtaginfo *t;
 	TkTindex i1, i2, istart, iend;
 	TkText *tkt = TKobj(TkText, tk);
@@ -1007,8 +996,7 @@ tkttagranges(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkttagremove(Tk *tk, char *arg, char **val)
+static TH(tkttagremove)
 {
 	USED(val);
 

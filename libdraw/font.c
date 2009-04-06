@@ -7,11 +7,12 @@ static int	freeup(Font*);
 #define	PJW	0	/* use NUL==pjw for invisible characters */
 
 int
-cachechars(Font *f, char **ss, Rune **rr, ushort *cp, int max, int *wp, char **subfontname)
+cachechars(Font *f, const char **ss, const Rune **rr, ushort *cp, int max, int *wp, const char **subfontname)
 {
 	int i, th, sh, h, ld, w, rw, wid, nc;
-	char *sp;
-	Rune r, *rp, vr;
+	const char *sp;
+	Rune r, vr;
+    const Rune* rp;
 	ulong a;
 	Cacheinfo *c, *tc, *ec;
 
@@ -170,7 +171,7 @@ cf2subfont(Cachefont *cf, Font *f)
 
 /* return 1 if load succeeded, 0 if failed, -1 if must retry */
 int
-loadchar(Font *f, Rune r, Cacheinfo *c, int h, int noflush, char **subfontname)
+loadchar(Font *f, Rune r, Cacheinfo *c, int h, int noflush, const char **subfontname)
 {
 	int i, oi, wid, top, bottom;
 	Rune pic;

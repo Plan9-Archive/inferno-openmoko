@@ -211,8 +211,8 @@ tksetopt(TkParam *p, Tk *tk)
 	}
 }
 
-static char*
-tkforget(TkTop *t, char *arg)
+static const char*
+tkforget(TkTop *t, __in_z const char *arg)
 {
 	Tk *tk;
 	char *buf;
@@ -239,8 +239,8 @@ tkforget(TkTop *t, char *arg)
 	return nil;
 }
 
-char*
-tkpropagate(TkTop *t, char *arg)
+const char*
+tkpropagate(TkTop *t, __in_z const char *arg)
 {
 	Tk *tk;
 	TkStab *s;
@@ -274,11 +274,12 @@ tkpropagate(TkTop *t, char *arg)
 	return TkBadvl;
 }
 
-static char*
-tkslaves(TkTop *t, char *arg, char **val)
+static const char*
+tkslaves(TkTop *t, __in_z const char *arg, char **val)
 {
 	Tk *tk;
-	char *fmt, *e, *buf;
+	char *fmt, *buf;
+    const char *e;
 
 	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
@@ -318,7 +319,7 @@ tkisslave(Tk *in, Tk *tk)
 	return 0;
 }
 
-static char*
+static const char*
 tkcanpack(Tk *tk, Tk *parent)
 {
 	if(tkisslave(parent, tk))
@@ -332,15 +333,16 @@ tkcanpack(Tk *tk, Tk *parent)
 	return nil;
 }
 
-char*
-tkpack(TkTop *t, char *arg, char **val)
+const char*
+tkpack(TkTop *t, __in_z const char *arg, char **val)
 {
 	TkParam param = defparam;
 	TkParam *p = &param;
 	TkOptab tko[2];
 	Tk *tk, **l, *tkp;
 	TkName *names, *n;
-	char *e, *w, *buf;
+    const char *e, *w;
+	char *buf;
 
 	buf = (char*)mallocz(Tkminitem, 0);
 	if(buf == nil)

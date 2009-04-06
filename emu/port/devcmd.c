@@ -352,8 +352,8 @@ cmdclose(Chan *c)
 	}
 }
 
-static long
-cmdread(Chan *ch, char *a, long n, vlong offset)
+static size_t
+cmdread(Chan *ch, __out_ecount(n) char *a, size_t n, vlong offset)
 {
 	CmdConv *c;
 	char *cmds;
@@ -423,15 +423,15 @@ enum
 
 static
 Cmdtab cmdtab[] = {
-	{CM_dir,		"dir",		2},
-	{CM_exec,	"exec",		0},
-	{CM_kill,	"kill",		1},
-	{CM_nice,	"nice",		0},
-	{CM_killonclose, "killonclose",	0},
+	{CM_dir,		    "dir",		    2},
+	{CM_exec,	        "exec",		    0},
+	{CM_kill,	        "kill",		    1},
+	{CM_nice,	        "nice",		    0},
+	{CM_killonclose,    "killonclose",	0},
 };
 
-static long
-cmdwrite(Chan *ch, const char *a, long n, vlong offset)
+static size_t
+cmdwrite(Chan *ch, __in_ecount(n) const char *a, size_t n, vlong offset)
 {
 	int i, r;
 	CmdConv *c;

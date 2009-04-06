@@ -19,7 +19,7 @@ struct cvlist
  * Given 5 characters k[0]..k[4], find the rune or return -1 for failure.
  */
 static long
-unicode(uchar *k)
+unicode(const char __in_ecount(5) *k)
 {
 	long i, c;
 

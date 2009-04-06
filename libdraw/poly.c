@@ -20,9 +20,17 @@ addcoord(uchar *p, int oldx, int newx)
 	return p;
 }
 
-static
-void
-dopoly(int cmd, Image *dst, Point *pp, int np, int end0, int end1, int radius, Image *src, Point *sp, Drawop op)
+static void
+dopoly(int cmd, 
+       __in_ecount(1) const Image *dst, 
+       __in_ecount(np) const Point *pp, 
+       int np,
+       int end0,
+       int end1,
+       int radius,
+       __in_ecount(1) const Image *src,
+       __in_ecount(1) const Point *sp,
+       Drawop op)
 {
 	uchar *a, *t, *u;
 	int i, ox, oy;
@@ -63,25 +71,25 @@ dopoly(int cmd, Image *dst, Point *pp, int np, int end0, int end1, int radius, I
 }
 
 void
-poly(Image *dst, Point *p, int np, int end0, int end1, int radius, Image *src, Point sp)
+poly(__in_ecount(1) const Image *dst, Point *p, int np, int end0, int end1, int radius, __in_ecount(1) const Image *src, Point sp)
 {
 	dopoly('p', dst, p, np, end0, end1, radius, src, &sp, SoverD);
 }
 
 void
-polyop(Image *dst, Point *p, int np, int end0, int end1, int radius, Image *src, Point sp, Drawop op)
+polyop(__in_ecount(1) const Image *dst, Point *p, int np, int end0, int end1, int radius, __in_ecount(1) const Image *src, Point sp, Drawop op)
 {
 	dopoly('p', dst, p, np, end0, end1, radius, src, &sp, op);
 }
 
 void
-fillpoly(Image *dst, Point *p, int np, int wind, Image *src, Point sp)
+fillpoly(__in_ecount(1) const Image *dst, Point *p, int np, int wind, __in_ecount(1) const Image *src, Point sp)
 {
 	dopoly('P', dst, p, np, wind, 0, 0, src, &sp, SoverD);
 }
 
 void
-fillpolyop(Image *dst, Point *p, int np, int wind, Image *src, Point sp, Drawop op)
+fillpolyop(__in_ecount(1) const Image *dst, Point *p, int np, int wind, __in_ecount(1) const Image *src, Point sp, Drawop op)
 {
 	dopoly('P', dst, p, np, wind, 0, 0, src, &sp, op);
 }

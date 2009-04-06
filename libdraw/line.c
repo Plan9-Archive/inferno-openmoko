@@ -2,13 +2,13 @@
 #include <draw.h>
 
 void
-line(Image *dst, Point p0, Point p1, int end0, int end1, int radius, Image *src, Point sp)
+line(__in_ecount(1) const Image *dst, Point p0, Point p1, int end0, int end1, int radius, __in_ecount(1) const Image *src, Point sp)
 {
 	lineop(dst, p0, p1, end0, end1, radius, src, sp, SoverD);
 }
 
 void
-lineop(Image *dst, Point p0, Point p1, int end0, int end1, int radius, Image *src, Point sp, Drawop op)
+lineop(__in_ecount(1) const Image *dst, Point p0, Point p1, int end0, int end1, int radius, __in_ecount(1) const Image *src, Point sp, Drawop op)
 {
 	uchar *a;
 

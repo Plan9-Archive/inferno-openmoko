@@ -7,7 +7,7 @@
  */
 
 Subfont*
-_getsubfont(Display *d, char *name)
+_getsubfont(Display *d, const char *name)
 {
 	int fd;
 	Subfont *f;

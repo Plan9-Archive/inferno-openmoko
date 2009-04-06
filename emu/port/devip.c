@@ -537,8 +537,8 @@ ipclose(Chan *c)
 	}
 }
 
-static long
-ipread(Chan *ch, char *a, long n, vlong off)
+static size_t
+ipread(Chan *ch, __out_ecount(n) char *a, size_t n, vlong off)
 {
 	int r;
 	IpConv *c;
@@ -806,8 +806,8 @@ bindctlmsg(Proto *x, IpConv *c, Cmdbuf *cb)
 	}
 }
 
-static long
-ipwrite(Chan *ch, const char *a, long n, vlong off)
+static size_t
+ipwrite(Chan *ch, __in_ecount(n) const char *a, size_t n, vlong off)
 {
 	IpConv *c;
 	Proto *x;
@@ -1136,5 +1136,5 @@ static void
 ipw6(uchar *a, ulong w)
 {
 	memmove(a, v4prefix, IPv4off);
-	hnputl(a+IPv4off, w);
+	PBIT32BE(a+IPv4off, w);
 }

@@ -223,27 +223,28 @@ Pool*       poolmk(char*, int, int, int);
 void*       kmalloc(size_t);*/
 
 /* Namespace Emulation */
-int     kbind(char*, char*, int);
-int     kclose(int);
-int     kcreate(char*, int, ulong);
-int     kdup(int, int);
-int     kfstat(int, char*, int);
-int     kfwstat(int, char*, int);
-int     kmount(int, int, char*, int, char*);
-int     kunmount(char*, char*);
-int     kopen(const char*, int);
+int         kbind(char*, char*, int);
+int         kclose(int);
+int         kcreate(char*, int, ulong);
+int         kdup(int, int);
+int         kfstat(int, char*, int);
+int         kfwstat(int, char*, int);
+int         kmount(int, int, char*, int, char*);
+int         kunmount(char*, char*);
+int         kopen(const char*, int);
 long        kread(int, char*, long);
-int     kremove(char*);
+int         kremove(char*);
 vlong       kseek(int, vlong, int);
-int     kstat(char*, char*, int);
+int         kstat(char*, char*, int);
 long        kwrite(int, const char*, long);
-int     kwstat(char*, char*, int);
+int         kwstat(char*, char*, int);
 Dir*        kdirstat(char*);
 Dir*        kdirfstat(int);
-int     kdirwstat(char*, Dir*);
-int     kdirfwstat(int, Dir*);
+int         kdirwstat(char*, Dir*);
+int         kdirfwstat(int, Dir*);
 long        kdirread(int, Dir**);
-int     klisten(char*, char*);
+int         klisten(__in_z const char *dir, 
+                    __out_ecount_full_z(NETPATHLEN) char *newdir);
 
 Cname*      addelem(Cname*, const char*);
 void        cleancname(Cname*);

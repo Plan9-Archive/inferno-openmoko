@@ -5,7 +5,7 @@
 #include <pool.h>
 #include <mathi.h> /* strtod */
 
-#define OP(fn)  void fn(Disdata*rs, Disdata*rm, Disdata*rd, REG*rr)
+#define OP(fn)  void fn(__inout_ecount(1) Disdata*rs, __inout_ecount(1) Disdata*rm, __inout_ecount(1) Disdata*rd, REG*rr)
 
 // indc - Index by character
 //

@@ -54,19 +54,19 @@ extern	TkOption	tkradopts[];
 extern	TkOption	tkcbopts[];
 
 /* label.c */
-extern	char*	tklabelsaverelief(Tk*, char*, char**);
-extern	char*	tklabelrestorerelief(Tk*, char*, char**);
-extern	void		tksizelabel(Tk*);
-extern	char*	tkdrawlabel(Tk*, Point);
-extern	void		tkfreelabel(Tk*);
-extern	void		tklabelgetimgs(Tk*, Image**, Image**);
-extern	char*	tksetvar(TkTop*, char*, char*);
+extern	char*       tklabelsaverelief(Tk*, __in_z const char*, char**);
+extern	char*       tklabelrestorerelief(Tk*, __in_z const char*, char**);
+extern	void        tksizelabel(Tk*);
+extern	const char* tkdrawlabel(Tk*, Point);
+extern	void        tkfreelabel(Tk*);
+extern	void        tklabelgetimgs(Tk*, Image**, Image**);
+extern	const char* tksetvar(TkTop*, __in_z const char*, char*);
 
 /* buton.c */
-extern	Tk*	tkmkbutton(TkTop*, int);
-extern	void	tksizebutton(Tk*);
-extern	char*	tkbuttoninvoke(Tk*, char*, char**);
-extern	char*	tkradioinvoke(Tk*, char*, char**);
+extern	Tk*	        tkmkbutton(TkTop*, int);
+extern	void        tksizebutton(Tk*);
+extern	const char* tkbuttoninvoke(Tk*, __in_z_opt const char*, char**);
+extern	char*       tkradioinvoke(Tk*, __in_z const char*, char**);
 
 /* support for menus */
 extern	int		tklabelmargin(Tk*);

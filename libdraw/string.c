@@ -7,62 +7,73 @@ enum
 };
 
 Point
-string(Image *dst, Point pt, Image *src, Point sp, Font *f, char *s)
+string(__in_ecount(1) const Image *dst, Point pt, __in_ecount(1) const Image *src, Point sp, Font *f, __in_z const char *s)
 {
 	return _string(dst, pt, src, sp, f, s, nil, 1<<24, dst->clipr, nil, ZP, SoverD);
 }
 
 Point
-stringop(Image *dst, Point pt, Image *src, Point sp, Font *f, char *s, Drawop op)
+stringop(__in_ecount(1) const Image *dst, Point pt, __in_ecount(1) const Image *src, Point sp, Font *f, __in_z const char *s, Drawop op)
 {
 	return _string(dst, pt, src, sp, f, s, nil, 1<<24, dst->clipr, nil, ZP, op);
 }
 
 Point
-stringn(Image *dst, Point pt, Image *src, Point sp, Font *f, char *s, int len)
+stringn(__in_ecount(1) const Image *dst, Point pt, __in_ecount(1) const Image *src, Point sp, Font *f, __in_ecount_z(len) const char *s, int len)
 {
 	return _string(dst, pt, src, sp, f, s, nil, len, dst->clipr, nil, ZP, SoverD);
 }
 
 Point
-stringnop(Image *dst, Point pt, Image *src, Point sp, Font *f, char *s, int len, Drawop op)
+stringnop(__in_ecount(1) const Image *dst, Point pt, __in_ecount(1) const Image *src, Point sp, Font *f, __in_ecount_z(len) const char *s, int len, Drawop op)
 {
 	return _string(dst, pt, src, sp, f, s, nil, len, dst->clipr, nil, ZP, op);
 }
 
 Point
-runestring(Image *dst, Point pt, Image *src, Point sp, Font *f, Rune *r)
+runestring(__in_ecount(1) const Image *dst, Point pt, __in_ecount(1) const Image *src, Point sp, Font *f, __in_z const Rune *r)
 {
 	return _string(dst, pt, src, sp, f, nil, r, 1<<24, dst->clipr, nil, ZP, SoverD);
 }
 
 Point
-runestringop(Image *dst, Point pt, Image *src, Point sp, Font *f, Rune *r, Drawop op)
+runestringop(__in_ecount(1) const Image *dst, Point pt, __in_ecount(1) const Image *src, Point sp, Font *f, __in_z const Rune *r, Drawop op)
 {
 	return _string(dst, pt, src, sp, f, nil, r, 1<<24, dst->clipr, nil, ZP, op);
 }
 
 Point
-runestringn(Image *dst, Point pt, Image *src, Point sp, Font *f, Rune *r, int len)
+runestringn(__in_ecount(1) const Image *dst, Point pt, __in_ecount(1) const Image *src, Point sp, Font *f, __in_ecount_z(len) const Rune *r, int len)
 {
 	return _string(dst, pt, src, sp, f, nil, r, len, dst->clipr, nil, ZP, SoverD);
 }
 
 Point
-runestringnop(Image *dst, Point pt, Image *src, Point sp, Font *f, Rune *r, int len, Drawop op)
+runestringnop(__in_ecount(1) const Image *dst, Point pt, __in_ecount(1) const Image *src, Point sp, Font *f, __in_ecount_z(len) const Rune *r, int len, Drawop op)
 {
 	return _string(dst, pt, src, sp, f, nil, r, len, dst->clipr, nil, ZP, op);
 }
 
 Point
-_string(Image *dst, Point pt, Image *src, Point sp, Font *f, char *s, Rune *r, int len, Rectangle clipr, Image *bg, Point bgp, Drawop op)
+_string(__in_ecount(1) const Image *dst, 
+        Point pt, 
+        __in_ecount(1) const Image *src, 
+        Point sp, 
+        Font *f, 
+        const char *s, 
+        const Rune *r, 
+        int len, 
+        Rectangle clipr, 
+        __in_ecount_opt(1) const Image *bg, 
+        Point bgp, 
+        Drawop op)
 {
 	int m, n, wid, max;
 	ushort cbuf[Max], *c, *ec;
 	uchar *b;
-	char *subfontname;
-	char **sptr;
-	Rune **rptr;
+	const char *subfontname;
+	const char **sptr;
+	const Rune **rptr;
 	Font *def;
 
 	if(s == nil){

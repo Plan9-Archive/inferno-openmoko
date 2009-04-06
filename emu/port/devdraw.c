@@ -1013,8 +1013,8 @@ drawclose(Chan *c)
 	poperror();
 }
 
-long
-drawread(Chan *c, char *a, long n, vlong off)
+size_t
+drawread(Chan *c, __out_ecount(n) char *a, size_t n, vlong off)
 {
 	Client *cl;
 	char *p;
@@ -1138,8 +1138,8 @@ drawwakeall(void)
 	}
 }
 
-static long
-drawwrite(Chan *c, const char *a, long n, vlong off)
+static size_t
+drawwrite(Chan *c, __in_ecount(n) const char *a, size_t n, vlong off)
 {
 	Client *cl;
 	ulong offset = off;

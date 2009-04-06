@@ -98,6 +98,7 @@ tkcvswindgeom(Tk *sub, int x, int y, int w, int h)
 				break;
 		}
 	}
+    if(win==0 || i==0) { assert(0); return; }
 
 	if(win->focus != nil) {
 		if(tkcvschkwfocus(win, sub) == 0)
@@ -172,7 +173,7 @@ tkcvsrelpos(Tk *sub)
 	return ZP;
 }
 
-static char*
+static const char*
 tkcvswindchk(Tk *tk, TkCwind *w, Tk *oldsub)
 {
 	Tk *sub;
@@ -210,10 +211,9 @@ tkcvswindchk(Tk *tk, TkCwind *w, Tk *oldsub)
 	return nil;
 }
 
-char*
-tkcvswindcreat(Tk* tk, char *arg, char **val)
+TH(tkcvswindcreat)
 {
-	char *e;
+	const char *e;
 	TkCwind *w;
 	TkCitem *i;
 	TkCanvas *c;
@@ -273,8 +273,8 @@ tkcvswindcreat(Tk* tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tkcvswindcget(TkCitem *i, char *arg, char **val)
+const char*
+tkcvswindcget(TkCitem *i, __in_z const char *arg, char **val)
 {
 	TkOptab tko[3];
 	TkCwind *w = TKobj(TkCwind, i);
@@ -288,10 +288,10 @@ tkcvswindcget(TkCitem *i, char *arg, char **val)
 	return tkgencget(tko, arg, val, i->env->top);
 }
 
-char*
-tkcvswindconf(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvswindconf(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
-	char *e;
+	const char *e;
 	int dx, dy;
 	TkOptab tko[3];
 	TkCwind *w = TKobj(TkCwind, i);
@@ -348,14 +348,13 @@ tkcvswindfree(TkCitem *i)
 }
 
 void
-tkcvswinddraw(Image *img, TkCitem *i, TkEnv *pe)
+tkcvswinddraw(__in_ecount(1) const Image *img, TkCitem *i, TkEnv *pe)
 {
 	TkCwind *w;
 	Point rel;
 	Rectangle r;
 	Tk *sub;
 
-	USED(img);			/* See tkimageof */
 	USED(pe);
 	w = TKobj(TkCwind, i);
 	sub = w->sub;
@@ -372,10 +371,10 @@ tkcvswinddraw(Image *img, TkCitem *i, TkEnv *pe)
 	}
 }
 
-char*
-tkcvswindcoord(TkCitem *i, char *arg, int x, int y)
+const char*
+tkcvswindcoord(TkCitem *i, __in_z const char *arg, int x, int y)
 {
-	char *e;
+	const char* e;
 	TkCpoints p;
 /*
 	TkCwind *w;

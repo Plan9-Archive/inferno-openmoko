@@ -124,24 +124,24 @@ static TkEbind tktbinds[] = {
 	{TkKey|BackTab,		""},
 };
 
-static int	tktclickmatch(TkText *, int, int, int, TkTindex *);
-static void	tktdoubleclick(TkText *, TkTindex *, TkTindex *);
-static char* 	tktdrawline(Image*, Tk*, TkTline*, Point);
-static void	tktextcursordraw(Tk *, int);
-static char* 	tktsetscroll(Tk*, int);
-static void	tktsetclip(Tk *);
-static char* 	tktview(Tk*, char*, char**, int, int*, int, int);
-static Interval tkttranslate(Tk*, Interval, int);
-static void 	tktfixscroll(Tk*, Point);
-static void 	tktnotdrawn(Tk*, int, int, int);
-static void	tktdrawbg(Tk*, int, int, int);
-static int	tktwidbetween(Tk*, int, TkTindex*, TkTindex*);
-static int	tktpostspace(Tk*, TkTline*);
-static int	tktprespace(Tk*, TkTline*);
-static void	tktsee(Tk*, TkTindex*, int);
-static Point	tktrelpos(Tk*);
-static void	autoselect_textw(Tk*, const char*, int);
-static void	blinkreset_textw(Tk*);
+static int	        tktclickmatch(TkText *, int, int, int, TkTindex *);
+static void	        tktdoubleclick(TkText *, TkTindex *, TkTindex *);
+static const char* 	tktdrawline(Image*, Tk*, TkTline*, Point);
+static void	        tktextcursordraw(Tk *, int);
+static const char*  tktsetscroll(Tk*, int);
+static void	        tktsetclip(Tk *);
+static const char* 	tktview(Tk*, __in_z const char*, char**, int, int*, int, int);
+static Interval     tkttranslate(Tk*, Interval, int);
+static void 	    tktfixscroll(Tk*, Point);
+static void 	    tktnotdrawn(Tk*, int, int, int);
+static void	        tktdrawbg(Tk*, int, int, int);
+static int	        tktwidbetween(Tk*, int, TkTindex*, TkTindex*);
+static int	        tktpostspace(Tk*, TkTline*);
+static int	        tktprespace(Tk*, TkTline*);
+static void	        tktsee(Tk*, TkTindex*, int);
+static Point	    tktrelpos(Tk*);
+static void	        autoselect_textw(Tk*, const char*, int);
+static void	        blinkreset_textw(Tk*);
 
 /* debugging */
 extern int tktdbg;
@@ -152,11 +152,11 @@ extern void tktprintline(TkTline*);
 extern void tktcheck(TkText*, char*);
 extern int tktutfpos(char *, int);
 
-char*
-tktext(TkTop *t, char* arg, char **ret)
+const char*
+tktext(TkTop *t, __in_z const char* arg, char **ret)
 {
 	Tk *tk;
-	char *e;
+	const char *e;
 	TkEnv *ev;
 	TkTline *l;
 	TkTitem *it = nil;
@@ -402,7 +402,7 @@ tktreplclipr(Image *dst, Rectangle r)
 		unlockdisplay(dst->display);
 }
 
-char*
+const char*
 tkdrawtext(Tk *tk, Point orig)
 {
 	int vh;
@@ -412,7 +412,7 @@ tkdrawtext(Tk *tk, Point orig)
 	Point p, deltait;
 	Rectangle oclipr;
 	int reldone = 1;
-	char *e;
+	const char *e;
 	tkt = TKobj(TkText, tk);
 	dst = tkimageof(tk);
 	if (dst == nil)
@@ -478,7 +478,7 @@ tktsetclip(Tk *tk)
 	tktreplclipr(dst, r);
 }
 
-static char*
+static const char*
 tktdrawline(Image *i, Tk *tk, TkTline *l, Point deltait)
 {
 	Tk *sub;
@@ -492,7 +492,7 @@ tktdrawline(Image *i, Tk *tk, TkTline *l, Point deltait)
 	TkEnv *e, *et, *env;
 	int *opts;
 	int o, bd, ul, ov, h, w, la, lh, cursorx, join;
-	char *err;
+	const char *err;
 
 	env = (TkEnv*)mallocz(sizeof(TkEnv), 0);
 	if(env == nil)
@@ -726,8 +726,8 @@ showcaret_textw(Tk *tk, int on)
 	}
 }
 
-char*
-tktextcursor(Tk *tk, char* arg, char **ret)
+const char*
+tktextcursor(Tk *tk, __in_z const char* arg, char **ret)
 {
 	int on = 0;
 	USED(ret);
@@ -755,11 +755,11 @@ tktextcursor(Tk *tk, char* arg, char **ret)
  * (At beginning and end of widget, just use the tags of one adjacent item).
  * Keep *ins up-to-date.
  */
-char*
-tktinsert(Tk *tk, TkTindex *ins, char *s, TkTitem *tagit)
+const char*
+tktinsert(Tk *tk, TkTindex *ins, __in_z const char *s, TkTitem *tagit)
 {
 	int c, n, nextra, nmax, atend, atbeg;
-	char *e, *p;
+    const char *p, *e;
 	Rune r;
 	TkTindex iprev, inext;
 	TkTitem *i, *utagit;
@@ -920,12 +920,13 @@ maximum(int a, int b)
  * by any index might have been freed after tktfixgeom
  * has been called.
  */
-char*
+const char*
 tktfixgeom(Tk *tk, TkTline *l1, TkTline *l2, int finalwidth)
 {
 	int x, y, a, wa, h, w, o, n, j, sp3, xleft, xright, winw, oa, oh, lh;
 	int wrapmode, just, needsplit;
-	char *e, *s;
+    const char *e;
+	char *s;
 	TkText *tkt;
 	Tk *sub;
 	TkTitem *i, *it, *ilast, *iprev;
@@ -1664,7 +1665,8 @@ tktextgeom(Tk *tk)
 	Rectangle oclipr;
 	Image *dst;
 	TkText *tkt = TKobj(TkText, tk);
-	char buf[20], *p;
+	char buf[20];
+    const char *p;
 
 	tkt->tflag &= ~TkTdrawn;
 	tktsetdeltas(tk, ZP);
@@ -1698,13 +1700,14 @@ tktextgeom(Tk *tk)
 		tktreplclipr(dst, oclipr);
 }
 
-static char*
+static const char*
 tktsetscroll(Tk *tk, int orient)
 {
 	TkText *tkt;
 	TkTline *l;
 	int ntot, nmin, nmax, top, bot, vw, vh;
-	char *val, *cmd, *v, *e, *s;
+	char *val, *cmd, *v, *s;
+    const char* e;
 
 	tkt = TKobj(TkText, tk);
 
@@ -1769,11 +1772,12 @@ tktsetscroll(Tk *tk, int orient)
 	return e;
 }
 
-static char*
-tktview(Tk *tk, char *arg, char **val, int nl, int *posn, int max, int orient)
+static const char*
+tktview(Tk *tk, __in_z const char *arg, char **val, int nl, int *posn, int max, int orient)
 {
 	int top, bot, amount, n;
-	char buf[Tkminitem], *v, *e;
+	char buf[Tkminitem], *v;
+    const char *e;
 
 	if(*arg == '\0') {
 		if ( max == 0 ) {
@@ -2054,7 +2058,7 @@ tktsgmltags(TkText *tkt, Fmt *fmt, TkTitem *iprev, TkTitem *i, TkTindex *ix, int
  * (where Bold is a tag name).
  * Make sure that the tag pairs nest properly.
 */
-static char*
+static const char*
 tktget(TkText *tkt, TkTindex *ix1, TkTindex *ix2, int sgml, char **val)
 {
 	int n, m, i, bychar, nstack;
@@ -2200,10 +2204,9 @@ nomemret:
 static int
 tktviewrectclip(Rectangle *r, Rectangle b);
 
-static char*
-tktextbbox(Tk *tk, char *arg, char **val)
+static TH(tktextbbox)
 {
-	char *e;
+	const char *e;
 	int noclip, w, h;
 	Rectangle r, rview;
 	TkTindex ix;
@@ -2285,10 +2288,9 @@ scr2local(Tk *tk, Point p)
 	return p;
 }
 
-static char*
-tktextbutton1(Tk *tk, char *arg, char **val)
+static TH(tktextbutton1)
 {
-	char *e;
+	const char *e;
 	Point p;
 	TkCtxt *c;
 	TkTindex ix;
@@ -2325,8 +2327,7 @@ tktextbutton1(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktextbutton1r(Tk *tk, char *arg, char **val)
+static TH(tktextbutton1r)
 {
 	TkText *tkt;
 
@@ -2339,8 +2340,7 @@ tktextbutton1r(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktextcget(Tk *tk, char *arg, char **val)
+static TH(tktextcget)
 {
 	TkText *tkt;
 	TkOptab tko[3];
@@ -2355,11 +2355,10 @@ tktextcget(Tk *tk, char *arg, char **val)
 	return tkgencget(tko, arg, val, tk->env->top);
 }
 
-static char*
-tktextcompare(Tk *tk, char *arg, char **val)
+static TH(tktextcompare)
 {
 	int op;
-	char *e;
+	const char *e;
 	TkTindex i1, i2;
 	TkText *tkt;
 	TkStab *s;
@@ -2402,10 +2401,9 @@ tktextcompare(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tktextconfigure(Tk *tk, char *arg, char **val)
+static TH(tktextconfigure)
 {
-	char *e;
+	const char *e;
 	TkGeom g;
 	int bd;
 	TkText *tkt;
@@ -2440,8 +2438,7 @@ tktextconfigure(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tktextdebug(Tk *tk, char *arg, char **val)
+static TH(tktextdebug)
 {
 	char buf[Tkmaxitem];
 
@@ -2457,15 +2454,14 @@ tktextdebug(Tk *tk, char *arg, char **val)
 	}
 }
 
-static char*
-tktextdelete(Tk *tk, char *arg, char **val)
+static TH(tktextdelete)
 {
 	int sameit;
-	char *e;
+	const char *e, *p;
 	TkTindex i1, i2, ip, isee;
 	TkTline *lmin;
 	TkText *tkt = TKobj(TkText, tk);
-	char buf[20], *p;
+	char buf[20];
 
 	USED(val);
 
@@ -2540,10 +2536,9 @@ tktextdelete(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktextsee(Tk *tk, char *arg, char **val)
+static TH(tktextsee)
 {
-	char *e;
+	const char *e;
 	TkTindex ix;
 
 	USED(val);
@@ -2556,8 +2551,7 @@ tktextsee(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktextdelins(Tk *tk, char *arg, char **val)
+static TH(tktextdelins)
 {
 	int m, c, skipping, wordc, n;
 	TkTindex ix, ix2;
@@ -2620,10 +2614,9 @@ tktextdelins(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktextdlineinfo(Tk *tk, char *arg, char **val)
+static TH(tktextdlineinfo)
 {
-	char *e;
+	const char *e;
 	TkTindex ix;
 	TkTline *l;
 	Point p;
@@ -2646,8 +2639,7 @@ tktextdlineinfo(Tk *tk, char *arg, char **val)
 		p.x, p.y, l->width, l->height, l->ascent);
 }
 
-static char*
-tktextdump(Tk *tk, char *arg, char **val)
+static TH(tktextdump)
 {
 	TkTline *l;
 	TkTitem *i;
@@ -2657,7 +2649,8 @@ tktextdump(Tk *tk, char *arg, char **val)
 	TkOptab tko[2];
 	TkTtaginfo *ti;
 	TkName *names, *n;
-	char *e, *win, *p;
+	const char *e, *p;
+    char *win;
 	TkTindex ix1, ix2;
 	int r, j, numitems;
 	ulong fg, bg;
@@ -2810,10 +2803,9 @@ tktextdump(Tk *tk, char *arg, char **val)
 }
 
 
-static char*
-tktextget(Tk *tk, char *arg, char **val)
+static TH(tktextget)
 {
-	char *e;
+	const char *e;
 	TkTindex ix1, ix2;
 	TkText *tkt = TKobj(TkText, tk);
 
@@ -2833,10 +2825,9 @@ tktextget(Tk *tk, char *arg, char **val)
 	return tktget(tkt, &ix1, &ix2, 0, val);
 }
 
-static char*
-tktextindex(Tk *tk, char *arg, char **val)
+static TH(tktextindex)
 {
-	char *e;
+	const char *e;
 	TkTindex ix;
 	TkText *tkt = TKobj(TkText, tk);
 
@@ -2846,11 +2837,11 @@ tktextindex(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d.%d", tktlinenum(tkt, &ix), tktlinepos(tkt, &ix));
 }
 
-static char*
-tktextinsert(Tk *tk, char *arg, char **val)
+static TH(tktextinsert)
 {
 	int n;
-	char *e, *p, *pe;
+	const char *e;
+    char *p, *pe;
 	TkTindex ins, pins;
 	TkTtaginfo *ti;
 	TkText *tkt;
@@ -2966,8 +2957,7 @@ tktextinsert(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktextinserti(Tk *tk, char *arg, char **val)
+static TH(tktextinserti)
 {
 	int n;
 	TkTline *lmin;
@@ -3024,8 +3014,7 @@ Ret:
 	return nil;
 }
 
-static char*
-tktextmark(Tk *tk, char *arg, char **val)
+static TH(tktextmark)
 {
 	char *buf;
 	TkCmdtab *cmd;
@@ -3044,10 +3033,9 @@ tktextmark(Tk *tk, char *arg, char **val)
 	return TkBadcm;
 }
 
-static char*
-tktextscan(Tk *tk, char *arg, char **val)
+static TH(tktextscan)
 {
-	char *e;
+	const char *e;
 	int mark, x, y, xmax, ymax, vh, vw;
 	Point p, odeltatv;
 	char buf[Tkmaxitem];
@@ -3104,8 +3092,7 @@ tktextscan(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktextscrollpages(Tk *tk, char *arg, char **val)
+static TH(tktextscrollpages)
 {
 	TkText *tkt = TKobj(TkText, tk);
 
@@ -3115,12 +3102,12 @@ tktextscrollpages(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktextsearch(Tk *tk, char *arg, char **val)
+static TH(tktextsearch)
 {
 	int i, n;
 	Rune r;
-	char *e, *s;
+	const char *e; 
+    char *s;
 	int wrap, fwd, nocase;
 	TkText *tkt;
 	TkTindex ix1, ix2, ixstart, ixend, tx;
@@ -3241,8 +3228,7 @@ tktextsearch(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tktextselection(Tk *tk, char *arg, char **val)
+TH(tktextselection)
 {
 	USED(val);
 	if (strcmp(arg, " clear") == 0) {
@@ -3312,11 +3298,10 @@ autoselect_textw(Tk *tk, const char *v, int cancelled)
 	tkupdate(tk->env->top);
 }
 
-static char*
-tktextselectto(Tk *tk, char *arg, char **val)
+static TH(tktextselectto)
 {
 	int dbl;
-	char *e;
+	const char *e;
 	Point p;
 	Rectangle hitr;
 	TkText *tkt = TKobj(TkText, tk);
@@ -3473,10 +3458,9 @@ tktprevwrapline(Tk *tk, TkTline *l)
 	return l->prev;
 }
 
-static char*
-tktextsetcursor(Tk *tk, char *arg, char **val)
+static TH(tktextsetcursor)
 {
-	char *e;
+	const char *e;
 	TkTindex ix;
 	TkTmarkinfo *mi;
 	TkText *tkt = TKobj(TkText, tk);
@@ -3500,8 +3484,7 @@ tktextsetcursor(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktexttag(Tk *tk, char *arg, char **val)
+static TH(tktexttag)
 {
 	char *buf;
 	TkCmdtab *cmd;
@@ -3520,8 +3503,7 @@ tktexttag(Tk *tk, char *arg, char **val)
 	return TkBadcm;
 }
 
-static char*
-tktextwindow(Tk *tk, char *arg, char **val)
+static TH(tktextwindow)
 {
 	char buf[Tkmaxitem];
 	TkCmdtab *cmd;
@@ -3534,11 +3516,10 @@ tktextwindow(Tk *tk, char *arg, char **val)
 	return TkBadcm;
 }
 
-static char*
-tktextxview(Tk *tk, char *arg, char **val)
+static TH(tktextxview)
 {
 	int ntot, vw;
-	char *e;
+	const char *e;
 	Point odeltatv;
 	TkText *tkt = TKobj(TkText, tk);
 
@@ -3590,16 +3571,16 @@ tkadjpage(Tk *tk, int ody, int *dy)
 	}
 }
 
-static char*
-tktextyview(Tk *tk, char *arg, char **val)
+static TH(tktextyview)
 {
 	int ntot, vh, d;
-	char *e;
+	const char *e;
 	TkTline *l;
 	Point odeltatv;
 	TkTindex ix;
 	TkText *tkt = TKobj(TkText, tk);
-	char buf[Tkmaxitem], *v;
+	char buf[Tkmaxitem];
+    const char *v;
 
 	if(*arg != '\0') {
 		v = tkitem(buf, arg);
@@ -3650,34 +3631,34 @@ tktextfocusorder(Tk *tk)
 
 TkCmdtab tktextcmd[] =
 {
-	{"bbox",		tktextbbox},
-	{"cget",		tktextcget},
-	{"compare",		tktextcompare},
-	{"configure",		tktextconfigure},
-	{"debug",		tktextdebug},
-	{"delete",		tktextdelete},
-	{"dlineinfo",		tktextdlineinfo},
-	{"dump",		tktextdump},
-	{"get",			tktextget},
-	{"index",		tktextindex},
-	{"insert",		tktextinsert},
-	{"mark",		tktextmark},
-	{"scan",		tktextscan},
-	{"search",		tktextsearch},
-	{"see",			tktextsee},
-	{"selection",		tktextselection},
-	{"tag",			tktexttag},
-	{"window",		tktextwindow},
-	{"xview",		tktextxview},
-	{"yview",		tktextyview},
-	{"tkTextButton1",	tktextbutton1},
-	{"tkTextButton1R",	tktextbutton1r},
-	{"tkTextDelIns",	tktextdelins},
-	{"tkTextInsert",	tktextinserti},
-	{"tkTextSelectTo",	tktextselectto},
-	{"tkTextSetCursor",	tktextsetcursor},
+	{"bbox",		        tktextbbox},
+	{"cget",		        tktextcget},
+	{"compare",		        tktextcompare},
+	{"configure",		    tktextconfigure},
+	{"debug",		        tktextdebug},
+	{"delete",		        tktextdelete},
+	{"dlineinfo",		    tktextdlineinfo},
+	{"dump",		        tktextdump},
+	{"get",			        tktextget},
+	{"index",		        tktextindex},
+	{"insert",		        tktextinsert},
+	{"mark",		        tktextmark},
+	{"scan",		        tktextscan},
+	{"search",		        tktextsearch},
+	{"see",			        tktextsee},
+	{"selection",		    tktextselection},
+	{"tag",			        tktexttag},
+	{"window",		        tktextwindow},
+	{"xview",		        tktextxview},
+	{"yview",		        tktextyview},
+	{"tkTextButton1",	    tktextbutton1},
+	{"tkTextButton1R",	    tktextbutton1r},
+	{"tkTextDelIns",	    tktextdelins},
+	{"tkTextInsert",	    tktextinserti},
+	{"tkTextSelectTo",	    tktextselectto},
+	{"tkTextSetCursor",	    tktextsetcursor},
 	{"tkTextScrollPages",	tktextscrollpages},
-	{"tkTextCursor",	tktextcursor},
+	{"tkTextCursor",	    tktextcursor},
 	{nil}
 };
 

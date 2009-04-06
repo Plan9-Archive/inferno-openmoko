@@ -13,10 +13,10 @@
 #define imark u.mark
 #define iline u.line
 
-static char* tktwincget(Tk*, char*, char**);
-static char* tktwinconfigure(Tk*, char*, char**);
-static char* tktwincreate(Tk*, char*, char**);
-static char* tktwinnames(Tk*, char*, char**);
+static const char* tktwincget(Tk*, __in_z const char*, char**);
+static const char* tktwinconfigure(Tk*, __in_z const char*, char**);
+static const char* tktwincreate(Tk*, __in_z const char*, char**);
+static const char* tktwinnames(Tk*, __in_z const char*, char**);
 static int winowned(Tk *tk, Tk *sub);
 
 static
@@ -45,10 +45,10 @@ TkOption twinopts[] =
 TkCmdtab
 tktwincmd[] =
 {
-	{"cget",	tktwincget},
+	{"cget",	    tktwincget},
 	{"configure",	tktwinconfigure},
-	{"create",	tktwincreate},
-	{"names",	tktwinnames},
+	{"create",	    tktwincreate},
+	{"names",	    tktwinnames},
 	{nil}
 };
 
@@ -198,7 +198,7 @@ tktdirty(Tk *sub)
 	tktextsize(parent, 1);
 }
 
-static char*
+static const char*
 tktwinchk(Tk *tk, TkTwind *w, Tk *oldsub)
 {
 	Tk *sub;
@@ -244,10 +244,9 @@ tktwinchk(Tk *tk, TkTwind *w, Tk *oldsub)
 	+names
 */
 
-static char*
-tktwincget(Tk *tk, char *arg, char **val)
+static TH(tktwincget)
 {
-	char *e;
+	const char *e;
 	TkTindex ix;
 	TkOptab tko[2];
 
@@ -264,10 +263,9 @@ tktwincget(Tk *tk, char *arg, char **val)
 	return tkgencget(tko, arg, val, tk->env->top);
 }
 
-static char*
-tktwinconfigure(Tk *tk, char *arg, char **val)
+static TH(tktwinconfigure)
 {
-	char *e;
+	const char *e;
 	TkTindex ix;
 	TkOptab tko[2];
 	Tk *oldsub;
@@ -314,10 +312,9 @@ winowned(Tk *tk, Tk *sub)
 	return 0;
 }
 
-static char*
-tktwincreate(Tk *tk, char *arg, char **val)
+static TH(tktwincreate)
 {
-	char *e;
+	const char *e;
 	TkTindex ix;
 	TkTitem *i;
 	TkText *tkt;
@@ -374,10 +371,9 @@ tktwincreate(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tktwinnames(Tk *tk, char *arg, char **val)
+static TH(tktwinnames)
 {
-	char *e, *fmt;
+	const char *e, *fmt;
 	TkTindex ix;
 	TkText *tkt = TKobj(TkText, tk);
 

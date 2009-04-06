@@ -124,11 +124,11 @@ tkcvsf2i(Tk *tk, TkCanvas *tkc)
 
 }
 
-char*
-tkcanvas(TkTop *t, char *arg, char **ret)
+const char*
+tkcanvas(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
-	char *e;
+	const char *e;
 	TkCanvas *tkc;
 	TkName *names;
 	TkOptab tko[3];
@@ -258,8 +258,7 @@ tkcvsfocusorder(Tk *tk)
 		tkappendfocusorder(inf[i].w);
 }
 
-static char*
-tkcvscget(Tk *tk, char *arg, char **val)
+static TH(tkcvscget)
 {
 	TkOptab tko[3];
 	TkCanvas *tkc = TKobj(TkCanvas, tk);
@@ -273,10 +272,9 @@ tkcvscget(Tk *tk, char *arg, char **val)
 	return tkgencget(tko, arg, val, tk->env->top);
 }
 
-static char*
-tkcvsconf(Tk *tk, char *arg, char **val)
+static TH(tkcvsconf)
 {
-	char *e;
+	const char *e;
 	int bd;
 	TkGeom g;
 	Rectangle r;
@@ -384,7 +382,7 @@ tkfreecanv(Tk *tk)
 
 enum {Bufnone = 99};
 
-char*
+const char*
 tkdrawcanv(Tk *tk, Point orig)
 {
 	Image *dst;
@@ -516,7 +514,8 @@ tkcvssv(Tk *tk)
 {
 	TkCanvas *c;
 	int top, bot, height;
-	char val[Tkminitem], cmd[Tkmaxitem], *v, *e;
+	char val[Tkminitem], cmd[Tkmaxitem], *v;
+    const char *e;
 
 	c = TKobj(TkCanvas, tk);
 	if(c->yscroll == nil)
@@ -545,7 +544,8 @@ tkcvssh(Tk *tk)
 {
 	int top, bot, width;
 	TkCanvas *c = TKobj(TkCanvas, tk);
-	char val[Tkminitem], cmd[Tkmaxitem], *v, *e;
+	char val[Tkminitem], cmd[Tkmaxitem], *v;
+    const char *e;
 
 	if(c->xscroll == nil)
 		return;
@@ -582,8 +582,8 @@ tkcvsgeom(Tk *tk)
 	tkcvssh(tk);
 }
 
-char*
-tkcvstags(Tk *tk, char *arg, char **val, int af)
+const char*
+tkcvstags(Tk *tk, __in_z const char *arg, __inout_ecount_opt(1) char **val, int af)
 {
 	TkTop *o;
 	int x, y;
@@ -595,7 +595,7 @@ tkcvstags(Tk *tk, char *arg, char **val, int af)
 	TkCitem *i, *b;
 	int d, dist, dx, dy;
 	char tag[Tkmaxitem], buf[Tkmaxitem];
-	char *e;
+	const char *e;
 
 	USED(val);
 
@@ -808,14 +808,12 @@ done: 		 /* both no error and error do the same thing */
 	return e;
 }
 
-static char*
-tkcvsaddtag(Tk *tk, char *arg, char **val)
+static TH(tkcvsaddtag)
 {
 	return tkcvstags(tk, arg, val, TkCadd);
 }
 
-static char*
-tkcvsfind(Tk *tk, char *arg, char **val)
+static TH(tkcvsfind)
 {
 	return tkcvstags(tk, arg, val, TkCfind);
 }
@@ -875,8 +873,7 @@ tksweepcanv(Tk *tk)
  * grab release tag
  * grab ifunset tag
  */
-static char*
-tkcvsgrab(Tk *tk, char *arg, char **val)
+static TH(tkcvsgrab)
 {
 	TkCtag *t;
 	TkName *f;
@@ -912,8 +909,7 @@ tkcvsgrab(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsbind(Tk *tk, char *arg, char **val)
+static TH(tkcvsbind)
 {
 	Rune r;
 	TkCtag *t;
@@ -922,7 +918,7 @@ tkcvsbind(Tk *tk, char *arg, char **val)
 	TkCanvas *c;
 	int event, mode;
 	char *cmd, buf[Tkmaxitem];
-	char *e;
+	const char *e;
 
 	c = TKobj(TkCanvas, tk);
 	if (c->actions >= c->actlim)
@@ -982,8 +978,7 @@ tkcvsbind(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tkcvscreate(Tk *tk, char *arg, char **val)
+static TH(tkcvscreate)
 {
 	TkCimeth *m;
 	char buf[Tkmaxitem];
@@ -996,8 +991,7 @@ tkcvscreate(Tk *tk, char *arg, char **val)
 	return TkBadit;
 }
 
-static char*
-tkcvsbbox(Tk *tk, char *arg, char **val)
+static TH(tkcvsbbox)
 {
 	TkName *f;
 	TkCtag *t;
@@ -1018,8 +1012,7 @@ tkcvsbbox(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d %d %d %d", bb.min.x, bb.min.y, bb.max.x, bb.max.y);
 }
 
-static char*
-tkcvscanvx(Tk *tk, char *arg, char **val)
+static TH(tkcvscanvx)
 {
 	int x, s;
 	TkCanvas *c;
@@ -1047,8 +1040,7 @@ tkcvscanvx(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", x);
 }
 
-static char*
-tkcvscanvy(Tk *tk, char *arg, char **val)
+static TH(tkcvscanvy)
 {
 	int y, s;
 	TkCanvas *c;
@@ -1076,8 +1068,7 @@ tkcvscanvy(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", y);
 }
 
-static char *
-tkcvsscreenx(Tk *tk, char *arg, char **val)
+static TH(tkcvsscreenx)
 {
 	int x;
 	TkCanvas *c;
@@ -1093,8 +1084,7 @@ tkcvsscreenx(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", x);
 }
 
-static char *
-tkcvsscreeny(Tk *tk, char *arg, char **val)
+static TH(tkcvsscreeny)
 {
 	int y;
 	TkCanvas *c;
@@ -1110,8 +1100,7 @@ tkcvsscreeny(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", y);
 }
 
-static char*
-tkcvscoords(Tk *tk, char *arg, char **val)
+static TH(tkcvscoords)
 {
 	int i;
 	Point *p;
@@ -1119,7 +1108,8 @@ tkcvscoords(Tk *tk, char *arg, char **val)
 	TkName *f;
 	TkCanvas *c;
 	TkCitem *item;
-	char *fmt, *e, *v, buf[Tkmaxitem];
+	char *fmt, *v, buf[Tkmaxitem];
+    const char* e;
 
 	arg = tkword(tk->env->top, arg, buf, buf+sizeof(buf), nil);
 	if(buf[0] == '\0')
@@ -1160,8 +1150,7 @@ tkcvscoords(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tkcvsscale(Tk *tk, char *arg, char **val)
+static TH(tkcvsscale)
 {
 	TkName *f;
 	TkCtag *t;
@@ -1169,7 +1158,8 @@ tkcvsscale(Tk *tk, char *arg, char **val)
 	TkCpoints pts;
 	TkCitem *item;
 	int j;
-	char *e, buf[Tkmaxitem];
+	char buf[Tkmaxitem];
+    const char* e;
 	Point *p, *d, origin, scalef;
 
 	USED(val);
@@ -1218,8 +1208,7 @@ tkcvsscale(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsdtag(Tk *tk, char *arg, char **val)
+static TH(tkcvsdtag)
 {
 	TkName *f, *dt;
 	char buf[Tkmaxitem];
@@ -1287,12 +1276,12 @@ tkcvsdtag(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsdchars(Tk *tk, char *arg, char **val)
+static TH(tkcvsdchars)
 {
 	TkCtag *t;
 	TkName *f;
-	char *e, buf[Tkmaxitem];
+	const char *e;
+    char buf[Tkmaxitem];
 
 	USED(val);
 
@@ -1312,12 +1301,12 @@ tkcvsdchars(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsindex(Tk *tk, char *arg, char **val)
+static TH(tkcvsindex)
 {
 	TkCtag *t;
 	TkName *f;
-	char *e, buf[Tkmaxitem];
+	const char *e;
+    char buf[Tkmaxitem];
 
 	USED(val);
 
@@ -1337,12 +1326,12 @@ tkcvsindex(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsicursor(Tk *tk, char *arg, char **val)
+static TH(tkcvsicursor)
 {
 	TkCtag *t;
 	TkName *f;
-	char *e, buf[Tkmaxitem];
+	const char *e;
+    char buf[Tkmaxitem];
 
 	USED(val);
 
@@ -1362,12 +1351,12 @@ tkcvsicursor(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsinsert(Tk *tk, char *arg, char **val)
+static TH(tkcvsinsert)
 {
 	TkCtag *t;
 	TkName *f;
-	char *e, buf[Tkmaxitem];
+	const char *e;
+    char buf[Tkmaxitem];
 
 	USED(val);
 
@@ -1387,8 +1376,7 @@ tkcvsinsert(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsselect(Tk *tk, char *arg, char **val)
+static TH(tkcvsselect)
 {
 	int op;
 	TkCtag *t;
@@ -1432,8 +1420,7 @@ tkcvsselect(Tk *tk, char *arg, char **val)
 	return tkcvstextselect(tk, t->item, arg, op);
 }
 
-static char*
-tkcvsitemcget(Tk *tk, char *arg, char **val)
+static TH(tkcvsitemcget)
 {
 	TkName *f;
 	TkCtag *t;
@@ -1453,10 +1440,9 @@ tkcvsitemcget(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsitemconf(Tk *tk, char *arg, char **val)
+static TH(tkcvsitemconf)
 {
-	char *e;
+	const char *e;
 	TkName *f;
 	TkCtag *t;
 	TkCitem *i;
@@ -1511,8 +1497,7 @@ tkcvsfreename(TkCanvas *c, TkName *n)
 		}
 }
 
-static char*
-tkcvsdelete(Tk *tk, char *arg, char **val)
+static TH(tkcvsdelete)
 {
 	TkName *f;
 	TkCanvas *c;
@@ -1556,6 +1541,7 @@ tkcvsdelete(Tk *tk, char *arg, char **val)
 					break;
 				prev = i;
 			}
+            assert(i != nil);
 			if(prev == nil)
 				c->head = i->next;
 			else
@@ -1580,8 +1566,7 @@ tkcvsdelete(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsfocus(Tk *tk, char *arg, char **val)
+static TH(tkcvsfocus)
 {
 	TkName *f;
 	TkCtag *t;
@@ -1623,13 +1608,13 @@ tkcvsfocus(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsgettags(Tk *tk, char *arg, char **val)
+static TH(tkcvsgettags)
 {
 	TkCtag *t;
 	TkName *f;
 	TkCanvas *c;
-	char *fmt, *e, buf[Tkmaxitem];
+	char *fmt, buf[Tkmaxitem];
+    const char* e;
 
 	tkword(tk->env->top, arg, buf, buf+sizeof(buf), nil);
 	if(buf[0] == '\0')
@@ -1660,8 +1645,7 @@ tkcvsgettags(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvslower(Tk *tk, char *arg, char **val)
+static TH(tkcvslower)
 {
 	TkCtag *t;
 	TkCanvas *c;
@@ -1721,8 +1705,7 @@ next:;
 	return nil;
 }
 
-static char*
-tkcvsmove(Tk *tk, char *arg, char **val)
+static TH(tkcvsmove)
 {
 	TkCtag *t;
 	int fx, fy;
@@ -1731,7 +1714,7 @@ tkcvsmove(Tk *tk, char *arg, char **val)
 	TkName *tag;
 	Rectangle *u;
 	TkCitem *item;
-	char *e;
+	const char *e;
 	char buf[Tkmaxitem];
 
 	USED(val);
@@ -1760,8 +1743,7 @@ tkcvsmove(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkcvsraise(Tk *tk, char *arg, char **val)
+static TH(tkcvsraise)
 {
 	TkCtag *t;
 	TkCanvas *c;
@@ -1836,8 +1818,7 @@ next:;
 	return nil;
 }
 
-static char*
-tkcvstype(Tk *tk, char *arg, char **val)
+static TH(tkcvstype)
 {
 	TkCtag *t;
 	TkName *f;
@@ -1861,12 +1842,11 @@ tkcvstype(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%s", tkcimethod[t->item->type].name);
 }
 
-static char*
-tkcvsview(Tk *tk, char *arg, char **val, int nl, int *posn, int min, int max, int inc)
+static const char *tkcvsview(Tk *tk, __in_z const char *arg, char **val, int nl, int *posn, int min, int max, int inc)
 {
 	TkTop *t;
 	int top, bot, diff, amount;
-	char *e;
+	const char *e;
 	char buf[Tkmaxitem], *v;
 
 	diff = max-min;
@@ -1917,11 +1897,10 @@ tkcvsview(Tk *tk, char *arg, char **val, int nl, int *posn, int min, int max, in
 	return nil;
 }
 
-static char*
-tkcvsyview(Tk *tk, char *arg, char **val)
+static TH(tkcvsyview)
 {
 	int si;
-	char *e;
+	const char* e;
 	TkCanvas *c = TKobj(TkCanvas, tk);
 
 	si = TKF2I(c->yscrolli);
@@ -1930,11 +1909,10 @@ tkcvsyview(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tkcvsxview(Tk *tk, char *arg, char **val)
+static TH(tkcvsxview)
 {
 	int si;
-	char *e;
+	const char* e;
 	TkCanvas *c = TKobj(TkCanvas, tk);
 
 	si = TKF2I(c->xscrolli);
@@ -2030,12 +2008,11 @@ tkcvsseerect(Tk *tk, Rectangle r, Point p)
 		tk->dirty = tkrect(tk, 0);
 }
 
-static char*
-tkcvssee(Tk *tk, char *arg, char **val)
+static TH(tkcvssee)
 {
 	Rectangle r;
 	int n, coords[4];
-	char *e;
+	const char *e;
 
 	USED(val);
 	n = 0;
@@ -2177,7 +2154,7 @@ TkCmdtab tkcanvcmd[] =
 	{"bbox",		tkcvsbbox},
 	{"bind",		tkcvsbind},
 	{"cget",		tkcvscget},
-	{"configure",		tkcvsconf},
+	{"configure",	tkcvsconf},
 	{"create",		tkcvscreate},
 	{"canvasx",		tkcvscanvx},
 	{"canvasy",		tkcvscanvy},
@@ -2192,7 +2169,7 @@ TkCmdtab tkcanvcmd[] =
 	{"icursor",		tkcvsicursor},
 	{"insert",		tkcvsinsert},
 	{"index",		tkcvsindex},
-	{"itemcget",		tkcvsitemcget},
+	{"itemcget",	tkcvsitemcget},
 	{"itemconfigure",	tkcvsitemconf},
 	{"lower",		tkcvslower},
 	{"move",		tkcvsmove},

@@ -5,16 +5,19 @@
 
 typedef struct DS DS;
 
-static int	call1(char*, char*, DS*);
-static int	csdial(DS*);
-static void	_dial_string_parse(char*, DS*);
-static int	nettrans(char*, char*, int na, char*, int);
-
 enum
 {
 	Maxstring=	128,
 	Maxpath=	100
 };
+
+static int	call1(char*, char*, DS*);
+static int	csdial(DS*);
+static void	_dial_string_parse(__in_ecount_z(Maxstring) const char*, DS*);
+static int	nettrans(   __in_z const char *addr, 
+                        __out_ecount_z(na) char *naddr, int na, 
+                        __out_ecount_z(nf) char *file, int nf);
+
 
 struct DS
 {
@@ -196,7 +199,7 @@ call1(char *clone, char *dest, DS *ds)
  *  parse a dial string
  */
 static void
-_dial_string_parse(char *str, DS *ds)
+_dial_string_parse(__in_ecount_z(Maxstring) const char *str, DS *ds)
 {
 	char *p, *p2;
 
@@ -284,7 +287,8 @@ kannounce(char *addr, char *dir)
  *  listen for an incoming call
  */
 int
-klisten(char *dir, char *newdir)
+klisten(__in_z const char *dir, 
+        __out_ecount_full_z(NETPATHLEN) char *newdir)
 {
 	int ctl, n, m;
 	char buf[NETPATHLEN];
@@ -325,7 +329,10 @@ klisten(char *dir, char *newdir)
  *  perform the identity translation (in case we can't reach cs)
  */
 static int
-identtrans(char *netdir, char *addr, char *naddr, int na, char *file, int nf)
+identtrans(__in_z const char *netdir, 
+           __in_z const char *addr, 
+           __out_ecount_z(na) char *naddr, int na, 
+           __out_ecount_z(nf) char *file, int nf)
 {
 	char proto[Maxpath];
 	char *p;
@@ -340,8 +347,11 @@ identtrans(char *netdir, char *addr, char *naddr, int na, char *file, int nf)
 		*p++ = 0;
 
 	snprint(file, nf, "%s/%s/clone", netdir, proto);
-	strncpy(naddr, p, na);
-	naddr[na-1] = 0;
+    if(p){
+	    strncpy(naddr, p, na);
+	    naddr[na-1] = 0;
+    } else
+        naddr[0] = 0;
 
 	return 1;
 }
@@ -350,7 +360,10 @@ identtrans(char *netdir, char *addr, char *naddr, int na, char *file, int nf)
  *  call up the connection server and get a translation
  */
 static int
-nettrans(char *addr, char *naddr, int na, char *file, int nf)
+nettrans(  __in_z const char *addr, 
+           __out_ecount_z(na) char *naddr, int na, 
+           __out_ecount_z(nf) char *file, int nf)
+
 {
 	int i, fd;
 	char buf[Maxpath];

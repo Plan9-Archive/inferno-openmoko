@@ -1,6 +1,6 @@
 @del emut.exe
-@C:\bin\tcc\tcc.exe  -o emut.exe -bench -Iinclude -I.. turbo.c -lgdi32 -luser32 -lws2_32 -lwinmm -ladvapi32 -lmpr 2>&1 
-rem | perl -pe "s#^/#o:/#"
+@C:\bin\tcc\tcc.exe  -o emut.exe -bench -Iinclude -I.. turbo.c -lgdi32 -luser32 -lws2_32 -lwinmm -ladvapi32 -lmpr 2>&1 | python tccfilter.py
+#c:\perl64\bin\perl -pe "s#^/#o:/#"
 
 if not exist emut.exe goto final
 emut.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless wm/wm 

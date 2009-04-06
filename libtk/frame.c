@@ -9,11 +9,11 @@
 
 #include <frame.h>
 
-char*
-tkframe(TkTop *t, char *arg, char **ret)
+const char*
+tkframe(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
-	char *e;
+	const char *e;
 	TkOptab tko[2];
 	TkName *names;
 
@@ -66,7 +66,7 @@ tkfreeframe(Tk *tk)
 	tkunmap(tk);		/* XXX do this only if (tk->flag&Tkswept)==0 ?? */
 }
 
-char*
+const char*
 tkdrawframe(Tk *tk, Point orig)
 {
 	int bw;
@@ -127,8 +127,7 @@ tkdrawframe(Tk *tk, Point orig)
 
 /* Frame commands */
 
-static char*
-tkframecget(Tk *tk, char *arg, char **val)
+static TH(tkframecget)
 {
 	TkOptab tko[3];
 
@@ -144,10 +143,9 @@ tkframecget(Tk *tk, char *arg, char **val)
 	return tkgencget(tko, arg, val, tk->env->top);
 }
 
-static char*
-tkframeconf(Tk *tk, char *arg, char **val)
+static TH(tkframeconf)
 {
-	char *e;
+	const char *e;
 	TkGeom g;
 	int bd;
 	Point oldp;
@@ -198,8 +196,7 @@ tkframeconf(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tkframesuspend(Tk *tk, char *arg, char **val)
+static TH(tkframesuspend)
 {
 	USED(arg);
 	USED(val);
@@ -209,8 +206,7 @@ tkframesuspend(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkframemap(Tk *tk, char *arg, char **val)
+static TH(tkframemap)
 {
 	USED(arg);
 	USED(val);
@@ -219,8 +215,7 @@ tkframemap(Tk *tk, char *arg, char **val)
 	return TkNotwm;
 }
 
-static char*
-tkframeunmap(Tk *tk, char *arg, char **val)
+static TH(tkframeunmap)
 {
 	USED(arg);
 	USED(val);
@@ -264,7 +259,7 @@ static
 TkCmdtab tkframecmd[] =
 {
 	{"cget",		tkframecget},
-	{"configure",		tkframeconf},
+	{"configure",	tkframeconf},
 	{"map",			tkframemap},
 	{"unmap",		tkframeunmap},
 	{"suspend",		tkframesuspend},

@@ -61,10 +61,9 @@ tkcvsimgsize(TkCitem *i)
 	t->anchorp = subpt(o, i->p.drawpt[0]);
 }
 
-char*
-tkcvsimgcreat(Tk* tk, char *arg, char **val)
+TH(tkcvsimgcreat)
 {
-	char *e;
+	const char* e;
 	TkCimag *t;
 	TkCitem *i;
 	TkCanvas *c;
@@ -119,8 +118,8 @@ tkcvsimgcreat(Tk* tk, char *arg, char **val)
 	return nil;
 }
 
-char*
-tkcvsimgcget(TkCitem *i, char *arg, char **val)
+const char*
+tkcvsimgcget(TkCitem *i, __in_z const char *arg, char **val)
 {
 	TkOptab tko[3];
 	TkCimag *t = TKobj(TkCimag, i);
@@ -134,10 +133,10 @@ tkcvsimgcget(TkCitem *i, char *arg, char **val)
 	return tkgencget(tko, arg, val, i->env->top);
 }
 
-char*
-tkcvsimgconf(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvsimgconf(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
-	char *e;
+	const char *e;
 	TkOptab tko[3];
 	TkCimag *t = TKobj(TkCimag, i);
 
@@ -163,7 +162,7 @@ tkcvsimgfree(TkCitem *i)
 }
 
 void
-tkcvsimgdraw(Image *img, TkCitem *i, TkEnv *pe)
+tkcvsimgdraw(__in_ecount(1) const Image *img, TkCitem *i, TkEnv *pe)
 {
 	TkCimag *t;
 	TkImg *tki;
@@ -188,10 +187,10 @@ tkcvsimgdraw(Image *img, TkCitem *i, TkEnv *pe)
 	draw(img, r, fg, nil, ZP);
 }
 
-char*
-tkcvsimgcoord(TkCitem *i, char *arg, int x, int y)
+const char*
+tkcvsimgcoord(TkCitem *i, __in_z const char *arg, int x, int y)
 {
-	char *e;
+	const char* e;
 	TkCpoints p;
 
 	if(arg == nil) {

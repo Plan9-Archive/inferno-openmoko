@@ -232,11 +232,11 @@ recalcentry(Tk *tk)
 		unlockdisplay(tk->env->top->display);
 }
 
-char*
-tkentry(TkTop *t, char *arg, char **ret)
+const char*
+tkentry(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
-	char *e;
+	const char *e;
 	TkName *names;
 	TkEntry *tke;
 	TkOptab tko[3];
@@ -285,8 +285,7 @@ tkentry(TkTop *t, char *arg, char **ret)
 	return tkvalue(ret, "%s", tk->name->name);
 }
 
-static char*
-tkentrycget(Tk *tk, char *arg, char **val)
+static TH(tkentrycget)
 {
 	TkOptab tko[3];
 	TkEntry *tke = TKobj(TkEntry, tk);
@@ -367,7 +366,7 @@ tkentrytext(Image *i, Rectangle s, Tk *tk, TkEnv *env)
 		free(text);
 }
 
-char*
+const char*
 tkdrawentry(Tk *tk, Point orig)
 {
 	Point p;
@@ -407,12 +406,13 @@ tkdrawentry(Tk *tk, Point orig)
 	return nil;
 }
 
-char*
+const char*
 tkentrysh(Tk *tk)
 {
 	TkEntry *tke = TKobj(TkEntry, tk);
 	int dx, top, bot;
-	char *val, *cmd, *v, *e;
+	char *val, *cmd, *v;
+    const char *e;
 
 	if(tke->xscroll == nil)
 		return nil;
@@ -450,7 +450,7 @@ tkentrysh(Tk *tk)
 void
 tkentrygeom(Tk *tk)
 {
-	char *e;
+	const char *e;
 	e = tkentrysh(tk);
 	if ((e != nil) &&	/* XXX - Tad: should propagate not print */
              (tk->name != nil))
@@ -458,10 +458,9 @@ tkentrygeom(Tk *tk)
 	recalcentry(tk);
 }
 
-static char*
-tkentryconf(Tk *tk, char *arg, char **val)
+static TH(tkentryconf)
 {
-	char *e;
+	const char *e;
 	TkGeom g;
 	int bd;
 	TkOptab tko[3];
@@ -487,7 +486,7 @@ tkentryconf(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
+static const char*
 tkentryparseindex(Tk *tk, char *buf, int *index)
 {
 	TkEntry *tke = TKobj(TkEntry, tk);
@@ -612,11 +611,11 @@ tkentrysee(Tk *tk, int index, int jump)
 	tksee(tk, r, r.min);
 }
 
-static char*
-tkentryseecmd(Tk *tk, char *arg, char **val)
+static TH(tkentryseecmd)
 {
 	int index;
-	char *e, *buf;
+	char *buf;
+    const char *e;
 
 	USED(val);
 
@@ -635,11 +634,11 @@ tkentryseecmd(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkentrybboxcmd(Tk *tk, char *arg, char **val)
+static TH(tkentrybboxcmd)
 {
 	TkEntry *tke = TKobj(TkEntry, tk);
-	char *r, *buf;
+	const char *r;
+    char *buf;
 	int index;
 	Rectangle bbox;
 
@@ -655,11 +654,11 @@ tkentrybboxcmd(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d %d %d %d", bbox.min.x, bbox.min.y, bbox.max.x, bbox.max.y);
 }
 
-static char*
-tkentryindex(Tk *tk, char *arg, char **val)
+static TH(tkentryindex)
 {
 	int index;
-	char *r, *buf;
+	const char *r;
+    char *buf;
 
 	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
@@ -672,12 +671,12 @@ tkentryindex(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d", index);
 }
 
-static char*
-tkentryicursor(Tk *tk, char *arg, char **val)
+static TH(tkentryicursor)
 {
 	TkEntry *tke = TKobj(TkEntry, tk);
 	int index, locked;
-	char *r, *buf;
+	char *buf;
+    const char *r;
 
 	USED(val);
 	buf = (char*)mallocz(Tkmaxitem, 0);
@@ -717,13 +716,13 @@ adjustfordel(int d0, int d1, int q)
 	return q;
 }
 
-static char*
-tkentryget(Tk *tk, char *arg, char **val)
+static TH(tkentryget)
 {
 	TkTop *top;
 	TkEntry *tke;
 	int first, last;
-	char *e, *buf;
+	const char *e;
+    char *buf;
 
 	tke = TKobj(TkEntry, tk);
 	if(tke->text == nil)
@@ -758,13 +757,13 @@ tkentryget(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%.*S", last-first, tke->text+first);
 }
 
-static char*
-tkentryinsert(Tk *tk, char *arg, char **val)
+static TH(tkentryinsert)
 {
 	TkTop *top;
 	TkEntry *tke;
 	int ins, i, n, locked;
-	char *e, *t, *text, *buf;
+	char *t, *text, *buf;
+    const char *e;
 	Rune *etext;
 
 	USED(val);
@@ -826,13 +825,13 @@ tkentryinsert(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tkentrydelete(Tk *tk, char *arg, char **val)
+static TH(tkentrydelete)
 {
 	TkTop *top;
 	TkEntry *tke;
 	int d0, d1, locked;
-	char *e, *buf;
+	const char *e; 
+    char *buf;
 	Rune *text;
 
 	USED(val);
@@ -894,11 +893,11 @@ tkentrydelete(Tk *tk, char *arg, char **val)
  *	Otherwise delete the character to the left(right) of the insertion
  *	cursor, if any.
  */
-static char*
-tkentrybs(Tk *tk, char *arg, char **val)
+static TH(tkentrybs)
 {
 	TkEntry *tke = TKobj(TkEntry, tk);
-	char *buf, *e;
+    const char *e;
+	char *buf;
 	int ix;
 
 	USED(val);
@@ -941,8 +940,7 @@ tkentrybs(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tkentrybw(Tk *tk, char *arg, char **val)
+static TH(tkentrybw)
 {
 	int start;
 	Rune *text;
@@ -967,13 +965,13 @@ tkentrybw(Tk *tk, char *arg, char **val)
 	return tkentrydelete(tk, buf, nil);
 }
 
-char*
-tkentryselect(Tk *tk, char *arg, char **val)
+TH(tkentryselect)
 {
 	TkTop *top;
 	int start, from, to, locked;
 	TkEntry *tke;
-	char *e, *buf;
+	char *buf;
+    const char *e;
 
 	buf = (char*)mallocz(Tkmaxitem, 0);
 	if(buf == nil)
@@ -1117,8 +1115,7 @@ tkentryselect(Tk *tk, char *arg, char **val)
 }
 
 
-static char*
-tkentryb2p(Tk *tk, char *arg, char **val)
+static TH(tkentryb2p)
 {
 	TkEntry *tke;
 	char *buf;
@@ -1135,15 +1132,14 @@ tkentryb2p(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkentryxview(Tk *tk, char *arg, char **val)
+static TH(tkentryxview)
 {
 	int locked;
 	TkEnv *env;
 	TkEntry *tke;
 	char *buf, *v;
 	int dx, top, bot, amount, ix, x;
-	char *e;
+	const char *e;
 
 	tke = TKobj(TkEntry, tk);
 	env = tk->env;
@@ -1240,13 +1236,14 @@ autoselect_entry(Tk *tk, const char *v, int cancelled)
 	tkupdate(tk->env->top);
 }
 
-static char*
-tkentryb1p(Tk *tk, char* arg, char **ret)
+static const char*
+tkentryb1p(Tk *tk, __in_z const char* arg, char **ret)
 {
 	TkEntry *tke = TKobj(TkEntry, tk);
 	Point p;
 	int i, locked, x;
-	char buf[32], *e;
+	char buf[32];
+    const char *e;
 	USED(ret);
 
 	x = atoi(arg);
@@ -1275,8 +1272,8 @@ tkentryb1p(Tk *tk, char* arg, char **ret)
 	return nil;
 }
 
-static char*
-tkentryb1m(Tk *tk, char* arg, char **ret)
+static const char*
+tkentryb1m(Tk *tk, __in_z const char* arg, char **ret)
 {
 	TkEntry *tke = TKobj(TkEntry, tk);
 	Point p;
@@ -1295,8 +1292,8 @@ tkentryb1m(Tk *tk, char* arg, char **ret)
 	return nil;
 }
 
-static char*
-tkentryb1r(Tk *tk, char* arg, char **ret)
+static const char*
+tkentryb1r(Tk *tk, __in_z const char* arg, char **ret)
 {
 	USED(tk);
 	USED(arg);
@@ -1327,8 +1324,8 @@ showcaret_entry(Tk *tk, int on)
 	tk->dirty = tkrect(tk, 0);
 }
 
-char*
-tkentryfocus(Tk *tk, char* arg, char **ret)
+const char*
+tkentryfocus(Tk *tk, __in_z const char* arg, char **ret)
 {
 	int on = 0;
 	USED(ret);
@@ -1351,21 +1348,21 @@ static
 TkCmdtab tkentrycmd[] =
 {
 	{"cget",		tkentrycget},
-	{"configure",		tkentryconf},
+	{"configure",	tkentryconf},
 	{"delete",		tkentrydelete},
 	{"get",			tkentryget},
 	{"icursor",		tkentryicursor},
 	{"index",		tkentryindex},
 	{"insert",		tkentryinsert},
-	{"selection",		tkentryselect},
+	{"selection",	tkentryselect},
 	{"xview",		tkentryxview},
-	{"tkEntryBS",		tkentrybs},
-	{"tkEntryBW",		tkentrybw},
-	{"tkEntryB1P",		tkentryb1p},
-	{"tkEntryB1M",		tkentryb1m},
-	{"tkEntryB1R",		tkentryb1r},
-	{"tkEntryB2P",		tkentryb2p},
-	{"tkEntryFocus",	tkentryfocus},
+	{"tkEntryBS",	tkentrybs},
+	{"tkEntryBW",	tkentrybw},
+	{"tkEntryB1P",	tkentryb1p},
+	{"tkEntryB1M",	tkentryb1m},
+	{"tkEntryB1R",	tkentryb1r},
+	{"tkEntryB2P",	tkentryb2p},
+	{"tkEntryFocus",tkentryfocus},
 	{"bbox",		tkentrybboxcmd},
 	{"see",			tkentryseecmd},
 	{nil}

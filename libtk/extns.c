@@ -32,7 +32,7 @@ tkextnfreectxt(TkCtxt *ctxt)
 }
 
 char*
-tkextnparseseq(char *seq, char *rest, int *event)
+tkextnparseseq(__in_z const char *seq, __in_z const char *rest, int *event)
 {
 	USED(seq);
 	USED(rest);

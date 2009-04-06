@@ -25,7 +25,7 @@ enum ProgState
     Prelease,           /* interpreter released */
     Pexiting,           /* exit because of kill or error */
     Pbroken,            /* thread crashed */
-    Pdeadbeef = 0xdeadbeef, /**/
+    Pdeadbeef,          /* = 0xdeadbeef */
 };
 
 enum
@@ -290,8 +290,8 @@ struct Prog
     enum ProgState  state;      /* Scheduler state */
     char*       kill;       /* Set if prog should error */
     char*       killstr;    /* kill string buffer when needed */
-    int     pid;        /* unique Prog id */
-    int     quanta;     /* time slice */
+    int         pid;        /* unique Prog id */
+    int         quanta;     /* time slice */
     ulong       ticks;      /* time used */ /* TODO: emu never writes the variable */
     ProgFlags   flags;      /* error recovery flags */
     Prog*       prev;
@@ -403,7 +403,8 @@ struct Handler
 #define D2H(x)      ((Heap*)(x)-1)
 #define ADDREF(x)   (++((Heap*)(x)-1)->ref)
 #define DELREF(x)   (--((Heap*)(x)-1)->ref)
-#define H       ((void*)(-1))
+//#define H       ((void*)(-1))
+#define H NULL
 #define Setmark(h)  if((h)->color!=mutator) { (h)->color = propagator; nprop=1; }
 #define gclock()    (gchalt++)
 #define gcunlock()  (gchalt--)

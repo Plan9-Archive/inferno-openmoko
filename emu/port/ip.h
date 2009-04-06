@@ -31,17 +31,6 @@ extern void		so_setsockopt(int, int, int);
 extern int		so_mustbind(int, int);
 extern void		so_keepalive(int, int);
 
-
-#define nhgets	GBIT16BE
-#define nhgetl	GBIT32BE
-#define hnputs	PBIT16BE
-#define hnputl	PBIT32BE
-
-
-//extern void		hnputl(void *p, unsigned long v);
-//extern void		hnputs(void *p, unsigned short v);
-//extern unsigned long	nhgetl(void *p);
-//extern unsigned short	nhgets(void *p);
 extern unsigned long	parseip(uchar to[16], const char *from);
 extern size_t	parsemac(uchar *to, const char *from, size_t len);
 extern const char*v4parseip(uchar to[4], const char *from);

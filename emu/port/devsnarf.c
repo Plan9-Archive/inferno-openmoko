@@ -71,8 +71,8 @@ snarfclose(Chan* c)
 	}
 }
 
-static long
-snarfread(Chan* c, char* a, long n, vlong offset)
+static size_t
+snarfread(Chan* c, __out_ecount(n) char* a, size_t n, vlong offset)
 {
 	void *p;
 
@@ -105,8 +105,8 @@ snarfread(Chan* c, char* a, long n, vlong offset)
 	return n;
 }
 
-static long
-snarfwrite(Chan* c, const char* va, long n, vlong offset)
+static size_t
+snarfwrite(Chan* c, __in_ecount(n) const char* va, size_t n, vlong offset)
 {
 	ulong l;
 	char *p;

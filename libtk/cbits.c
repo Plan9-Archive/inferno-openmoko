@@ -63,10 +63,9 @@ tkcvsbitsize(TkCitem *i)
 	b->anchorp = subpt(o, i->p.drawpt[0]);
 }
 
-char*
-tkcvsbitcreat(Tk* tk, char *arg, char **val)
+TH(tkcvsbitcreat)
 {
-	char *e;
+	const char* e;
 	TkCbits *b;
 	TkCitem *i;
 	TkCanvas *c;
@@ -115,8 +114,8 @@ tkcvsbitcreat(Tk* tk, char *arg, char **val)
 	return tkvalue(val, "%d", i->id);
 }
 
-char*
-tkcvsbitcget(TkCitem *i, char *arg, char **val)
+const char*
+tkcvsbitcget(TkCitem *i, __in_z const char *arg, char **val)
 {
 	TkOptab tko[3];
 	TkCbits *b = TKobj(TkCbits, i);
@@ -130,10 +129,10 @@ tkcvsbitcget(TkCitem *i, char *arg, char **val)
 	return tkgencget(tko, arg, val, i->env->top);
 }
 
-char*
-tkcvsbitconf(Tk *tk, TkCitem *i, char *arg)
+const char*
+tkcvsbitconf(Tk *tk, TkCitem *i, __in_z const char *arg)
 {
-	char *e;
+	const char *e;
 	TkOptab tko[3];
 	TkCbits *b = TKobj(TkCbits, i);
 
@@ -159,7 +158,7 @@ tkcvsbitfree(TkCitem *i)
 }
 
 void
-tkcvsbitdraw(Image *img, TkCitem *i, TkEnv *pe)
+tkcvsbitdraw(__in_ecount(1) const Image *img, TkCitem *i, TkEnv *pe)
 {
 	TkEnv *e;
 	TkCbits *b;
@@ -188,10 +187,10 @@ tkcvsbitdraw(Image *img, TkCitem *i, TkEnv *pe)
 	draw(img, r, tkgc(e, TkCforegnd), bi, ZP);
 }
 
-char*
-tkcvsbitcoord(TkCitem *i, char *arg, int x, int y)
+const char*
+tkcvsbitcoord(TkCitem *i, __in_z const char *arg, int x, int y)
 {
-	char *e;
+	const char* e;
 	TkCpoints p;
 
 	if(arg == nil) {

@@ -9,10 +9,10 @@
 
 #include <canvs.h>
 
-char*
-tkparsepts(TkTop *t, TkCpoints *i, char **arg, int close)
+const char*
+tkparsepts(TkTop *t, TkCpoints *i, __inout const char **arg, int close)
 {
-	char *s, *e;
+	const char *s, *e;
 	Point *p, *d;
 	int n, npoint;
 
@@ -168,11 +168,11 @@ tkpolybound(Point *p, int n, Rectangle *r)
  * even if nothing refers to them.
  */
 TkName*
-tkctaglook(Tk* tk, TkName *n, char *name)
+tkctaglook(Tk* tk, TkName *n, __in_z const char *name)
 {
 	ulong h;
 	TkCanvas *c;
-	char *p, *s;
+	const char *p, *s;
 	TkName *f, **l;
 
 	c = TKobj(TkCanvas, tk);
@@ -200,7 +200,7 @@ tkctaglook(Tk* tk, TkName *n, char *name)
 	return n;
 }
 
-char*
+const char*
 tkcaddtag(Tk *tk, TkCitem *i, int new)
 {
 	TkCtag *t;

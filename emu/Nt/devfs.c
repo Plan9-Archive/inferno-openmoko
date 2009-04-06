@@ -675,7 +675,7 @@ fscreate(Chan *c, const char *name, int mode, ulong perm)
 		FS(c)->fd = nth2fd(INVALID_HANDLE_VALUE);
 	}
 	else {
-		aflag = 0;
+		aflag = FILE_ATTRIBUTE_NORMAL;
 		if(mode & ORCLOSE)
 			aflag = FILE_FLAG_DELETE_ON_CLOSE;
 		if (winfileclash(path))
@@ -747,8 +747,8 @@ fslseek(HANDLE h, vlong offset)
 	}
 }
 
-long
-fsread(Chan *c, char *va, long n, vlong offset)
+size_t
+fsread(Chan *c, __out_ecount(n) char *va, size_t n, vlong offset)
 {
 	DWORD n2;
 	HANDLE h;
@@ -776,8 +776,8 @@ fsread(Chan *c, char *va, long n, vlong offset)
 	return n2;
 }
 
-long
-fswrite(Chan *c, const char *va, long n, vlong offset)
+size_t
+fswrite(Chan *c, __in_ecount(n) const char *va, size_t n, vlong offset)
 {
 	DWORD n2;
 	HANDLE h;
@@ -1060,7 +1060,7 @@ fswstat(Chan *c, char *buf, int n)
 		if(!MoveFileW(wspath, wsnewpath)) {
 			oserror();
 		} else if(!file_share_delete && c->flag & COPEN) {
-			int	aflag;
+			int	aflag = FILE_ATTRIBUTE_NORMAL;
 			SECURITY_ATTRIBUTES sa;
 
 			/* The move succeeded, so open new file to maintain handle */
@@ -2072,8 +2072,8 @@ sidtouser(Rune *srv, PSID s)
 	if(u != 0)
 		return u;
 
-	naname = sizeof(aname);
-	ndname = sizeof(dname);
+	naname = sizeof(aname) / sizeof(*aname);
+	ndname = sizeof(dname) / sizeof(*dname);
 
 	if(!LookupAccountSidW(srv, s, aname, &naname, dname, &ndname, &type))
 		return mkuser(s, SidTypeUnknown, L"unknown", L"unknown");
@@ -2105,8 +2105,8 @@ nametouser(Rune *srv, Rune *name)
 	DWORD nsid, ndom;
 
 	sid = (PSID)sidrock;
-	nsid = sizeof(sidrock);
-	ndom = sizeof(dom);
+	nsid = sizeof(sidrock) / sizeof(*sidrock);
+	ndom = sizeof(dom) / sizeof(*dom);
 	if(!LookupAccountNameW(srv, name, sid, &nsid, dom, &ndom, &type))
 		return nil;
 
@@ -2316,6 +2316,7 @@ filesrv(const char *file)
 	char uni[MAX_PATH], mfile[MAX_PATH];
 	wchar_t vol[3];
 
+	assert(strlen(file) < MAX_PATH);
 	strcpy(mfile, file);
 	/* assume file is a fully qualified name - X: or \\server */
 	if(file[1] == ':') {

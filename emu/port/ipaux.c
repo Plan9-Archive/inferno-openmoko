@@ -216,8 +216,10 @@ common:
 
 	case 'i':		/* v6 address as 4 longs */
 		lp = va_arg(f->args, ulong*);
-		for(i = 0; i < 4; i++)
-			hnputl(ip+4*i, *lp++);
+		PBIT32BE(ip+0, lp[0]);
+        PBIT32BE(ip+4, lp[1]);
+        PBIT32BE(ip+8, lp[2]);
+        PBIT32BE(ip+12, lp[3]);
 		p = ip;
 		goto common;
 
@@ -384,7 +386,7 @@ parseip(uchar to[16], const char *from)
 	}
 	if(v4){
 		to[10] = to[11] = 0xff;
-		return nhgetl(to+12);
+		return GBIT32BE(to+12);
 	} else
 		return 6; /* FIXME: not a good magic */
 }
@@ -412,7 +414,7 @@ parseipmask(uchar *to, const char *from)
 			*p++ = 0xff;
 		if(i > 0)
 			*p = ~((1<<(8-i))-1);
-		x = nhgetl(to+IPv4off);
+		x = GBIT32BE(to+IPv4off);
 	} else {
 		/* as a straight bit mask */
 		x = parseip(to, from);

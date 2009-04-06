@@ -76,8 +76,8 @@ pfree(Proc *p)
         closepgrp(e->pgrp);
         closeegrp(e->egrp);
         closesigs(e->sigs);
+	    free(e->user);
     }
-    free(e->user);
     free(p->prog);
     CloseHandle((HANDLE)p->os);
     free(p);
@@ -161,6 +161,7 @@ kproc(const char *name, void (*func)(void*), void *arg, KProcFlags flags)
 
     p->env->ui = up->env->ui;
     kstrdup(&p->env->user, up->env->user);
+	assert(strlen(name)<KNAMELEN);
     strcpy(p->text, name);
 
     p->func = func;
@@ -467,7 +468,7 @@ libinit(const char *imod)
         panic("cannot create kernel process");
 
     strcpy(uname, "inferno");
-    namelen = sizeof(wuname);
+    namelen = sizeof(wuname) / sizeof(*wuname);
     if(GetUserNameW(wuname, &namelen) != TRUE) {
         lasterror = GetLastError();
         if(PlatformId == VER_PLATFORM_WIN32_NT || lasterror != ERROR_NOT_LOGGED_ON)

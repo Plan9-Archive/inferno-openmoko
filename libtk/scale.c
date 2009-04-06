@@ -189,11 +189,11 @@ tkscalecheckvalue(Tk *tk)
 	return limit;
 }
 
-char*
-tkscale(TkTop *t, char *arg, char **ret)
+const char*
+tkscale(TkTop *t, __in_z const char *arg, char **ret)
 {
 	Tk *tk;
-	char *e;
+	const char *e;
 	TkName *names;
 	TkScale *tks;
 	TkOptab tko[3];
@@ -248,8 +248,7 @@ tkscale(TkTop *t, char *arg, char **ret)
 	return tkvalue(ret, "%s", tk->name->name);
 }
 
-static char*
-tkscalecget(Tk *tk, char *arg, char **val)
+static TH(tkscalecget)
 {
 	TkOptab tko[3];
 	TkScale *tks = TKobj(TkScale, tk);
@@ -505,7 +504,7 @@ tkscalevert(Tk *tk, Image *i)
 	string(i, p, tkgc(e, fgnd), ZP, e->font, sv);
 }
 
-char*
+const char*
 tkdrawscale(Tk *tk, Point orig)
 {
 	Point p;
@@ -552,10 +551,9 @@ tkdrawscale(Tk *tk, Point orig)
 	+set
 */
 
-static char*
-tkscaleconf(Tk *tk, char *arg, char **val)
+static TH(tkscaleconf)
 {
-	char *e;
+	const char *e;
 	TkGeom g;
 	int bd;
 	TkOptab tko[3];
@@ -587,7 +585,7 @@ tkscaleposn(TkEnv *env, Tk *tk, char *arg, int *z)
 {
 	int x, y;
 	TkScale *tks = TKobj(TkScale, tk);
-	char *e;
+	const char *e;
 
 	e = tkfracword(env->top, &arg, &x, env);
 	if(e != nil)
@@ -624,10 +622,9 @@ tkscaleposn(TkEnv *env, Tk *tk, char *arg, int *z)
 	return "";
 }
 
-static char*
-tkscaleident(Tk *tk, char *arg, char **val)
+static TH(tkscaleident)
 {
-	char *v;
+	const char *v;
 
 	v = tkscaleposn(tk->env, tk, arg, nil);
 	if(v == nil)
@@ -635,12 +632,11 @@ tkscaleident(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%s", v);
 }
 
-static char*
-tkscalecoords(Tk *tk, char *arg, char **val)
+static TH(tkscalecoords)
 {
 	int p, x, y, l, value;
 	TkScale *tks = TKobj(TkScale, tk);
-	char *e;
+	const char *e;
 
 	value = tks->value;
 	if(arg != nil && arg[0] != '\0') {
@@ -668,11 +664,11 @@ tkscalecoords(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%d %d", x, y);
 }
 
-static char*
-tkscaleget(Tk *tk, char *arg, char **val)
+static TH(tkscaleget)
 {
 	int x, y, value, v, l;
-	char buf[Tkminitem], *e;
+	char buf[Tkminitem];
+    const char *e;
 	TkScale *tks = TKobj(TkScale, tk);
 
 	value = tks->value;
@@ -707,11 +703,10 @@ tkscaleget(Tk *tk, char *arg, char **val)
 	return tkvalue(val, "%s", buf);
 }
 
-static char*
-tkscaleset(Tk *tk, char *arg, char **val)
+static TH(tkscaleset)
 {
 	TkScale *tks = TKobj(TkScale, tk);
-	char *e;
+	const char *e;
 
 	USED(val);
 
@@ -724,11 +719,10 @@ tkscaleset(Tk *tk, char *arg, char **val)
 }
 
 /* tkScaleMotion %x %y */
-static char*
-tkscalemotion(Tk *tk, char *arg, char **val)
+static TH(tkscalemotion)
 {
 	int o, z[2];
-	char *v;
+	const char *v;
 	TkScale *tks = TKobj(TkScale, tk);
 	extern int tkstylus;
 
@@ -749,11 +743,11 @@ tkscalemotion(Tk *tk, char *arg, char **val)
 	return nil;
 }
 
-static char*
-tkscaledrag(Tk *tk, char *arg, char **val)
+static TH(tkscaledrag)
 {
 	int x, y, v;
-	char *e, buf[Tkmaxitem], f[32];
+	char buf[Tkmaxitem], f[32];
+    const char *e;
 	TkScale *tks = TKobj(TkScale, tk);
 
 	USED(val);
@@ -805,11 +799,12 @@ sgn(int v)
 	return v >= 0 ? 1 : -1;
 }
 
-static char*
+static const char*
 stepscale(Tk *tk, const char *pos, int *end)
 {
 	TkScale *tks = TKobj(TkScale, tk);
-	char *e, buf[Tkmaxitem], f[32];
+	const char *e;
+    char buf[Tkmaxitem], f[32];
 	int s;
 
 	s = sgn(tks->to - tks->from);
@@ -835,7 +830,7 @@ stepscale(Tk *tk, const char *pos, int *end)
 static void
 screpeat(Tk *tk, const char *pos, int cancelled)
 {
-	char *e; //, *pos;
+	const char *e; //, *pos;
 	int repeat;
 	TkScale *tks = TKobj(TkScale, tk);
 
@@ -853,11 +848,10 @@ screpeat(Tk *tk, const char *pos, int cancelled)
 	tkupdate(tk->env->top);
 }
 
-static char*
-tkscalebut1p(Tk *tk, char *arg, char **val)
+static TH(tkscalebut1p)
 {
 	int z[2];
-	char *v, *e;
+    const char *e, *v;
 	TkScale *tks = TKobj(TkScale, tk);
 	int repeat;
 
@@ -887,11 +881,11 @@ tkscalebut1p(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tkscalebut1r(Tk *tk, char *arg, char **val)
+static TH(tkscalebut1r)
 {
 	TkScale *tks = TKobj(TkScale, tk);
-	char *e, buf[Tkmaxitem], f[32];
+	char buf[Tkmaxitem], f[32];
+    const char *e;
 	USED(val);
 	USED(arg);
 	if(tks->flag & Autorepeat_scale) {
@@ -912,10 +906,9 @@ tkscalebut1r(Tk *tk, char *arg, char **val)
 	return e;
 }
 
-static char*
-tkscalekey(Tk *tk, char *arg, char **val)
+static TH(tkscalekey)
 {
-	char *e;
+	const char *e;
 	int key;
 	char *pos = nil;
 	USED(arg);
@@ -939,12 +932,12 @@ tkscalekey(Tk *tk, char *arg, char **val)
 
 TkCmdtab tkscalecmd[] =
 {
-	{"cget",		tkscalecget},
+	{"cget",		    tkscalecget},
 	{"configure",		tkscaleconf},
-	{"set",			tkscaleset},
+	{"set",			    tkscaleset},
 	{"identify",		tkscaleident},
-	{"get",			tkscaleget},
-	{"coords",		tkscalecoords},
+	{"get",			    tkscaleget},
+	{"coords",		    tkscalecoords},
 	{"tkScaleMotion",	tkscalemotion},
 	{"tkScaleDrag",		tkscaledrag},
 	{"tkScaleBut1P",	tkscalebut1p},
