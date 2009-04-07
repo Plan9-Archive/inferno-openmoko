@@ -728,8 +728,8 @@ limbosleep(ulong milsec)
 void
 osyield(void)
 {
-    /*Sleep(0);*/
-    Sleep(1); /* Sleep(0) does not yield well? */
+    Sleep(0);
+    //Sleep(1); /* Sleep(1); makes GC very slow */
 }
 
 NORETURN
