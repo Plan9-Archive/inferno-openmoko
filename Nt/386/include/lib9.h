@@ -22,7 +22,7 @@
 #define export _export
 #endif
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER<1400
 #define __notnull
 #define __in
 #define __in_z
@@ -46,11 +46,14 @@
 #define __inout_ecount_full(a)
 #define __inout_ecount(a)
 #define __inout
-#define __checkReturn 
+#define __checkReturn
 #define __in_opt
+#define __analysis_assume(a)
+#endif
+
+#if !defined(_MSC_VER) || _MSC_VER<1500
 #define __range(l,h)
 #define __in_range(l,h)
-#define __analysis_assume(a)
 #endif
 
 #define getwd   infgetwd
