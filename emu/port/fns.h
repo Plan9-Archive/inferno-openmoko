@@ -84,7 +84,7 @@ void        freeskey(Signerkey*);
 /*ulong getcallerpc(void*);*/
 ulong       getFPcontrol(void);
 ulong       getFPstatus(void);
-void        gkbdputc(Queue*, int);
+void        gkbdputc(Queue*, Rune);
 int         incref(Ref*);
 int         iprint(__in_z __format_string const char*fmt, ...);
 void        isdir(__in const Chan*);
@@ -243,7 +243,7 @@ Dir*        kdirfstat(int);
 int         kdirwstat(char*, Dir*);
 int         kdirfwstat(int, Dir*);
 long        kdirread(int, Dir**);
-int         klisten(__in_z const char *dir, 
+int         klisten(__in_z const char *dir,
                     __out_ecount_full_z(NETPATHLEN) char *newdir);
 
 Cname*      addelem(Cname*, const char*);

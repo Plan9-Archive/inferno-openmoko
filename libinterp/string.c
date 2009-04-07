@@ -9,11 +9,11 @@
 
 // indc - Index by character
 //
-// Syntax:     indc    src1, src2, dst 
+// Syntax:     indc    src1, src2, dst
 // Function:   dst = src1[src2]
 //
-// The indc instruction indexes UTF strings. The src1 instruction must be a 
-// string. The src2 operand must be an integer specifying the Unicode 
+// The indc instruction indexes UTF strings. The src1 instruction must be a
+// string. The src2 operand must be an integer specifying the Unicode
 // character to store in the dst operand.
 OP(indc)
 {
@@ -42,11 +42,11 @@ OP(indc)
 //
 // Syntax:     insc    src1, src2, dst
 // Function:   src1[src2] = dst
-// 
-// The insc instruction inserts a character into an existing string. The index 
-// in src2 must be a non-negative integer less than the length of the string 
-// plus one. The src1 operand must a string constant created by the newc 
-// instruction. The character to insert must be a valid 16-bit unicode value 
+//
+// The insc instruction inserts a character into an existing string. The index
+// in src2 must be a non-negative integer less than the length of the string
+// plus one. The src1 operand must a string constant created by the newc
+// instruction. The character to insert must be a valid 16-bit unicode value
 // represented as a word.
 OP(insc)
 {
@@ -99,7 +99,7 @@ r:
         else if(v == l && v < ss->max) {
             ss->len = v+1;
             ss->Sascii[v] = r;
-        } 
+        }
         else {
             if(v != l)
                 error(exBounds);
@@ -148,11 +148,11 @@ slicer(ulong start, ulong v, const String *ds)
 }
 
 // slicec - Slice string
-// 
+//
 // Syntax:     slicec  src1, src2, dst
 // Function:   dst = dst[src1:src2]
-// 
-// The slicec instruction creates a new string, which contains characters 
+//
+// The slicec instruction creates a new string, which contains characters
 // from the index at src1 to the index src2-1. Unlike slicea , the new string
 // is a copy of the elements from the initial string.
 OP(slicec)
@@ -243,8 +243,8 @@ addstring(String *s1, String *s2, int append)
 // Syntax:     addc    src1, src2, dst
 // Function:   dst = src1 + src2
 //
-// The addc instruction concatenates the two UTF strings pointed to by src1 
-// and src2; the result is placed in the pointer addressed by dst. If both 
+// The addc instruction concatenates the two UTF strings pointed to by src1
+// and src2; the result is placed in the pointer addressed by dst. If both
 // pointers are H the result will be a zero length string rather than H.
 OP(addc)
 {
@@ -261,7 +261,7 @@ OP(addc)
 // Function:   dst = array(src)
 //
 // The src operand must be a string which is converted into an array of bytes
-// and stored in dst. The new array is a copy of the characters in src. 
+// and stored in dst. The new array is a copy of the characters in src.
 OP(cvtca)
 {
     int l;
@@ -280,7 +280,7 @@ OP(cvtca)
         p = (char*)a->data;
         r = ss->Srune;
         while(l--)
-            p += runetochar(p, r++);
+            p += runetochar(p, *r++);
         goto r;
     }
     a = mem2array(ss->Sascii, ss->len);
@@ -293,9 +293,9 @@ r:
 // Syntax:     cvtac   src, dst
 // Function:   dst = string(src)
 //
-// The src operand must be an array of bytes, which is converted into a 
+// The src operand must be an array of bytes, which is converted into a
 // character string and stored in dst. The new string is a copy of the bytes
-// in src. 
+// in src.
 OP(cvtac)
 {
     Array *a = rs->parray;
@@ -312,8 +312,8 @@ OP(cvtac)
 // Syntax:     lenc    src, dst
 // Function:   dst = utflen(src)
 //
-// The lenc instruction computes the number of characters in the UTF string 
-// addressed by the src operand and stores it in the dst operand. 
+// The lenc instruction computes the number of characters in the UTF string
+// addressed by the src operand and stores it in the dst operand.
 OP(lenc)
 {
     int l = 0;
@@ -332,9 +332,9 @@ OP(lenc)
 // Syntax:     cvtcw   src, dst
 // Function:   dst = (int)src
 //
-// The string addressed by the src operand is converted to a word and stored 
-// in the dst operand. Initial white space is ignored; after a possible sign, 
-// conversion ceases at the first non-digit in the string. 
+// The string addressed by the src operand is converted to a word and stored
+// in the dst operand. Initial white space is ignored; after a possible sign,
+// conversion ceases at the first non-digit in the string.
 OP(cvtcw)
 {
     String *s = rs->pstring;
@@ -354,9 +354,9 @@ OP(cvtcw)
 // Syntax:     cvtcf   src, dst
 // Function:   dst = (float)src
 //
-// The string addressed by the src operand is converted to a floating point 
-// value and stored in the dst operand. Initial white space is ignored; 
-// conversion ceases at the first character in the string that is not part 
+// The string addressed by the src operand is converted to a floating point
+// value and stored in the dst operand. Initial white space is ignored;
+// conversion ceases at the first character in the string that is not part
 // of the representation of the floating point value.
 OP(cvtcf)
 {
@@ -373,11 +373,11 @@ OP(cvtcf)
 }
 
 // cvtwc - Convert word to string
-// 
+//
 // Syntax:     cvtwc   src, dst
 // Function:   dst = string(src)
-// 
-// The word addressed by the src operand is converted to a string and stored 
+//
+// The word addressed by the src operand is converted to a string and stored
 // in the dst operand. The string is the decimal representation of the word.
 OP(cvtwc)
 {
@@ -389,11 +389,11 @@ OP(cvtwc)
 }
 
 // cvtlc - Convert big to string
-// 
+//
 // Syntax:     cvtlc   src, dst
 // Function:   dst = string(src)
-// 
-// The big integer addressed by the src operand is converted to a string and 
+//
+// The big integer addressed by the src operand is converted to a string and
 // stored in the dst operand. The string is the decimal representation of the
 // big integer.
 OP(cvtlc)
@@ -406,12 +406,12 @@ OP(cvtlc)
 }
 
 // cvtfc - Convert real to string
-// 
+//
 // Syntax:     cvtfc   src, dst
 // Function:   dst = string(src)
-// 
-// The floating point value addressed by the src operand is converted to a 
-// string and stored in the dst operand. The string is a floating point 
+//
+// The floating point value addressed by the src operand is converted to a
+// string and stored in the dst operand. The string is a floating point
 // representation of the value.
 OP(cvtfc)
 {
@@ -455,7 +455,7 @@ string2c(String *s)
         if(c < Runeself)
             *p++ = c;
         else
-            p += runetochar(p, r-1);
+            p += runetochar(p, r[-1]);
     }
 
     *p = 0;

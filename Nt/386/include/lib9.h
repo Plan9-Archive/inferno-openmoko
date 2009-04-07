@@ -140,8 +140,8 @@ enum
 /*
  * rune routines
  */
-extern  int         runetochar(__out_ecount_part(3, return) char*, __in const Rune*);
-extern  int         chartorune(__out_ecount_full(1) Rune*, __in_ecount(3) const char*);
+extern  int         runetochar(__out_ecount_part(UTFmax, return) char*, Rune);
+extern  int         chartorune(__out_ecount_full(1) Rune*, __in_ecount(UTFmax) const char*);
 extern  size_t      runelen(Rune);
 extern  size_t      runenlen(__in_ecount(l) const Rune*, size_t l);
 extern  int         fullrune(const char*, int);
