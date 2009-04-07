@@ -276,7 +276,7 @@ rungc(Prog *p)
     Type *t;
     Heap *h;
     Bhdr *b;
-//return;
+
     gcnruns++;
     if(gchalt) {
         gchalted++;
@@ -297,7 +297,7 @@ rungc(Prog *p)
         gcbroken++;
         return;
     }
-print(".");
+
     for(visit = quanta; visit > 0; ) {
         if(gcptr->magic == MAGIC_A) {
             visit--;
@@ -325,7 +325,6 @@ print(".");
                     freetype(t);
                 }
                 gcdestroys++;
-print("+");
                 poolfree(heapmem, h);
             }
         }
@@ -348,7 +347,6 @@ print("+");
     if(base != nil)         /* Completed this iteration ? */
         return;
     if(nprop == 0) {        /* Completed the epoch ? */
-print("E");
         gcepochs++;
         gccolor++; /* %=3 BUG */
         rootset(p);

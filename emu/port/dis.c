@@ -376,6 +376,13 @@ propex(Prog *p, char *estr)
                 exprog(pgl, estr);
 }
 
+static void
+destroystack(REG *reg)
+{
+    ASSIGN(reg->FP, H);
+    ASSIGN(reg->ML, H);
+}
+
 int
 killprog(Prog *p, char *cause)
 {
@@ -438,7 +445,7 @@ killprog(Prog *p, char *cause)
 
         p->state = Pexiting;
         gclock();
-        ASSIGN(p->R.FP, H); //destroystack(&p->R);
+        destroystack(&p->R);
         delprog(p, msg);
         gcunlock();
 
@@ -1065,9 +1072,7 @@ progexit(void)
         }
 
         gclock();
-
-        ASSIGN(R.FP, H); //destroystack(&R);
-
+        destroystack(&R);
         delprog(r, msg);
         gcunlock();
 

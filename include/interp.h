@@ -225,7 +225,7 @@ struct Inst
     Adr     d;
 };
 
-typedef void (*TypeDestructor)(Heap*, int);
+typedef void (*TypeDestructor)(Heap*, __range(0,1) int swept);
 typedef void (*TypeMark)(Type*, void*);
 struct Type
 {

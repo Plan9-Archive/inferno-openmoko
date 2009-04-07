@@ -43,7 +43,7 @@ goto probe
 :probe
 
 if not exist emu8.exe goto final
-rem emu8.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless man disdump
+emu8.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless man disdump 
 rem emu8.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless wm/wm charon http://www.yandex.ru/
 rem emut.exe -r .. wm/wm
 rem charon

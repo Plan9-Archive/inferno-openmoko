@@ -74,21 +74,21 @@ handler(char *estr)
     int str, ne;
     ulong pc, newpc;
     long eoff;
-    Frame *f, *fp0;
+    Frame *fp, *f;
     String ** eadr;
     Type *zt;
     Handler *h;
     Except *e;
 
     p = currun();
-/**/
+/*
     print("handler:");
     print(" |%s|%p %d\n", estr, p, p?p->pid:0);
 /**/
     if(*estr == 0 || p == nil)
         return 0;
 
-/**/print("handler go on\n"); /**/
+/*  print("handler go on\n"); /**/
     str = p->exval == H || D2H(p->exval)->t == &Tstring;
     m = R.ML;
     if(m->compiled)
@@ -97,7 +97,7 @@ handler(char *estr)
         pc = R.PC-m->prog;
     pc--;
 
-    for(f = R.FP; f != H; f = f->parent) {      /* look for a handler */
+    for(fp = R.FP; fp != H; fp = fp->parent) {      /* look for a handler */
         if((h = m->m->htab) != nil){
             for( ; h->etab != nil; h++){
                 if(pc < h->pc1 || pc >= h->pc2)
@@ -115,7 +115,7 @@ handler(char *estr)
                     goto found;
             }
         }
-        if(!str && f != R.FP){      /* becomes a string exception in immediate caller */
+        if(!str && fp != R.FP){      /* becomes a string exception in immediate caller */
             /*
             v = p->exval;
             p->exval = *(String**)v;
@@ -128,19 +128,19 @@ handler(char *estr)
             str = 1;
             continue;
         }
-        assert(nil==H || f->ml != nil);
-        if(f->ml != H)
-            m = f->ml;
+        assert(nil==H || fp->ml != nil);
+        if(fp->ml != H)
+            m = fp->ml;
         if(m->compiled)
-            pc = (char*)f->lr - (char*)m->prog;
+            pc = (char*)fp->lr - (char*)m->prog;
         else
-            pc = f->lr - m->prog;
+            pc = fp->lr - m->prog;
         pc--;
     }
     ASSIGN(p->exval, H);
     return 0;
 found:
-/**/print("exc:found\n"); /**/
+/*  print("exc:found\n"); /**/
     {
         int n;
         char name[3*KNAMELEN];
@@ -155,30 +155,29 @@ found:
     /*
      * there may be an uncalled frame at the top of the stack
      */
-
-    fp0 = R.FP;
+    f = R.FP;
     m = R.ML;
-    while(R.FP != f){
-        fp0 = R.FP;
-        R.PC = fp0->lr;
-        R.FP = fp0->parent;
+    while(R.FP != fp){
+        f = R.FP;
+        R.PC = f->lr;
+        R.FP = f->parent;
 
-        ml = fp0->ml;
+        ml = f->ml;
         assert(nil==H || ml != nil);
-        if(fp0->ml!=H)
-            ADDREF(fp0->ml);
-        ADDREF(fp0->parent);
-        ASSIGN(fp0, H);
+        if(f->ml!=H)
+            ADDREF(f->ml);
+        ADDREF(f->parent);
+        ASSIGN(f, H);
         if(ml != H){
             m = ml;
             ASSIGN(R.ML, m);
         }
     }
     if(zt != nil){
-        freeptrs(f, zt);
-        initmem(zt, f);
+        freeptrs(fp, zt);
+        initmem(zt, fp);
     }
-    eadr = (String **)((char*)f+eoff);
+    eadr = (String **)((char*)fp+eoff);
     ASSIGN(*eadr, H);
     if(p->exval == H)
         *eadr = newestring(estr);   /* might fail */
