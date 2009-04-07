@@ -478,7 +478,6 @@ WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         mmi->ptMaxTrackSize.x = maxxsize;
         mmi->ptMaxTrackSize.y = maxysize;
         break;
-    case WM_SYSCHAR:
     case WM_COMMAND:
     case WM_CREATE:
     case WM_SETFOCUS:
