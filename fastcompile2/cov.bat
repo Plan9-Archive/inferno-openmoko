@@ -8,5 +8,5 @@ cov-analyze.exe --dir covinferno
 cov-commit-defects.exe  --datadir covdatabase --product inferno --user admin --dir covinferno
 
 rem run viewer
-rem cov-start-gui.exe --datadir covdatabase
-rem start iexplore http://localhost:5467
+cov-start-gui.exe --datadir covdatabase
+start iexplore http://localhost:5467
