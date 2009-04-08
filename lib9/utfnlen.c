@@ -1,25 +1,24 @@
 #include <lib9.h>
 
-int
-utfnlen(const char *s, long m)
+size_t
+utfnlen(__in_z const char *s, size_t m)
 {
-	int c;
-	long n;
-	Rune rune;
-	const char *es;
+    size_t n;
+    const char * const es = s + m;
 
-	es = s + m;
-	for(n = 0; s < es; n++) {
-		c = *(uchar*)s;
-		if(c < Runeself){
-			if(c == '\0')
-				break;
-			s++;
-			continue;
-		}
-		if(!fullrune(s, es-s))
-			break;
-		s += chartorune(&rune, s);
-	}
-	return n;
+    for(n = 0; s < es; n++) {
+        if(CHAR_CAST(*s) < Runeself) { /* one byte rune */
+            if(*s == L'\0')
+                break;
+            s++;
+        }
+        else {
+            Rune r;
+            if(!fullrune(s, es-s))
+                break;
+            s += chartorune(&r, s);
+            // TODO: if(n==1 && r==Bad)
+        }
+    }
+    return n;
 }

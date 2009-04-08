@@ -24,7 +24,7 @@ exit
 
 set INCLUDE=%MS%\VC\include;%SDK%\Include
 set LIB=%MS%\VC\lib;%SDK%\Lib
-set PATH=%MS%\Common7\IDE;%MS%\VC\bin
+PATH=%MS%\Common7\IDE;%MS%\VC\bin;%PATH%
 
 rem cl.exe -EP -DROOT="/inferno" -DKERNDATE=1666666666 -DEMU=1 -DUNICODE -D_WIN32_WINNT=0x0400 -DOBJTYPE=386 -I. turbo.c >l2 >l1.c
 rem cl.exe -c l1.c >l22
@@ -52,11 +52,11 @@ goto probe
 :probe
 
 if not exist emu8.exe goto final
-emu8.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless man disdump
+rem emu8.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless man disdump
 rem emu8.exe -g1024x768 -r ..\..\branches\inferno-reference-stackless wm/wm charon http://www.yandex.ru/
 rem emut.exe -r .. wm/wm
 rem charon
 rem emut.exe -r .. wm/wm wm/coffee
 rem emut.exe -r .. wm/wm charon
 :final
-exit
+exit 0

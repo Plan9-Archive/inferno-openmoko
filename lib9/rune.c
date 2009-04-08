@@ -29,13 +29,13 @@ chartorune(__out_ecount_full(1) Rune *rune,
            __in_ecount(UTFmax) const char *str)
 {
     int c, c1, c2;
-    long l;
+    Rune l;
 
     /*
      * one character sequence
      *  00000-0007F => T1
      */
-    c = *(uchar*)str;
+    c = CHAR_CAST(str[0]);
     if(c < Tx) {
         *rune = c;
         return 1;
@@ -45,7 +45,7 @@ chartorune(__out_ecount_full(1) Rune *rune,
      * two character sequence
      *  0080-07FF => T2 Tx
      */
-    c1 = *(uchar*)(str+1) ^ Tx;
+    c1 = CHAR_CAST(str[1]) ^ Tx;
     if(c1 & Testx)
         goto bad;
     if(c < T3) {
@@ -62,7 +62,7 @@ chartorune(__out_ecount_full(1) Rune *rune,
      * three character sequence
      *  0800-FFFF => T3 Tx Tx
      */
-    c2 = *(uchar*)(str+2) ^ Tx;
+    c2 = CHAR_CAST(str[2]) ^ Tx;
     if(c2 & Testx)
         goto bad;
     if(c < T4) {
@@ -142,13 +142,13 @@ runenlen(__in_ecount(l) const Rune *r, size_t l)
     return n;
 }
 
-int
-fullrune(const char *str, int n)
+__range(0,1) int
+fullrune(__in_z const char *str, int n)
 {
     int c;
 
     if(n > 0) {
-        c = *(uchar*)str;
+        c = CHAR_CAST(*str);
         if(c < Tx)
             return 1;
         if(n > 1)

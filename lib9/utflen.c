@@ -1,22 +1,21 @@
 #include <lib9.h>
 
-int
-utflen(const char *s)
+size_t
+utflen(__in_z const char *s)
 {
-	int c;
-	long n;
-	Rune rune;
+    size_t n;
 
-	n = 0;
-	for(;;) {
-		c = *(uchar*)s;
-		if(c < Runeself) {
-			if(c == 0)
-				return n;
-			s++;
-		} else
-			s += chartorune(&rune, s);
-		n++;
-	}
-	return 0;
+    for(n = 0; ; n++) {
+        if(CHAR_CAST(*s) < Runeself) {  /* one byte rune */
+            if(*s == L'\0')
+                break;
+            s++;
+        }
+        else {
+            Rune r;
+            s += chartorune(&r, s);
+            // TODO: if(n==1 && r==Bad)
+        }
+    }
+    return n;
 }

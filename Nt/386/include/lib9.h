@@ -122,10 +122,7 @@ extern NORETURN panic(__in_z __format_string const char *fmt, ...);
  * most mem and string routines are declared by ANSI/POSIX files above
  */
 extern  char*   strecpy(__out_bcount_z(e-to) char *to, __in char *e, __in_z const char *from);
-extern  int cistrncmp(char*, char*, int);
-extern  int cistrcmp(char*, char*);
-extern  char*   cistrstr(char*, char*);
-extern  int tokenize(char*, char**, int);
+extern  int     tokenize(char*, char**, int);
 extern  vlong   strtoll(const char*, char**, int);
 extern  uvlong  strtoull(const char*, char**, int);
 
@@ -137,18 +134,20 @@ enum
     Runeerror   = 0x80      /* decoding error in UTF */
 };
 
+// cast char to Rune or int resulting __range(0,255)
+#define CHAR_CAST(c) ((unsigned char)(c))
 /*
  * rune routines
  */
 extern  int         runetochar(__out_ecount_part(UTFmax, return) char*, Rune);
 extern  int         chartorune(__out_ecount_full(1) Rune*, __in_ecount(UTFmax) const char*);
-extern  size_t      runelen(Rune);
+extern  __range(1,3) size_t runelen(Rune);
 extern  size_t      runenlen(__in_ecount(l) const Rune*, size_t l);
-extern  int         fullrune(const char*, int);
-extern  int         utflen(const char*);
-extern  int         utfnlen(const char*, long);
-extern  /*const*/ char* utfrune(/*const*/ char*, long);
-extern  /*const*/ char* utfrrune(/*const*/ char*, long);
+extern  __range(0,1) int    fullrune(__in_z const char*, int);
+extern  size_t      utflen(__in_z const char*);             // = strlen   for utf8 string
+extern  size_t      utfnlen(__in_z const char*, size_t);    // = strnlen  for utf8 string
+extern  char*       utfrune(__in_z char*, Rune);            // = strchr   for utf8 string
+extern  char*       utfrrune(__in_z char*, Rune);           // = strrchr  for utf8 string
 extern  char*       utfecpy(char*, char*, const char*);
 
 extern  long        runestrlen(const Rune*);

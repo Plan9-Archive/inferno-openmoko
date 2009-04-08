@@ -1977,7 +1977,7 @@ subfontname(char *cfname, char *fname, int maxdepth)
     t = cfname;
     if(t[0] != '/'){
         strcpy(tmp2, fname);
-        u = utfrrune(tmp2, '/');
+        u = utfrrune(tmp2, L'/');
         if(u)
             u[0] = 0;
         else

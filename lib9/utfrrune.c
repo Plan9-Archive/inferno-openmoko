@@ -1,30 +1,30 @@
 #include <lib9.h>
 
-/*const*/ char*
-utfrrune(/*const*/ char *s, long c)
+char*
+utfrrune(__in_z char *s, Rune c)
 {
-	long c1;
-	Rune r;
-	char *s1;
+    char *s1;
 
-	if(c < Runesync)		/* not part of utf sequence */
-		return strrchr(s, c);
+    if(c < Runesync)        /* not part of utf sequence */
+        return strrchr(s, c);
 
-	s1 = 0;
-	for(;;) {
-		c1 = *(uchar*)s;
-		if(c1 < Runeself) {	/* one byte rune */
-			if(c1 == 0)
-				return s1;
-			if(c1 == c)
-				s1 = s;
-			s++;
-			continue;
-		}
-		c1 = chartorune(&r, s);
-		if(r == c)
-			s1 = s;
-		s += c1;
-	}
-	return 0;
+    s1 = 0;
+    for(;;) {
+        if(CHAR_CAST(*s) < Runeself) { /* one byte rune */
+            if(*s == L'\0')
+                return s1;
+            //if(*s == c)  /* impossible condition, c is checked above */
+            //    return s;
+            s++;
+        }
+        else {
+            // r==Bad, n==1 if s[0] is not a valid first byte of utf-sequence
+            Rune r;
+            int n = chartorune(&r, s);
+            if(r == c)
+                s1 = s;
+            s += n;
+        }
+    }
+    return 0;
 }
