@@ -1,7 +1,7 @@
 PATH=C:\prevent-mingw-4.1.0\bin;%PATH%
 
 
-cov-build --dir covinferno cmd /c m8.bat
+cov-build --dir covinferno cmd /c m8cov.bat
 
 cov-analyze.exe --dir covinferno
 
