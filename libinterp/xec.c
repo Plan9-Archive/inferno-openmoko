@@ -649,7 +649,7 @@ OP(mcall)
         f->lr = rr->PC;
         assert(f->parent == H); /* virginity check, just curious */
         f->parent = rr->FP;
-        assert(f->parent != H); 
+        assert(f->parent != H);
         f->ml = rr->ML;
         assert(f->ml != nil);
         assert(f->ml != H);
@@ -761,6 +761,7 @@ OP(iload)
                 if(ml != H) {
                         ml->MP = rr->ML->MP;
                         ADDREF(ml->MP);
+                        Setmark(D2H(ml->MP));
                 }
         }
         else {
@@ -1533,6 +1534,7 @@ OP(self)
         Modlink *ml = rr->ML;
 
         ADDREF(ml);
+        Setmark(D2H(ml));
         ASSIGN(rd->pmodlink, ml);
 }
 
