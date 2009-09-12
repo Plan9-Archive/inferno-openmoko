@@ -1,0 +1,52 @@
+.TH SCHEME 1
+.SH NAME
+scheme \- Scheme interpreter
+.SH SYNOPSIS
+.B scheme
+.SH DESCRIPTION
+This Scheme interpreter implements nearly all of the
+essential procedures of the r4rs Scheme standard, save
+for call-with-curent-continuation.
+It also implements most of the features of r5rs, with
+the major exceptions being macros and calls related
+to continuation.
+Finally, it behaves as r6rs, rather than r[45]rs in being
+case-sensitive.
+.SH EXTENSIONS
+There are two procedures unique to this implementation
+and not found in the r[456]rs standards.
+.TP 5
+(quit)
+This does the obvious of exiting the interpreter.
+
+.TP 5
+.RI (popen\  cmd-string )
+The
+.I cmd-string
+is executed by the shell.
+The command's standard input and output are assigned
+to two Scheme ports which make a list returned by this
+function.
+One particular use of
+.I popen
+is in talking to Tk.
+For example,
+
+.EX
+(define tkports (popen "tkcmd"))
+(define tkin (car tkports))
+(define tkout (cadr tkport))
+(display "label .l -text {Hello World}\n" tkout)
+(display "pack .l\n" tkout)
+.EE
+
+.RS 0
+is a simple graphical version of everyone's favorite
+first program.
+.SH SOURCE
+.B /appl/scheme/*.b
+.SH BUGS
+It does not, as yet, implment proper tail recursion.
+The (char-ready?) procedure is not likely to ever be
+implemented; there's not really a good way to do it
+in Inferno.

@@ -24,7 +24,9 @@ set LIB=%MS%\VC\lib;%SDK%\Lib
 PATH=%MS%\Common7\IDE;%MS%\VC\bin;%PATH%
 
 rem debug
-cl.exe -DCOVERITY -RTCsu -Od -Zi -Fm -MTd -WL -FC -W3 -o emu8.exe -DROOT="/inferno" -DKERNDATE=1666666666 -DEMU=1 -DOBJTYPE=386 -Iinclude -I.. turbo.c winmm.lib user32.lib ws2_32.lib gdi32.lib advapi32.lib mpr.lib
+cl.exe -RTCsu -Od -Zi -Fm -MTd -WL -FC -W3 -o emu8.exe -DROOT="/inferno" -DKERNDATE=1666666666 -DEMU=1 -DOBJTYPE=386 -Iinclude -I.. turbo.c winmm.lib user32.lib ws2_32.lib gdi32.lib advapi32.lib mpr.lib
 
 rem release
 rem cl.exe -DCOVERITY -GLAFy -GS- -Ox -Oi- -MT -WL -FC -W3 -o emu8.exe -DROOT="/inferno" -DKERNDATE=1666666666 -DEMU=1 -DOBJTYPE=386 -Iinclude -I.. turbo.c winmm.lib user32.lib ws2_32.lib gdi32.lib advapi32.lib mpr.lib
+
+pskill cov-internal-ca

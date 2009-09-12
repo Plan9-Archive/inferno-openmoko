@@ -18,9 +18,9 @@ set INCLUDE=%MS%\VC\include;%SDK%\Include
 set LIB=%MS%\VC\lib;%SDK%\Lib
 PATH=%MS%\Common7\IDE;%MS%\VC\bin;%PATH%
 
-PATH=C:\prevent-mingw-4.1.0\bin;%PATH%
+PATH=C:\prevent-mingw-4.3.1\bin;%PATH%
 
 
-cov-configure.exe --compiler cl.exe
+rem cov-configure.exe --compiler cl.exe
 
-cov-install-gui.exe --password doh123 --datadir covdatabase --product inferno --use-service no
+cov-install-gui.exe --password doh123 --datadir covdatabase --product inferno --use-service no --language c

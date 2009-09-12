@@ -266,6 +266,12 @@ main(int argc, char **argv)
     if(vflag)
         print("Inferno %s main (pid=%d) %s\n", VERSION, getpid(), opt);
 
+    {
+    // coverity must report error on it
+    char* p=malloc(10);
+    print("%d", p[0]);
+    }
+
     libinit(imod);
 }
 

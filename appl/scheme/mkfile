@@ -1,0 +1,53 @@
+<../../mkconfig
+
+TARG=\
+	builtin.dis\
+	cell.dis\
+	sform.dis\
+
+MODULES=\
+	builtin.m\
+	cell.m\
+	scheme.m\
+	sform.m\
+
+SYSMODULES=\
+	bufio.m\
+	draw.m\
+	math.m\
+	sh.m\
+	string.m\
+	sys.m\
+
+DISBIN=$ROOT/dis/scheme
+
+LIBDIR=$ROOT/lib/scheme
+
+LIBTARG=\
+	$LIBDIR/library.scm\
+
+all:V:	scheme.dis
+
+<$ROOT/mkfiles/mkdis
+
+$DISBIN:
+	mkdir $DISBIN
+
+$LIBDIR:
+	mkdir $LIBDIR
+
+install:V:	$ROOT/dis/scheme.dis $LIBTARG $ROOT/man/1/scheme
+
+$ROOT/dis/scheme.dis:	$DISBIN scheme.dis
+	rm -f $target && cp scheme.dis $target
+
+scheme.dis:	$MODULES $SYS_MODULES
+
+$LIBDIR/%: $LIBDIR %
+	rm -f $target && cp $stem $target
+
+$ROOT/man/1/scheme: scheme.1
+	rm -f $target && cp scheme.1 $target
+
+nuke:V:
+	rm -f $ROOT/dis/scheme.dis

@@ -46,9 +46,14 @@
 #define __inout_ecount_full(a)
 #define __inout_ecount(a)
 #define __inout
-#define __checkReturn
 #define __in_opt
 #define __analysis_assume(a)
+#endif
+
+#if !defined(__GNUC__)
+# define __checkReturn __attribute__((warn_unused_result))
+#elif !defined(_MSC_VER) || _MSC_VER<1400
+# define __checkReturn
 #endif
 
 #if !defined(_MSC_VER) || _MSC_VER<1500
